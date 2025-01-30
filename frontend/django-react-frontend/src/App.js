@@ -1,27 +1,39 @@
-import './App.css';
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import Home from './Home';
-import DataPage from './DataPage';
+import React, { useEffect, useState } from 'react';
 
-function App() {
-  return (
-    <Router>
-      <div className="App">
-        <header className="App-header">
-          <h1>Welcome to My App</h1>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/data">Data Page</Link>
-          </nav>
-        </header>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/data" element={<DataPage />} />
-        </Routes>
-      </div>
-    </Router>
-  );
-}
+const StoresTable = () => {
+    const [stores, setStores] = useState([]);
 
-export default App;
+    useEffect(() => {
+        // Fetching the data from the local server
+        fetch('http://localhost:8000/api/stores/?format=api')
+            .then(response => response.json())
+            .then(data => setStores(data))
+            .catch(error => console.error('Error fetching data:', error));
+    }, []);
+
+    return (
+        <div className="p-4">
+            <h1 className="text-2xl font-bold mb-4">Kyunghee University Store List</h1>
+            <div className="shadow-lg rounded-lg border border-gray-200 p-4">
+                <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr>
+                            <th className="border border-gray-300 p-2">Store ID</th>
+                            <th className="border border-gray-300 p-2">Store Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {stores.map((store) => (
+                            <tr key={store.store_id}>
+                                <td className="border border-gray-300 p-2">{store.store_id}</td>
+                                <td className="border border-gray-300 p-2">{store.store_name}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+export default StoresTable;

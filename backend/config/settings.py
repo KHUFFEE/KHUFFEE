@@ -56,6 +56,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://192.168.0.6:3000",
     "http://localhost:3000",  # React 웹 (개발 환경)
     "http://localhost:19006",  # React Native 앱 (Expo 개발 환경)
+    "http://192.168.0.11:8081"
 ]
 
 ROOT_URLCONF = "config.urls"

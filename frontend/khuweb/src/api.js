@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api";  // Django 서버 주소
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL; // Django 서버 주소
 
 // 모든 매장 가져오기
 export const fetchStores = async () => {

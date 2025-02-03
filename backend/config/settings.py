@@ -58,7 +58,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:19006",  # React Native 앱 (Expo 개발 환경)
 ]
 
-ROOT_URLCONF = "backend.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -76,7 +76,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "backend.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database

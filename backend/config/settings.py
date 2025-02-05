@@ -38,7 +38,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'rest_framework',
     'corsheaders',
+    'accounts',
+    'analytics',
+    'inventory',
     'orders',
+    'sales',
+    'suppliers',
 ]
 
 MIDDLEWARE = [
@@ -86,7 +91,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'test_khuffee',  # MySQL 데이터베이스 이름
+        'NAME': 'khuffee',  # MySQL 데이터베이스 이름
         'USER': 'root',  # MySQL 유저명
         'PASSWORD': '9420',  # MySQL 비밀번호
         'HOST': 'localhost',  # 로컬 개발이면 'localhost'

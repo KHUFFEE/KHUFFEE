@@ -1,19 +1,22 @@
 {
   "extends": "expo/tsconfig.base",
-  "jsx": "react-jsx",
   "compilerOptions": {
     "strict": true,
-    "baseUrl": "./src",  // 반드시 src를 기준으로 설정
+    "jsx": "react-jsx",
+    "baseUrl": "./src",
     "paths": {
-      "@/*": ["./*"],
-      "@components/*": ["components/*"],
-      "@hooks/*": ["hooks/*"]
+      "@/*": ["./*"],  // 모든 경로를 src 하위에서 찾음
+      "@/components/*": ["components/*"],
+      "@/hooks/*": ["hooks/*"],
+      "@/common/*": ["components/ui/common/*"]
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "./**/*.ts",  // src 안에서 모든 TS 파일 탐색
+    "./**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]
 }
+
+

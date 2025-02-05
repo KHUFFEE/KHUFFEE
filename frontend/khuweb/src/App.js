@@ -1,14 +1,23 @@
 import React from "react";
-import StoreList from "./components/StoreList";
-import AddStore from "./components/AddStore";
+import { Routes, Route, Link } from "react-router-dom";
+import Home from "./pages/Home";
+import Orders from "./pages/Orders";
+import Inventory from "./pages/Inventory";
 
 function App() {
     return (
-        <div>
-            <h1>카페 발주 시스템</h1>
-            <AddStore />
-            <StoreList />
-        </div>
+        <>
+            <nav>
+                <Link to="/">홈</Link> | 
+                <Link to="/orders">발주</Link> | 
+                <Link to="/inventory">재고 관리</Link>
+            </nav>
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/inventory" element={<Inventory />} />
+            </Routes>
+        </>
     );
 }
 

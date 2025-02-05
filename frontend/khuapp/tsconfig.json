@@ -1,11 +1,13 @@
 {
   "extends": "expo/tsconfig.base",
+  "jsx": "react-jsx",
   "compilerOptions": {
     "strict": true,
+    "baseUrl": "./src",  // 반드시 src를 기준으로 설정
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "@components/*": ["components/*"],
+      "@hooks/*": ["hooks/*"]
     }
   },
   "include": [

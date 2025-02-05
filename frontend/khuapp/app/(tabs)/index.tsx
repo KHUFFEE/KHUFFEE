@@ -1,9 +1,9 @@
 import { Image, StyleSheet, Platform } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { HelloWave } from '@/src/components/HelloWave';
+import ParallaxScrollView from '@/src/components/ui/layout/ParallaxScrollView';
+import { ThemedText } from '@/src/components/ui/common/ThemedText';
+import { ThemedView } from '@/src/components/ui/common/ThemedView';
 
 export default function HomeScreen() {
   return (
@@ -35,7 +35,7 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
+        <ThemedText type="subtitle">선헌석 바보</ThemedText>
         <ThemedText>
           Tap the Explore tab to learn more about what's included in this starter app.
         </ThemedText>

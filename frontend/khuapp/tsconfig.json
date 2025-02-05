@@ -3,20 +3,33 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-jsx",
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["./*"],  // 모든 경로를 src 하위에서 찾음
-      "@/components/*": ["components/*"],
-      "@/hooks/*": ["hooks/*"],
-      "@/common/*": ["components/ui/common/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@/components/*": [
+        "src/components/*"
+      ],
+      "@/hooks/*": [
+        "src/hooks/*"
+      ],
+      "@/common/*": [
+        "src/components/ui/common/*"
+      ],
+      "@/constants/*": [
+        "src/constants/*"
+      ],      
+      "@/layout/*": [
+        "src/components/ui/layout/*"
+      ],
+      "@/navigation/*": [
+        "src/components/ui/navigation/*"
+      ]
     }
   },
   "include": [
-    "./**/*.ts",  // src 안에서 모든 TS 파일 탐색
-    "./**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "./**/*.ts",
+    "./**/*.tsx"
   ]
 }
-
-

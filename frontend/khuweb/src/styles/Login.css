@@ -7,19 +7,19 @@
 }
 
 .login-logo {
-    margin-right: 20px;
+    margin-right: 80px;
     display: flex;
     align-items: center;
 }
 
 .login-logo img {
-    width: 150px; /* 로고 크기 조정 */
+    width: 300px; /* 로고 크기 조정 */
     height: auto;
 }
 
 .vertical-line {
     width: 1px;
-    height: 70%;
+    height: 50%;
     background-color: #ccc;
     margin-right: 20px;
 }
@@ -29,6 +29,7 @@
     flex-direction: column;
     align-items: center;
     background: white;
+    margin-left: 80px;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);

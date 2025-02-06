@@ -1,25 +1,45 @@
-import axios from "axios";
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL; // Django 서버 주소
-
-// 모든 매장 가져오기
-export const fetchStores = async () => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/stores/`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching stores:", error);
-        return [];
+export const fetchItems = async () => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/items/`);
+    if (!response.ok) {
+        throw new Error("Failed to fetch items");
     }
+    return await response.json();
 };
 
-// 특정 매장 가져오기
-export const fetchStoreDetail = async (storeId) => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/stores/${storeId}/`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching store detail:", error);
-        return null;
+export const fetchSuppliers = async () => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/`);
+    if (!response.ok) {
+        throw new Error("Failed to fetch suppliers");
     }
+    return await response.json();
+};
+
+export const addSupplier = async (supplierName) => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 협력사명: supplierName }),
+    });
+    if (!response.ok) {
+        throw new Error("Failed to add supplier");
+    }
+    return await response.json();
+};
+
+export const deleteSuppliers = async (supplierNames) => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/delete/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ names: supplierNames }), // 협력사명을 기준으로 삭제 요청
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to delete suppliers");
+    }
+
+    return await response.json();
 };

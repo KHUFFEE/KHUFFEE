@@ -14,7 +14,9 @@ module.exports = function (api) {
             '@/constants': './src/constants',
             '@/common': './src/components/ui/common',
             '@/layout': './src/components/ui/layout',
-            '@/navigation': './src/components/ui/navigation'
+            '@/navigation': './src/components/ui/navigation',
+            '@/Store': './src/Store'
+
           }
         }
       ],

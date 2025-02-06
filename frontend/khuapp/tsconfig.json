@@ -25,6 +25,9 @@
       ],
       "@/navigation/*": [
         "src/components/ui/navigation/*"
+      ],
+      "@/Store/*": [
+        "src/Store/*"
       ]
     }
   },

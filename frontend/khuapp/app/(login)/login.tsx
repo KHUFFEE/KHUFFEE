@@ -1,3 +1,4 @@
+// app/(login)/login.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -36,24 +37,25 @@ const LoginScreen: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        Alert.alert('로그인 실패', errorData.message || '아이디 또는 비밀번호가 잘못되었습니다.');
+        if (errorData.error === 'username_invalid') {
+          Alert.alert('로그인 실패', '아이디가 틀립니다.');
+        } else if (errorData.error === 'password_invalid') {
+          Alert.alert('로그인 실패', '비밀번호가 틀립니다.');
+        } else {
+          Alert.alert('로그인 실패', errorData.message || '아이디 또는 비밀번호가 잘못되었습니다.');
+        }
         return;
       }
 
       const data = await response.json();
       console.log('로그인 성공:', data);
 
-      // 매장명이 'admin'인 경우
       if (매장명 === 'admin') {
-        router.replace('/(admin)/dashboard');
-      } 
-      // 매장명이 '창고'인 경우
-      else if (매장명 === '창고') {
-        router.replace('/(warehouse)/dashboard');
-      } 
-      // 일반 매장인 경우
-      else {
-        router.replace('/(store)/dashboard');
+        router.replace({ pathname: '/(admin)/dashboard', params: { storeName: 매장명 } });
+      } else if (매장명 === '창고') {
+        router.replace({ pathname: '/(warehouse)/dashboard', params: { storeName: 매장명 } });
+      } else {
+        router.replace({ pathname: '/(store)/dashboard', params: { storeName: 매장명 } });
       }
     } catch (error) {
       console.error('로그인 에러:', error);

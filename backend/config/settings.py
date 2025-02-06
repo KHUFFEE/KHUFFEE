@@ -46,6 +46,12 @@ INSTALLED_APPS = [
     'suppliers',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # CORS 설정 추가
     "django.middleware.security.SecurityMiddleware",

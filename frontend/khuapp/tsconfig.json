@@ -5,34 +5,25 @@
     "jsx": "react-jsx",
     "baseUrl": "./",
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@/components/*": [
-        "src/components/*"
-      ],
-      "@/hooks/*": [
-        "src/hooks/*"
-      ],
-      "@/common/*": [
-        "src/components/ui/common/*"
-      ],
-      "@/constants/*": [
-        "src/constants/*"
-      ],      
-      "@/layout/*": [
-        "src/components/ui/layout/*"
-      ],
-      "@/navigation/*": [
-        "src/components/ui/navigation/*"
-      ],
-      "@/Store/*": [
-        "src/Store/*"
-      ]
-    }
+      "@/*": ["src/*"],
+      "@/components/*": ["src/components/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/constants/*": ["src/constants/*"],
+      "@/Store/*": ["src/Store/*"],
+      "@/common/*": ["src/components/ui/common/*"],
+      "@/layout/*": ["src/components/ui/layout/*"],
+      "@/navigation/*": ["src/components/ui/navigation/*"]
+    },
+    "types": ["node", "react-native-dotenv"]
   },
   "include": [
-    "./**/*.ts",
-    "./**/*.tsx"
+    "**/*.ts",
+    "**/*.tsx",
+    ".env",
+    "src/types/env.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
+

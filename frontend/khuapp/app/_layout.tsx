@@ -1,32 +1,13 @@
-// app/(store)/layout.tsx
+// app/_layout.tsx
 import React from 'react';
-import { View, SafeAreaView } from 'react-native';
-import StoreEmployeeDashboard from '@/Store/StoreEmployeeDashboard';
 import { Stack } from 'expo-router';
-
-const StoreLayout: React.FC = () => {
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <StoreEmployeeDashboard />
-    </SafeAreaView>
-  );
-};
 
 export default function RootLayout() {
   return (
-    <Stack>
-      <Stack.Screen
-        name="(login)"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="(store)"
-        options={{
-          headerShown: false,
-        }}
-      />
+    <Stack screenOptions={{ headerShown: false }}>
+      {/* (login)과 (store) 그룹을 포함 */}
+      <Stack.Screen name="(login)" />
+      <Stack.Screen name="(store)" />
     </Stack>
   );
 }

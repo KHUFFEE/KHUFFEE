@@ -14,19 +14,10 @@ const StoreLayout: React.FC = () => {
 
 export default function RootLayout() {
   return (
-    <Stack>
-      <Stack.Screen
-        name="(login)"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="(store)"
-        options={{
-          headerShown: false,
-        }}
-      />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(login)" />
+      <Stack.Screen name="(store)" />
     </Stack>
   );
 }

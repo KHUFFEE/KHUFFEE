@@ -15,6 +15,8 @@ import { useRouter } from 'expo-router';
 import { commonStyles } from '../../src/styles/common';
 import { RN_API_URL } from '@env';
 
+// console.log(RN_API_URL);
+
 const LoginScreen: React.FC = () => {
   const router = useRouter();
   const [매장명, set매장명] = useState('');

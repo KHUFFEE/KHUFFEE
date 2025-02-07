@@ -65,4 +65,9 @@ export const commonStyles = StyleSheet.create({
     marginTop: 15,
     alignItems: 'center',
   },
+  errorText: {  // loginScreen.tsx에서 사용
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
 }); 

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../(login)/index';
+import SettingsModal from '@/components/ui/common/settingModal'; // 공통 모달 컴포넌트 임포트 // Updated
 
 export default function SettingsScreen() {
   const route = useRoute<RouteProp<RootStackParamList, 'Settings'>>();
@@ -17,71 +18,59 @@ export default function SettingsScreen() {
     navigation.goBack();
   };
 
-  // 로그아웃 핸들러
+  // 로그아웃 핸들러 (로그아웃 확인 Alert 적용) // Updated
   const handleLogout = () => {
-    Alert.alert('로그아웃', '로그아웃하시겠습니까?', [
-      { text: '취소', style: 'cancel' },
-      {
-        text: '로그아웃',
-        onPress: () => {
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Login' as never }],
-          });
+    Alert.alert(
+      '로그아웃',
+      '로그아웃하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '로그아웃',
+          onPress: () => {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Login' as never }],
+            });
+          },
         },
-      },
-    ]);
+      ]
+    );
+    setIsModalOpen(false);
   };
 
-  // 모달 열기/닫기
+  // '설정 및 개인정보' 옵션 선택 핸들러 // Updated
+  const handleSettings = () => {
+    console.log('설정 및 개인정보 선택'); // 추가 동작이나 네비게이션 처리 가능
+    setIsModalOpen(false);
+  };
+
+  // 모달 열기/닫기 함수
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-
-  // 설정 모달 옵션
-  const modalOptions = [
-    { label: '설정 및 개인정보', onPress: () => console.log('설정 및 개인정보 선택') },
-    { label: '로그아웃', onPress: handleLogout },
-  ];
 
   return (
     <View style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
-          <Text style={styles.iconText}>{'←'}</Text> {/* 뒤로가기 아이콘 대체 */}
+          <Text style={styles.iconText}>{'←'}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={openModal} style={styles.iconButton}>
-          <Text style={styles.iconText}>⋮</Text> {/* 모달 버튼 대체 */}
+          <Text style={styles.iconText}>⋮</Text>
         </TouchableOpacity>
       </View>
 
       {/* 화면 제목 */}
       <Text style={styles.title}>설정 - {storeName} 매장</Text>
 
-      {/* 모달 */}
-      <Modal
+      {/* 공통 SettingsModal 적용 (inline 모달 제거) */}
+      <SettingsModal
         visible={isModalOpen}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={closeModal}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            {modalOptions.map((option, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.modalOption}
-                onPress={() => {
-                  option.onPress();
-                  closeModal(); // 옵션 선택 후 모달 닫기
-                }}
-              >
-                <Text style={styles.modalOptionText}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      </Modal>
+        onClose={closeModal}
+        onLogout={handleLogout}
+        onSettings={handleSettings}
+      />
     </View>
   );
 }
@@ -110,27 +99,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginVertical: 20,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    width: '80%',
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    elevation: 5,
-  },
-  modalOption: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  modalOptionText: {
-    fontSize: 18,
-    color: '#333',
   },
 });

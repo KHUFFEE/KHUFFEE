@@ -3,25 +3,21 @@ from accounts.models import Store
 from suppliers.models import Item
 
 class StoreInventory(models.Model):
-    매장 = models.ForeignKey(Store, on_delete=models.CASCADE)
-    품목 = models.ForeignKey(Item, on_delete=models.CASCADE)
+    매장_id = models.ForeignKey(Store, on_delete=models.PROTECT, db_column="매장_id")  # 삭제 방지
+    품목_id = models.ForeignKey(Item, on_delete=models.PROTECT, db_column="품목_id")  # 삭제 방지
     기간 = models.CharField(max_length=10)  # YYYY.MM.DD
     매장_재고량 = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
-        unique_together = ('매장', '품목', '기간')
-
-    def __str__(self):
-        return f"{self.매장} - {self.품목} ({self.기간})"
+        db_table = "매장_재고"
+        unique_together = ("매장_id", "품목_id", "기간")
 
 class WarehouseInventory(models.Model):
-    매장 = models.ForeignKey(Store, on_delete=models.CASCADE)
-    품목 = models.ForeignKey(Item, on_delete=models.CASCADE)
+    매장_id = models.ForeignKey(Store, on_delete=models.PROTECT, db_column="매장_id")  # 삭제 방지
+    품목_id = models.ForeignKey(Item, on_delete=models.PROTECT, db_column="품목_id")  # 삭제 방지
     기간 = models.CharField(max_length=10)  # YYYY.MM.DD
-    창고_재고량 = models.IntegerField()
+    창고_재고량 = models.IntegerField()  
 
     class Meta:
-        unique_together = ('매장', '품목', '기간')
-
-    def __str__(self):
-        return f"{self.매장} - {self.품목} ({self.기간})"
+        db_table = "창고_재고"
+        unique_together = ("매장_id", "품목_id", "기간")

@@ -8,7 +8,7 @@ from .serializers import SupplierSerializer
 
 class ItemListView(APIView):
     def get(self, request):
-        items = Item.objects.select_related('협력사').all()
+        items = Item.objects.select_related('협력사_id').all()
         serialized_items = ItemSerializer(items, many=True)
         return Response(serialized_items.data, status=status.HTTP_200_OK)
 

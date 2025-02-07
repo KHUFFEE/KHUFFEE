@@ -6,10 +6,13 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../(login)/index';
 import { Settings } from 'lucide-react-native';
 import StoreEmployeeDashboard from './StoreEmployeeDashboard';
+import {commonStyles} from '../../src/styles/common';
+
+
 
 export default function StoreDashboardScreen() {
   const route = useRoute();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Dashboard'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
   const { storeName } = route.params as { storeName: string };
 
   const goToSettings = () => {
@@ -19,7 +22,7 @@ export default function StoreDashboardScreen() {
   return (
     <View style={styles.dashboardContainer}>
       <View style={styles.storeNameContainer}>
-        <Text style={styles.storeNameText}>{storeName} 매장</Text>
+        <Text style={styles.storeNameText}>{storeName}매장</Text>
         <TouchableOpacity onPress={goToSettings} style={styles.settingsIconContainer}>
           <Settings size={24} color="#3b82f6" />
         </TouchableOpacity>

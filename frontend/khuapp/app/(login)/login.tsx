@@ -57,11 +57,11 @@ const LoginScreen: React.FC = () => {
 
       // 로그인 성공 후 해당 매장에 맞게 라우팅
       if (매장명 === 'admin') {
-        router.replace({ pathname: '/(admin)/dashboard', params: { storeName: 매장명 } });
+        router.replace({ pathname: '/(admin)/main', params: { storeName: 매장명 } });
       } else if (매장명 === '창고') {
-        router.replace({ pathname: '/(warehouse)/dashboard', params: { storeName: 매장명 } });
+        router.replace({ pathname: '/(warehouse)/main', params: { storeName: 매장명 } });
       } else {
-        router.replace({ pathname: '/(store)/dashboard', params: { storeName: 매장명 } });
+        router.replace({ pathname: '/(store)/main', params: { storeName: 매장명 } });
       }
     } catch (error) {
       console.error('로그인 에러:', error);
@@ -107,7 +107,7 @@ const LoginScreen: React.FC = () => {
               autoCapitalize="none"
             />
 
-            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+            {errorMessage ? <Text style={commonStyles.errorText}>{errorMessage}</Text> : null}
 
             <TouchableOpacity
               style={commonStyles.button}
@@ -123,12 +123,5 @@ const LoginScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  errorText: {
-    color: 'red',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-});
 
 export default LoginScreen;

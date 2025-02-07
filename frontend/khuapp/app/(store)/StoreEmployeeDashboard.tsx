@@ -23,7 +23,7 @@ interface Category {
   name: string;
 }
 
-const StoreOrderRequest: React.FC = () => {
+const StoreOrderRequest: React.FC = () => {  //api로 수정 
   const categories: Category[] = [
     { id: 1, name: '음료 재료' },
     { id: 2, name: '포장재' },

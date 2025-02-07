@@ -37,7 +37,6 @@ module.exports = function (api) {
             extensions: ['.svg', '.txt']  // 필요에 따라 다른 확장자 추가 가능
           }
         ],
-        'expo-router/babel'  // Expo Router 플러그인 추가
       ]
     };
   };

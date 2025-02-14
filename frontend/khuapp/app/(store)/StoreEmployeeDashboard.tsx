@@ -1,6 +1,6 @@
 // app/(store)/StoreEmployeeDashboard.tsx
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, Modal } from 'react-native';
 import { Home, ShoppingCart, List, Clipboard, Plus, Minus, Trash2 } from 'lucide-react-native';
 import { RN_API_URL } from '@env';
 
@@ -37,8 +37,12 @@ const StoreOrderRequest: React.FC = () => {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
-  // 추가: 상품 선택과 발주 확인 단계를 구분하는 상태
+  // 선택 단계와 확인 단계를 구분하는 상태
   const [isConfirmation, setIsConfirmation] = useState<boolean>(false);
+
+  // Modal state for error messages
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
   useEffect(() => {
     fetch(`${RN_API_URL}/api/suppliers/items/`)
@@ -103,6 +107,9 @@ const StoreOrderRequest: React.FC = () => {
       if (item.품목_id === productId) {
         const numericValue = parseInt(text, 10);
         if (!isNaN(numericValue)) {
+          if (numericValue === 0) {
+            return { ...item, customQuantity: text, error: `최소 수량은 ${item.출고단위}${item.단위}입니다.` };
+          }
           if (numericValue % item.출고단위 === 0) {
             return { ...item, quantity: numericValue, customQuantity: text, error: null };
           } else {
@@ -120,19 +127,37 @@ const StoreOrderRequest: React.FC = () => {
     setSelectedItems(selectedItems.filter(item => item.품목_id !== productId));
   };
 
-  // 발주 요청 시 선택된 상품과 수량(품목_id 포함)을 payload로 준비
-  const handleOrderSubmit = () => {
-    const hasError = selectedItems.some(item => item.error);
-    if (hasError) {
-      alert("입력한 수량에 오류가 있습니다. 확인해주세요.");
+  // 발주 확인 버튼을 눌렀을 때 선택한 상품 검증 후 오류가 있으면 모달 표시, 없으면 확인 화면으로 전환
+  const handleConfirmOrder = () => {
+    const errors: string[] = [];
+    selectedItems.forEach(item => {
+      if (item.quantity === 0) {
+        errors.push(`${item.품목명}의 수량이 0입니다. 최소 수량은 ${item.출고단위}${item.단위}입니다.`);
+      }
+      if (item.quantity % item.출고단위 !== 0) {
+        errors.push(`${item.품목명}의 수량은 ${item.출고단위}${item.단위}의 배수여야 합니다.`);
+      }
+      if (item.error) {
+        errors.push(`${item.품목명}: ${item.error}`);
+      }
+    });
+
+    if (errors.length > 0) {
+      setErrorMessages(errors);
+      setModalVisible(true);
       return;
     }
+    setIsConfirmation(true);
+  };
+
+  // 발주 요청 시 실제 발주 요청을 처리 (여기서는 검증 없이 진행)
+  const handleOrderSubmit = () => {
     const orderPayload = selectedItems.map(item => ({
       품목_id: item.품목_id,
       quantity: item.quantity,
     }));
     console.log("발주 요청:", orderPayload);
-    // 실제 발주 POST 요청을 구현할 수 있습니다.
+    // 실제 발주 POST 요청 로직을 추가할 수 있습니다.
   };
 
   if (loading) {
@@ -155,12 +180,16 @@ const StoreOrderRequest: React.FC = () => {
   const renderProductCard = (product: APIProduct) => {
     const selected = selectedItems.find(item => item.품목_id === product.품목_id);
     if (selected) {
-      // 이미 선택된 경우 기존의 -/+/삭제 기능 제공
       return (
         <View key={product.품목_id} style={orderStyles.selectedItemCard}>
           <View style={orderStyles.selectedItemInfo}>
             <Text style={orderStyles.selectedItemName}>{product.품목명}</Text>
-            <Text style={orderStyles.unitText}>출고단위: {product.출고단위}{product.단위}</Text>
+            <Text style={orderStyles.unitText}>
+              출고단위: {product.출고단위}{product.단위}
+            </Text>
+            {selected.error && (
+              <Text style={orderStyles.errorText}>{selected.error}</Text>
+            )}
           </View>
           <View style={orderStyles.actionsContainer}>
             <TouchableOpacity
@@ -191,12 +220,13 @@ const StoreOrderRequest: React.FC = () => {
         </View>
       );
     } else {
-      // 미선택 상태면 "상품선택" 버튼 제공
       return (
         <View key={product.품목_id} style={orderStyles.selectedItemCard}>
           <View style={orderStyles.selectedItemInfo}>
             <Text style={orderStyles.selectedItemName}>{product.품목명}</Text>
-            <Text style={orderStyles.unitText}>출고단위: {product.출고단위}{product.단위}</Text>
+            <Text style={orderStyles.unitText}>
+              출고단위: {product.출고단위}{product.단위}
+            </Text>
           </View>
           <TouchableOpacity style={orderStyles.orderButton} onPress={() => addItem(product)}>
             <Text style={orderStyles.orderButtonText}>상품선택</Text>
@@ -206,10 +236,9 @@ const StoreOrderRequest: React.FC = () => {
     }
   };
 
-  // 렌더링 분기: 선택 단계 vs. 확인 단계
+  let mainContent;
   if (!isConfirmation) {
-    // [상품 선택] 화면: 모든 상품을 동일 카드 스타일로 보여주고, 하단에 발주확인 버튼 배치
-    return (
+    mainContent = (
       <ScrollView style={orderStyles.container}>
         <View style={orderStyles.categorySection}>
           <Text style={orderStyles.sectionTitle}>품목 유형 선택</Text>
@@ -218,7 +247,9 @@ const StoreOrderRequest: React.FC = () => {
               style={[orderStyles.categoryButton, selectedCategory === null && orderStyles.categoryButtonActive]}
               onPress={() => setSelectedCategory(null)}
             >
-              <Text style={[orderStyles.categoryButtonText, selectedCategory === null && orderStyles.categoryButtonTextActive]}>전체</Text>
+              <Text style={[orderStyles.categoryButtonText, selectedCategory === null && orderStyles.categoryButtonTextActive]}>
+                전체
+              </Text>
             </TouchableOpacity>
             {uniqueCategories.map((cat, index) => (
               <TouchableOpacity
@@ -226,7 +257,9 @@ const StoreOrderRequest: React.FC = () => {
                 style={[orderStyles.categoryButton, selectedCategory === cat && orderStyles.categoryButtonActive]}
                 onPress={() => setSelectedCategory(cat)}
               >
-                <Text style={[orderStyles.categoryButtonText, selectedCategory === cat && orderStyles.categoryButtonTextActive]}>{cat}</Text>
+                <Text style={[orderStyles.categoryButtonText, selectedCategory === cat && orderStyles.categoryButtonTextActive]}>
+                  {cat}
+                </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -239,23 +272,14 @@ const StoreOrderRequest: React.FC = () => {
           </View>
         </View>
 
-        <TouchableOpacity style={orderStyles.orderButton} onPress={() => setIsConfirmation(true)}>
+        {/* 발주확인 버튼 클릭 시 handleConfirmOrder를 호출 */}
+        <TouchableOpacity style={orderStyles.orderButton} onPress={handleConfirmOrder}>
           <Text style={orderStyles.orderButtonText}>발주확인</Text>
         </TouchableOpacity>
-
-        {/* 각 아이템별 오류 메시지 */}
-        {selectedItems.map(item => (
-          item.error && (
-            <Text key={`${item.품목_id}_err`} style={orderStyles.errorText}>
-              {item.품목명}: {item.error}
-            </Text>
-          )
-        ))}
       </ScrollView>
     );
   } else {
-    // [발주 확인] 화면: 선택한 상품만 표시하며, 최종 발주 요청 버튼 제공
-    return (
+    mainContent = (
       <ScrollView style={orderStyles.container}>
         <View style={orderStyles.selectedItemsSection}>
           <Text style={orderStyles.sectionTitle}>선택한 상품 확인</Text>
@@ -263,7 +287,6 @@ const StoreOrderRequest: React.FC = () => {
             <View key={item.품목_id} style={orderStyles.selectedItemCard}>
               <View style={orderStyles.selectedItemInfo}>
                 <Text style={orderStyles.selectedItemName}>{item.품목명}</Text>
-                {/* 사용자가 입력한 customQuantity 값 그대로 표시 */}
                 <Text style={orderStyles.unitText}>
                   수량: {item.customQuantity} {item.단위}
                 </Text>
@@ -280,6 +303,33 @@ const StoreOrderRequest: React.FC = () => {
       </ScrollView>
     );
   }
+
+  return (
+    <>
+      {mainContent}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={modalStyles.centeredView}>
+          <View style={modalStyles.modalView}>
+            <Text style={modalStyles.modalTitle}>발주 오류</Text>
+            {errorMessages.map((msg, index) => (
+              <Text key={index} style={modalStyles.modalText}>{msg}</Text>
+            ))}
+            <TouchableOpacity
+              style={modalStyles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={modalStyles.textStyle}>확인</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
 };
 
 const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeName }) => {
@@ -340,7 +390,6 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
   );
 };
 
-// 메인 레이아웃 스타일
 const styles = StyleSheet.create({
   dashboardContainer: {
     flex: 1,
@@ -382,7 +431,6 @@ const styles = StyleSheet.create({
   },
 });
 
-// 발주 화면 스타일 (orderStyles)
 const orderStyles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
@@ -490,8 +538,7 @@ const orderStyles = StyleSheet.create({
   errorText: {
     color: 'red',
     fontSize: 13,
-    marginLeft: 16,
-    marginBottom: 4,
+    marginTop: 4,
   },
   orderButton: {
     backgroundColor: '#3b82f6',
@@ -504,6 +551,53 @@ const orderStyles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+});
+
+const modalStyles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    width: '80%',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  closeButton: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    elevation: 2,
+    marginTop: 15,
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

@@ -37,7 +37,6 @@ body {
   height: 100%; /* 전체 높이 */
 }
 
-
 .logout-btn {
   display: flex;
   align-items: center;
@@ -58,7 +57,6 @@ body {
 .logout-btn:hover {
   background-color: #ffe6e6;
 }
-
 
 .app-sidebar nav {
   display: flex;
@@ -256,4 +254,58 @@ body {
   margin: 10px 0;
   border: none;
   border-top: 0.5px solid #aaa; /* 선을 더 두껍게 */
+}
+
+/* 수정 버튼 (상단) */
+.edit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 16px;
+  background-color: white;
+  color: #28a745;
+  border: 1px solid #28a745;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  /* margin-right: 10px;  <-- 제거 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.edit-button:hover {
+  background-color: #f7f7f7;
+  color: #28a745;
+  border-color: #28a745;
+}
+
+
+/* 수정 완료 버튼 (우측 하단 고정) */
+.edit-confirm-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px 16px;
+    background-color: white;
+    color: #28a745;
+    border: 1px solid #28a745;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.edit-confirm-button:hover {
+    background-color: #f7f7f7;
+    color: #28a745;
+    border-color: #28a745;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

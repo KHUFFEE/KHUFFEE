@@ -6,7 +6,7 @@ import { RootStackParamList } from '../(login)/index';
 import { Settings } from 'lucide-react-native';
 import StoreEmployeeDashboard from './StoreEmployeeDashboard';
 import { commonStyles } from '../../src/styles/common';
-import SettingsModal from '@/components/ui/common/settingModal'; // 공통 모달 컴포넌트 임포트 // Updated
+import SettingsModal from '../../src/components/ui/common/settingModal'; // 공통 모달 컴포넌트 임포트 // Updated
 
 export default function StoreDashboardScreen() {
   const route = useRoute();

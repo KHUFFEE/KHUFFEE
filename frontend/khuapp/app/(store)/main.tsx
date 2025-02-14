@@ -6,7 +6,6 @@ import { RootStackParamList } from '../(login)/index';
 import { Settings } from 'lucide-react-native';
 import StoreEmployeeDashboard from './StoreEmployeeDashboard';
 import { commonStyles } from '../../src/styles/common';
-import SettingsModal from '../../src/components/ui/common/settingModal'; // 공통 모달 컴포넌트 임포트 // Updated
 
 export default function StoreDashboardScreen() {
   const route = useRoute();
@@ -63,12 +62,7 @@ export default function StoreDashboardScreen() {
       <StoreEmployeeDashboard storeName={storeName} />
 
       {/* 공통 SettingsModal 적용 (inline 모달 제거) */} 
-      <SettingsModal
-        visible={isModalOpen}
-        onClose={closeModal}
-        onLogout={handleLogout}
-        onSettings={handleSettings} // '설정 및 개인정보' 선택 시 핸들러 // Updated
-      />
+      
     </View>
   );
 }

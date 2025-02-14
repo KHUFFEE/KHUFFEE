@@ -1,3 +1,4 @@
+// app/(store)/main.tsx
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -5,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../(login)/index';
 import { Settings } from 'lucide-react-native';
 import StoreEmployeeDashboard from './StoreEmployeeDashboard';
-import { commonStyles } from '../../src/styles/common';
+import SettingsModal from '../../src/components/ui/common/settingModal';
 
 export default function StoreDashboardScreen() {
   const route = useRoute();
@@ -19,13 +20,13 @@ export default function StoreDashboardScreen() {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  // '설정 및 개인정보' 옵션 선택 핸들러 // Updated
+  // '설정 및 개인정보' 옵션 선택 핸들러
   const handleSettings = () => {
     navigation.navigate('Settings', { storeName });
     closeModal();
   };
 
-  // 로그아웃 핸들러 (로그아웃 확인 Alert 적용) // Updated
+  // 로그아웃 핸들러 (로그아웃 확인 Alert 적용)
   const handleLogout = () => {
     Alert.alert(
       '로그아웃',
@@ -61,8 +62,13 @@ export default function StoreDashboardScreen() {
       {/* 대시보드 콘텐츠 */}
       <StoreEmployeeDashboard storeName={storeName} />
 
-      {/* 공통 SettingsModal 적용 (inline 모달 제거) */} 
-      
+      {/* Settings Modal 추가 */}
+      <SettingsModal
+        visible={isModalOpen}
+        onClose={closeModal}
+        onLogout={handleLogout}
+        onSettings={handleSettings}
+      />
     </View>
   );
 }

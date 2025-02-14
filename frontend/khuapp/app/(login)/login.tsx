@@ -9,15 +9,18 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../(login)/index';
 import { commonStyles } from '../../src/styles/common';
 import { RN_API_URL } from '@env';
+
 console.log(RN_API_URL);
 
 const LoginScreen: React.FC = () => {
-  const router = useRouter();
+  // react-navigation 사용: 로그인 스크린에 맞는 네비게이션 타입 지정
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Login'>>();
   const [매장명, set매장명] = useState('');
   const [매장_비밀번호, set매장_비밀번호] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -56,14 +59,9 @@ const LoginScreen: React.FC = () => {
       const data = await response.json();
       console.log('로그인 성공:', data);
 
-      // 로그인 성공 후 해당 매장에 맞게 라우팅
-      if (매장명 === 'admin') {
-        router.replace({ pathname: '/(admin)/main', params: { storeName: 매장명 } });
-      } else if (매장명 === '창고') {
-        router.replace({ pathname: '/(warehouse)/main', params: { storeName: 매장명 } });
-      } else {
-        router.replace({ pathname: '/(store)/main', params: { storeName: 매장명 } });
-      }
+      // 조건에 따라 메인 화면으로 이동
+      // 필요에 따라 매장명이 'admin' 또는 '창고'인 경우의 분기를 추가할 수 있습니다.
+      navigation.replace('Main', { storeName: 매장명 });
     } catch (error) {
       console.error('로그인 에러:', error);
       setErrorMessage('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
@@ -123,6 +121,5 @@ const LoginScreen: React.FC = () => {
     </View>
   );
 };
-
 
 export default LoginScreen;

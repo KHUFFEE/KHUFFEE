@@ -5,7 +5,61 @@
     font-family: Arial, sans-serif;
     text-align: left;
   }
-    
+  
+  /* 헤더를 좌측 제목과 우측 버튼으로 분리 */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+  }
+  
+  /* 오른쪽 버튼들을 가로로 나열 */
+  .controls {
+    display: flex;
+    gap: 10px;
+  }
+  
+  /* 버튼 기본 스타일 (이미 적용된 스타일 유지) */
+  .add-button,
+  .edit-button,
+  .delete-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px 16px;
+    background-color: white;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  /* 개별 버튼 hover 효과 (이미 적용된 스타일 유지) */
+  .add-button {
+    color: #007bff;
+    border-color: #007bff;
+  }
+  .add-button:hover,
+  .delete-button:hover {
+    background-color: #f7f7f7;
+    color: #007bff;
+    border-color: #007bff;
+  }
+  .delete-button {
+    color: #d9363e;
+    border-color: #d9363e;
+  }
+  .delete-button:hover {
+    background-color: #ffe6e6;
+    color: #d9363e;
+    border-color: #d9363e;
+  }
+  
   .item-table {
     width: 100%;
     border-collapse: collapse;
@@ -16,31 +70,31 @@
     text-align: left;
     margin-left: 0;
   }
-    
+  
   .item-table th,
   .item-table td {
     border: 1px solid #ddd;
     text-align: left;
     padding: 12px;
   }
-    
+  
   .item-table th {
     background-color: #f7f7f7;
     font-weight: bold;
   }
-    
+  
   .error {
     color: red;
     font-weight: bold;
   }
-    
+  
   .divider {
     width: 100%;
     margin: 10px 0;
     border: none;
     border-top: 0.5px solid #aaa;
   }
-    
+  
   .item-popup {
     position: fixed;
     top: 0;
@@ -53,7 +107,7 @@
     justify-content: center;
     z-index: 999;
   }
-    
+  
   .item-popup-content {
     background-color: #fff;
     padding: 30px;
@@ -62,14 +116,14 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     overflow: auto;
   }
-    
+  
   .item-popup-buttons {
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
     gap: 15px;
   }
-    
+  
   .item-popup-form input,
   .item-popup-form select {
     width: 100%;
@@ -79,18 +133,18 @@
     border: 0.5px solid #aaa;
     background-color: transparent;
   }
-    
+  
   .item-popup-form input[type="number"] {
     -moz-appearance: textfield;
     appearance: textfield;
   }
-    
+  
   .item-popup-form input[type="number"]::-webkit-inner-spin-button,
   .item-popup-form input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
-    
+  
   .add-row-button {
     margin-top: 10px;
     width: 40px;
@@ -105,11 +159,11 @@
     align-items: center;
     justify-content: center;
   }
-    
+  
   .add-row-button:hover {
     background-color: #0056b3;
   }
-    
+  
   .remove-row-button {
     margin-top: 10px;
     width: 40px;
@@ -125,58 +179,76 @@
     justify-content: center;
     margin-left: 10px;
   }
-    
+  
   .remove-row-button:hover {
     background-color: #c82333;
   }
-    
+  
   .add-row-container {
     display: flex;
     align-items: center;
     margin-top: 10px;
     gap: 10px;
   }
-    
+  
   .row-action-label {
     font-weight: bold;
     font-size: 16px;
   }
-    
+  
   .item-popup-form table {
     table-layout: fixed;
     width: 100%;
   }
-    
+  
   .item-popup-form table td {
     vertical-align: middle;
     text-align: center;
   }
-    
+  
   .item-popup-form table th,
   .item-popup-form table td {
     padding: 5px 15px;
     text-align: left;
   }
-    
+  
   .item-popup-form table th {
     padding-left: 12px;
   }
-    
-  .item-popup-form table col:nth-child(1) { width: 10%; }
-  .item-popup-form table col:nth-child(2) { width: 10%; }
-  .item-popup-form table col:nth-child(3) { width: 10%; }
-  .item-popup-form table col:nth-child(4) { width: 10%; }
-  .item-popup-form table col:nth-child(5) { width: 10%; }
-  .item-popup-form table col:nth-child(6) { width: 10%; }
-  .item-popup-form table col:nth-child(7) { width: 10%; }
-  .item-popup-form table col:nth-child(8) { width: 10%; }
-  .item-popup-form table col:nth-child(9) { width: 10%; }
-    
+  
+  .item-popup-form table col:nth-child(1) {
+    width: 10%;
+  }
+  .item-popup-form table col:nth-child(2) {
+    width: 10%;
+  }
+  .item-popup-form table col:nth-child(3) {
+    width: 10%;
+  }
+  .item-popup-form table col:nth-child(4) {
+    width: 10%;
+  }
+  .item-popup-form table col:nth-child(5) {
+    width: 10%;
+  }
+  .item-popup-form table col:nth-child(6) {
+    width: 10%;
+  }
+  .item-popup-form table col:nth-child(7) {
+    width: 10%;
+  }
+  .item-popup-form table col:nth-child(8) {
+    width: 10%;
+  }
+  .item-popup-form table col:nth-child(9) {
+    width: 10%;
+  }
+  
   .item-popup-form input:focus,
   .item-popup-form select:focus {
     background-color: transparent;
   }
-    
+  
   .item-table input,
   .item-table select {
     width: 100%;
@@ -186,7 +258,7 @@
     margin: 0;
     font-size: inherit;
   }
-    
+  
   .item-table input[type="number"]::-webkit-inner-spin-button,
   .item-table input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;

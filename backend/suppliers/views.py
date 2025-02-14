@@ -25,15 +25,15 @@ class ItemListView(APIView):
 
         # 새 Item 생성 – 품목_id는 save()에서 자동 생성됨
         item = Item(
-            협력사_id = supplier,
-            품목명 = data.get("품목명"),
-            종류 = data.get("종류"),
-            규격 = data.get("규격"),
-            단위 = data.get("단위"),
-            입고단가 = data.get("입고단가"),
-            입고단위 = data.get("입고단위"),
-            입고단위단가 = data.get("입고단위단가"),
-            출고단위 = data.get("출고단위"),
+            협력사_id=supplier,
+            품목명=data.get("품목명"),
+            종류=data.get("종류"),
+            규격=data.get("규격"),
+            단위=data.get("단위"),
+            입고단가=data.get("입고단가"),
+            입고단위=data.get("입고단위"),
+            입고단위단가=data.get("입고단위단가"),
+            출고단위=data.get("출고단위"),
         )
         item.save()
         serializer = ItemSerializer(item)
@@ -52,6 +52,22 @@ class ItemDeleteView(APIView):
         else:
             return Response({"error": "해당 품목을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
+class ItemUpdateView(APIView):
+    def post(self, request):
+        # 요청 데이터에 품목_id와 수정할 필드들이 포함되어 있어야 함
+        품목_id = request.data.get("품목_id")
+        if not 품목_id:
+            return Response({"error": "품목_id가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            item = Item.objects.get(품목_id=품목_id, 활성화=True)
+        except Item.DoesNotExist:
+            return Response({"error": "품목을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ItemSerializer(item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SupplierListView(APIView):
     def get(self, request):
@@ -69,7 +85,6 @@ class SupplierListView(APIView):
                 "협력사명": supplier.협력사명,
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class SupplierDeleteView(APIView):
     def post(self, request):

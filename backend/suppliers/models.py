@@ -34,3 +34,16 @@ class Item(models.Model):
 
     class Meta:
         db_table = "품목"
+
+    def save(self, *args, **kwargs):
+        if not self.품목_id:
+            last_item = Item.objects.order_by('-품목_id').first()
+            if last_item:
+                try:
+                    last_number = int(last_item.품목_id.split('_')[1])
+                except (IndexError, ValueError):
+                    last_number = 100  # 파싱 실패 시 기본값
+                self.품목_id = f"IT_{last_number + 1:03d}"
+            else:
+                self.품목_id = "IT_101"  # 첫 ID 값
+        super().save(*args, **kwargs)

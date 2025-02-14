@@ -1,15 +1,17 @@
+# backend/suppliers/serializers.py
 from rest_framework import serializers
-from .models import Item
-from .models import Supplier
+from .models import Item, Supplier
 
 class ItemSerializer(serializers.ModelSerializer):
-    협력사명 = serializers.CharField(source='협력사_id.협력사명')  # ForeignKey 관계 필드 표시
+    # 협력사_id를 Supplier 모델의 협력사_id 필드 값으로 노출 (읽기 전용)
+    협력사_id = serializers.CharField(source='협력사_id.협력사_id', read_only=True)
 
     class Meta:
         model = Item
-        fields = ['품목명', '협력사명', '종류', '규격', '단위', '입고단가', '입고단위', '입고단위단가', '출고단위']
+        fields = ['품목_id', '협력사_id', '품목명', '종류', '규격', '단위', '입고단가', '입고단위', '입고단위단가', '출고단위']
+
 
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
-        fields = ['협력사명']
+        fields = ['협력사_id', '협력사명']

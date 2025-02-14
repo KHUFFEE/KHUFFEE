@@ -43,3 +43,32 @@ export const deleteSuppliers = async (supplierNames) => {
 
     return await response.json();
 };
+
+export const addItem = async (newItem) => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/items/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newItem),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to add item");
+    }
+    return await response.json();
+  };
+  
+
+export const deleteItems = async (ids) => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/items/delete/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ids }),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete items");
+    }
+    return await response.json();
+  };

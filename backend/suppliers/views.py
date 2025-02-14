@@ -1,10 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Item
-from .serializers import ItemSerializer
-from .models import Supplier
-from .serializers import SupplierSerializer
+from .models import Item, Supplier
+from .serializers import ItemSerializer, SupplierSerializer
 
 class ItemListView(APIView):
     def get(self, request):
@@ -14,7 +12,8 @@ class ItemListView(APIView):
 
 class SupplierListView(APIView):
     def get(self, request):
-        suppliers = Supplier.objects.all()
+        # 활성화(True)인 협력사만 조회
+        suppliers = Supplier.objects.filter(활성화=True)
         serialized_suppliers = SupplierSerializer(suppliers, many=True)
         return Response(serialized_suppliers.data, status=status.HTTP_200_OK)
 
@@ -35,9 +34,10 @@ class SupplierDeleteView(APIView):
         if not names:
             return Response({"error": "No suppliers provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        deleted_count, _ = Supplier.objects.filter(협력사명__in=names).delete()
+        # 실제 삭제 대신 활성화(False)로 업데이트
+        updated_count = Supplier.objects.filter(협력사명__in=names).update(활성화=False)
         
-        if deleted_count > 0:
-            return Response({"detail": "Deleted successfully"}, status=status.HTTP_200_OK)
+        if updated_count > 0:
+            return Response({"detail": "Deactivated successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "No matching suppliers found"}, status=status.HTTP_404_NOT_FOUND)

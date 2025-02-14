@@ -1,25 +1,45 @@
 .item-container {
     padding: 0px;
+    max-width: 1250px; /* 테이블 크기를 선보다 작게 유지 */
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    text-align: left; /* 왼쪽 정렬 */
 }
 
 .item-table {
-    width: 100%;
+    width: 100%; /* suppliers 테이블과 동일한 너비 */
     border-collapse: collapse;
     margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    text-align: left;
+    margin-left: 0; /* 테이블 왼쪽 정렬 */
 }
 
 .item-table th,
 .item-table td {
     border: 1px solid #ddd;
     text-align: left;
-    padding: 8px;
+    padding: 12px;
 }
 
 .item-table th {
-    background-color: #f2f2f2;
+    background-color: #f7f7f7;
+    font-weight: bold;
+    text-align: left;
 }
 
 .error {
     color: red;
     font-weight: bold;
+}
+
+
+/* 선 크기 늘리기 */
+.divider {
+    width: 100%; /* 전체 폭 */
+    margin: 10px 0;
+    border: none;
+    border-top: 0.5px solid #aaa; /* 선을 더 두껍게 */
 }

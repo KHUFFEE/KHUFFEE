@@ -11,7 +11,7 @@ interface StoreEmployeeDashboardProps {
 }
 
 const StoreOrderRequest: React.FC = () => {
-  // API에서 받아오는 상품의 타입R
+  // API에서 받아오는 상품의 타입
   interface APIProduct {
     품목_id: string;
     품목명: string;
@@ -37,6 +37,8 @@ const StoreOrderRequest: React.FC = () => {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+  // 추가: 상품 선택과 발주 확인 단계를 구분하는 상태
+  const [isConfirmation, setIsConfirmation] = useState<boolean>(false);
 
   useEffect(() => {
     fetch(`${RN_API_URL}/api/suppliers/items/`)
@@ -149,80 +151,135 @@ const StoreOrderRequest: React.FC = () => {
     );
   }
 
-  return (
-    <ScrollView style={orderStyles.container}>
-      <View style={orderStyles.categorySection}>
-        <Text style={orderStyles.sectionTitle}>품목 유형 선택</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={orderStyles.categoryList}>
-          <TouchableOpacity
-            style={[orderStyles.categoryButton, selectedCategory === null && orderStyles.categoryButtonActive]}
-            onPress={() => setSelectedCategory(null)}
-          >
-            <Text style={[orderStyles.categoryButtonText, selectedCategory === null && orderStyles.categoryButtonTextActive]}>전체</Text>
-          </TouchableOpacity>
-          {uniqueCategories.map((cat, index) => (
+  // 공통으로 사용할 제품 카드 렌더러
+  const renderProductCard = (product: APIProduct) => {
+    const selected = selectedItems.find(item => item.품목_id === product.품목_id);
+    if (selected) {
+      // 이미 선택된 경우 기존의 -/+/삭제 기능 제공
+      return (
+        <View key={product.품목_id} style={orderStyles.selectedItemCard}>
+          <View style={orderStyles.selectedItemInfo}>
+            <Text style={orderStyles.selectedItemName}>{product.품목명}</Text>
+            <Text style={orderStyles.unitText}>출고단위: {product.출고단위}{product.단위}</Text>
+          </View>
+          <View style={orderStyles.actionsContainer}>
             <TouchableOpacity
-              key={index}
-              style={[orderStyles.categoryButton, selectedCategory === cat && orderStyles.categoryButtonActive]}
-              onPress={() => setSelectedCategory(cat)}
+              style={orderStyles.quantityButton}
+              onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
             >
-              <Text style={[orderStyles.categoryButtonText, selectedCategory === cat && orderStyles.categoryButtonTextActive]}>{cat}</Text>
+              <Minus color="black" size={18} />
             </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      <View style={orderStyles.productsSection}>
-        <Text style={orderStyles.sectionTitle}>상품 선택하기</Text>
-        <View style={orderStyles.productGrid}>
-          {filteredProducts.map(product => (
+            <TextInput
+              style={orderStyles.quantityInput}
+              value={selected.customQuantity}
+              keyboardType="numeric"
+              onChangeText={(text) => updateCustomQuantity(product.품목_id, text)}
+            />
             <TouchableOpacity
-              key={product.품목_id}
-              style={orderStyles.productCard}
-              onPress={() => addItem(product)}
+              style={orderStyles.quantityButton}
+              onPress={() => updateQuantity(product.품목_id, product.출고단위)}
             >
-              <Text style={orderStyles.productName}>{product.품목명}</Text>
+              <Plus color="black" size={18} />
             </TouchableOpacity>
-          ))}
+            <TouchableOpacity
+              style={orderStyles.removeButton}
+              onPress={() => removeItem(product.품목_id)}
+            >
+              <Trash2 color="white" size={18} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      );
+    } else {
+      // 미선택 상태면 "상품선택" 버튼 제공
+      return (
+        <View key={product.품목_id} style={orderStyles.selectedItemCard}>
+          <View style={orderStyles.selectedItemInfo}>
+            <Text style={orderStyles.selectedItemName}>{product.품목명}</Text>
+            <Text style={orderStyles.unitText}>출고단위: {product.출고단위}{product.단위}</Text>
+          </View>
+          <TouchableOpacity style={orderStyles.orderButton} onPress={() => addItem(product)}>
+            <Text style={orderStyles.orderButtonText}>상품선택</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+  };
 
-      {selectedItems.length > 0 && (
+  // 렌더링 분기: 선택 단계 vs. 확인 단계
+  if (!isConfirmation) {
+    // [상품 선택] 화면: 모든 상품을 동일 카드 스타일로 보여주고, 하단에 발주확인 버튼 배치
+    return (
+      <ScrollView style={orderStyles.container}>
+        <View style={orderStyles.categorySection}>
+          <Text style={orderStyles.sectionTitle}>품목 유형 선택</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={orderStyles.categoryList}>
+            <TouchableOpacity
+              style={[orderStyles.categoryButton, selectedCategory === null && orderStyles.categoryButtonActive]}
+              onPress={() => setSelectedCategory(null)}
+            >
+              <Text style={[orderStyles.categoryButtonText, selectedCategory === null && orderStyles.categoryButtonTextActive]}>전체</Text>
+            </TouchableOpacity>
+            {uniqueCategories.map((cat, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[orderStyles.categoryButton, selectedCategory === cat && orderStyles.categoryButtonActive]}
+                onPress={() => setSelectedCategory(cat)}
+              >
+                <Text style={[orderStyles.categoryButtonText, selectedCategory === cat && orderStyles.categoryButtonTextActive]}>{cat}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={orderStyles.productsSection}>
+          <Text style={orderStyles.sectionTitle}>상품 선택하기</Text>
+          <View style={orderStyles.productGrid}>
+            {filteredProducts.map(product => renderProductCard(product))}
+          </View>
+        </View>
+
+        <TouchableOpacity style={orderStyles.orderButton} onPress={() => setIsConfirmation(true)}>
+          <Text style={orderStyles.orderButtonText}>발주확인</Text>
+        </TouchableOpacity>
+
+        {/* 각 아이템별 오류 메시지 */}
+        {selectedItems.map(item => (
+          item.error && (
+            <Text key={`${item.품목_id}_err`} style={orderStyles.errorText}>
+              {item.품목명}: {item.error}
+            </Text>
+          )
+        ))}
+      </ScrollView>
+    );
+  } else {
+    // [발주 확인] 화면: 선택한 상품만 표시하며, 최종 발주 요청 버튼 제공
+    return (
+      <ScrollView style={orderStyles.container}>
         <View style={orderStyles.selectedItemsSection}>
-          <Text style={orderStyles.sectionTitle}>선택된 상품</Text>
+          <Text style={orderStyles.sectionTitle}>선택한 상품 확인</Text>
           {selectedItems.map(item => (
             <View key={item.품목_id} style={orderStyles.selectedItemCard}>
               <View style={orderStyles.selectedItemInfo}>
                 <Text style={orderStyles.selectedItemName}>{item.품목명}</Text>
-                <Text style={orderStyles.selectedItemStock}>(출고단위: {item.출고단위}{item.단위})</Text>
+                {/* 사용자가 입력한 customQuantity 값 그대로 표시 */}
+                <Text style={orderStyles.unitText}>
+                  수량: {item.customQuantity} {item.단위}
+                </Text>
               </View>
-              <View style={orderStyles.quantityControls}>
-                <TouchableOpacity style={orderStyles.quantityButton} onPress={() => updateQuantity(item.품목_id, -item.출고단위)}>
-                  <Minus color="black" size={24} />
-                </TouchableOpacity>
-                <TextInput
-                  style={orderStyles.quantityInput}
-                  value={item.customQuantity}
-                  keyboardType="numeric"
-                  onChangeText={(text) => updateCustomQuantity(item.품목_id, text)}
-                />
-                <TouchableOpacity style={orderStyles.quantityButton} onPress={() => updateQuantity(item.품목_id, item.출고단위)}>
-                  <Plus color="black" size={24} />
-                </TouchableOpacity>
-                <TouchableOpacity style={orderStyles.removeButton} onPress={() => removeItem(item.품목_id)}>
-                  <Trash2 color="white" size={24} />
-                </TouchableOpacity>
-              </View>
-              {item.error && <Text style={orderStyles.errorText}>{item.error}</Text>}
             </View>
           ))}
           <TouchableOpacity style={orderStyles.orderButton} onPress={handleOrderSubmit}>
-            <Text style={orderStyles.orderButtonText}>발주 요청하기</Text>
+            <Text style={orderStyles.orderButtonText}>발주요청하기</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[orderStyles.orderButton, { backgroundColor: '#999', marginTop: 10 }]} onPress={() => setIsConfirmation(false)}>
+            <Text style={orderStyles.orderButtonText}>뒤로가기</Text>
           </TouchableOpacity>
         </View>
-      )}
-    </ScrollView>
-  );
+      </ScrollView>
+    );
+  }
 };
 
 const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeName }) => {
@@ -283,6 +340,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
   );
 };
 
+// 메인 레이아웃 스타일
 const styles = StyleSheet.create({
   dashboardContainer: {
     flex: 1,
@@ -324,9 +382,11 @@ const styles = StyleSheet.create({
   },
 });
 
+// 발주 화면 스타일 (orderStyles)
 const orderStyles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
+    flex: 1,
   },
   sectionTitle: {
     fontSize: 20,
@@ -363,94 +423,86 @@ const orderStyles = StyleSheet.create({
   productGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 12,
-  },
-  productCard: {
-    width: '46%',
-    margin: '2%',
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-    alignItems: 'center',
-  },
-  productName: {
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 4,
+    paddingHorizontal: 5,
+    justifyContent: 'space-between',
   },
   selectedItemsSection: {
     paddingVertical: 16,
+    paddingHorizontal: 16,
   },
   selectedItemCard: {
-    flexDirection: 'row',
-    padding: 12,
-    marginHorizontal: 16,
-    marginBottom: 8,
+    width: '48%',
+    minHeight: 120,
+    marginBottom: 12,
     borderRadius: 8,
     backgroundColor: '#f0f0f0',
-    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
   },
   selectedItemInfo: {
-    flex: 1,
-    marginLeft: 12,
+    marginBottom: 8,
   },
   selectedItemName: {
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 2,
   },
-  selectedItemStock: {
+  unitText: {
     fontSize: 14,
     color: '#666',
   },
-  quantityControls: {
+  actionsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 6,
   },
   quantityButton: {
-    width: 40,
-    height: 40,
+    width: 28,
+    height: 28,
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 4,
+    marginHorizontal: 2,
   },
   quantityInput: {
-    width: 60,
-    height: 40,
+    width: 40,
+    height: 28,
     borderColor: '#ccc',
     borderWidth: 1,
     textAlign: 'center',
-    marginHorizontal: 4,
     borderRadius: 4,
+    marginHorizontal: 2,
+    fontSize: 14,
+    padding: 0,
+  },
+  removeButton: {
+    width: 28,
+    height: 28,
+    backgroundColor: '#ef4444',
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
   },
   errorText: {
     color: 'red',
-    fontSize: 12,
-    marginLeft: 12,
-  },
-  removeButton: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#ef4444',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
+    fontSize: 13,
+    marginLeft: 16,
+    marginBottom: 4,
   },
   orderButton: {
     backgroundColor: '#3b82f6',
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 24,
-    paddingVertical: 16,
+    marginTop: 8,
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   orderButtonText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

@@ -4,6 +4,8 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Store
 from .serializers import StoreLoginSerializer
+from rest_framework import generics
+from .serializers import StoreListSerializer
 
 class StoreLoginView(APIView):
     def post(self, request):
@@ -20,3 +22,7 @@ class StoreLoginView(APIView):
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class StoreListView(generics.ListAPIView):
+    queryset = Store.objects.all()
+    serializer_class = StoreListSerializer

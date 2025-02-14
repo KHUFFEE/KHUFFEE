@@ -1,4 +1,3 @@
-// frontend/khuweb/src/pages/Item.js
 import React, { useEffect, useState } from "react";
 import { fetchItems, fetchSuppliers, addItem, deleteItems, updateItem } from "../api/api";
 import "../styles/Item.css";
@@ -14,6 +13,19 @@ const Item = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   // 편집 중 변경된 값을 저장하는 객체, key: 품목_id, value: 수정된 데이터
   const [editedItems, setEditedItems] = useState({});
+  // 정렬 상태: 각 열에 대해 null, "asc", "desc" 중 하나  
+  // → 기본 default값: 모든 열 오름차순
+  const [sortCriteria, setSortCriteria] = useState({
+    품목명: "asc",
+    협력사명: "asc",
+    종류: "asc",
+  });
+  /*  
+    사용자가 정렬 버튼을 누른 순서를 관리하는 배열입니다.
+    초기에는 사용자가 클릭하기 전이므로 빈 배열로 두고,
+    정렬 시 manualSortOrder가 비어있으면 기본순서(["협력사명", "종류", "품목명"])를 사용합니다.
+  */
+  const [manualSortOrder, setManualSortOrder] = useState([]);
   // 여러 제품을 추가할 수 있도록 newItems 배열로 상태 관리 (초기 1행)
   const [newItems, setNewItems] = useState([
     {
@@ -22,7 +34,7 @@ const Item = () => {
       종류: "",
       규격: "",
       단위: "",
-      입고단가: "",
+      입고단가: "", // 자동 계산됨
       입고단위: "",
       입고단위단가: "",
       출고단위: ""
@@ -34,6 +46,7 @@ const Item = () => {
     const getItems = async () => {
       try {
         const data = await fetchItems();
+        // API로 받아온 순서는 그대로 저장; 화면에서는 정렬된 결과의 인덱스로 번호를 표시
         setItems(data);
       } catch (err) {
         setError("Failed to load items");
@@ -55,17 +68,78 @@ const Item = () => {
     getSuppliers();
   }, []);
 
-  // 입력값 변경 핸들러 (추가 팝업)
+  // 정렬 토글 함수
+  const toggleSort = (column) => {
+    setSortCriteria((prev) => {
+      const current = prev[column];
+      let next;
+      if (current === null) next = "asc";
+      else if (current === "asc") next = "desc";
+      else next = null;
+      const newCriteria = { ...prev, [column]: next };
+
+      // 항상 해당 열을 manualSortOrder에서 제거한 후, 
+      // null이 아니라면 (즉, 정렬 활성 상태라면) 배열의 끝에 추가하여
+      // 사용자가 정렬 버튼을 누른 순서를 반영합니다.
+      setManualSortOrder((prevOrder) => {
+        let newOrder = prevOrder.filter((col) => col !== column);
+        if (next !== null) {
+          newOrder.push(column);
+        }
+        return newOrder;
+      });
+
+      return newCriteria;
+    });
+  };
+
+  // 정렬 함수: manualSortOrder가 있으면 그 순서를, 없으면 기본 순서(["협력사명", "종류", "품목명"])를 사용
+  const getSortedItems = () => {
+    let sorted = [...items];
+    const activeOrder = 
+      (manualSortOrder.length > 0 ? manualSortOrder : ["협력사명", "종류", "품목명"])
+        .filter((col) => sortCriteria[col] !== null);
+    sorted.sort((a, b) => {
+      for (let col of activeOrder) {
+        const order = sortCriteria[col];
+        let aVal = "";
+        let bVal = "";
+        if (col === "협력사명") {
+          aVal = suppliers.find((s) => s.협력사_id === a.협력사_id)?.협력사명 || "";
+          bVal = suppliers.find((s) => s.협력사_id === b.협력사_id)?.협력사명 || "";
+        } else {
+          aVal = a[col] || "";
+          bVal = b[col] || "";
+        }
+        const comp = aVal.localeCompare(bVal, undefined, { numeric: true });
+        if (comp !== 0) return order === "asc" ? comp : -comp;
+      }
+      return 0;
+    });
+    return sorted;
+  };
+
+  const sortedItems = getSortedItems();
+
+  // 입력값 변경 핸들러 (제품 추가 팝업)
   const handleInputChange = (index, e) => {
     const { name, value } = e.target;
     setNewItems((prev) => {
       const updatedItems = [...prev];
       updatedItems[index] = { ...updatedItems[index], [name]: value };
+      // 입고단가는 자동 계산
+      const unit = parseFloat(updatedItems[index]["입고단위"]);
+      const unitPrice = parseFloat(updatedItems[index]["입고단위단가"]);
+      if (!isNaN(unit) && unit !== 0 && !isNaN(unitPrice)) {
+        updatedItems[index]["입고단가"] = (unitPrice / unit).toFixed(2);
+      } else {
+        updatedItems[index]["입고단가"] = "";
+      }
       return updatedItems;
     });
   };
 
-  // 삭제 모드일 때 체크박스 선택/해제 핸들러
+  // 삭제 모드 체크박스 핸들러
   const handleCheckboxChange = (e, itemId) => {
     if (e.target.checked) {
       setSelectedItems((prev) => [...prev, itemId]);
@@ -74,7 +148,7 @@ const Item = () => {
     }
   };
 
-  // 제품 삭제(비활성화)
+  // 제품 삭제
   const handleDelete = async () => {
     if (selectedItems.length === 0) {
       alert("삭제할 품목을 선택해주세요.");
@@ -82,7 +156,6 @@ const Item = () => {
     }
     try {
       await deleteItems(selectedItems);
-      // 삭제 후, 상태에서 해당 품목 제거
       setItems((prev) => prev.filter((item) => !selectedItems.includes(item.품목_id)));
       setSelectedItems([]);
       setIsDeleteMode(false);
@@ -91,7 +164,7 @@ const Item = () => {
     }
   };
 
-  // 제품 추가 (여러 행 추가)
+  // 제품 추가
   const handleSubmit = async () => {
     try {
       for (const newItem of newItems) {
@@ -99,7 +172,6 @@ const Item = () => {
         setItems((prev) => [...prev, addedItem]);
       }
       setShowPopup(false);
-      // 입력값 초기화 (한 행으로 초기화)
       setNewItems([
         {
           품목명: "",
@@ -118,7 +190,7 @@ const Item = () => {
     }
   };
 
-  // 행 추가 버튼 핸들러 (추가 팝업)
+  // 행 추가 (제품 추가 팝업)
   const handleAddRow = () => {
     setNewItems((prev) => [
       ...prev,
@@ -136,16 +208,15 @@ const Item = () => {
     ]);
   };
 
-  // 행 삭제 버튼 핸들러 (추가 팝업, 최소 1행은 남도록)
+  // 행 삭제 (제품 추가 팝업)
   const handleRemoveRow = () => {
     if (newItems.length > 1) {
       setNewItems((prev) => prev.slice(0, prev.length - 1));
     }
   };
 
-  // 수정 모드 토글 핸들러
+  // 수정 모드 토글
   const handleEditToggle = () => {
-    // 편집 모드 시작 시 기존 items 데이터를 editedItems에 복사
     if (!isEditMode) {
       const initialEdited = {};
       items.forEach((item) => {
@@ -159,36 +230,39 @@ const Item = () => {
           입고단가: item.입고단가,
           입고단위: item.입고단위,
           입고단위단가: item.입고단위단가,
-          출고단위: item.출고단위
+          출고단위: item.출고단위,
         };
       });
       setEditedItems(initialEdited);
-      // 만약 삭제 모드가 켜져있다면 끔
       if (isDeleteMode) setIsDeleteMode(false);
     }
     setIsEditMode((prev) => !prev);
   };
 
-  // 편집 중인 데이터 변경 핸들러
+  // 수정 모드 핸들러 (입고단위, 입고단위단가 변경 시 자동 계산)
   const handleEditChange = (itemId, field, value) => {
-    setEditedItems((prev) => ({
-      ...prev,
-      [itemId]: {
-        ...prev[itemId],
-        [field]: value
+    setEditedItems((prev) => {
+      const updatedItem = { ...prev[itemId], [field]: value };
+      if (field === "입고단위" || field === "입고단위단가") {
+        const unit = parseFloat(updatedItem["입고단위"]);
+        const unitPrice = parseFloat(updatedItem["입고단위단가"]);
+        if (!isNaN(unit) && unit !== 0 && !isNaN(unitPrice)) {
+          updatedItem["입고단가"] = (unitPrice / unit).toFixed(2);
+        } else {
+          updatedItem["입고단가"] = "";
+        }
       }
-    }));
+      return { ...prev, [itemId]: updatedItem };
+    });
   };
 
-  // 수정 완료 버튼 핸들러
+  // 수정 완료
   const handleEditSubmit = async () => {
     try {
-      // 수정된 각 품목에 대해 업데이트 API 호출
       const updatedItems = { ...editedItems };
       for (const itemId in updatedItems) {
         const updatedData = updatedItems[itemId];
         const res = await updateItem(updatedData);
-        // 업데이트 성공 시 items 배열에도 반영
         setItems((prev) =>
           prev.map((item) => (item.품목_id === itemId ? { ...item, ...res } : item))
         );
@@ -205,12 +279,17 @@ const Item = () => {
       <div className="header">
         <h2>제품 관리</h2>
         <div className="controls">
-          <button onClick={() => setShowPopup(true)} className="add-button">
+          <button
+            onClick={() => setShowPopup(true)}
+            className="add-button"
+            disabled={isEditMode || isDeleteMode}
+          >
             + 제품 추가
           </button>
           <button
             onClick={handleEditToggle}
-            className="edit-button"  // 초록색 수정 버튼
+            className="edit-button"
+            disabled={isDeleteMode}
           >
             {isEditMode ? "취소" : "수정"}
           </button>
@@ -220,6 +299,7 @@ const Item = () => {
               if (isDeleteMode) setSelectedItems([]);
             }}
             className="delete-button"
+            disabled={isEditMode}
           >
             {isDeleteMode ? "취소" : "삭제"}
           </button>
@@ -228,15 +308,42 @@ const Item = () => {
       <hr className="divider" />
       {error && <p className="error">{error}</p>}
 
-      {/* 메인 품목 테이블 */}
+      {/* 정렬 가능한 헤더 */}
       <table className="item-table">
         <thead>
           <tr>
             {isDeleteMode && <th className="narrow-col">선택</th>}
             <th>번호</th>
-            <th>품목명</th>
-            <th>협력사명</th>
-            <th>종류</th>
+            <th>
+              품목명
+              <button className="sort-btn" onClick={() => toggleSort("품목명")}>
+                {sortCriteria.품목명 === "asc"
+                  ? "▲"
+                  : sortCriteria.품목명 === "desc"
+                  ? "▼"
+                  : "—"}
+              </button>
+            </th>
+            <th>
+              협력사명
+              <button className="sort-btn" onClick={() => toggleSort("협력사명")}>
+                {sortCriteria.협력사명 === "asc"
+                  ? "▲"
+                  : sortCriteria.협력사명 === "desc"
+                  ? "▼"
+                  : "—"}
+              </button>
+            </th>
+            <th>
+              종류
+              <button className="sort-btn" onClick={() => toggleSort("종류")}>
+                {sortCriteria.종류 === "asc"
+                  ? "▲"
+                  : sortCriteria.종류 === "desc"
+                  ? "▼"
+                  : "—"}
+              </button>
+            </th>
             <th>규격</th>
             <th>단위</th>
             <th>입고단가</th>
@@ -246,7 +353,7 @@ const Item = () => {
           </tr>
         </thead>
         <tbody>
-          {items.map((item, index) => {
+          {sortedItems.map((item, index) => {
             const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id);
             return (
               <tr key={item.품목_id}>
@@ -259,6 +366,7 @@ const Item = () => {
                     />
                   </td>
                 )}
+                {/* 번호는 정렬된 배열의 인덱스로 1부터 연속 표시 */}
                 <td>{index + 1}</td>
                 <td>
                   {isEditMode ? (
@@ -294,13 +402,17 @@ const Item = () => {
                 </td>
                 <td>
                   {isEditMode ? (
-                    <input
-                      type="text"
+                    <select
                       value={editedItems[item.품목_id]?.종류 || ""}
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "종류", e.target.value)
                       }
-                    />
+                    >
+                      <option value="">-- 선택하세요 --</option>
+                      <option value="소모품">소모품</option>
+                      <option value="고체류">고체류</option>
+                      <option value="액체류">액체류</option>
+                    </select>
                   ) : (
                     item.종류
                   )}
@@ -331,11 +443,25 @@ const Item = () => {
                     item.단위
                   )}
                 </td>
-                <td>{item.입고단가}</td>
                 <td>
                   {isEditMode ? (
                     <input
                       type="number"
+                      step="0.01"
+                      name="입고단가"
+                      value={editedItems[item.품목_id]?.입고단가}
+                      disabled
+                      className="calc-input"
+                    />
+                  ) : (
+                    <span>{item.입고단가}</span>
+                  )}
+                </td>
+                <td>
+                  {isEditMode ? (
+                    <input
+                      type="number"
+                      name="입고단위"
                       value={editedItems[item.품목_id]?.입고단위 || ""}
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "입고단위", e.target.value)
@@ -349,6 +475,7 @@ const Item = () => {
                   {isEditMode ? (
                     <input
                       type="number"
+                      name="입고단위단가"
                       value={editedItems[item.품목_id]?.입고단위단가 || ""}
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "입고단위단가", e.target.value)
@@ -362,6 +489,7 @@ const Item = () => {
                   {isEditMode ? (
                     <input
                       type="number"
+                      name="출고단위"
                       value={editedItems[item.품목_id]?.출고단위 || ""}
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "출고단위", e.target.value)
@@ -450,12 +578,16 @@ const Item = () => {
                         </select>
                       </td>
                       <td>
-                        <input
-                          type="text"
+                        <select
                           name="종류"
                           value={item.종류}
                           onChange={(e) => handleInputChange(index, e)}
-                        />
+                        >
+                          <option value="">-- 선택하세요 --</option>
+                          <option value="소모품">소모품</option>
+                          <option value="고체류">고체류</option>
+                          <option value="액체류">액체류</option>
+                        </select>
                       </td>
                       <td>
                         <input
@@ -474,12 +606,14 @@ const Item = () => {
                         />
                       </td>
                       <td>
+                        {/* 제품 추가 팝업에서는 입고단가에 회색 배경 적용 */}
                         <input
                           type="number"
                           step="0.01"
                           name="입고단가"
                           value={item.입고단가}
-                          onChange={(e) => handleInputChange(index, e)}
+                          disabled
+                          className="calc-input"
                         />
                       </td>
                       <td>

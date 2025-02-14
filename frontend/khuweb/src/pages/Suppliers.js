@@ -78,6 +78,7 @@ const Suppliers = () => {
                 <thead>
                     <tr>
                         {isDeleteMode && <th className="narrow-col">선택</th>}
+                        <th>번호</th>
                         <th>협력사명</th>
                     </tr>
                 </thead>
@@ -93,6 +94,7 @@ const Suppliers = () => {
                                     />
                                 </td>
                             )}
+                            <td>{index + 1}</td>
                             <td>{supplier.협력사명}</td>
                         </tr>
                     ))}

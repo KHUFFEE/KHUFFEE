@@ -15,3 +15,8 @@ class StoreLoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("비밀번호가 올바르지 않습니다.")
 
         return store
+
+class StoreListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Store
+        fields = ('매장_id', '매장명')

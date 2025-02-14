@@ -8,10 +8,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  padding: 12px 20px;
   background-color: #ffffff;
   color: #333;
-  font-size: 18px;
+  font-size: 20px;
   position: relative; /* 헤더 내부에 선을 배치하기 위한 설정 */
 }
 
@@ -20,7 +20,7 @@ body {
   bottom: 0; /* 헤더의 아래쪽에 선 위치 */
   left: 0;
   width: 100%; /* 화면 너비 전체 */
-  height: 0.5px; /* 선의 두께 */
+  height: 2px; /* 선의 두께 */
   background-color: #ddd; /* 선 색상 */
 }
 
@@ -107,4 +107,153 @@ body {
   padding: 20px;
   overflow-y: auto;
   background-color: #ffffff; /* 메인 화면 배경도 하얀색으로 유지 */
+}
+
+.add-button,
+.delete-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px 16px;
+    background-color: white;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.add-button {
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.add-button:hover,
+.delete-button:hover {
+    background-color: #f7f7f7;
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.delete-button {
+    color: #d9363e;
+    border-color: #d9363e;
+}
+
+.delete-button:hover {
+    background-color: #ffe6e6;
+    color: #d9363e;
+    border-color: #d9363e;
+}
+
+/* 선택 체크박스 열 크기 축소 */
+.narrow-col {
+    width: 40px;
+}
+
+/* 삭제 확인 버튼 */
+.delete-confirm-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px 16px;
+    margin-top: 20px;
+    color: #d9363e;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-color: #d9363e;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    float: right;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.delete-confirm-button:hover {
+    background-color: #ffe6e6;
+}
+
+/* 팝업 스타일 */
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.popup-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.popup-cancel,
+.popup-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: white;
+    color: #555;
+    transition: all 0.3s ease;
+}
+
+.popup-cancel:hover {
+    background-color: #ffe6e6;
+    color: #d9363e;
+    border-color: #d9363e;
+}
+
+.popup-confirm:hover {
+    background-color: #f7f7f7;
+    color: #007bff;
+    border-color: #007bff;
+}
+
+/* 버튼 크기 조정 */
+.add-button {
+    padding: 10px 20px;
+}
+
+.delete-button {
+    padding: 10px 18px;
+}
+
+.popup-buttons button {
+    width: 120px;
+    justify-content: center;
+}
+
+/* 선 크기 늘리기 */
+.divider {
+  width: 100%; /* 전체 폭 */
+  margin: 10px 0;
+  border: none;
+  border-top: 0.5px solid #aaa; /* 선을 더 두껍게 */
 }

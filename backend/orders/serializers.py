@@ -14,3 +14,12 @@ class StoreOrderCreateSerializer(serializers.ModelSerializer):
         today = date.today()
         validated_data['기간'] = get_기간_string(today)
         return super().create(validated_data)
+
+class StoreOrderListSerializer(serializers.ModelSerializer):
+    # 외래키 필드의 pk 값을 노출
+    매장_id = serializers.CharField(source='매장_id.매장_id')
+    품목_id = serializers.CharField(source='품목_id.품목_id')
+    
+    class Meta:
+        model = StoreOrder
+        fields = ('매장_id', '품목_id', '기간', '매장_발주량')

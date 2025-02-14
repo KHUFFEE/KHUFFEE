@@ -21,10 +21,12 @@ const Item = () => {
     return (
         <div className="item-container">
             <h2>제품 관리</h2>
+            <hr className="divider" />
             {error && <p className="error">{error}</p>}
             <table className="item-table">
                 <thead>
                     <tr>
+                        <th>번호</th>
                         <th>품목명</th>
                         <th>협력사명</th>
                         <th>종류</th>
@@ -39,6 +41,7 @@ const Item = () => {
                 <tbody>
                     {items.map((item, index) => (
                         <tr key={index}>
+                            <td>{index + 1}</td>
                             <td>{item.품목명}</td>
                             <td>{item.협력사명}</td>
                             <td>{item.종류}</td>

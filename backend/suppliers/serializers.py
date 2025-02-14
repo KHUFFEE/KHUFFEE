@@ -12,6 +12,8 @@ class ItemSerializer(serializers.ModelSerializer):
 
 
 class SupplierSerializer(serializers.ModelSerializer):
+    협력사_id = serializers.CharField(read_only=True)  # 읽기 전용으로 설정
+    
     class Meta:
         model = Supplier
         fields = ['협력사_id', '협력사명']

@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #ffffff; /* 배경을 하얀색으로 변경 */
+  background-color: #ffffff;
 }
 
 .app-header {
@@ -12,21 +12,21 @@ body {
   background-color: #ffffff;
   color: #333;
   font-size: 20px;
-  position: relative; /* 헤더 내부에 선을 배치하기 위한 설정 */
+  position: relative;
 }
 
 .header-divider {
   position: absolute;
-  bottom: 0; /* 헤더의 아래쪽에 선 위치 */
+  bottom: 0;
   left: 0;
-  width: 100%; /* 화면 너비 전체 */
-  height: 2px; /* 선의 두께 */
-  background-color: #ddd; /* 선 색상 */
+  width: 100%;
+  height: 2px;
+  background-color: #ddd;
 }
 
 .app-container {
   display: flex;
-  height: calc(100vh - 60px); /* 헤더 높이 제외 */
+  height: calc(100vh - 60px);
 }
 
 .app-sidebar {
@@ -34,7 +34,7 @@ body {
   background-color: #f8f9fa;
   padding: 20px;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  height: 100%; /* 전체 높이 */
+  height: 100%;
 }
 
 .logout-btn {
@@ -66,15 +66,15 @@ body {
 
 .app-sidebar a {
   text-decoration: none;
-  color: #333; /* 텍스트는 어두운 회색 */
+  color: #333;
   padding: 10px 15px;
   border-radius: 5px;
   transition: background-color 0.2s;
 }
 
 .app-sidebar a:hover {
-  background-color: #d3e2f1; /* 탭 hover 시 연한 파란색 배경 */
-  color: #007bff; /* 텍스트 색도 변경 */
+  background-color: #d3e2f1;
+  color: #007bff;
 }
 
 .toggle-menu {
@@ -89,8 +89,8 @@ body {
 }
 
 .toggle-menu:hover {
-  background-color: #d3e2f1; /* 탭 hover 시 연한 파란색 배경 */
-  color: #007bff; /* 텍스트 색도 변경 */
+  background-color: #d3e2f1;
+  color: #007bff;
 }
 
 .submenu {
@@ -104,156 +104,86 @@ body {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background-color: #ffffff; /* 메인 화면 배경도 하얀색으로 유지 */
+  background-color: #ffffff;
 }
 
 .add-button,
 .delete-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 10px 16px;
-    background-color: white;
-    color: #555;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 16px;
+  background-color: white;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .add-button {
-    color: #007bff;
-    border-color: #007bff;
+  color: #007bff;
+  border-color: #007bff;
 }
 
 .add-button:hover,
 .delete-button:hover {
-    background-color: #f7f7f7;
-    color: #007bff;
-    border-color: #007bff;
+  background-color: #f7f7f7;
+  color: #007bff;
+  border-color: #007bff;
 }
 
 .delete-button {
-    color: #d9363e;
-    border-color: #d9363e;
+  color: #d9363e;
+  border-color: #d9363e;
 }
 
 .delete-button:hover {
-    background-color: #ffe6e6;
-    color: #d9363e;
-    border-color: #d9363e;
+  background-color: #ffe6e6;
+  color: #d9363e;
+  border-color: #d9363e;
 }
 
-/* 선택 체크박스 열 크기 축소 */
 .narrow-col {
-    width: 40px;
+  width: 40px;
 }
 
-/* 삭제 확인 버튼 */
+/* 정렬 버튼 */
+.sort-btn {
+  margin-left: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* 삭제 확인 버튼 (오른쪽 하단 고정) */
 .delete-confirm-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 10px 16px;
-    margin-top: 20px;
-    color: #d9363e;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-color: #d9363e;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    float: right;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 16px;
+  color: #d9363e;
+  background-color: white;
+  border: 1px solid #d9363e;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .delete-confirm-button:hover {
-    background-color: #ffe6e6;
-}
-
-/* 팝업 스타일 */
-.popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.popup-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    width: 300px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.popup-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-}
-
-.popup-cancel,
-.popup-confirm {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 10px 16px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    background-color: white;
-    color: #555;
-    transition: all 0.3s ease;
-}
-
-.popup-cancel:hover {
-    background-color: #ffe6e6;
-    color: #d9363e;
-    border-color: #d9363e;
-}
-
-.popup-confirm:hover {
-    background-color: #f7f7f7;
-    color: #007bff;
-    border-color: #007bff;
-}
-
-/* 버튼 크기 조정 */
-.add-button {
-    padding: 10px 20px;
-}
-
-.delete-button {
-    padding: 10px 18px;
-}
-
-.popup-buttons button {
-    width: 120px;
-    justify-content: center;
-}
-
-/* 선 크기 늘리기 */
-.divider {
-  width: 100%; /* 전체 폭 */
-  margin: 10px 0;
-  border: none;
-  border-top: 0.5px solid #aaa; /* 선을 더 두껍게 */
+  background-color: #ffe6e6;
 }
 
 /* 수정 버튼 (상단) */
@@ -271,7 +201,6 @@ body {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  /* margin-right: 10px;  <-- 제거 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -281,31 +210,47 @@ body {
   border-color: #28a745;
 }
 
-
-/* 수정 완료 버튼 (우측 하단 고정) */
+/* 수정 완료 버튼 (오른쪽 하단 고정) */
 .edit-confirm-button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 10px 16px;
-    background-color: white;
-    color: #28a745;
-    border: 1px solid #28a745;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 16px;
+  background-color: white;
+  color: #28a745;
+  border: 1px solid #28a745;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .edit-confirm-button:hover {
-    background-color: #f7f7f7;
-    color: #28a745;
-    border-color: #28a745;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #f7f7f7;
+  color: #28a745;
+  border-color: #28a745;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 스핀 버튼 제거 (모든 number input) */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* 기본 페이지의 입고단가 텍스트 스타일 */
+.item-table td span {
+  display: inline-block;
+  width: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+  font-size: inherit;
 }

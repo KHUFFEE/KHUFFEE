@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchSuppliers, addSupplier, deleteSuppliers } from "../api/api";
 import "../styles/Suppliers.css";
+import * as XLSX from "xlsx";
 
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -61,23 +62,25 @@ const Suppliers = () => {
     );
   };
 
-  // Excel 다운로드 핸들러
+  // Excel 다운로드 핸들러 (협력사 목록 XLSX 다운로드)
   const handleDownloadExcel = () => {
-    // CSV 형식으로 협력사명만 추출
-    const header = "협력사명\n";
-    const rows = suppliers.map((supplier) => supplier.협력사명).join("\n");
-    // UTF-8 BOM 추가
-    const csvContent = "\uFEFF" + header + rows;
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "협력사 목록.excel");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    // 협력사 데이터를 객체 배열로 생성 (각 객체가 한 행)
+    const data = suppliers.map(supplier => ({
+      "협력사명": supplier.협력사명
+    }));
 
+    // 워크시트 생성 (헤더 순서를 명시)
+    const worksheet = XLSX.utils.json_to_sheet(data, {
+      header: ["협력사명"]
+    });
+
+    // 새 워크북 생성 후 워크시트 추가
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+    // XLSX 파일로 저장 (파일명: "협력사 목록.xlsx", 파일 형식: xlsx)
+    XLSX.writeFile(workbook, "협력사 목록.xlsx", { bookType: "xlsx" });
+  };
 
   return (
     <div className="suppliers-container">

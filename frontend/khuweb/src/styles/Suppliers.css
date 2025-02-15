@@ -12,14 +12,6 @@
   font-weight: bold;
 }
 
-/* 새 컨테이너: 좌측 다운로드 버튼과 우측 기존 컨트롤들을 모두 감싸는 영역 */
-.controls-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: -5px; /* 필요시 위쪽 간격 조정 */
-}
-
 /* 기존 컨트롤 영역 (우측) */
 .controls {
   display: flex;
@@ -27,17 +19,37 @@
   justify-content: flex-end; /* 오른쪽 정렬 */
 }
 
-/* 나머지 Suppliers.css 기존 스타일은 그대로 유지 */
 .suppliers-table {
   width: 35%; /* 테이블 크기를 줄임 */
-  border-collapse: collapse;
+  border-collapse: separate; /* separate로 변경하여 행 간격 적용 */
+  border-spacing: 0 1px;      /* 행 사이에 1px 간격 */
   margin-top: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   overflow: hidden;
   text-align: left;
-  margin-left: 0; /* 테이블 왼쪽으로 정렬 */
+  margin-left: 0; /* 테이블 왼쪽 정렬 */
 }
+
+/* 헤더 행에 입체감 효과 추가 */
+.suppliers-table thead tr {
+  background-color: #f7f7f7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+/* 본문 행에 입체감 효과 추가 */
+.suppliers-table tbody tr {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+/* 마우스 오버 시 행이 살짝 올라가는 효과 */
+.suppliers-table tbody tr:hover {
+  transform: translateY(-4px);
+}
+
 
 .suppliers-table th,
 .suppliers-table td {
@@ -108,65 +120,10 @@
   gap: 10px;
 }
 
-/* Button Styles */
-.suppliers-add-button,
-.suppliers-delete-button {
-  padding: 10px 16px;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.suppliers-add-button {
-  color: #007bff;
-  border-color: #007bff;
-}
-
-.suppliers-add-button:hover,
-.suppliers-delete-button:hover {
-  background-color: #f7f7f7;
-  color: #007bff;
-  border-color: #007bff;
-}
-
-.suppliers-delete-button {
-  color: #d9363e;
-  border-color: #d9363e;
-}
-
-.suppliers-delete-button:hover {
-  background-color: #ffe6e6;
-  color: #d9363e;
-  border-color: #d9363e;
-}
-
 /* Error text */
 .suppliers-error {
   color: red;
   font-weight: bold;
 }
 
-/* Delete Confirm Button */
-.suppliers-delete-confirm-button {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 1000;
-  padding: 10px 16px;
-  color: #d9363e;
-  background-color: white;
-  border: 1px solid #d9363e;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
 
-.suppliers-delete-confirm-button:hover {
-  background-color: #ffe6e6;
-}

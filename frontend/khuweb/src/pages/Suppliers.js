@@ -88,7 +88,7 @@ const Suppliers = () => {
           </button>
           <button
             onClick={() => setShowPopup(true)}
-            className="suppliers-add-button"
+            className="add-button"
           >
             + 협력사 추가
           </button>
@@ -97,7 +97,7 @@ const Suppliers = () => {
               setIsDeleteMode((prev) => !prev);
               if (isDeleteMode) setSelectedSuppliers([]);
             }}
-            className="suppliers-delete-button"
+            className="delete-button"
           >
             {isDeleteMode ? "취소" : "삭제"}
           </button>
@@ -134,7 +134,7 @@ const Suppliers = () => {
         <button
           onClick={handleDeleteSuppliers}
           disabled={selectedSuppliers.length === 0}
-          className="suppliers-delete-confirm-button"
+          className="delete-confirm-button"
         >
           선택 삭제
         </button>

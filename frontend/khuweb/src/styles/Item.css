@@ -1,267 +1,287 @@
 .item-container {
-    padding: 0px;
-    max-width: 1250px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    text-align: left;
-  }
-  
-  /* 헤더를 좌측 제목과 우측 버튼으로 분리 */
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-  }
-  
-  /* 버튼 기본 스타일 (이미 적용된 스타일 유지) */
-  .add-button,
-  .edit-button,
-  .delete-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 10px 16px;
-    background-color: white;
-    color: #555;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  /* 개별 버튼 hover 효과 (이미 적용된 스타일 유지) */
-  .add-button {
-    color: #007bff;
-    border-color: #007bff;
-  }
-  .add-button:hover,
-  .delete-button:hover {
-    background-color: #f7f7f7;
-    color: #007bff;
-    border-color: #007bff;
-  }
-  .delete-button {
-    color: #d9363e;
-    border-color: #d9363e;
-  }
-  .delete-button:hover {
-    background-color: #ffe6e6;
-    color: #d9363e;
-    border-color: #d9363e;
-  }
-  
-  .item-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-    text-align: left;
-    margin-left: 0;
-  }
-  
-  .item-table th,
-  .item-table td {
-    border: 1px solid #ddd;
-    text-align: left;
-    padding: 12px;
-  }
-  
-  .item-table th {
-    background-color: #f7f7f7;
-    font-weight: bold;
-  }
-  
-  .error {
-    color: red;
-    font-weight: bold;
-  }
-  
-  .divider {
-    width: 100%;
-    margin: 10px 0;
-    border: none;
-    border-top: 0.5px solid #aaa;
-  }
-  
-  .item-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-  }
-  
-  .item-popup-content {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    width: 90%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    overflow: auto;
-  }
-  
-  .item-popup-buttons {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-  }
-  
-  .item-popup-form input,
-  .item-popup-form select {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 5px;
-    margin: 0;
-    border: 0.5px solid #aaa;
-    background-color: transparent;
-  }
-  
-  .item-popup-form input[type="number"] {
-    -moz-appearance: textfield;
-    appearance: textfield;
-  }
-  
-  .item-popup-form input[type="number"]::-webkit-inner-spin-button,
-  .item-popup-form input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  
-  .add-row-button {
-    margin-top: 10px;
-    width: 40px;
-    height: 40px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .add-row-button:hover {
-    background-color: #0056b3;
-  }
-  
-  .remove-row-button {
-    margin-top: 10px;
-    width: 40px;
-    height: 40px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 10px;
-  }
-  
-  .remove-row-button:hover {
-    background-color: #c82333;
-  }
-  
-  .add-row-container {
-    display: flex;
-    align-items: center;
-    margin-top: 10px;
-    gap: 10px;
-  }
-  
-  .row-action-label {
-    font-weight: bold;
-    font-size: 16px;
-  }
-  
-  .item-popup-form table {
-    table-layout: fixed;
-    width: 100%;
-  }
-  
-  .item-popup-form table td {
-    vertical-align: middle;
-    text-align: center;
-  }
-  
-  .item-popup-form table th,
-  .item-popup-form table td {
-    padding: 5px 15px;
-    text-align: left;
-  }
-  
-  .item-popup-form table th {
-    padding-left: 12px;
-  }
-  
-  .item-popup-form table col:nth-child(1) {
-    width: 10%;
-  }
-  .item-popup-form table col:nth-child(2) {
-    width: 10%;
-  }
-  .item-popup-form table col:nth-child(3) {
-    width: 10%;
-  }
-  .item-popup-form table col:nth-child(4) {
-    width: 10%;
-  }
-  .item-popup-form table col:nth-child(5) {
-    width: 10%;
-  }
-  .item-popup-form table col:nth-child(6) {
-    width: 10%;
-  }
-  .item-popup-form table col:nth-child(7) {
-    width: 10%;
-  }
-  .item-popup-form table col:nth-child(8) {
-    width: 10%;
-  }
-  .item-popup-form table col:nth-child(9) {
-    width: 10%;
-  }
-  
-  .item-popup-form input:focus,
-  .item-popup-form select:focus {
-    background-color: transparent;
-  }
-  
-  .item-table input,
-  .item-table select {
-    width: 100%;
-    box-sizing: border-box;
-    height: 30px;
-    padding: 4px;
-    margin: 0;
-    font-size: inherit;
-  }
-  
-  .item-table input[type="number"]::-webkit-inner-spin-button,
-  .item-table input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  
-  /* 제품 추가 팝업 내 입고단가 input: 회색 배경 */
-  .item-popup-form input[name="입고단가"] {
-    background-color: #f7f7f7;
-    color: #555;
-  }
-  
+  padding: 0px;
+  max-width: 1250px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  text-align: left;
+}
+
+/* 헤더를 좌측 제목과 우측 버튼으로 분리 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+/* 버튼 기본 스타일 (이미 적용된 스타일 유지) */
+.add-button,
+.edit-button,
+.delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 16px;
+  background-color: white;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* 개별 버튼 hover 효과 (이미 적용된 스타일 유지) */
+.add-button {
+  color: #007bff;
+  border-color: #007bff;
+}
+.add-button:hover,
+.delete-button:hover {
+  background-color: #f7f7f7;
+  color: #007bff;
+  border-color: #007bff;
+}
+.delete-button {
+  color: #d9363e;
+  border-color: #d9363e;
+}
+.delete-button:hover {
+  background-color: #ffe6e6;
+  color: #d9363e;
+  border-color: #d9363e;
+}
+
+.item-table {
+  width: 100%;
+  border-collapse: separate; /* separate로 변경하여 행 간격 적용 */
+  border-spacing: 0 1px;      /* 행 사이에 1px 간격 */
+  margin-top: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  text-align: left;
+  margin-left: 0;
+}
+
+/* 헤더 행에 입체감 효과 추가 */
+.item-table thead tr {
+  background-color: #f7f7f7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+/* 본문 행에 입체감 효과 추가 */
+.item-table tbody tr {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+/* 마우스 오버 시 헤더와 본문 행이 살짝 올라가는 효과 */
+.item-table tbody tr:hover {
+  transform: translateY(-4px);
+}
+
+
+
+.item-table th,
+.item-table td {
+  border: 1px solid #ddd;
+  text-align: left;
+  padding: 12px;
+}
+
+.item-table th {
+  background-color: #f7f7f7;
+  font-weight: bold;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}
+
+.divider {
+  width: 100%;
+  margin: 10px 0;
+  border: none;
+  border-top: 0.5px solid #aaa;
+}
+
+.item-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.item-popup-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  width: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  overflow: auto;
+}
+
+.item-popup-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.item-popup-form input,
+.item-popup-form select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px;
+  margin: 0;
+  border: 0.5px solid #aaa;
+  background-color: transparent;
+}
+
+.item-popup-form input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.item-popup-form input[type="number"]::-webkit-inner-spin-button,
+.item-popup-form input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.add-row-button {
+  margin-top: 10px;
+  width: 40px;
+  height: 40px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-row-button:hover {
+  background-color: #0056b3;
+}
+
+.remove-row-button {
+  margin-top: 10px;
+  width: 40px;
+  height: 40px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+}
+
+.remove-row-button:hover {
+  background-color: #c82333;
+}
+
+.add-row-container {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.row-action-label {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.item-popup-form table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.item-popup-form table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.item-popup-form table th,
+.item-popup-form table td {
+  padding: 5px 15px;
+  text-align: left;
+}
+
+.item-popup-form table th {
+  padding-left: 12px;
+}
+
+.item-popup-form table col:nth-child(1) {
+  width: 10%;
+}
+.item-popup-form table col:nth-child(2) {
+  width: 10%;
+}
+.item-popup-form table col:nth-child(3) {
+  width: 10%;
+}
+.item-popup-form table col:nth-child(4) {
+  width: 10%;
+}
+.item-popup-form table col:nth-child(5) {
+  width: 10%;
+}
+.item-popup-form table col:nth-child(6) {
+  width: 10%;
+}
+.item-popup-form table col:nth-child(7) {
+  width: 10%;
+}
+.item-popup-form table col:nth-child(8) {
+  width: 10%;
+}
+.item-popup-form table col:nth-child(9) {
+  width: 10%;
+}
+
+.item-popup-form input:focus,
+.item-popup-form select:focus {
+  background-color: transparent;
+}
+
+.item-table input,
+.item-table select {
+  width: 100%;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 4px;
+  margin: 0;
+  font-size: inherit;
+}
+
+.item-table input[type="number"]::-webkit-inner-spin-button,
+.item-table input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* 제품 추가 팝업 내 입고단가 input: 회색 배경 */
+.item-popup-form input[name="입고단가"] {
+  background-color: #f7f7f7;
+  color: #555;
+}

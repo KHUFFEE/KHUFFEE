@@ -1,52 +1,59 @@
-// app/(store)/main.tsx
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+} from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../(login)/index';
 import { Settings } from 'lucide-react-native';
 import StoreEmployeeDashboard from './StoreEmployeeDashboard';
-import SettingsModal from '../../src/components/ui/common/settingModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function StoreDashboardScreen() {
   const route = useRoute();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
   const { storeName } = route.params as { storeName: string };
 
-  // 모달 상태 관리
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // 설정 모달 상태
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  // 로그아웃 확인 모달 상태
+  const [showConfirmLogout, setShowConfirmLogout] = useState(false);
 
-  // 모달 열기/닫기 함수
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  // 설정 모달 열기/닫기
+  const openSettingsModal = () => setIsSettingsModalOpen(true);
+  const closeSettingsModal = () => setIsSettingsModalOpen(false);
 
-  // '설정 및 개인정보' 옵션 선택 핸들러
+  // "설정 및 개인정보" 버튼 동작
   const handleSettings = () => {
-    navigation.navigate('Settings', { storeName });
-    closeModal();
+    // 필요하다면 다른 로직을 수행하거나,
+    // 별도 모달을 열어 더 자세한 설정을 보여줄 수도 있습니다.
+    closeSettingsModal();
   };
 
-  // 로그아웃 핸들러 (로그아웃 확인 Alert 적용)
-  const handleLogout = () => {
-    Alert.alert(
-      '로그아웃',
-      '로그아웃하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '로그아웃',
-          onPress: () => {
-            // 필요한 경우 저장된 인증 토큰 제거(예: AsyncStorage.removeItem('token');)
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Login' as never }],
-            });
-          },
-        },
-      ],
-      { cancelable: true }
-    );
-    closeModal();
+  // 로그아웃 요청
+  const handleLogoutRequest = () => {
+    closeSettingsModal();
+    setShowConfirmLogout(true);
+  };
+
+  // 실제 로그아웃 실행
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('token'); // 인증 토큰 삭제
+      setShowConfirmLogout(false);
+
+      // 로그인 화면으로 이동 (네비게이션 스택 리셋)
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
+    }
   };
 
   return (
@@ -54,21 +61,63 @@ export default function StoreDashboardScreen() {
       {/* 상단 헤더 */}
       <View style={styles.storeNameContainer}>
         <Text style={styles.storeNameText}>{storeName} 매장</Text>
-        <TouchableOpacity onPress={openModal} style={styles.settingsIconContainer}>
+        <TouchableOpacity onPress={openSettingsModal} style={styles.settingsIconContainer}>
           <Settings size={24} color="#3b82f6" />
         </TouchableOpacity>
       </View>
 
-      {/* 대시보드 콘텐츠 */}
+      {/* 매장 직원 대시보드 영역 */}
       <StoreEmployeeDashboard storeName={storeName} />
 
-      {/* Settings Modal 추가 */}
-      <SettingsModal
-        visible={isModalOpen}
-        onClose={closeModal}
-        onLogout={handleLogout}
-        onSettings={handleSettings}
-      />
+      {/* 설정 모달 */}
+      <Modal
+        visible={isSettingsModalOpen}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeSettingsModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <TouchableOpacity style={styles.modalOption} onPress={handleSettings}>
+              <Text style={styles.modalOptionText}>설정 및 개인정보</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalOption} onPress={handleLogoutRequest}>
+              <Text style={styles.modalOptionText}>로그아웃</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalOption} onPress={closeSettingsModal}>
+              <Text style={styles.modalOptionText}>닫기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 로그아웃 확인 모달 */}
+      <Modal
+        visible={showConfirmLogout}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowConfirmLogout(false)}
+      >
+        <View style={styles.confirmOverlay}>
+          <View style={styles.confirmContainer}>
+            <Text style={styles.confirmTitle}>로그아웃</Text>
+            <Text style={styles.confirmMessage}>정말 로그아웃할까요?</Text>
+
+            {/* 로그아웃 버튼 */}
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <Text style={styles.logoutButtonText}>로그아웃</Text>
+            </TouchableOpacity>
+
+            {/* 닫기 버튼 */}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowConfirmLogout(false)}
+            >
+              <Text style={styles.closeButtonText}>닫기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -94,5 +143,78 @@ const styles = StyleSheet.create({
   },
   settingsIconContainer: {
     padding: 5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '80%',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 5,
+  },
+  modalOption: {
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  modalOptionText: {
+    fontSize: 18,
+    color: '#333',
+  },
+  confirmOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  confirmContainer: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+    elevation: 5,
+    alignItems: 'center',
+  },
+  confirmTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  confirmMessage: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  logoutButton: {
+    width: '100%',
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderColor: '#ccc',
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: 'red',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    width: '100%',
+    paddingVertical: 15,
+    marginTop: 8,
+    borderRadius: 8,
+    backgroundColor: '#f2f2f2',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

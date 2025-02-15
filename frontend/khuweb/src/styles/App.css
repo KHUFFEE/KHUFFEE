@@ -239,6 +239,42 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.title {
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+  margin-top: -5px; /* 필요시 위쪽 간격 조정 */
+}
+
+.download-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 16px;
+  background-color: white;
+  color: #008080;
+  border: 1px solid #008080;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.download-button:hover {
+  background-color: #f7f7f7;
+  color: #20B2AA;
+  border-color: #20B2AA;
+}
+
 /* 스핀 버튼 제거 (모든 number input) */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
@@ -254,3 +290,75 @@ input[type="number"]::-webkit-outer-spin-button {
   box-sizing: border-box;
   font-size: inherit;
 }
+
+.popup-cancel,
+.popup-confirm {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.popup-cancel {
+  background-color: #f7f7f7;
+  color: #555;
+}
+
+.popup-confirm {
+  background-color: #007bff;
+  color: white;
+}
+
+.popup-cancel:hover {
+  background-color: #e0e0e0;
+}
+
+.popup-confirm:hover {
+  background-color: #0056b3;
+}
+
+/* 팝업 알림 공용 스타일 */
+.alert-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.alert-popup-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.alert-popup-button {
+  margin-top: 20px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #007bff;
+  margin: 0 0 0 2px; /* 위, 오른쪽, 아래는 0, 왼쪽에 12px 마진 */
+  vertical-align: middle;
+}
+
+

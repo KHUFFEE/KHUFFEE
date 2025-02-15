@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchItems, fetchSuppliers, addItem, deleteItems, updateItem } from "../api/api";
 import "../styles/Item.css";
+import * as XLSX from "xlsx";
 
 const Item = () => {
   const [items, setItems] = useState([]);
@@ -282,62 +283,38 @@ const Item = () => {
     }
   };
 
-  // Excel 다운로드 핸들러 (제품 목록 CSV 다운로드)
+  // Excel 다운로드 핸들러 (제품 목록 XLSX 다운로드)
   const handleDownloadExcel = () => {
-    // CSV 헤더
-    const header = [
-      "품목명",
-      "협력사명",
-      "종류",
-      "규격",
-      "단위",
-      "입고단가",
-      "입고단위",
-      "입고단위단가",
-      "출고단위"
-    ];
-
-    // CSV 필드를 따옴표로 감싸는 함수 (쉼표, 따옴표 포함 필드 처리)
-    const quoteField = (field) => {
-      const escaped = String(field).replace(/"/g, '""'); // 내부 " -> ""
-      return `"${escaped}"`;
-    };
-
-    // 헤더 생성
-    const headerRow = header.map(quoteField).join(",");
-
-    // 데이터 생성
-    const rows = sortedItems.map(item => {
+    // 정렬된 제품 데이터를 객체 배열로 생성 (각 객체가 한 행을 나타냄)
+    const data = sortedItems.map(item => {
       const supplier = suppliers.find(s => s.협력사_id === item.협력사_id);
-      const 협력사명 = supplier ? supplier.협력사명 : "";
-      const fields = [
-        item.품목명,
-        협력사명,
-        item.종류,
-        item.규격,
-        item.단위,
-        item.입고단가,
-        item.입고단위,
-        item.입고단위단가,
-        item.출고단위
-      ].map(quoteField);
+      return {
+        "품목명": item.품목명,
+        "협력사명": supplier ? supplier.협력사명 : "",
+        "종류": item.종류,
+        "규격": item.규격,
+        "단위": item.단위,
+        "입고단가": item.입고단가,
+        "입고단위": item.입고단위,
+        "입고단위단가": item.입고단위단가,
+        "출고단위": item.출고단위
+      };
+    });
 
-      return fields.join(",");
-    }).join("\n");
+    // json_to_sheet 함수를 사용하여 워크시트 생성 (열 순서를 명시적으로 지정)
+    const worksheet = XLSX.utils.json_to_sheet(data, {
+      header: ["품목명", "협력사명", "종류", "규격", "단위", "입고단가", "입고단위", "입고단위단가", "출고단위"]
+    });
+    
+    // 새 워크북 생성
+    const workbook = XLSX.utils.book_new();
+    // 워크북에 워크시트 추가 (시트 이름은 "Sheet1")
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-    // UTF-8 BOM + CSV 문자열
-    const csvContent = "\uFEFF" + headerRow + "\n" + rows;
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    // 파일명: "제품 목록.excel"
-    link.setAttribute("download", "제품 목록.excel");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // 워크북을 XLSX 파일로 저장 (파일명: "제품 목록.xlsx")
+    XLSX.writeFile(workbook, "제품 목록.xlsx", { bookType: "xlsx" });
   };
+
 
   return (
     <div className="item-container">

@@ -63,11 +63,23 @@ class ItemUpdateView(APIView):
         except Item.DoesNotExist:
             return Response({"error": "품목을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
+        # 만약 협력사명 수정이 요청되면, 해당 협력사를 찾아 협력사_id를 업데이트
+        협력사명 = request.data.get("협력사명")
+        if 협력사명:
+            try:
+                supplier = Supplier.objects.get(협력사명=협력사명, 활성화=True)
+                # 요청 데이터에 협력사_id를 넣고 협력사명 필드는 제거
+                request.data["협력사_id"] = supplier.협력사_id
+                request.data.pop("협력사명", None)
+            except Supplier.DoesNotExist:
+                return Response({"error": "해당 협력사가 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
         serializer = ItemSerializer(item, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SupplierListView(APIView):
     def get(self, request):

@@ -1,3 +1,5 @@
+// frontend/khuweb/src/pages/Item.js
+
 import React, { useEffect, useState } from "react";
 import { fetchItems, fetchSuppliers, addItem, deleteItems, updateItem } from "../api/api";
 import "../styles/Item.css";
@@ -13,7 +15,7 @@ const Item = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   // 편집 중 변경된 값을 저장하는 객체, key: 품목_id, value: 수정된 데이터
   const [editedItems, setEditedItems] = useState({});
-  // 정렬 상태: 각 열에 대해 null, "asc", "desc" 중 하나  
+  // 정렬 상태: 각 열에 대해 null, "asc", "desc" 중 하나
   // → 기본 default값: 모든 열 오름차순
   const [sortCriteria, setSortCriteria] = useState({
     품목명: "asc",
@@ -40,6 +42,9 @@ const Item = () => {
       출고단위: ""
     }
   ]);
+
+  // 팝업 알림 상태 (App.css에서 공용 스타일로 관리)
+  const [alertPopup, setAlertPopup] = useState({ show: false, message: "" });
 
   // 품목 목록 불러오기
   useEffect(() => {
@@ -96,9 +101,10 @@ const Item = () => {
   // 정렬 함수: manualSortOrder가 있으면 그 순서를, 없으면 기본 순서(["협력사명", "종류", "품목명"])를 사용
   const getSortedItems = () => {
     let sorted = [...items];
-    const activeOrder = 
-      (manualSortOrder.length > 0 ? manualSortOrder : ["협력사명", "종류", "품목명"])
-        .filter((col) => sortCriteria[col] !== null);
+    const activeOrder =
+      (manualSortOrder.length > 0 ? manualSortOrder : ["협력사명", "종류", "품목명"]).filter(
+        (col) => sortCriteria[col] !== null
+      );
     sorted.sort((a, b) => {
       for (let col of activeOrder) {
         const order = sortCriteria[col];
@@ -151,7 +157,7 @@ const Item = () => {
   // 제품 삭제
   const handleDelete = async () => {
     if (selectedItems.length === 0) {
-      alert("삭제할 품목을 선택해주세요.");
+      setAlertPopup({ show: true, message: "삭제할 품목을 선택해주세요." });
       return;
     }
     try {
@@ -159,8 +165,9 @@ const Item = () => {
       setItems((prev) => prev.filter((item) => !selectedItems.includes(item.품목_id)));
       setSelectedItems([]);
       setIsDeleteMode(false);
+      setAlertPopup({ show: true, message: "제품이 성공적으로 삭제되었습니다." });
     } catch (err) {
-      alert("제품 삭제에 실패했습니다.");
+      setAlertPopup({ show: true, message: "제품 삭제에 실패하였습니다." });
     }
   };
 
@@ -185,8 +192,9 @@ const Item = () => {
           출고단위: ""
         }
       ]);
+      setAlertPopup({ show: true, message: "제품이 성공적으로 추가되었습니다." });
     } catch (err) {
-      alert("제품 추가에 실패했습니다.");
+      setAlertPopup({ show: true, message: "제품 추가에 실패하였습니다." });
     }
   };
 
@@ -267,43 +275,101 @@ const Item = () => {
           prev.map((item) => (item.품목_id === itemId ? { ...item, ...res } : item))
         );
       }
-      alert("수정이 완료되었습니다.");
+      setAlertPopup({ show: true, message: "제품이 성공적으로 수정되었습니다." });
       setIsEditMode(false);
     } catch (err) {
-      alert("수정에 실패했습니다.");
+      setAlertPopup({ show: true, message: "제품 수정에 실패하였습니다." });
     }
+  };
+
+  // Excel 다운로드 핸들러 (제품 목록 CSV 다운로드)
+  const handleDownloadExcel = () => {
+    // CSV 헤더
+    const header = [
+      "품목명",
+      "협력사명",
+      "종류",
+      "규격",
+      "단위",
+      "입고단가",
+      "입고단위",
+      "입고단위단가",
+      "출고단위"
+    ];
+
+    // CSV 필드를 따옴표로 감싸는 함수 (쉼표, 따옴표 포함 필드 처리)
+    const quoteField = (field) => {
+      const escaped = String(field).replace(/"/g, '""'); // 내부 " -> ""
+      return `"${escaped}"`;
+    };
+
+    // 헤더 생성
+    const headerRow = header.map(quoteField).join(",");
+
+    // 데이터 생성
+    const rows = sortedItems.map(item => {
+      const supplier = suppliers.find(s => s.협력사_id === item.협력사_id);
+      const 협력사명 = supplier ? supplier.협력사명 : "";
+      const fields = [
+        item.품목명,
+        협력사명,
+        item.종류,
+        item.규격,
+        item.단위,
+        item.입고단가,
+        item.입고단위,
+        item.입고단위단가,
+        item.출고단위
+      ].map(quoteField);
+
+      return fields.join(",");
+    }).join("\n");
+
+    // UTF-8 BOM + CSV 문자열
+    const csvContent = "\uFEFF" + headerRow + "\n" + rows;
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    // 파일명: "제품 목록.excel"
+    link.setAttribute("download", "제품 목록.excel");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
     <div className="item-container">
-      <div className="header">
-        <h2>제품 관리</h2>
-        <div className="controls">
-          <button
-            onClick={() => setShowPopup(true)}
-            className="add-button"
-            disabled={isEditMode || isDeleteMode}
-          >
-            + 제품 추가
-          </button>
-          <button
-            onClick={handleEditToggle}
-            className="edit-button"
-            disabled={isDeleteMode}
-          >
-            {isEditMode ? "취소" : "수정"}
-          </button>
-          <button
-            onClick={() => {
-              setIsDeleteMode((prev) => !prev);
-              if (isDeleteMode) setSelectedItems([]);
-            }}
-            className="delete-button"
-            disabled={isEditMode}
-          >
-            {isDeleteMode ? "취소" : "삭제"}
-          </button>
-        </div>
+      <h2 className="title">제품 관리</h2>
+      <div className="controls">
+        <button onClick={handleDownloadExcel} className="download-button">
+          Excel 다운로드
+        </button>
+        <button
+          onClick={() => setShowPopup(true)}
+          className="add-button"
+          disabled={isEditMode || isDeleteMode}
+        >
+          + 제품 추가
+        </button>
+        <button
+          onClick={handleEditToggle}
+          className="edit-button"
+          disabled={isDeleteMode}
+        >
+          {isEditMode ? "취소" : "수정"}
+        </button>
+        <button
+          onClick={() => {
+            setIsDeleteMode((prev) => !prev);
+            if (isDeleteMode) setSelectedItems([]);
+          }}
+          className="delete-button"
+          disabled={isEditMode}
+        >
+          {isDeleteMode ? "취소" : "삭제"}
+        </button>
       </div>
       <hr className="divider" />
       {error && <p className="error">{error}</p>}
@@ -666,6 +732,21 @@ const Item = () => {
                 확인
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 공용 팝업 알림 */}
+      {alertPopup.show && (
+        <div className="alert-popup">
+          <div className="alert-popup-content">
+            <p>{alertPopup.message}</p>
+            <button
+              className="alert-popup-button"
+              onClick={() => setAlertPopup({ show: false, message: "" })}
+            >
+              확인
+            </button>
           </div>
         </div>
       )}

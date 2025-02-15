@@ -14,12 +14,6 @@
     padding: 10px 0;
   }
   
-  /* 오른쪽 버튼들을 가로로 나열 */
-  .controls {
-    display: flex;
-    gap: 10px;
-  }
-  
   /* 버튼 기본 스타일 (이미 적용된 스타일 유지) */
   .add-button,
   .edit-button,

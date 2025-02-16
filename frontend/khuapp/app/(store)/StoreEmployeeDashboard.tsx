@@ -66,6 +66,11 @@ interface StoreEmployeeDashboardProps {
   storeName: string;
 }
 
+/** 숫자를 천 단위로 포맷하는 함수 */
+const formatPrice = (value: number): string => {
+  return value.toLocaleString();
+};
+
 /** "YYYY.MM.W" -> Date 객체 (내림차순 정렬용) */
 function parseWeekString(dateKey: string): Date {
   const [yearStr, monthStr, weekStr] = dateKey.split('.');
@@ -284,8 +289,14 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
     setSelectedItems(selectedItems.filter((item) => item.품목_id !== productId));
   };
 
-  // 발주 확인
+  // 발주 확인 (상품 선택 유무 / 각종 유효성 체크)
   const handleConfirmOrder = () => {
+    // 선택된 상품이 없으면 모달 메시지 표시 + 함수 종료
+    if (selectedItems.length === 0) {
+      setErrorMessages(['상품을 선택해 주세요.']);
+      setModalVisible(true);
+      return;
+    }
     const errors: string[] = [];
     selectedItems.forEach((item) => {
       if (item.quantity === 0) {
@@ -401,11 +412,10 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
           <View style={orderStyles.selectedItemInfo}>
             <Text style={orderStyles.selectedItemName}>{product.품목명}</Text>
             <Text style={orderStyles.unitText}>
-              출고단위: {product.출고단위}
-              {product.단위}
+              출고단위: {formatPrice(product.출고단위)}{product.단위}
             </Text>
             <Text style={orderStyles.unitText}>
-              가격: {parseFloat(product.입고단가) * product.출고단위}원
+              가격: {formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
             </Text>
             {selected.error && <Text style={orderStyles.errorText}>{selected.error}</Text>}
           </View>
@@ -438,7 +448,7 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
           <View style={{ marginTop: 6 }}>
             {/* 개별 상품 총 가격 */}
             <Text style={orderStyles.priceText}>
-              총 가격: {computedPrice}원
+              총 가격: {formatPrice(computedPrice)}원
             </Text>
           </View>
         </View>
@@ -450,11 +460,10 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
           <View style={orderStyles.selectedItemInfo}>
             <Text style={orderStyles.selectedItemName}>{product.품목명}</Text>
             <Text style={orderStyles.unitText}>
-              출고단위: {product.출고단위}
-              {product.단위}
+              출고단위: {formatPrice(product.출고단위)}{product.단위}
             </Text>
             <Text style={orderStyles.unitText}>
-              가격: {parseFloat(product.입고단가) * product.출고단위}원
+              가격: {formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
             </Text>
           </View>
           <TouchableOpacity style={orderStyles.orderButton} onPress={() => addItem(product)}>
@@ -470,7 +479,7 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
       {/* 상품 선택 화면 */}
       {!isConfirmation ? (
         <>
-          <ScrollView style={[orderStyles.container, { paddingBottom: 100 }]}>
+          <ScrollView style={[orderStyles.container, { paddingBottom: 80 }]}>
             <View style={orderStyles.categorySection}>
               <Text style={orderStyles.sectionTitle}>품목 유형 선택</Text>
               <ScrollView
@@ -479,7 +488,10 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
                 style={orderStyles.categoryList}
               >
                 <TouchableOpacity
-                  style={[orderStyles.categoryButton, selectedCategory === null && orderStyles.categoryButtonActive]}
+                  style={[
+                    orderStyles.categoryButton,
+                    selectedCategory === null && orderStyles.categoryButtonActive,
+                  ]}
                   onPress={() => setSelectedCategory(null)}
                 >
                   <Text
@@ -521,30 +533,27 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
             </View>
           </ScrollView>
 
-          {/* 선택된 상품이 없으면 중앙에 "발주확인"만 표시,
-              선택된 상품이 있으면 왼쪽에 "총 가격", 오른쪽에 "발주확인" 표시 */}
-          <TouchableOpacity
-            style={[orderStyles.orderButton, orderStyles.fixedOrderButton]}
-            onPress={handleConfirmOrder}
-          >
-            {selectedItems.length === 0 ? (
-              <Text style={orderStyles.orderButtonText}>발주확인</Text>
-            ) : (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Text style={[orderStyles.totalPriceText, { color: 'white' }]}>
-                  총 가격: {totalPrice}원
-                </Text>
-                <Text style={orderStyles.orderButtonText}>발주확인</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          {/* 하단 영역: 총 가격 / 발주확인 버튼 */}
+          <View style={orderStyles.footerContainer}>
+            {/* 총 가격 */}
+            <Text style={orderStyles.footerPriceText}>
+              {selectedItems.length > 0
+                ? `총 ${formatPrice(totalPrice)}원`
+                : '총 0원'}
+            </Text>
+
+            {/* 발주확인 버튼 (상품 없으면 비활성화) */}
+            <TouchableOpacity
+              style={[
+                orderStyles.footerButton,
+                selectedItems.length === 0 && orderStyles.footerButtonDisabled,
+              ]}
+              onPress={handleConfirmOrder}
+              disabled={selectedItems.length === 0}
+            >
+              <Text style={orderStyles.footerButtonText}>발주확인</Text>
+            </TouchableOpacity>
+          </View>
         </>
       ) : (
         /* 발주 확인 화면 */
@@ -559,11 +568,12 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
                     <View style={{ flex: 2 }}>
                       <Text style={orderStyles.selectedItemName}>{item.품목명}</Text>
                       <Text style={orderStyles.unitText}>
-                        수량: {item.quantity}{item.단위} (출고단위: {item.출고단위})
+                        수량: {item.quantity}
+                        {item.단위} (출고단위: {item.출고단위})
                       </Text>
                     </View>
                     <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                      <Text style={orderStyles.priceText}>{itemTotal}원</Text>
+                      <Text style={orderStyles.priceText}>{formatPrice(itemTotal)}원</Text>
                     </View>
                   </View>
                 );
@@ -571,9 +581,7 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
               {/* 전체 합계 */}
               <View style={orderStyles.totalRow}>
                 <Text style={orderStyles.totalText}>총합계:</Text>
-                <Text style={orderStyles.totalText}>
-                  {totalPrice}원
-                </Text>
+                <Text style={orderStyles.totalText}>{formatPrice(totalPrice)}원</Text>
               </View>
 
               <TouchableOpacity style={orderStyles.orderButton} onPress={handleOrderSubmit}>
@@ -894,7 +902,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
                                         </Text>
                                       )}
                                       <Text style={[orderStatusStyles.quantity, { marginTop: 'auto' }]}>
-                                        발주수량: {firstOrder.매장_발주량}
+                                        발주수량: {formatPrice(firstOrder.매장_발주량)}
                                       </Text>
                                     </View>
                                     <TouchableOpacity
@@ -951,7 +959,10 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
 
   return (
     <View style={styles.dashboardContainer}>
+      {/* 메인 콘텐츠 영역 */}
       <View style={styles.mainContent}>{renderView()}</View>
+
+      {/* 하단 탭 영역 */}
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navButton} onPress={() => setActiveView('dashboard')}>
           <Home color={activeView === 'dashboard' ? '#3b82f6' : 'black'} />
@@ -976,37 +987,6 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           </Text>
         </TouchableOpacity>
       </View>
-      
-      {/* 주문 상세보기 모달 */}
-      <Modal
-        visible={detailModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setDetailModalVisible(false)}
-      >
-        <View style={modalStyles.centeredView}>
-          <View style={[modalStyles.modalView, { maxHeight: '80%' }]}>
-            <Text style={modalStyles.modalTitle}>
-              {formatWeekString(detailGroupDate)}
-            </Text>
-            <ScrollView>
-              {detailGroupOrders.map((order, idx) => (
-                <View key={idx} style={{ marginBottom: 10 }}>
-                  <Text>
-                    {order.품목명} - 발주수량: {order.매장_발주량}
-                  </Text>
-                </View>
-              ))}
-            </ScrollView>
-            <TouchableOpacity
-              style={modalStyles.closeButton}
-              onPress={() => setDetailModalVisible(false)}
-            >
-              <Text style={modalStyles.textStyle}>닫기</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
@@ -1192,12 +1172,41 @@ const orderStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  fixedOrderButton: {
+
+  // 하단 영역 (총 가격 / 발주확인)
+  footerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
+  footerPriceText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  footerButton: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  footerButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  footerButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

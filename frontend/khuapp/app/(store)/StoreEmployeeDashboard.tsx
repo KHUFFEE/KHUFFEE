@@ -12,12 +12,11 @@ import {
 import {
   Home,
   ShoppingCart,
-  List,
+  Receipt,
   Clipboard,
   Plus,
   Minus,
   X,
-  Receipt, // ★★★ 영수증 모양 아이콘 추가
 } from 'lucide-react-native';
 import { RN_API_URL } from '@env';
 
@@ -73,7 +72,6 @@ function parseWeekString(dateKey: string): Date {
   const year = parseInt(yearStr, 10);
   const month = parseInt(monthStr, 10);
   const week = parseInt(weekStr, 10);
-
   // 주차를 날짜로 환산 (정렬 목적이므로 대략적으로만)
   const day = (week - 1) * 7 + 1;
   return new Date(year, month - 1, day);
@@ -85,7 +83,6 @@ function formatWeekString(dateKey: string): string {
   const year = parseInt(yearStr, 10);
   const month = parseInt(monthStr, 10);
   const week = parseInt(weekStr, 10);
-
   return `${year}년 ${month}월 ${week}주차`;
 }
 
@@ -381,10 +378,24 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
     );
   }
 
-  // 상품 카드
+  /** 
+   * ① 개별 상품 총 가격: computedPrice = quantity * 입고단가
+   * ② 전체 상품 총 가격: totalPrice = Σ(computedPrice)
+   *
+   * parseFloat 결과가 유효하지 않으면 0으로 처리
+   */
+  const totalPrice = selectedItems.reduce((sum, item) => {
+    const price = parseFloat(item.입고단가);
+    return sum + item.quantity * (isNaN(price) ? 0 : price);
+  }, 0);
+
+  // 상품 카드 렌더링
   const renderProductCard = (product: APIProduct) => {
     const selected = selectedItems.find((item) => item.품목_id === product.품목_id);
+
     if (selected) {
+      // 현재 선택된 상품의 총 가격
+      const computedPrice = selected.quantity * parseFloat(selected.입고단가);
       return (
         <View key={product.품목_id} style={orderStyles.selectedItemCard}>
           <View style={orderStyles.selectedItemInfo}>
@@ -392,6 +403,9 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
             <Text style={orderStyles.unitText}>
               출고단위: {product.출고단위}
               {product.단위}
+            </Text>
+            <Text style={orderStyles.unitText}>
+              가격: {parseFloat(product.입고단가) * product.출고단위}원
             </Text>
             {selected.error && <Text style={orderStyles.errorText}>{selected.error}</Text>}
           </View>
@@ -421,9 +435,16 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
               <X color="white" size={18} />
             </TouchableOpacity>
           </View>
+          <View style={{ marginTop: 6 }}>
+            {/* 개별 상품 총 가격 */}
+            <Text style={orderStyles.priceText}>
+              총 가격: {computedPrice}원
+            </Text>
+          </View>
         </View>
       );
     } else {
+      // 선택되지 않은 상품
       return (
         <View key={product.품목_id} style={orderStyles.selectedItemCard}>
           <View style={orderStyles.selectedItemInfo}>
@@ -431,6 +452,9 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
             <Text style={orderStyles.unitText}>
               출고단위: {product.출고단위}
               {product.단위}
+            </Text>
+            <Text style={orderStyles.unitText}>
+              가격: {parseFloat(product.입고단가) * product.출고단위}원
             </Text>
           </View>
           <TouchableOpacity style={orderStyles.orderButton} onPress={() => addItem(product)}>
@@ -443,12 +467,17 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
 
   return (
     <View style={{ flex: 1 }}>
+      {/* 상품 선택 화면 */}
       {!isConfirmation ? (
         <>
           <ScrollView style={[orderStyles.container, { paddingBottom: 100 }]}>
             <View style={orderStyles.categorySection}>
               <Text style={orderStyles.sectionTitle}>품목 유형 선택</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={orderStyles.categoryList}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={orderStyles.categoryList}
+              >
                 <TouchableOpacity
                   style={[orderStyles.categoryButton, selectedCategory === null && orderStyles.categoryButtonActive]}
                   onPress={() => setSelectedCategory(null)}
@@ -492,60 +521,59 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
             </View>
           </ScrollView>
 
+          {/* 선택된 상품이 없으면 중앙에 "발주확인"만 표시,
+              선택된 상품이 있으면 왼쪽에 "총 가격", 오른쪽에 "발주확인" 표시 */}
           <TouchableOpacity
             style={[orderStyles.orderButton, orderStyles.fixedOrderButton]}
             onPress={handleConfirmOrder}
           >
-            <Text style={orderStyles.orderButtonText}>발주확인</Text>
+            {selectedItems.length === 0 ? (
+              <Text style={orderStyles.orderButtonText}>발주확인</Text>
+            ) : (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Text style={[orderStyles.totalPriceText, { color: 'white' }]}>
+                  총 가격: {totalPrice}원
+                </Text>
+                <Text style={orderStyles.orderButtonText}>발주확인</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </>
       ) : (
+        /* 발주 확인 화면 */
         <>
           <ScrollView style={orderStyles.container}>
             <View style={orderStyles.selectedItemsSection}>
               <Text style={orderStyles.sectionTitle}>선택한 상품 확인</Text>
-              <View style={orderStyles.productGrid}>
-                {selectedItems.map((item) => (
-                  <View key={item.품목_id} style={orderStyles.selectedItemCard}>
-                    <View style={orderStyles.selectedItemInfo}>
+              {selectedItems.map((item) => {
+                const itemTotal = item.quantity * parseFloat(item.입고단가);
+                return (
+                  <View key={item.품목_id} style={orderStyles.confirmationItemRow}>
+                    <View style={{ flex: 2 }}>
                       <Text style={orderStyles.selectedItemName}>{item.품목명}</Text>
-
-                      {/* ★★★ "외 {개수}"가 아니라, 이미 단일 아이템만 표시되므로 생략 
-                          혹은 다른 형태로 표시할 수 있음. */}
                       <Text style={orderStyles.unitText}>
-                        출고단위: {item.출고단위}
-                        {item.단위}
+                        수량: {item.quantity}{item.단위} (출고단위: {item.출고단위})
                       </Text>
-                      {item.error && <Text style={orderStyles.errorText}>{item.error}</Text>}
                     </View>
-                    <View style={orderStyles.actionsContainer}>
-                      <TouchableOpacity
-                        style={orderStyles.quantityButton}
-                        onPress={() => updateQuantity(item.품목_id, -item.출고단위)}
-                      >
-                        <Minus color="black" size={18} />
-                      </TouchableOpacity>
-                      <TextInput
-                        style={orderStyles.quantityInput}
-                        value={item.customQuantity}
-                        keyboardType="numeric"
-                        onChangeText={(text) => updateCustomQuantity(item.품목_id, text)}
-                      />
-                      <TouchableOpacity
-                        style={orderStyles.quantityButton}
-                        onPress={() => updateQuantity(item.품목_id, item.출고단위)}
-                      >
-                        <Plus color="black" size={18} />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={orderStyles.removeButton}
-                        onPress={() => removeItem(item.품목_id)}
-                      >
-                        <X color="white" size={18} />
-                      </TouchableOpacity>
+                    <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                      <Text style={orderStyles.priceText}>{itemTotal}원</Text>
                     </View>
                   </View>
-                ))}
+                );
+              })}
+              {/* 전체 합계 */}
+              <View style={orderStyles.totalRow}>
+                <Text style={orderStyles.totalText}>총합계:</Text>
+                <Text style={orderStyles.totalText}>
+                  {totalPrice}원
+                </Text>
               </View>
 
               <TouchableOpacity style={orderStyles.orderButton} onPress={handleOrderSubmit}>
@@ -757,6 +785,18 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
     setDetailModalVisible(true);
   };
 
+  // 주문 내역을 연도, 월, 주차별로 그룹화
+  const groupedByYearMonthWeek = storeOrders.reduce((acc: any, order) => {
+    const [year, month, week] = order.기간.split('.');
+    if (!acc[year]) acc[year] = {};
+    if (!acc[year][month]) acc[year][month] = {};
+    if (!acc[year][month][week]) acc[year][month][week] = [];
+    acc[year][month][week].push(order);
+    return acc;
+  }, {});
+
+  const sortedYears = Object.keys(groupedByYearMonthWeek).sort((a, b) => parseInt(b) - parseInt(a));
+
   // 화면 표시
   const renderView = () => {
     switch (activeView) {
@@ -788,94 +828,95 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           );
         }
 
-        // 날짜별 그룹화
-        const groupedByDate = storeOrders.reduce(
-          (acc: Record<string, StoreOrderData[]>, order) => {
-            if (!acc[order.기간]) {
-              acc[order.기간] = [];
-            }
-            acc[order.기간].push(order);
-            return acc;
-          },
-          {}
-        );
-
-        // 기간(주차) 내림차순 정렬
-        const sortedDates = Object.keys(groupedByDate).sort(
-          (a, b) => parseWeekString(b).getTime() - parseWeekString(a).getTime()
-        );
-
         return (
           <View style={styles.container}>
-            {/* ★★★ 발주 내역 앞에 Receipt 아이콘 추가 */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
               <Receipt color="#3b82f6" size={24} style={{ marginRight: 8 }} />
               <Text style={styles.title}>발주 내역</Text>
             </View>
 
-            {sortedDates.length === 0 ? (
+            {sortedYears.length === 0 ? (
               <Text>아직 발주 내역이 없습니다.</Text>
             ) : (
               <ScrollView style={{ width: '100%' }}>
-                {sortedDates.map((dateKey) => {
-                  const orderList = groupedByDate[dateKey];
-                  const firstOrder = orderList[0];
-                  const extraCount = orderList.length - 1;
-                  const showExtraCount = extraCount > 0;
-
+                {sortedYears.map((year) => {
+                  const months = Object.keys(groupedByYearMonthWeek[year]).sort(
+                    (a, b) => parseInt(b) - parseInt(a)
+                  );
                   return (
                     <View
-                      key={dateKey}
+                      key={year}
                       style={{
                         marginBottom: 20,
                         borderWidth: 1,
-                        borderColor: '#ddd',
+                        borderColor: '#aaa',
                         borderRadius: 8,
                         padding: 10,
                       }}
                     >
-                      {/* "2025.02.3" => "2025년 2월 3주차" */}
-                      <Text style={orderStatusStyles.dateHeader}>
-                        {formatWeekString(dateKey)} 주문 내역
+                      <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>
+                        {year}년 주문내역
                       </Text>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <View>
-                          {/* 상품명 아래에 "외 n개" 표시 */}
-                          <Text style={orderStatusStyles.productName}>
-                            {firstOrder.품목명}
-                          </Text>
-                          {showExtraCount && (
-                            <Text style={orderStatusStyles.extraCountText}>
-                              외 {extraCount}개
+                      {months.map((month) => {
+                        const weeksObj = groupedByYearMonthWeek[year][month];
+                        const weeks = Object.keys(weeksObj).sort((a, b) => parseInt(b) - parseInt(a));
+                        return (
+                          <View key={month} style={{ marginBottom: 10, paddingLeft: 10 }}>
+                            <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 5 }}>
+                              {month}월
                             </Text>
-                          )}
-
-                          <Text style={orderStatusStyles.quantity}>
-                            발주수량: {firstOrder.매장_발주량}
-                          </Text>
-                        </View>
-
-                        {/* 주문 상세보기 버튼 */}
-                        <TouchableOpacity
-                          style={orderStatusStyles.actionButton}
-                          onPress={() => openDetailModal(dateKey, orderList)}
-                        >
-                          <Text style={orderStatusStyles.actionButtonText}>
-                            주문 상세보기
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
+                            {weeks.map((week) => {
+                              const orders = weeksObj[week];
+                              const firstOrder = orders[0];
+                              const extraCount = orders.length - 1;
+                              return (
+                                <View
+                                  key={week}
+                                  style={{
+                                    marginBottom: 10,
+                                    borderWidth: 1,
+                                    borderColor: '#ddd',
+                                    borderRadius: 8,
+                                    padding: 10,
+                                  }}
+                                >
+                                  <Text style={orderStatusStyles.dateHeader}>
+                                    {week}주차 주문 내역
+                                  </Text>
+                                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    <View style={{ flex: 1 }}>
+                                      <Text style={orderStatusStyles.productName}>
+                                        {firstOrder.품목명}
+                                      </Text>
+                                      {extraCount > 0 && (
+                                        <Text style={orderStatusStyles.extraCountText}>
+                                          외 {extraCount}개
+                                        </Text>
+                                      )}
+                                      <Text style={[orderStatusStyles.quantity, { marginTop: 'auto' }]}>
+                                        발주수량: {firstOrder.매장_발주량}
+                                      </Text>
+                                    </View>
+                                    <TouchableOpacity
+                                      style={[orderStatusStyles.actionButton, { alignSelf: 'flex-end', marginLeft: 12 }]}
+                                      onPress={() => openDetailModal(`${year}.${month}.${week}`, orders)}
+                                    >
+                                      <Text style={orderStatusStyles.actionButtonText}>주문 상세보기</Text>
+                                    </TouchableOpacity>
+                                  </View>
+                                </View>
+                              );
+                            })}
+                          </View>
+                        );
+                      })}
                     </View>
                   );
                 })}
 
                 {hasMore && (
                   <TouchableOpacity
-                    style={[
-                      styles.loadMoreButton,
-                      ordersLoading && styles.loadMoreButtonLoading,
-                    ]}
+                    style={[styles.loadMoreButton, ordersLoading && styles.loadMoreButtonLoading]}
                     onPress={async () => {
                       await fetchOrders(currentPage);
                       setCurrentPage((prev) => prev + 5);
@@ -923,7 +964,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navButton} onPress={() => setActiveView('order-status')}>
-          <List color={activeView === 'order-status' ? '#3b82f6' : 'black'} />
+          <Receipt color={activeView === 'order-status' ? '#3b82f6' : 'black'} />
           <Text style={activeView === 'order-status' ? styles.activeNavText : styles.navText}>
             발주 내역
           </Text>
@@ -935,7 +976,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           </Text>
         </TouchableOpacity>
       </View>
-/ 
+      
       {/* 주문 상세보기 모달 */}
       <Modal
         visible={detailModalVisible}
@@ -946,7 +987,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
         <View style={modalStyles.centeredView}>
           <View style={[modalStyles.modalView, { maxHeight: '80%' }]}>
             <Text style={modalStyles.modalTitle}>
-              {formatWeekString(detailGroupDate)} 주문 상세내역
+              {formatWeekString(detailGroupDate)}
             </Text>
             <ScrollView>
               {detailGroupOrders.map((order, idx) => (
@@ -1169,6 +1210,36 @@ const orderStyles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
   },
+  priceText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3b82f6',
+  },
+  confirmationItemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderColor: '#aaa',
+    marginTop: 10,
+  },
+  totalText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  totalPriceText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'White',
+  },
 });
 
 const modalStyles = StyleSheet.create({
@@ -1230,7 +1301,7 @@ const orderStatusStyles = StyleSheet.create({
   extraCountText: {
     color: '#3b82f6',
     fontWeight: 'bold',
-    marginBottom: 4, // 아래쪽 여백
+    marginBottom: 4,
   },
   orderCard: {
     backgroundColor: '#fff',

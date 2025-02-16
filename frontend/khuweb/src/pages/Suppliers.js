@@ -105,7 +105,7 @@ const Suppliers = () => {
             {isDeleteMode ? "취소" : "삭제"}
           </button>
         </div>
-      <hr className="suppliers-divider" />
+      <hr className="divider" />
       {error && <p className="suppliers-error">{error}</p>}
       <table className="suppliers-table">
         <thead>

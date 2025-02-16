@@ -84,8 +84,6 @@
   transform: translateY(-4px);
 }
 
-
-
 .item-table th,
 .item-table td {
   border: 1px solid #ddd;
@@ -94,7 +92,7 @@
 }
 
 .item-table th {
-  background-color: #f7f7f7;
+  background-color: #6f472888;
   font-weight: bold;
 }
 

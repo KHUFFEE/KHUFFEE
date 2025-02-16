@@ -58,7 +58,7 @@
 }
 
 .suppliers-table th {
-  background-color: #6f472888;
+  background-color: #cf888888;
   font-weight: bold;
   text-align: left;
 }
@@ -71,10 +71,6 @@
 /* 번호 열: narrow 열과 동일한 너비 */
 .suppliers-number-col {
   width: 40px;
-}
-
-.suppliers-divider {
-  margin-top: 10px;
 }
 
 /* Popup Styles */

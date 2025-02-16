@@ -1,0 +1,102 @@
+/* StoreOrders 페이지 기본 컨테이너 */
+.store-orders-container {
+    padding: 0;
+    max-width: 1250px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    text-align: left;
+  }
+  
+  .store-orders-container h1 {
+    margin: 20px 0;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .store-orders-container p {
+    margin: 10px 0 20px;
+    font-size: 16px;
+  }
+  
+  /* 테이블 스타일 - Item 페이지의 테이블 스타일과 유사하게 */
+  .store-orders-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 1px;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: left;
+  }
+  
+  .store-orders-table thead tr {
+    background-color: #f7f7f7;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+  }
+  
+  .store-orders-table tbody tr {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+  }
+  
+  .store-orders-table tbody tr:hover {
+    transform: translateY(-4px);
+  }
+  
+  .store-orders-table th,
+  .store-orders-table td {
+    border: 1px solid #ddd;
+    text-align: left;
+    padding: 12px;
+  }
+  
+  .store-orders-table th {
+    background-color: #cf888888; /* 필요에 따라 조정 */
+    font-weight: bold;
+  }
+  
+  .store-orders-table thead {
+    position: sticky;
+    top: -20px; /* 부모 패딩 20px 만큼 음수로 설정 */
+    z-index: 2;
+  }
+
+  /* 기존 스타일 외에 기간 검색 드롭다운 및 버튼 스타일 추가 */
+
+.period-search {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .period-search select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    appearance: none;
+    outline: none;
+  }
+  
+  .period-search .search-button,
+  .period-search .reset-button {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    background-color: white;
+    color: #007bff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .period-search .search-button:hover,
+  .period-search .reset-button:hover {
+    background-color: #f7f7f7;
+  }
+  

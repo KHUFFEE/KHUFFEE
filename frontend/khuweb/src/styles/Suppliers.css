@@ -25,7 +25,6 @@
   border-spacing: 0 1px;      /* 행 사이에 1px 간격 */
   margin-top: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
   overflow: hidden;
   text-align: left;
   margin-left: 0; /* 테이블 왼쪽 정렬 */
@@ -59,7 +58,7 @@
 }
 
 .suppliers-table th {
-  background-color: #f7f7f7;
+  background-color: #6f472888;
   font-weight: bold;
   text-align: left;
 }

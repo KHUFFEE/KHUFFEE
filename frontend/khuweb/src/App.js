@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, NavLink, useNavigate, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
-import Orders from "./pages/Orders";
+import Orders from "./pages/StoreOrders";
 import Item from "./pages/Item";
 import Login from "./pages/Login";
 import Suppliers from "./pages/Suppliers";
@@ -23,9 +23,9 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // 모든 토글 메뉴 기본값 '닫힘(false)'
-  const [showIntegrationMenu, setShowIntegrationMenu] = useState(false);
-  const [showStoreMenu, setShowStoreMenu] = useState(false);
-  const [showWarehouseMenu, setShowWarehouseMenu] = useState(false);
+  const [showIntegrationMenu, setShowIntegrationMenu] = useState(true);
+  const [showStoreMenu, setShowStoreMenu] = useState(true);
+  const [showWarehouseMenu, setShowWarehouseMenu] = useState(true);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -208,7 +208,7 @@ function App() {
                   element={<Login setIsLoggedIn={setIsLoggedIn} />}
                 />
                 <Route path="/" element={<Home />} />
-                <Route path="/orders" element={<Orders />} />
+                <Route path="/store/orders" element={<Orders />} />
                 <Route path="/suppliers" element={<Suppliers />} />
                 <Route path="/item" element={<Item />} />
                 {/*

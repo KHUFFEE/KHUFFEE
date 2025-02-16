@@ -35,7 +35,7 @@ html, body {
 
 .logo-text {
   font-weight: bold;
-  color: #3C2415;
+  color: #8B0000;  /* 변경된 빨강 계열 */
   font-size: 28px;
   position: relative;
   top: 4px;  /* 텍스트를 아래로 내려서 divider 선 바로 위에 위치 */
@@ -54,7 +54,7 @@ html, body {
   left: 0;
   width: 100%;
   height: 1px;
-  background-color: #3C2415;
+  background-color: #8B0000; /* 변경된 빨강 계열 */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
@@ -72,8 +72,8 @@ html, body {
 .app-sidebar {
   display: flex;
   flex-direction: column; 
-  /* 브라운 계열 그라디언트는 유지하되, 라운드 박스+쉐도우 */
-  background: linear-gradient(to bottom, #5A3C1B, #3C2415);
+  /* 빨강 계열 그라디언트로 변경 */
+  background: linear-gradient(to bottom, #B22222, #8B0000);
   border-radius: 5px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   
@@ -83,7 +83,8 @@ html, body {
   margin-bottom: 20px; /* 바닥 여백 */
   padding: 20px;
   
-  /* 내부 내용에 맞춰 높이가 결정되도록 하되, 최소 높이는 400px로 고정 */
+  /* 내부 내용에 맞춰 높이가 결정되도록 하되, 최소 높이는 그대로 유지 */
+  /* (원래 주석 처리된 코드 유지) */
   /* overflow-y: auto;
   min-height: 512px;
   align-self: flex-start;
@@ -92,7 +93,7 @@ html, body {
 
 /* 사이드바 우측 경계 */
 .app-sidebar {
-  border-right: 2px solid #3C2415; 
+  border-right: 2px solid #8B0000; /* 변경된 빨강 계열 */
 }
 
 /* 로그아웃 버튼 */
@@ -215,21 +216,20 @@ html, body {
 }
 
 .app-main::-webkit-scrollbar-thumb {
-  background: #5A3C1B; /* 변경된 색상 */
+  background: #B22222; /* 변경된 빨강 계열 */
   border-radius: 5px;
   border: 2px solid #f1f1f1;
 }
 
 .app-main::-webkit-scrollbar-thumb:hover {
-  background: #5A3C1B;
+  background: #B22222;
 }
 
 /* Firefox용 스크롤바 스타일 (scrollbar-color 및 scrollbar-width) */
 .app-main {
   scrollbar-width: thin;
-  scrollbar-color: #5A3C1B #f1f1f1;
+  scrollbar-color: #B22222 #f1f1f1;
 }
-
 
 /* 이하 기존 버튼, 테이블, 팝업 등 스타일 */
 .add-button,
@@ -326,7 +326,7 @@ html, body {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .edit-button:hover {
@@ -365,6 +365,7 @@ html, body {
 
 .title {
   margin-bottom: 30px;
+  margin-left: 10px;
   font-size: 24px;
   font-weight: bold;
 }

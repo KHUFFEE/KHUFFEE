@@ -65,6 +65,13 @@
   margin-left: 0;
 }
 
+.item-table thead {
+  position: sticky;
+  top: -20px; /* 부모 패딩 20px 만큼 음수로 설정 */
+  z-index: 2;
+}
+
+
 /* 헤더 행에 입체감 효과 추가 */
 .item-table thead tr {
   background-color: #f7f7f7;

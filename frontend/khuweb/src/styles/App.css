@@ -33,6 +33,13 @@ html, body {
   margin-left: 5px;
 }
 
+.divider {
+  width: 100%;
+  margin: 10px 0;
+  border: none;
+  border-top: 1.5px solid #8B0000;
+}
+
 .logo-text {
   font-weight: bold;
   color: #8B0000;  /* 변경된 빨강 계열 */
@@ -482,3 +489,61 @@ input[type="checkbox"] {
   margin: 0 0 0 2px;
   vertical-align: middle;
 }
+
+/* 다크모드 전환 시 전체 배경 및 텍스트, 테두리 색 적용 */
+.dark-mode,
+.dark-mode * {
+  background-color: #2b2b2b !important;
+  color: #e0e0e0 !important;
+  border-color: #444 !important;
+}
+
+/* 이미지 등은 밝기 조절 (원본 이미지 보존) */
+.dark-mode img {
+  filter: brightness(0.8);
+}
+
+/* 헤더 다크모드 스타일 */
+.dark-mode .app-header {
+  background-color: #1f1f1f !important;
+  color: #e0e0e0 !important;
+}
+
+/* 헤더 내 모든 요소의 배경을 헤더 배경과 동일하게 */
+.dark-mode .app-header * {
+  background-color: #1f1f1f !important;
+}
+
+/* 사이드바 다크모드 스타일 */
+.dark-mode .app-sidebar {
+  background: linear-gradient(to bottom, #3a3a3a, #1f1f1f) !important;
+}
+
+/* 메인 콘텐츠 다크모드 스타일 */
+.dark-mode .app-main {
+  background-color: #2b2b2b !important;
+  color: #e0e0e0 !important;
+}
+
+/* 메뉴 링크 다크모드 (필요 시 색상 조정) */
+.dark-mode .menu-link,
+.dark-mode .submenu a {
+  color: #e0e0e0 !important;
+}
+
+/* 다크모드 토글 버튼 스타일 */
+.dark-mode-btn {
+  padding: 10px;
+  background-color: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  margin-right: 10px;
+  color: inherit !important;
+}
+
+/* 헤더 내 버튼 컨테이너 (다크모드 토글 + 로그아웃 버튼) */
+.header-buttons {
+  display: flex;
+  align-items: center;
+}
+

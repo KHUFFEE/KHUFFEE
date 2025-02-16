@@ -17,21 +17,21 @@ class StoreOrderCreateView(APIView):
 class StoreOrderListView(APIView):
     def get(self, request):
         store_id = request.GET.get('store_id')
-        # 페이지 번호는 필수, 기본값 1
         try:
             page = int(request.GET.get('page', 1))
         except ValueError:
             return Response({"error": "유효한 페이지 번호를 입력하세요."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 매장 필터링 (store_id가 제공된 경우)
+        # 모든 주문 조회
         orders_queryset = StoreOrder.objects.all()
         if store_id:
             orders_queryset = orders_queryset.filter(매장_id=store_id)
         
-        # 기간별로 내림차순 정렬하고 distinct한 기간 리스트 추출
-        # MySQL의 경우 distinct()와 order_by()의 조합에 주의 (파이썬 레벨에서 distinct 처리)
+        # 매장_발주량이 0인 주문은 제외
+        orders_queryset = orders_queryset.exclude(매장_발주량=0)
+        
+        # 기간별로 내림차순 정렬 후 distinct한 기간 리스트 추출
         all_periods = list(orders_queryset.order_by('-기간').values_list('기간', flat=True))
-        # 중복 제거 (순서를 유지하기 위해 OrderedDict 사용)
         from collections import OrderedDict
         distinct_periods = list(OrderedDict.fromkeys(all_periods))
         
@@ -45,7 +45,7 @@ class StoreOrderListView(APIView):
         selected_period = latest_periods[page - 1]
         orders_for_period = orders_queryset.filter(기간=selected_period).order_by('-기간')
         
-        # 결과 반환 (필요에 따라 serializer 사용 가능)
+        # 결과 반환
         orders = list(orders_for_period.values(
             '매장_id',
             '품목_id',
@@ -53,7 +53,6 @@ class StoreOrderListView(APIView):
             '매장_발주량'
         ))
         
-        # 페이지 정보도 함께 반환
         result = {
             "current_period": selected_period,
             "current_page": page,

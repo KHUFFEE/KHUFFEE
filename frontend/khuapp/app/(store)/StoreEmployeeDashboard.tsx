@@ -32,6 +32,8 @@ interface StoreOrderData {
   품목명?: string;
   협력사명?: string;
   출고단위?: number;
+  입고단가?: string;
+  totalCost?: number; // ← 새로 추가
 }
 
 /** 서버에서 받아오는 "품목" 타입 */
@@ -77,7 +79,6 @@ function parseWeekString(dateKey: string): Date {
   const year = parseInt(yearStr, 10);
   const month = parseInt(monthStr, 10);
   const week = parseInt(weekStr, 10);
-  // 주차를 날짜로 환산 (정렬 목적이므로 대략적으로만)
   const day = (week - 1) * 7 + 1;
   return new Date(year, month - 1, day);
 }
@@ -291,7 +292,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
 
   // 발주 확인 (상품 선택 유무 / 각종 유효성 체크)
   const handleConfirmOrder = () => {
-    // 선택된 상품이 없으면 모달 메시지 표시 + 함수 종료
     if (selectedItems.length === 0) {
       setErrorMessages(['상품을 선택해 주세요.']);
       setModalVisible(true);
@@ -392,8 +392,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
   /** 
    * ① 개별 상품 총 가격: computedPrice = quantity * 입고단가
    * ② 전체 상품 총 가격: totalPrice = Σ(computedPrice)
-   *
-   * parseFloat 결과가 유효하지 않으면 0으로 처리
    */
   const totalPrice = selectedItems.reduce((sum, item) => {
     const price = parseFloat(item.입고단가);
@@ -405,7 +403,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
     const selected = selectedItems.find((item) => item.품목_id === product.품목_id);
 
     if (selected) {
-      // 현재 선택된 상품의 총 가격
       const computedPrice = selected.quantity * parseFloat(selected.입고단가);
       return (
         <View key={product.품목_id} style={orderStyles.selectedItemCard}>
@@ -446,7 +443,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
             </TouchableOpacity>
           </View>
           <View style={{ marginTop: 6 }}>
-            {/* 개별 상품 총 가격 */}
             <Text style={orderStyles.priceText}>
               총 가격: {formatPrice(computedPrice)}원
             </Text>
@@ -454,7 +450,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
         </View>
       );
     } else {
-      // 선택되지 않은 상품
       return (
         <View key={product.품목_id} style={orderStyles.selectedItemCard}>
           <View style={orderStyles.selectedItemInfo}>
@@ -476,7 +471,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
 
   return (
     <View style={{ flex: 1 }}>
-      {/* 상품 선택 화면 */}
       {!isConfirmation ? (
         <>
           <ScrollView style={[orderStyles.container, { paddingBottom: 80 }]}>
@@ -533,16 +527,13 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
             </View>
           </ScrollView>
 
-          {/* 하단 영역: 총 가격 / 발주확인 버튼 */}
           <View style={orderStyles.footerContainer}>
-            {/* 총 가격 */}
             <Text style={orderStyles.footerPriceText}>
               {selectedItems.length > 0
                 ? `총 ${formatPrice(totalPrice)}원`
                 : '총 0원'}
             </Text>
 
-            {/* 발주확인 버튼 (상품 없으면 비활성화) */}
             <TouchableOpacity
               style={[
                 orderStyles.footerButton,
@@ -556,7 +547,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
           </View>
         </>
       ) : (
-        /* 발주 확인 화면 */
         <>
           <ScrollView style={orderStyles.container}>
             <View style={orderStyles.selectedItemsSection}>
@@ -578,7 +568,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
                   </View>
                 );
               })}
-              {/* 전체 합계 */}
               <View style={orderStyles.totalRow}>
                 <Text style={orderStyles.totalText}>총합계:</Text>
                 <Text style={orderStyles.totalText}>{formatPrice(totalPrice)}원</Text>
@@ -599,7 +588,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
         </>
       )}
 
-      {/* 발주 오류 모달 */}
       <Modal
         visible={modalVisible}
         transparent={true}
@@ -621,7 +609,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
         </View>
       </Modal>
 
-      {/* 발주 완료 모달 */}
       <Modal
         visible={orderCompleteModalVisible}
         transparent={true}
@@ -645,7 +632,6 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
         </View>
       </Modal>
 
-      {/* 발주 실패 모달 */}
       <Modal
         visible={orderFailureModalVisible}
         transparent={true}
@@ -707,14 +693,20 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
         const result = await response.json();
         const orders: StoreOrderData[] = result.orders;
 
-        // items와 조인
+        // items와 조인 + totalCost 계산
         const combined = orders.map((order) => {
           const foundItem = items.find((it) => it.품목_id === order.품목_id);
+          const unitPrice = foundItem ? parseFloat(foundItem.입고단가) : 0;
+          const qty = order.매장_발주량 || 0;
+          const totalCost = qty * unitPrice;
+
           return {
             ...order,
             품목명: foundItem?.품목명 ?? '알 수 없는 품목',
             협력사명: foundItem?.협력사명 ?? '',
             출고단위: foundItem?.출고단위,
+            입고단가: foundItem?.입고단가,
+            totalCost,
           };
         });
         allOrders = [...allOrders, ...combined];
@@ -805,7 +797,6 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
 
   const sortedYears = Object.keys(groupedByYearMonthWeek).sort((a, b) => parseInt(b) - parseInt(a));
 
-  // 화면 표시
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
@@ -868,15 +859,36 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
                       {months.map((month) => {
                         const weeksObj = groupedByYearMonthWeek[year][month];
                         const weeks = Object.keys(weeksObj).sort((a, b) => parseInt(b) - parseInt(a));
+
+                        // 월별 합계
+                        const monthTotalCost = weeks.reduce((monthSum, w) => {
+                          const ordersInWeek = weeksObj[w];
+                          return (
+                            monthSum +
+                            ordersInWeek.reduce((weekSum: number, o: StoreOrderData) => {
+                              return weekSum + (o.totalCost || 0);
+                            }, 0)
+                          );
+                        }, 0);
+
                         return (
                           <View key={month} style={{ marginBottom: 10, paddingLeft: 10 }}>
                             <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 5 }}>
-                              {month}월
+                              {month}월{' '}
+                              <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                                총 {formatPrice(monthTotalCost)}원
+                              </Text>
                             </Text>
                             {weeks.map((week) => {
                               const orders = weeksObj[week];
                               const firstOrder = orders[0];
                               const extraCount = orders.length - 1;
+
+                              // 주차별 합계
+                              const weekTotalCost = orders.reduce(
+                                (sum: number, o: StoreOrderData) => sum + (o.totalCost || 0),
+                                0);
+
                               return (
                                 <View
                                   key={week}
@@ -889,7 +901,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
                                   }}
                                 >
                                   <Text style={orderStatusStyles.dateHeader}>
-                                    {week}주차 주문 내역
+                                    {week}주차 주문 내역 (총 {formatPrice(weekTotalCost)}원)
                                   </Text>
                                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <View style={{ flex: 1 }}>
@@ -906,7 +918,10 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
                                       </Text>
                                     </View>
                                     <TouchableOpacity
-                                      style={[orderStatusStyles.actionButton, { alignSelf: 'flex-end', marginLeft: 12 }]}
+                                      style={[
+                                        orderStatusStyles.actionButton,
+                                        { alignSelf: 'flex-end', marginLeft: 12 },
+                                      ]}
                                       onPress={() => openDetailModal(`${year}.${month}.${week}`, orders)}
                                     >
                                       <Text style={orderStatusStyles.actionButtonText}>주문 상세보기</Text>
@@ -957,12 +972,13 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
     }
   };
 
+  // 모달 내에서 주차별 총합 계산
+  const detailTotalCost = detailGroupOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
+
   return (
     <View style={styles.dashboardContainer}>
-      {/* 메인 콘텐츠 영역 */}
       <View style={styles.mainContent}>{renderView()}</View>
 
-      {/* 하단 탭 영역 */}
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navButton} onPress={() => setActiveView('dashboard')}>
           <Home color={activeView === 'dashboard' ? '#3b82f6' : 'black'} />
@@ -987,6 +1003,41 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           </Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        visible={detailModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setDetailModalVisible(false)}
+      >
+        <View style={modalStyles.centeredView}>
+          <View style={[modalStyles.modalView, { maxHeight: '80%' }]}>
+            <Text style={modalStyles.modalTitle}>{formatWeekString(detailGroupDate)}</Text>
+            <ScrollView>
+              {detailGroupOrders.map((order, idx) => (
+                <View key={idx} style={{ marginBottom: 10 }}>
+                  <Text>
+                    {order.품목명} - 발주수량: {formatPrice(order.매장_발주량)}개
+                  </Text>
+                  <Text>단가: {formatPrice(parseFloat(order.입고단가 || '0'))}원</Text>
+                  <Text>금액: {formatPrice(order.totalCost || 0)}원</Text>
+                </View>
+              ))}
+            </ScrollView>
+            <View style={{ marginTop: 10 }}>
+              <Text style={{ fontWeight: 'bold' }}>
+                총 합계: {formatPrice(detailTotalCost)}원
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={modalStyles.closeButton}
+              onPress={() => setDetailModalVisible(false)}
+            >
+              <Text style={modalStyles.textStyle}>닫기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -1172,8 +1223,6 @@ const orderStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
-  // 하단 영역 (총 가격 / 발주확인)
   footerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1206,7 +1255,6 @@ const orderStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -1243,11 +1291,6 @@ const orderStyles = StyleSheet.create({
   totalText: {
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  totalPriceText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'White',
   },
 });
 
@@ -1298,7 +1341,6 @@ const modalStyles = StyleSheet.create({
   },
 });
 
-/** ★★★ extraCountText 스타일 추가 */
 const orderStatusStyles = StyleSheet.create({
   dateHeader: {
     fontSize: 18,

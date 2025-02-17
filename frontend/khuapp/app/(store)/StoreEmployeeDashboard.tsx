@@ -664,18 +664,28 @@ const StoreOrderRequest: React.FC<StoreOrderRequestProps> = ({
 const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeName }) => {
   const [activeView, setActiveView] = useState<ViewType>('dashboard');
   const [storeId, setStoreId] = useState<string>('');
-  const [isOrderWaiting, setIsOrderWaiting] = useState<boolean>(false);
-  const [localOrders, setLocalOrders] = useState<LocalOrder[]>([]);
   const [storeOrders, setStoreOrders] = useState<StoreOrderData[]>([]);
   const [items, setItems] = useState<ItemData[]>([]);
+  const [localOrders, setLocalOrders] = useState<LocalOrder[]>([]);
+
+  // 페이지네이션
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [ordersLoading, setOrdersLoading] = useState<boolean>(false);
 
-  // 정렬(오래된 순/최신 순)
+  // 정렬(최신순/오래된순)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // 기간조회(년, 월, 주차)
+  // 기간조회 여부
+  const [isPeriodSearch, setIsPeriodSearch] = useState<boolean>(false);
+
+  // **[수정] 기간조회 모달 표시 여부, 날짜선택 모달 표시 여부, 시작/종료 중 어디 선택 중인지 **
+  const [showPeriodModal, setShowPeriodModal] = useState<boolean>(false);
+  const [showDatePickerModal, setShowDatePickerModal] = useState<boolean>(false);
+  const [selectingStart, setSelectingStart] = useState<boolean>(false);
+  // **[/수정]**
+
+  // 실제 선택된 기간 (시작/종료)
   const [startYear, setStartYear] = useState<number>(2025);
   const [startMonth, setStartMonth] = useState<number>(2);
   const [startWeek, setStartWeek] = useState<number>(3);
@@ -689,15 +699,58 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
   const [detailGroupOrders, setDetailGroupOrders] = useState<StoreOrderData[]>([]);
   const [detailGroupDate, setDetailGroupDate] = useState<string>('');
 
-  // 기간조회 여부
-  const [isPeriodSearch, setIsPeriodSearch] = useState<boolean>(false);
+  /** 매장 정보 불러오기 */
+  useEffect(() => {
+    const fetchStoreInfo = async () => {
+      try {
+        const response = await fetch(`${RN_API_URL}/api/accounts/stores/`);
+        const storesData = await response.json();
+        const matchedStore = storesData.find((store: any) => store.매장명 === storeName);
+        if (matchedStore) {
+          setStoreId(matchedStore.매장_id);
+        }
+      } catch (error) {
+        console.error('매장 정보 조회 중 오류:', error);
+      }
+    };
+    fetchStoreInfo();
+  }, [storeName]);
 
-  /** 발주 내역을 page 단위로 불러오기 */
+  /** 품목 정보 불러오기 */
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const res = await fetch(`${RN_API_URL}/api/suppliers/items/`);
+        const data: ItemData[] = await res.json();
+        setItems(data);
+      } catch (error) {
+        console.error('품목 정보 불러오기 실패:', error);
+      }
+    };
+    fetchItems();
+  }, []);
+
+  /** order-status로 들어갈 때 기본 페이지네이션 호출 */
+  useEffect(() => {
+    if (activeView === 'order-status' && storeId) {
+      setStoreOrders([]);
+      setHasMore(true);
+      setOrdersLoading(true);
+      setIsPeriodSearch(false);
+
+      (async () => {
+        await fetchOrders(1, sortOrder);
+        setCurrentPage(6);
+        setOrdersLoading(false);
+      })();
+    }
+  }, [activeView, storeId]);
+
+  /** 기본 발주내역 (기간조회가 아닐 때) */
   const fetchOrders = async (startPage: number, order: 'asc' | 'desc') => {
     if (!storeId) return;
     setOrdersLoading(true);
 
-    // 기간조회가 아니면 기존 페이지네이션 방식
     if (!isPeriodSearch) {
       try {
         let allOrders: StoreOrderData[] = [];
@@ -713,19 +766,17 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           const orders: StoreOrderData[] = result.orders;
 
           // items와 조인 + totalCost 계산
-          const combined = orders.map((order) => {
-            const foundItem = items.find((it) => it.품목_id === order.품목_id);
+          const combined = orders.map((o) => {
+            const foundItem = items.find((it) => it.품목_id === o.품목_id);
             const unitPrice = foundItem ? parseFloat(foundItem.입고단가) : 0;
-            const qty = order.매장_발주량 || 0;
-            const totalCost = qty * unitPrice;
-
+            const qty = o.매장_발주량 || 0;
             return {
-              ...order,
+              ...o,
               품목명: foundItem?.품목명 ?? '알 수 없는 품목',
               협력사명: foundItem?.협력사명 ?? '',
               출고단위: foundItem?.출고단위,
               입고단가: foundItem?.입고단가,
-              totalCost,
+              totalCost: qty * unitPrice,
             };
           });
           allOrders = [...allOrders, ...combined];
@@ -740,80 +791,16 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
         setOrdersLoading(false);
       }
     } else {
-      // 기간조회 중이면 이미 handlePeriodSearch에서 storeOrders를 세팅했을 것이므로,
-      // 여기서는 추가 로딩을 막음 (또는 원하는 로직대로 수정 가능)
+      // 기간조회 중이면 handlePeriodSearch()가 이미 storeOrders에 반영
       setOrdersLoading(false);
     }
   };
 
-  // 매장 정보 불러오기
-  useEffect(() => {
-    const fetchStoreInfo = async () => {
-      try {
-        const response = await fetch(`${RN_API_URL}/api/accounts/stores/`);
-        const storesData = await response.json();
-        const matchedStore = storesData.find((store: any) => store.매장명 === storeName);
-        if (matchedStore) {
-          setStoreId(matchedStore.매장_id);
-        } else {
-          console.error('매장명을 찾을 수 없습니다.');
-        }
-      } catch (error) {
-        console.error('매장 정보 조회 중 오류:', error);
-      }
-    };
-    fetchStoreInfo();
-  }, [storeName]);
-
-  // 품목 불러오기 (조인을 위해)
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const res = await fetch(`${RN_API_URL}/api/suppliers/items/`);
-        const data: ItemData[] = await res.json();
-        setItems(data);
-      } catch (error) {
-        console.error('품목 정보 불러오기 실패:', error);
-      }
-    };
-    fetchItems();
-  }, []);
-
-  // order-status로 전환 시 1~5페이지 로드 후 currentPage=6
-  useEffect(() => {
-    if (activeView === 'order-status' && storeId) {
-      setStoreOrders([]);
-      setHasMore(true);
-      setOrdersLoading(true);
-      setIsPeriodSearch(false);
-      (async () => {
-        await fetchOrders(1, sortOrder);
-        setCurrentPage(6);
-        setOrdersLoading(false);
-      })();
-    }
-  }, [activeView, storeId]);
-
-  const handleOrderComplete = () => {
-    setIsOrderWaiting(true);
-    setActiveView('order-status');
-  };
-
-  const handleNewOrder = (orderData: LocalOrder) => {
-    setLocalOrders((prev) => [orderData, ...prev]);
-  };
-
-  // 주문 상세보기 모달 열기
-  const openDetailModal = (dateKey: string, orders: StoreOrderData[]) => {
-    setDetailGroupDate(dateKey);
-    setDetailGroupOrders(orders);
-    setDetailModalVisible(true);
-  };
-
-  /** 기간검색 (YYYY.MM.W ~ YYYY.MM.W) */
+  /** 기간조회 API */
   const handlePeriodSearch = async () => {
     if (!storeId) return;
     setIsPeriodSearch(true);
+    setShowPeriodModal(false);
     setStoreOrders([]);
     setHasMore(false);
     setOrdersLoading(true);
@@ -832,19 +819,17 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
       const data = await response.json();
       const orders: StoreOrderData[] = data.orders || [];
 
-      // items와 조인 + totalCost 계산
       const combined = orders.map((o) => {
         const foundItem = items.find((it) => it.품목_id === o.품목_id);
         const unitPrice = foundItem ? parseFloat(foundItem.입고단가) : 0;
         const qty = o.매장_발주량 || 0;
-        const totalCost = qty * unitPrice;
         return {
           ...o,
           품목명: foundItem?.품목명 ?? '알 수 없는 품목',
           협력사명: foundItem?.협력사명 ?? '',
           출고단위: foundItem?.출고단위,
           입고단가: foundItem?.입고단가,
-          totalCost,
+          totalCost: qty * unitPrice,
         };
       });
       setStoreOrders(combined);
@@ -855,23 +840,45 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
     }
   };
 
-  // 정렬 토글
+  /** 초기화 버튼 -> 기간조회 해제, 기본(최신순)으로 재조회 */
+  const handleResetSearch = async () => {
+    setShowPeriodModal(false);
+    setIsPeriodSearch(false);
+    setStoreOrders([]);
+    setHasMore(true);
+    setOrdersLoading(true);
+
+    // 기본 페이지네이션 로직
+    await fetchOrders(1, sortOrder);
+    setCurrentPage(6);
+    setOrdersLoading(false);
+  };
+
+  /** 정렬 토글 */
   const toggleSortOrder = () => {
     const newOrder = sortOrder === 'desc' ? 'asc' : 'desc';
     setSortOrder(newOrder);
 
-    // 기간검색 상태인지 확인
     if (isPeriodSearch) {
-      // 기간조회 상태면 다시 기간검색 API를 호출
       handlePeriodSearch();
     } else {
-      // 기본 페이지네이션 상태면 기존 페이지네이션 로직으로 다시 로드
       setStoreOrders([]);
       setHasMore(true);
       setCurrentPage(6);
       fetchOrders(1, newOrder);
     }
   };
+
+  /** 날짜선택 모달 열기 (시작/종료 구분) */
+  const openDatePicker = (isStart: boolean) => {
+    setSelectingStart(isStart);
+    setShowDatePickerModal(true);
+  };
+
+  /** 날짜선택 모달에서 쓰는 리스트 */
+  const years = [2025, 2024, 2023, 2022, 2021];
+  const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  const weeks = [1, 2, 3, 4, 5];
 
   // 주차별로 그룹화
   const groupedByYearMonthWeek = storeOrders.reduce((acc: any, order) => {
@@ -894,7 +901,17 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
 
   const sortedYears = sortKeys(Object.keys(groupedByYearMonthWeek));
 
-  // 화면 표시
+  /** 주문 상세보기 모달 열기 */
+  const openDetailModal = (dateKey: string, orders: StoreOrderData[]) => {
+    setDetailGroupDate(dateKey);
+    setDetailGroupOrders(orders);
+    setDetailModalVisible(true);
+  };
+
+  /** 주문 상세 총합 */
+  const detailTotalCost = detailGroupOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
+
+  /** 화면 표시 */
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
@@ -910,12 +927,14 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           <StoreOrderRequest
             storeName={storeName}
             storeId={storeId}
-            onOrderComplete={handleOrderComplete}
-            onNewOrder={handleNewOrder}
+            onOrderComplete={() => setActiveView('order-status')}
+            onNewOrder={(newOrder) => {
+              setLocalOrders((prev) => [newOrder, ...prev]);
+            }}
           />
         );
 
-      case 'order-status': {
+      case 'order-status':
         if (storeOrders.length === 0 && ordersLoading) {
           return (
             <View style={orderStyles.loadingContainer}>
@@ -927,7 +946,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
 
         return (
           <View style={styles.container}>
-            {/* 상단에 정렬 토글 및 기간조회 */}
+            {/* 상단 바 */}
             <View style={styles.filterContainer}>
               {/* 정렬 토글 */}
               <TouchableOpacity style={styles.sortButton} onPress={toggleSortOrder}>
@@ -936,84 +955,13 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
                 </Text>
               </TouchableOpacity>
 
-              {/* 기간조회 박스 */}
-              <View style={styles.periodSearchContainer}>
-                <Text style={styles.periodSearchLabel}>기간조회</Text>
-                {/* 시작 기간 */}
-                <View style={styles.periodBox}>
-                  <Text style={styles.periodBoxLabel}>시작</Text>
-                  <View style={styles.periodPicker}>
-                    <TouchableOpacity onPress={() => setStartYear((prev) => prev + 1)}>
-                      <ChevronUp size={16} />
-                    </TouchableOpacity>
-                    <Text style={styles.periodText}>{startYear}</Text>
-                    <TouchableOpacity onPress={() => setStartYear((prev) => prev - 1)}>
-                      <ChevronDown size={16} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.periodPicker}>
-                    <TouchableOpacity onPress={() => setStartMonth((prev) => (prev < 12 ? prev + 1 : 1))}>
-                      <ChevronUp size={16} />
-                    </TouchableOpacity>
-                    <Text style={styles.periodText}>{startMonth}</Text>
-                    <TouchableOpacity onPress={() => setStartMonth((prev) => (prev > 1 ? prev - 1 : 12))}>
-                      <ChevronDown size={16} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.periodPicker}>
-                    <TouchableOpacity onPress={() => setStartWeek((prev) => prev + 1)}>
-                      <ChevronUp size={16} />
-                    </TouchableOpacity>
-                    <Text style={styles.periodText}>{startWeek}</Text>
-                    <TouchableOpacity
-                      onPress={() => setStartWeek((prev) => (prev > 1 ? prev - 1 : 1))}
-                    >
-                      <ChevronDown size={16} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* 종료 기간 */}
-                <View style={styles.periodBox}>
-                  <Text style={styles.periodBoxLabel}>종료</Text>
-                  <View style={styles.periodPicker}>
-                    <TouchableOpacity onPress={() => setEndYear((prev) => prev + 1)}>
-                      <ChevronUp size={16} />
-                    </TouchableOpacity>
-                    <Text style={styles.periodText}>{endYear}</Text>
-                    <TouchableOpacity onPress={() => setEndYear((prev) => prev - 1)}>
-                      <ChevronDown size={16} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.periodPicker}>
-                    <TouchableOpacity onPress={() => setEndMonth((prev) => (prev < 12 ? prev + 1 : 1))}>
-                      <ChevronUp size={16} />
-                    </TouchableOpacity>
-                    <Text style={styles.periodText}>{endMonth}</Text>
-                    <TouchableOpacity onPress={() => setEndMonth((prev) => (prev > 1 ? prev - 1 : 12))}>
-                      <ChevronDown size={16} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.periodPicker}>
-                    <TouchableOpacity onPress={() => setEndWeek((prev) => prev + 1)}>
-                      <ChevronUp size={16} />
-                    </TouchableOpacity>
-                    <Text style={styles.periodText}>{endWeek}</Text>
-                    <TouchableOpacity onPress={() => setEndWeek((prev) => (prev > 1 ? prev - 1 : 1))}>
-                      <ChevronDown size={16} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* 검색 버튼 */}
-                <TouchableOpacity style={styles.periodSearchButton} onPress={handlePeriodSearch}>
-                  <Text style={styles.periodSearchButtonText}>검색</Text>
-                </TouchableOpacity>
-              </View>
+              {/* 기간조회 버튼 */}
+              <TouchableOpacity
+                style={[styles.sortButton, { marginLeft: 8 }]}
+                onPress={() => setShowPeriodModal(true)}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>기간조회</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
@@ -1091,9 +1039,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
                                   <Text style={orderStatusStyles.dateHeader}>
                                     {week}주차 주문 내역 (총 {formatPrice(weekTotalCost)}원)
                                   </Text>
-                                  <View
-                                    style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-                                  >
+                                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <View style={{ flex: 1 }}>
                                       <Text style={orderStatusStyles.productName}>
                                         {firstOrder.품목명}
@@ -1133,7 +1079,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
                   );
                 })}
 
-                {/* 기간조회가 아닐 때만 "더 불러오기" 버튼 표시 */}
+                {/* 기간조회가 아닐 때만 '더 불러오기' 버튼 */}
                 {!isPeriodSearch && hasMore && (
                   <TouchableOpacity
                     style={[styles.loadMoreButton, ordersLoading && styles.loadMoreButtonLoading]}
@@ -1154,7 +1100,6 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
             )}
           </View>
         );
-      }
 
       case 'inventory':
         return (
@@ -1165,17 +1110,15 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
         );
 
       default:
-        return <Text>페이지를 선택해주세요</Text>;
+        return null;
     }
   };
-
-  // 모달 내에서 주차별 총합 계산
-  const detailTotalCost = detailGroupOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
 
   return (
     <View style={styles.dashboardContainer}>
       <View style={styles.mainContent}>{renderView()}</View>
 
+      {/* 하단 네비게이션 */}
       <View style={styles.navbar}>
         <TouchableOpacity style={styles.navButton} onPress={() => setActiveView('dashboard')}>
           <Home color={activeView === 'dashboard' ? '#3b82f6' : 'black'} />
@@ -1201,25 +1144,21 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
         </TouchableOpacity>
       </View>
 
-      {/* 주문 상세보기 모달 (영수증 스타일) */}
+      {/* 주문 상세보기 모달 */}
       <Modal
         visible={detailModalVisible}
-        transparent={true}
+        transparent
         animationType="slide"
         onRequestClose={() => setDetailModalVisible(false)}
       >
         <View style={modalStyles.centeredView}>
           <View style={[modalStyles.modalView, { maxHeight: '80%' }]}>
             <ScrollView style={receiptStyles.receiptContainer}>
-              {/* 헤더 */}
               <View style={receiptStyles.header}>
                 <Text style={receiptStyles.headerTitle}>주문 상세 내역</Text>
                 <Text style={receiptStyles.headerSubtitle}>{formatWeekString(detailGroupDate)}</Text>
               </View>
-
               <View style={receiptStyles.divider} />
-
-              {/* 품목 목록 */}
               {detailGroupOrders.map((order, idx) => (
                 <View key={idx} style={receiptStyles.itemRow}>
                   <View style={receiptStyles.itemRowLeft}>
@@ -1235,13 +1174,10 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
                   </View>
                 </View>
               ))}
-
               <View style={receiptStyles.divider} />
-
-              {/* 총합계 */}
               <View style={receiptStyles.footer}>
                 <Text style={receiptStyles.footerText}>
-                  총 합계: {formatPrice(detailTotalCost)}원
+                  총 합계: {formatPrice(detailGroupOrders.reduce((sum, o) => sum + (o.totalCost || 0), 0))}원
                 </Text>
               </View>
             </ScrollView>
@@ -1255,6 +1191,151 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           </View>
         </View>
       </Modal>
+
+      {/* **[수정] 기간조회 모달 (시작~종료) + 초기화 버튼 + 날짜 선택 모달 ** */}
+      <Modal
+        visible={showPeriodModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowPeriodModal(false)}
+      >
+        <View style={styles.periodModalContainer}>
+          <View style={styles.periodModalInner}>
+            <Text style={styles.periodModalTitle}>기간조회</Text>
+
+            {/* "시작 ~ 종료" 한 줄 */}
+            <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
+              <TouchableOpacity
+                style={styles.dateBox}
+                onPress={() => openDatePicker(true)}
+              >
+                <Text style={styles.dateBoxText}>{`${startYear}.${startMonth}.${startWeek}`}</Text>
+              </TouchableOpacity>
+
+              <Text style={{ marginHorizontal: 8, fontSize: 16, fontWeight: 'bold' }}>~</Text>
+
+              <TouchableOpacity
+                style={styles.dateBox}
+                onPress={() => openDatePicker(false)}
+              >
+                <Text style={styles.dateBoxText}>{`${endYear}.${endMonth}.${endWeek}`}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* 검색/초기화/취소 버튼 */}
+            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+              <TouchableOpacity style={styles.periodSearchButton} onPress={handlePeriodSearch}>
+                <Text style={styles.periodSearchButtonText}>검색</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.periodSearchButton, { backgroundColor: '#999', marginLeft: 10 }]}
+                onPress={handleResetSearch}
+              >
+                <Text style={styles.periodSearchButtonText}>초기화</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.periodSearchButton, { backgroundColor: '#ccc', marginLeft: 10 }]}
+                onPress={() => setShowPeriodModal(false)}
+              >
+                <Text style={styles.periodSearchButtonText}>취소</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 날짜 선택 모달 (연도/월/주차 리스트) */}
+      <Modal
+        visible={showDatePickerModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDatePickerModal(false)}
+      >
+        <View style={styles.datePickerModalContainer}>
+          <View style={styles.datePickerModal}>
+            <Text style={styles.datePickerTitle}>
+              {selectingStart ? '시작 날짜 선택' : '종료 날짜 선택'}
+            </Text>
+
+            <Text style={styles.datePickerLabel}>연도</Text>
+            <ScrollView horizontal style={{ marginBottom: 8 }}>
+              {years.map((y) => (
+                <TouchableOpacity
+                  key={y}
+                  style={[
+                    styles.pickerItem,
+                    (selectingStart ? startYear : endYear) === y && styles.pickerItemActive,
+                  ]}
+                  onPress={() => (selectingStart ? setStartYear(y) : setEndYear(y))}
+                >
+                  <Text
+                    style={{
+                      color: (selectingStart ? startYear : endYear) === y ? '#fff' : '#333',
+                    }}
+                  >
+                    {y}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Text style={styles.datePickerLabel}>월</Text>
+            <ScrollView horizontal style={{ marginBottom: 8 }}>
+              {months.map((m) => (
+                <TouchableOpacity
+                  key={m}
+                  style={[
+                    styles.pickerItem,
+                    (selectingStart ? startMonth : endMonth) === m && styles.pickerItemActive,
+                  ]}
+                  onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
+                >
+                  <Text
+                    style={{
+                      color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333',
+                    }}
+                  >
+                    {m}월
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Text style={styles.datePickerLabel}>주차</Text>
+            <ScrollView horizontal style={{ marginBottom: 16 }}>
+              {weeks.map((w) => (
+                <TouchableOpacity
+                  key={w}
+                  style={[
+                    styles.pickerItem,
+                    (selectingStart ? startWeek : endWeek) === w && styles.pickerItemActive,
+                  ]}
+                  onPress={() => (selectingStart ? setStartWeek(w) : setEndWeek(w))}
+                >
+                  <Text
+                    style={{
+                      color: (selectingStart ? startWeek : endWeek) === w ? '#fff' : '#333',
+                    }}
+                  >
+                    {w}주
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* 확인 버튼 */}
+            <TouchableOpacity
+              style={styles.periodSearchButton}
+              onPress={() => setShowDatePickerModal(false)}
+            >
+              <Text style={styles.periodSearchButtonText}>확인</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {/* **[/수정] 끝 ** */}
     </View>
   );
 };
@@ -1295,54 +1376,58 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
   },
-  periodSearchContainer: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    marginLeft: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    padding: 8,
-  },
-  periodSearchLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 6,
-  },
-  periodBox: {
-    flexDirection: 'row',
+  // **[수정] 기간조회 모달용 스타일 추가 **
+  periodModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
   },
-  periodBoxLabel: {
-    marginRight: 6,
+  periodModalInner: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 20,
+  },
+  periodModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  periodRowInModal: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  periodModalText: {
+    fontSize: 16,
     fontWeight: '600',
   },
-  periodPicker: {
-    flexDirection: 'row',
+  dateBox: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    minWidth: 80,
     alignItems: 'center',
-    backgroundColor: '#fff',
-    marginRight: 6,
-    paddingHorizontal: 4,
-    borderRadius: 4,
   },
-  periodText: {
-    marginHorizontal: 4,
-    minWidth: 30,
-    textAlign: 'center',
+  dateBoxText: {
+    fontSize: 16,
     fontWeight: '600',
   },
   periodSearchButton: {
     backgroundColor: '#3b82f6',
     borderRadius: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    alignSelf: 'flex-end',
-    marginTop: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
   periodSearchButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },
+  // **[/수정] 끝 **
   navbar: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -1378,6 +1463,41 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  /** 날짜선택 모달 (연도/월/주차) */
+  datePickerModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  datePickerModal: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  datePickerLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginVertical: 6,
+    alignSelf: 'flex-start',
+  },
+  pickerItem: {
+    backgroundColor: '#eee',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginRight: 6,
+  },
+  pickerItemActive: {
+    backgroundColor: '#3b82f6',
   },
 });
 

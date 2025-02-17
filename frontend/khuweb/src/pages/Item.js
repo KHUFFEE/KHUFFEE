@@ -1,9 +1,9 @@
 // frontend/khuweb/src/pages/Item.js
-
 import React, { useEffect, useState } from "react";
 import { fetchItems, fetchSuppliers, addItem, deleteItems, updateItem } from "../api/api";
 import "../styles/Item.css";
-import * as XLSX from "xlsx";
+// xlsx-js-style 사용 (스타일 적용 가능)
+import * as XLSX from "xlsx-js-style";
 
 const Item = () => {
   const [items, setItems] = useState([]);
@@ -12,24 +12,14 @@ const Item = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  // 선택된 품목들의 품목_id 배열 (삭제 모드용)
   const [selectedItems, setSelectedItems] = useState([]);
-  // 편집 중 변경된 값을 저장하는 객체, key: 품목_id, value: 수정된 데이터
   const [editedItems, setEditedItems] = useState({});
-  // 정렬 상태: 각 열에 대해 null, "asc", "desc" 중 하나
-  // → 기본 default값: 모든 열 오름차순
   const [sortCriteria, setSortCriteria] = useState({
     품목명: "asc",
     협력사명: "asc",
     종류: "asc",
   });
-  /*  
-    사용자가 정렬 버튼을 누른 순서를 관리하는 배열입니다.
-    초기에는 사용자가 클릭하기 전이므로 빈 배열로 두고,
-    정렬 시 manualSortOrder가 비어있으면 기본순서(["협력사명", "종류", "품목명"])를 사용합니다.
-  */
   const [manualSortOrder, setManualSortOrder] = useState([]);
-  // 여러 제품을 추가할 수 있도록 newItems 배열로 상태 관리 (초기 1행)
   const [newItems, setNewItems] = useState([
     {
       품목명: "",
@@ -37,14 +27,12 @@ const Item = () => {
       종류: "",
       규격: "",
       단위: "",
-      입고단가: "", // 자동 계산됨
+      입고단가: "",
       입고단위: "",
       입고단위단가: "",
       출고단위: ""
     }
   ]);
-
-  // 팝업 알림 상태 (App.css에서 공용 스타일로 관리)
   const [alertPopup, setAlertPopup] = useState({ show: false, message: "" });
 
   // 품목 목록 불러오기
@@ -52,7 +40,6 @@ const Item = () => {
     const getItems = async () => {
       try {
         const data = await fetchItems();
-        // API로 받아온 순서는 그대로 저장; 화면에서는 정렬된 결과의 인덱스로 번호를 표시
         setItems(data);
       } catch (err) {
         setError("Failed to load items");
@@ -84,9 +71,6 @@ const Item = () => {
       else next = null;
       const newCriteria = { ...prev, [column]: next };
 
-      // 항상 해당 열을 manualSortOrder에서 제거한 후, 
-      // null이 아니라면 (즉, 정렬 활성 상태라면) 배열의 끝에 추가하여
-      // 사용자가 정렬 버튼을 누른 순서를 반영합니다.
       setManualSortOrder((prevOrder) => {
         let newOrder = prevOrder.filter((col) => col !== column);
         if (next !== null) {
@@ -99,7 +83,7 @@ const Item = () => {
     });
   };
 
-  // 정렬 함수: manualSortOrder가 있으면 그 순서를, 없으면 기본 순서(["협력사명", "종류", "품목명"])를 사용
+  // 정렬 함수
   const getSortedItems = () => {
     let sorted = [...items];
     const activeOrder =
@@ -128,13 +112,13 @@ const Item = () => {
 
   const sortedItems = getSortedItems();
 
-  // 입력값 변경 핸들러 (제품 추가 팝업)
+  // 제품 추가 팝업 입력값 변경 핸들러
   const handleInputChange = (index, e) => {
     const { name, value } = e.target;
     setNewItems((prev) => {
       const updatedItems = [...prev];
       updatedItems[index] = { ...updatedItems[index], [name]: value };
-      // 입고단가는 자동 계산
+      // 입고단가 자동 계산
       const unit = parseFloat(updatedItems[index]["입고단위"]);
       const unitPrice = parseFloat(updatedItems[index]["입고단위단가"]);
       if (!isNaN(unit) && unit !== 0 && !isNaN(unitPrice)) {
@@ -283,36 +267,173 @@ const Item = () => {
     }
   };
 
-  // Excel 다운로드 핸들러 (제품 목록 XLSX 다운로드)
+  // Excel 다운로드 핸들러 (xlsx-js-style 적용)
+  // Excel 다운로드 핸들러 (xlsx-js-style 적용)
   const handleDownloadExcel = () => {
-    // 정렬된 제품 데이터를 객체 배열로 생성 (각 객체가 한 행을 나타냄)
-    const data = sortedItems.map(item => {
-      const supplier = suppliers.find(s => s.협력사_id === item.협력사_id);
+    // 1. 현재 날짜 및 파일명 생성
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = (now.getMonth() + 1).toString().padStart(2, "0");
+    const dd = now.getDate().toString().padStart(2, "0");
+    const filename = `카페쿠피_제품목록_관리자용_${yyyy}${mm}${dd}.xlsx`;
+
+    // 2. JSON 데이터 준비 (헤더 순서 유지)
+    const headers = [
+      "품목명",
+      "협력사명",
+      "종류",
+      "규격",
+      "단위",
+      "입고단가",
+      "입고단위",
+      "입고단위단가",
+      "출고단위",
+    ];
+    const data = sortedItems.map((item) => {
+      const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id);
       return {
-        "품목명": item.품목명,
-        "협력사명": supplier ? supplier.협력사명 : "",
-        "종류": item.종류,
-        "규격": item.규격,
-        "단위": item.단위,
-        "입고단가": item.입고단가,
-        "입고단위": item.입고단위,
-        "입고단위단가": item.입고단위단가,
-        "출고단위": item.출고단위
+        품목명: item.품목명,
+        협력사명: supplier ? supplier.협력사명 : "",
+        종류: item.종류,
+        규격: item.규격,
+        단위: item.단위,
+        입고단가: item.입고단가,
+        입고단위: item.입고단위,
+        입고단위단가: item.입고단위단가,
+        출고단위: item.출고단위,
       };
     });
 
-    // json_to_sheet 함수를 사용하여 워크시트 생성 (열 순서를 명시적으로 지정)
-    const worksheet = XLSX.utils.json_to_sheet(data, {
-      header: ["품목명", "협력사명", "종류", "규격", "단위", "입고단가", "입고단위", "입고단위단가", "출고단위"]
+    // 3. 워크시트 생성: 데이터는 A4부터 시작 (즉, 4행부터 헤더+데이터)
+    const ws = XLSX.utils.json_to_sheet(data, {
+      header: headers,
+      origin: "A4",
     });
-    
-    // 새 워크북 생성
-    const workbook = XLSX.utils.book_new();
-    // 워크북에 워크시트 추가 (시트 이름은 "Sheet1")
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-    // 워크북을 XLSX 파일로 저장 (파일명: "제품 목록.xlsx")
-    XLSX.writeFile(workbook, "제품 목록.xlsx", { bookType: "xlsx" });
+    // 4. 상단 제목 영역 설정 및 병합 (A1 ~ I2)
+    ws["!merges"] = ws["!merges"] || [];
+    const titleMerge = { s: { r: 0, c: 0 }, e: { r: 1, c: headers.length - 1 } };
+    ws["!merges"].push(titleMerge);
+    // A1 셀에 제목 값과 스타일 적용 (맑은 고딕, 글자크기 14, bold, 가운데 정렬)
+    ws["A1"] = {
+      v: `카페 쿠피 ${mm}월 제품 목록`,
+      t: "s",
+      s: {
+        font: { name: "맑은 고딕", sz: 14, bold: true },
+        alignment: { horizontal: "center", vertical: "center" },
+        border: {
+          top: { style: "medium", color: { rgb: "000000" } },
+          bottom: { style: "medium", color: { rgb: "000000" } },
+          left: { style: "medium", color: { rgb: "000000" } },
+          right: { style: "medium", color: { rgb: "000000" } },
+        },
+      },
+    };
+    // **병합된 영역 전체에 외부 테두리 적용**
+    // (A1 셀 이외의 영역에도 빈 셀을 만들어 외부 테두리만 지정)
+    for (let r = titleMerge.s.r; r <= titleMerge.e.r; r++) {
+      for (let c = titleMerge.s.c; c <= titleMerge.e.c; c++) {
+        const addr = XLSX.utils.encode_cell({ r, c });
+        // A1은 이미 처리했으므로 건너뛰고, 값이 없는 셀은 빈 문자열로 채움
+        if (addr === "A1") continue;
+        if (!ws[addr]) ws[addr] = { t: "s", v: "" };
+        ws[addr].s = ws[addr].s || {};
+        // 외부 가장자리만 테두리 지정
+        ws[addr].s.border = {
+          top: r === titleMerge.s.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
+          bottom: r === titleMerge.e.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
+          left: c === titleMerge.s.c ? { style: "medium", color: { rgb: "000000" } } : undefined,
+          right: c === titleMerge.e.c ? { style: "medium", color: { rgb: "000000" } } : undefined,
+        };
+      }
+    }
+
+    // 5. 헤더 행(4행; 0-indexed row 3) 각 셀에 Arial, bold, 가운데 정렬 및 외부 테두리 적용
+    for (let i = 0; i < headers.length; i++) {
+      const cellAddr = XLSX.utils.encode_cell({ r: 3, c: i });
+      if (ws[cellAddr]) {
+        ws[cellAddr].s = ws[cellAddr].s || {};
+        ws[cellAddr].s.font = { name: "Arial", bold: true };
+        ws[cellAddr].s.alignment = { horizontal: "center", vertical: "center" };
+        const borderObj = {
+          top: { style: "medium", color: { rgb: "000000" } },
+          bottom: { style: "medium", color: { rgb: "000000" } },
+        };
+        if (i === 0)
+          borderObj.left = { style: "medium", color: { rgb: "000000" } };
+        if (i === headers.length - 1)
+          borderObj.right = { style: "medium", color: { rgb: "000000" } };
+        ws[cellAddr].s.border = borderObj;
+      }
+    }
+
+    // 6. 나머지 셀에 기본적으로 Arial 폰트 적용 (제목 A1은 그대로 유지)
+    for (let cell in ws) {
+      if (cell[0] === "!") continue;
+      if (cell === "A1") continue;
+      ws[cell].s = ws[cell].s || {};
+      const existingFont = ws[cell].s.font || {};
+      ws[cell].s.font = { ...existingFont, name: "Arial" };
+    }
+
+    // 7. 각 열의 너비 조정 (각 열의 최대 문자열 길이에 +10 여유)
+    const allRows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+    const colWidths = [];
+    if (allRows && allRows.length > 0) {
+      const numCols = Math.max(...allRows.map((r) => r.length));
+      for (let col = 0; col < numCols; col++) {
+        let maxLen = 0;
+        allRows.forEach((row) => {
+          const cellVal = row[col];
+          if (cellVal) {
+            maxLen = Math.max(maxLen, String(cellVal).length);
+          }
+        });
+        colWidths.push({ wch: maxLen + 10 });
+      }
+    }
+    ws["!cols"] = colWidths;
+
+    // 8. 전체 테이블 영역(헤더행(4행)부터 마지막 행까지)의 외부 테두리 적용
+    if (ws["!ref"]) {
+      const range = XLSX.utils.decode_range(ws["!ref"]);
+      for (let r = range.s.r; r <= range.e.r; r++) {
+        for (let c = range.s.c; c <= range.e.c; c++) {
+          const cellAddr = XLSX.utils.encode_cell({ r, c });
+          if (!ws[cellAddr]) continue;
+          let borderObj = ws[cellAddr].s.border || {};
+          if (r === range.s.r) {
+            borderObj.top = { style: "medium", color: { rgb: "000000" } };
+          }
+          if (r === range.e.r) {
+            borderObj.bottom = { style: "medium", color: { rgb: "000000" } };
+          }
+          if (c === range.s.c) {
+            borderObj.left = { style: "medium", color: { rgb: "000000" } };
+          }
+          if (c === range.e.c) {
+            borderObj.right = { style: "medium", color: { rgb: "000000" } };
+          }
+          ws[cellAddr].s.border = borderObj;
+        }
+      }
+    }
+
+    // 9. 입고단가 열(헤더 인덱스 5)의 데이터 행(헤더행(4행) 이후)은 오른쪽 정렬
+    const range = XLSX.utils.decode_range(ws["!ref"]);
+    for (let r = 4; r <= range.e.r; r++) { // r=4부터 데이터 시작 (0-index: row3은 헤더)
+      const cellAddr = XLSX.utils.encode_cell({ r, c: 5 }); // 6번째 열 (입고단가)
+      if (ws[cellAddr]) {
+        ws[cellAddr].s = ws[cellAddr].s || {};
+        // 만약 이미 alignment 설정이 있다면 덮어쓰되 헤더와는 다르게 오른쪽 정렬
+        ws[cellAddr].s.alignment = { horizontal: "right", vertical: "center" };
+      }
+    }
+
+    // 10. 워크북 생성 및 저장 (xlsx-js-style 사용)
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, `카페 쿠피 ${mm}월 제품 목록`);
+    XLSX.writeFile(wb, filename);
   };
 
 
@@ -351,13 +472,13 @@ const Item = () => {
       <hr className="divider" />
       {error && <p className="error">{error}</p>}
 
-      {/* 정렬 가능한 헤더 */}
+      {/* 메인 테이블 (목록) */}
       <table className="item-table">
         <thead>
           <tr>
             {isDeleteMode && <th className="narrow-col">선택</th>}
-            <th>번호</th>
-            <th>
+            <th className="number-col diagonal-header"></th>
+            <th style={isEditMode ? { width: "200px" } : {}}>
               품목명
               <button className="sort-btn" onClick={() => toggleSort("품목명")}>
                 {sortCriteria.품목명 === "asc"
@@ -367,7 +488,7 @@ const Item = () => {
                   : "—"}
               </button>
             </th>
-            <th>
+            <th style={isEditMode ? { width: "120px" } : {}}>
               협력사명
               <button className="sort-btn" onClick={() => toggleSort("협력사명")}>
                 {sortCriteria.협력사명 === "asc"
@@ -388,11 +509,11 @@ const Item = () => {
               </button>
             </th>
             <th>규격</th>
-            <th>단위</th>
-            <th>입고단가</th>
-            <th>입고단위</th>
-            <th>입고단위단가</th>
-            <th>출고단위</th>
+            <th style={isEditMode ? { width: "35px" } : {}}>단위</th>
+            <th className="right-align">입고단가</th>
+            <th className="right-align">입고단위</th>
+            <th className="right-align">입고단위단가</th>
+            <th className="right-align">출고단위</th>
           </tr>
         </thead>
         <tbody>
@@ -409,8 +530,7 @@ const Item = () => {
                     />
                   </td>
                 )}
-                {/* 번호는 정렬된 배열의 인덱스로 1부터 연속 표시 */}
-                <td>{index + 1}</td>
+                <td className="number-col">{index + 1}</td>
                 <td>
                   {isEditMode ? (
                     <input
@@ -486,7 +606,7 @@ const Item = () => {
                     item.단위
                   )}
                 </td>
-                <td>
+                <td className="right-align">
                   {isEditMode ? (
                     <input
                       type="number"
@@ -495,12 +615,13 @@ const Item = () => {
                       value={editedItems[item.품목_id]?.입고단가}
                       disabled
                       className="calc-input"
+                      style={{ textAlign: "right" }}
                     />
                   ) : (
                     <span>{item.입고단가}</span>
                   )}
                 </td>
-                <td>
+                <td className="right-align">
                   {isEditMode ? (
                     <input
                       type="number"
@@ -509,12 +630,13 @@ const Item = () => {
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "입고단위", e.target.value)
                       }
+                      style={{ textAlign: "right" }}
                     />
                   ) : (
                     item.입고단위
                   )}
                 </td>
-                <td>
+                <td className="right-align">
                   {isEditMode ? (
                     <input
                       type="number"
@@ -523,12 +645,13 @@ const Item = () => {
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "입고단위단가", e.target.value)
                       }
+                      style={{ textAlign: "right" }}
                     />
                   ) : (
                     item.입고단위단가
                   )}
                 </td>
-                <td>
+                <td className="right-align">
                   {isEditMode ? (
                     <input
                       type="number"
@@ -537,6 +660,7 @@ const Item = () => {
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "출고단위", e.target.value)
                       }
+                      style={{ textAlign: "right" }}
                     />
                   ) : (
                     item.출고단위
@@ -589,10 +713,10 @@ const Item = () => {
                     <th>종류</th>
                     <th>규격</th>
                     <th>단위</th>
-                    <th>입고단가</th>
-                    <th>입고단위</th>
-                    <th>입고단위단가</th>
-                    <th>출고단위</th>
+                    <th className="right-align">입고단가</th>
+                    <th className="right-align">입고단위</th>
+                    <th className="right-align">입고단위단가</th>
+                    <th className="right-align">출고단위</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -648,8 +772,7 @@ const Item = () => {
                           onChange={(e) => handleInputChange(index, e)}
                         />
                       </td>
-                      <td>
-                        {/* 제품 추가 팝업에서는 입고단가에 회색 배경 적용 */}
+                      <td className="right-align">
                         <input
                           type="number"
                           step="0.01"
@@ -657,30 +780,34 @@ const Item = () => {
                           value={item.입고단가}
                           disabled
                           className="calc-input"
+                          style={{ textAlign: "right" }}
                         />
                       </td>
-                      <td>
+                      <td className="right-align">
                         <input
                           type="number"
                           name="입고단위"
                           value={item.입고단위}
                           onChange={(e) => handleInputChange(index, e)}
+                          style={{ textAlign: "right" }}
                         />
                       </td>
-                      <td>
+                      <td className="right-align">
                         <input
                           type="number"
                           name="입고단위단가"
                           value={item.입고단위단가}
                           onChange={(e) => handleInputChange(index, e)}
+                          style={{ textAlign: "right" }}
                         />
                       </td>
-                      <td>
+                      <td className="right-align">
                         <input
                           type="number"
                           name="출고단위"
                           value={item.출고단위}
                           onChange={(e) => handleInputChange(index, e)}
+                          style={{ textAlign: "right" }}
                         />
                       </td>
                     </tr>

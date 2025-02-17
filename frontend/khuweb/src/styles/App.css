@@ -248,7 +248,7 @@ html, body {
   padding: 10px 16px;
   background-color: white;
   color: #555;
-  border: 1px solid #ddd;
+  border: 1.6px solid #ddd;
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -280,8 +280,21 @@ html, body {
   border-color: #d9363e;
 }
 
+/* 번호 헤더: 대각선 대신 "\" 문자 표시 */
+.diagonal-header {
+  position: relative;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: bold;
+}
+.diagonal-header::after {
+  content: "\\";
+  font-size: 16px;
+  color: black;
+}
+
 .narrow-col {
-  width: 40px;
+  width: 30px;
 }
 
 .sort-btn {
@@ -294,8 +307,8 @@ html, body {
 
 .delete-confirm-button {
   position: fixed;
-  bottom: 45px;
-  right: 50px;
+  top: 10px;
+  right: 170px;
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -304,7 +317,7 @@ html, body {
   padding: 11px 17px;
   background-color: #c82333;
   color: #ffffff;
-  border: 1px solid #c82333;
+  border: 1.6px solid #c82333;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
@@ -326,49 +339,50 @@ html, body {
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #28a745;
-  border: 1px solid #28a745;
+  color: #1e7e34; /* 기존 #28a745 에서 더 진한 초록색(#1e7e34)으로 변경 */
+  border: 1.6px solid #1e7e34; /* 동일하게 변경 */
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .edit-button:hover {
-  background-color: #f7f7f7;
-  color: #28a745;
-  border-color: #28a745;
+  background-color: #e8f5e9; /* 기존 #f7f7f7 에서 약간의 초록빛이 도는 색상으로 변경 */
+  color: #1e7e34;
+  border-color: #1e7e34;
 }
 
 .edit-confirm-button {
   position: fixed;
-  bottom: 45px;
-  right: 50px;
+  top: 10px;
+  right: 170px;
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
   padding: 11px 17px;
-  background-color: #218838;
+  background-color: #1c7430; /* 기존 #218838 에서 더 진한 초록색(#1c7430)으로 변경 */
   color: #ffffff;
-  border: 1px solid #218838;
+  border: 1px solid #1c7430; /* 동일하게 변경 */
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .edit-confirm-button:hover {
-  background-color: #1e7e34;
-  border-color: #1e7e34;
+  background-color: #155724; /* 기존 #1e7e34 에서 더 진한 초록색(#155724)으로 변경 */
+  border-color: #155724; /* 동일하게 변경 */
   color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
 
 .title {
   margin-bottom: 30px;
@@ -392,7 +406,7 @@ html, body {
   padding: 10px 16px;
   background-color: white;
   color: #4a4a4a;
-  border: 1px solid #4a4a4a;
+  border: 1.6px solid #4a4a4a;
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -486,7 +500,7 @@ input[type="checkbox"] {
   width: 18px;
   height: 18px;
   accent-color: #007bff;
-  margin: 0 0 0 2px;
+  margin: 0 0 0 6px;
   vertical-align: middle;
 }
 
@@ -546,4 +560,3 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
 }
-

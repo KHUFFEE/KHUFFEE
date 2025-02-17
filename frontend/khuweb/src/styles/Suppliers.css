@@ -1,9 +1,9 @@
 .suppliers-container {
   padding: 0px;
-  max-width: 1250px; /* 테이블 크기를 선보다 작게 유지 */
+  max-width: 1250px;
   margin: 0 auto;
   font-family: Arial, sans-serif;
-  text-align: left; /* 왼쪽 정렬 */
+  text-align: left;
 }
 
 .title {
@@ -12,66 +12,79 @@
   font-weight: bold;
 }
 
-/* 기존 컨트롤 영역 (우측) */
+/* 컨트롤 영역 (우측) */
 .controls {
   display: flex;
   gap: 10px;
-  justify-content: flex-end; /* 오른쪽 정렬 */
+  justify-content: flex-end;
 }
 
 .suppliers-table {
-  width: 35%; /* 테이블 크기를 줄임 */
-  border-collapse: separate; /* separate로 변경하여 행 간격 적용 */
-  border-spacing: 0 1px;      /* 행 사이에 1px 간격 */
+  width: 35%;
+  border-collapse: separate;
+  border-spacing: 0 1px;
   margin-top: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   text-align: left;
-  margin-left: 0; /* 테이블 왼쪽 정렬 */
+  margin-left: 0;
 }
 
-/* 헤더 행에 입체감 효과 추가 */
+/* 헤더 행 스타일 */
 .suppliers-table thead tr {
   background-color: #f7f7f7;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease;
 }
 
-/* 본문 행에 입체감 효과 추가 */
+/* 본문 행 스타일 */
 .suppliers-table tbody tr {
   background: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease;
 }
 
-/* 마우스 오버 시 행이 살짝 올라가는 효과 */
 .suppliers-table tbody tr:hover {
   transform: translateY(-4px);
 }
 
-
 .suppliers-table th,
 .suppliers-table td {
   border: 1px solid #ddd;
-  text-align: left;
   padding: 12px;
 }
 
+/* 기본 헤더 셀: 왼쪽 정렬 */
 .suppliers-table th {
   background-color: #cf888888;
   font-weight: bold;
   text-align: left;
 }
 
+/* 아래의 규칙으로 번호와 협력사명 헤더는 항상 가운데 정렬 */
+.suppliers-table th.suppliers-number-col,
+.suppliers-table th.suppliers-center-col {
+  text-align: center;
+}
+
+/* 번호 열 데이터 셀 항상 가운데 정렬 */
+.suppliers-table td.suppliers-number-col {
+  text-align: center;
+}
+
 /* narrow 열 (선택 열) */
 .suppliers-narrow-col {
-  width: 40px;
+  width: 30px;
 }
 
 /* 번호 열: narrow 열과 동일한 너비 */
 .suppliers-number-col {
-  width: 40px;
+  width: 30px;
 }
+
+/* 기타 (필요시 다른 스타일 유지) */
+/* ... */
+
 
 /* Popup Styles */
 .suppliers-popup {

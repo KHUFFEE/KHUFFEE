@@ -1,102 +1,181 @@
-/* StoreOrders 페이지 기본 컨테이너 */
+/* 기본 컨테이너 */
 .store-orders-container {
-    padding: 0;
-    max-width: 1250px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    text-align: left;
-  }
-  
-  .store-orders-container h1 {
-    margin: 20px 0;
-    font-size: 28px;
-    font-weight: bold;
-  }
-  
-  .store-orders-container p {
-    margin: 10px 0 20px;
-    font-size: 16px;
-  }
-  
-  /* 테이블 스타일 - Item 페이지의 테이블 스타일과 유사하게 */
-  .store-orders-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 1px;
-    margin-top: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    text-align: left;
-  }
-  
-  .store-orders-table thead tr {
-    background-color: #f7f7f7;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s ease;
-  }
-  
-  .store-orders-table tbody tr {
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s ease;
-  }
-  
-  .store-orders-table tbody tr:hover {
-    transform: translateY(-4px);
-  }
-  
-  .store-orders-table th,
-  .store-orders-table td {
-    border: 1px solid #ddd;
-    text-align: left;
-    padding: 12px;
-  }
-  
-  .store-orders-table th {
-    background-color: #cf888888; /* 필요에 따라 조정 */
-    font-weight: bold;
-  }
-  
-  .store-orders-table thead {
-    position: sticky;
-    top: -20px; /* 부모 패딩 20px 만큼 음수로 설정 */
-    z-index: 2;
-  }
+  padding: 0;
+  max-width: 1250px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  text-align: left;
+}
 
-  /* 기존 스타일 외에 기간 검색 드롭다운 및 버튼 스타일 추가 */
+.store-orders-container h1 {
+  margin: 20px 0;
+  font-size: 28px;
+  font-weight: bold;
+}
 
+.store-orders-container p {
+  margin: 10px 0 20px;
+  font-size: 16px;
+}
+
+/* 테이블 스타일 */
+.store-orders-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 1px;
+  margin-top: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* 모든 헤더는 가운데 정렬 */
+.store-orders-table th {
+  background-color: #cf888888;
+  font-weight: bold;
+  text-align: center;
+  padding: 12px;
+}
+
+/* 테이블 본문 기본 스타일 */
+.store-orders-table th,
+.store-orders-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+}
+
+/* 번호열: 헤더와 데이터 모두 가운데 정렬 */
+.so-number-col {
+  width: 12px;
+  text-align: center;
+}
+
+/* 협력사와 품목열: 데이터는 왼쪽 정렬 */
+.so-supplier-col,
+.so-item-col {
+  text-align: left;
+}
+
+.so-supplier-col {
+  width: 100px;
+}
+
+.so-item-col {
+  width: 200px;
+}
+
+/* 협력사 열에 스크롤 적용 */
+.so-supplier-col .supplier-cell {
+  height: 20px; /* 필요에 따라 조정 */
+  overflow-y: auto;
+  display: block;
+}
+
+/* 주문 열: 데이터는 오른쪽 정렬 */
+.so-order-col {
+  text-align: right;
+}
+
+/* 합계 열: 헤더는 가운데, 데이터는 오른쪽 정렬 */
+.so-sum-col {
+  text-align: right;
+}
+
+/* 헤더 고정 */
+.store-orders-table thead {
+  position: sticky;
+  top: -20px;
+  z-index: 2;
+}
+
+/* tbody 행 스타일 */
+.store-orders-table tbody tr {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.store-orders-table tbody tr:hover {
+  transform: translateY(-4px);
+}
+
+
+/* tfoot 행도 tbody와 동일한 스타일 */
+.store-orders-table tfoot tr {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.store-orders-table tfoot tr:hover {
+  transform: translateY(-4px);
+}
+
+.store-orders-table td input {
+  width: 100%;
+  box-sizing: border-box;
+
+  /* 불필요한 기본 스타일 제거 */
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+
+  /* 셀과 동일한 폰트/라인높이로 맞춤 */
+  font-size: inherit;
+  line-height: inherit;
+  text-align: right;
+}
+
+
+/* 품목명 셀 내 내용 고정 높이 및 스크롤 */
+.item-cell {
+  height: 20px; /* 필요에 따라 조정 */
+  overflow-y: auto;
+  display: block;
+}
+
+/* period-controls: 드롭다운과 수정 버튼을 같은 행에 배치 */
+.period-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-top: -5px;
+}
+
+/* period-search: 왼쪽 정렬로 같은 행에 */
 .period-search {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .period-search select {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    background-color: white;
-    appearance: none;
-    outline: none;
-  }
-  
-  .period-search .search-button,
-  .period-search .reset-button {
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: bold;
-    border: 1px solid #007bff;
-    background-color: white;
-    color: #007bff;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .period-search .search-button:hover,
-  .period-search .reset-button:hover {
-    background-color: #f7f7f7;
-  }
-  
+  display: flex;
+  gap: 10px;
+}
+
+/* 기간 검색 및 버튼 스타일 */
+.period-search select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+  appearance: none;
+  outline: none;
+}
+
+.period-search .search-button,
+.period-search .reset-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  border: 1px solid #007bff;
+  background-color: white;
+  color: #007bff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.period-search .search-button:hover,
+.period-search .reset-button:hover {
+  background-color: #f7f7f7;
+}
+
+
+

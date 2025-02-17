@@ -71,48 +71,49 @@
   z-index: 2;
 }
 
-
-/* 헤더 행에 입체감 효과 추가 */
-.item-table thead tr {
-  background-color: #f7f7f7;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease;
+/* 모든 헤더 셀 중앙 정렬 */
+.item-table th {
+  background-color: #cf888888;
+  font-weight: bold;
+  text-align: center;
 }
 
-/* 본문 행에 입체감 효과 추가 */
+/* 본문 행 스타일 */
 .item-table tbody tr {
   background: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease;
 }
 
-/* 마우스 오버 시 헤더와 본문 행이 살짝 올라가는 효과 */
 .item-table tbody tr:hover {
   transform: translateY(-4px);
 }
 
+
+/* 일반 셀 기본 스타일 */
 .item-table th,
 .item-table td {
   border: 1px solid #ddd;
-  text-align: left;
   padding: 12px;
 }
 
-.item-table th {
-  background-color: #cf888888;
-  font-weight: bold;
+/* 번호 컬럼: 중앙 정렬 */
+.item-table th.number-col,
+.item-table td.number-col {
+  text-align: center;
+}
+
+/* 우측 정렬할 셀: 헤더는 중앙, 본문은 오른쪽 정렬 */
+.item-table th.right-align {
+  text-align: center;
+}
+.item-table td.right-align {
+  text-align: right;
 }
 
 .error {
   color: red;
   font-weight: bold;
-}
-
-.divider {
-  width: 100%;
-  margin: 10px 0;
-  border: none;
-  border-top: 0.5px solid #aaa;
 }
 
 .item-popup {
@@ -229,7 +230,7 @@
 .item-popup-form table th,
 .item-popup-form table td {
   padding: 5px 15px;
-  text-align: left;
+  text-align: center;
 }
 
 .item-popup-form table th {
@@ -290,3 +291,5 @@
   background-color: #f7f7f7;
   color: #555;
 }
+
+

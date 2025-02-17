@@ -1243,7 +1243,7 @@ const [showEndWeekList, setShowEndWeekList] = useState(false);
 
             {/* 드롭다운 영역 - 각 선택 버튼 아래에 나타남 */}
             {showStartYearList && (
-              <View style={[styles.dropdownContainer, { top: 110, left: 20 }]}>
+              <View style={[styles.dropdownContainer,{left: 50},{bottom: -50}  ]}>
                 <ScrollView style={styles.dropdownScroll}>
                   {years.map((y) => (
                     <TouchableOpacity
@@ -1597,21 +1597,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    minWidth: 80,
+    paddingVertical: 8,    //높이 여백 
+    paddingHorizontal: 5, //좌우 여백
+    width: 75, // 고정 폭을 지정
+    height: 30, // 고정 높이를 지정
     alignItems: 'center',
+    justifyContent: 'center', // 세로 중앙 정렬 추가
   },
   dateBoxText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   /** 새로 추가 */
   dropdownContainer: {
     position: 'absolute',
     top: 50, // dateBox 높이 아래에 맞춰서 조정
-    left: 0, // 필요시 위치 조정
-    width: 100, // 드롭다운 폭
+    left: 10, // 필요시 위치 조정
+    width: 75, // 드롭다운 폭
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ccc',
@@ -1623,6 +1625,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    width: 120, 
   },
   periodSearchButton: {
     backgroundColor: '#3b82f6',
@@ -1975,21 +1978,6 @@ const orderStyles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 20,
     marginHorizontal: 8,
-  },
-  dateBox: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    minWidth: 80,
-    alignItems: 'center',
-    marginVertical: 4,
-    backgroundColor: '#fff',
-  },
-  dateBoxText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
   dropdownContainer: {
     position: 'absolute',

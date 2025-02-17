@@ -1366,7 +1366,53 @@ const [showEndWeekList, setShowEndWeekList] = useState(false);
           </View>
         </View>
       </Modal>
+        {/* ★★★ 주문 상세보기 모달을 추가하는 위치 ★★★ */}
+      <Modal
+        visible={detailModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setDetailModalVisible(false)}
+      >
+        <View style={modalStyles.centeredView}>
+          <View style={[modalStyles.modalView, { maxHeight: '80%' }]}>
+            <ScrollView style={receiptStyles.receiptContainer}>
+              <View style={receiptStyles.header}>
+                <Text style={receiptStyles.headerTitle}>주문 상세 내역</Text>
+                <Text style={receiptStyles.headerSubtitle}>{formatWeekString(detailGroupDate)}</Text>
+              </View>
+              <View style={receiptStyles.divider} />
+              {detailGroupOrders.map((order, idx) => (
+                <View key={idx} style={receiptStyles.itemRow}>
+                  <View style={receiptStyles.itemRowLeft}>
+                    <Text style={receiptStyles.itemName}>{order.품목명}</Text>
+                    <Text style={receiptStyles.itemQty}>
+                      x {formatPrice(order.매장_발주량)}개
+                    </Text>
+                  </View>
+                  <View style={receiptStyles.itemRowRight}>
+                    <Text style={receiptStyles.itemPrice}>
+                      {formatPrice(order.totalCost || 0)}원
+                    </Text>
+                  </View>
+                </View>
+              ))}
+              <View style={receiptStyles.divider} />
+              <View style={receiptStyles.footer}>
+                <Text style={receiptStyles.footerText}>
+                  총 합계: {formatPrice(detailGroupOrders.reduce((sum, o) => sum + (o.totalCost || 0), 0))}원
+                </Text>
+              </View>
+            </ScrollView>
 
+            <TouchableOpacity
+              style={modalStyles.closeButton}
+              onPress={() => setDetailModalVisible(false)}
+            >
+              <Text style={modalStyles.textStyle}>닫기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       {/* 메인 필터바에 기간조회 활성 시 빨간색 초기화 버튼 노출 */}
       {isPeriodSearch && (
         <View style={{ position: 'absolute', top: 10, right: 10 }}>

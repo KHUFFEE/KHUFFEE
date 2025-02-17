@@ -1141,297 +1141,321 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
       </View>
 
       {/* 기간조회 모달 */}
-      <Modal
-        visible={showPeriodModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => {
-          setShowPeriodModal(false);
-          setOpenStartDropdown(null);
-          setOpenEndDropdown(null);
-        }}
-      >
-        {/* 모달 밖(검정 배경) 터치 시 드롭다운 닫힘 */}
-        <TouchableWithoutFeedback
-          onPress={() => {
-            setOpenStartDropdown(null);
-            setOpenEndDropdown(null);
-          }}
-        >
-          <View style={styles.periodModalContainer}>
-            {/* 모달 안(흰색 배경) */}
-            <TouchableWithoutFeedback
+      {/* 기간조회 모달 */}
+{/* 기간조회 모달 */}
+<Modal
+  visible={showPeriodModal}
+  transparent={true}
+  animationType="slide"
+  onRequestClose={() => {
+    setShowPeriodModal(false);
+    setOpenStartDropdown(null);
+    setOpenEndDropdown(null);
+  }}
+>
+  {/* 모달 밖(검정 배경) 터치 시 드롭다운 닫힘 */}
+  <TouchableWithoutFeedback
+    onPress={() => {
+      setOpenStartDropdown(null);
+      setOpenEndDropdown(null);
+    }}
+  >
+    <View style={styles.periodModalContainer}>
+      {/* 모달 안(흰색 배경) */}
+      <TouchableWithoutFeedback>
+        <View style={styles.periodModalInner}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Text style={styles.periodModalTitle}>기간조회</Text>
+            <TouchableOpacity
               onPress={() => {
-                // 모달 안을 터치해도 드롭다운이 닫히지 않게 하려면
-                // 여기도 stopPropagation을 쓸 수 있지만
-                // 일단 아래처럼 setOpenStartDropdown(null) 호출은 빼도 됨
+                setShowPeriodModal(false);
+                setOpenStartDropdown(null);
+                setOpenEndDropdown(null);
               }}
             >
-              <View style={styles.periodModalInner}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={styles.periodModalTitle}>기간조회</Text>
+              <LucideX color="red" size={24} />
+            </TouchableOpacity>
+          </View>
+
+          {/* 시작날짜 섹션은 "종료날짜 드롭다운이 열려 있지 않을 때"만 보인다. */}
+          {openEndDropdown === null && (
+            <View style={styles.dateGroup}>
+              <Text style={styles.dateGroupLabel}>시작날짜</Text>
+              <View style={styles.dateRow}>
+                {/* 시작년도 */}
+                <View style={styles.dropdownWrapper}>
                   <TouchableOpacity
-                    onPress={() => {
-                      setShowPeriodModal(false);
-                      setOpenStartDropdown(null);
+                    style={styles.dateBox}
+                    onPress={(e) => {
+                      e.stopPropagation?.();
+                      setOpenStartDropdown(
+                        openStartDropdown === 'year' ? null : 'year'
+                      );
                       setOpenEndDropdown(null);
                     }}
                   >
-                    <LucideX color="red" size={24} />
+                    <Text style={styles.dateBoxText}>
+                      {startYear ? `${startYear}년` : '년도 선택'}
+                    </Text>
                   </TouchableOpacity>
+                  {openStartDropdown === 'year' && (
+                    <View style={[styles.dropdown, styles.dropdownOpen]}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {years.map((y) => (
+                          <TouchableOpacity
+                            key={y}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setStartYear(y);
+                              // 드롭다운 선택 후 개별적으로 닫힘
+                              setOpenStartDropdown(null);
+                            }}
+                          >
+                            <Text>{y}년</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
                 </View>
 
-                {/*
-                  시작날짜 섹션은 "종료날짜 드롭다운이 열려 있지 않을 때"만 보인다.
-                  즉 openEndDropdown === null 일 때만 렌더링.
-                */}
-                {openEndDropdown === null && (
-                  <View style={styles.dateGroup}>
-                    <Text style={styles.dateGroupLabel}>시작날짜</Text>
-                    <View style={styles.dateRow}>
-                      {/* 시작년도 */}
-                      <View style={styles.dropdownWrapper}>
-                        <TouchableOpacity
-                          style={styles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            // 열려 있으면 닫고, 닫혀 있으면 연다
-                            setOpenStartDropdown(openStartDropdown === 'year' ? null : 'year');
-                            // 종료 쪽은 무조건 닫는다
-                            setOpenEndDropdown(null);
-                          }}
-                        >
-                          <Text style={styles.dateBoxText}>
-                            {startYear ? `${startYear}년` : '년도 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openStartDropdown === 'year' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
-                              {years.map((y) => (
-                                <TouchableOpacity
-                                  key={y}
-                                  style={styles.dropdownItem}
-                                  onPress={() => {
-                                    setStartYear(y);
-                                    setOpenStartDropdown(null);
-                                  }}
-                                >
-                                  <Text>{y}년</Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-
-                      {/* 시작월 */}
-                      <View style={styles.dropdownWrapper}>
-                        <TouchableOpacity
-                          style={styles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenStartDropdown(openStartDropdown === 'month' ? null : 'month');
-                            setOpenEndDropdown(null);
-                          }}
-                        >
-                          <Text style={styles.dateBoxText}>
-                            {startMonth ? `${startMonth}월` : '월 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openStartDropdown === 'month' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
-                              {months.map((m) => (
-                                <TouchableOpacity
-                                  key={m}
-                                  style={styles.dropdownItem}
-                                  onPress={() => {
-                                    setStartMonth(m);
-                                    setOpenStartDropdown(null);
-                                  }}
-                                >
-                                  <Text>{m}월</Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-
-                      {/* 시작주차 */}
-                      <View style={styles.dropdownWrapper}>
-                        <TouchableOpacity
-                          style={styles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenStartDropdown(openStartDropdown === 'week' ? null : 'week');
-                            setOpenEndDropdown(null);
-                          }}
-                        >
-                          <Text style={styles.dateBoxText}>
-                            {startWeek ? `${startWeek}주` : '주차 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openStartDropdown === 'week' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
-                              {weeks.map((w) => (
-                                <TouchableOpacity
-                                  key={w}
-                                  style={styles.dropdownItem}
-                                  onPress={() => {
-                                    setStartWeek(w);
-                                    setOpenStartDropdown(null);
-                                  }}
-                                >
-                                  <Text>{w}주</Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
+                {/* 시작월 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={(e) => {
+                      e.stopPropagation?.();
+                      setOpenStartDropdown(
+                        openStartDropdown === 'month' ? null : 'month'
+                      );
+                      setOpenEndDropdown(null);
+                    }}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {startMonth ? `${startMonth}월` : '월 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {openStartDropdown === 'month' && (
+                    <View style={[styles.dropdown, styles.dropdownOpen]}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {months.map((m) => (
+                          <TouchableOpacity
+                            key={m}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setStartMonth(m);
+                              setOpenStartDropdown(null);
+                            }}
+                          >
+                            <Text>{m}월</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
                     </View>
-                  </View>
-                )}
+                  )}
+                </View>
 
-                {/*
-                  종료날짜 섹션은 "시작날짜 드롭다운이 열려 있지 않을 때"만 보인다.
-                  즉 openStartDropdown === null 일 때만 렌더링.
-                */}
-                {openStartDropdown === null && (
-                  <View style={styles.dateGroup}>
-                    <Text style={styles.dateGroupLabel}>종료날짜</Text>
-                    <View style={styles.dateRow}>
-                      {/* 종료년도 */}
-                      <View style={styles.dropdownWrapper}>
-                        <TouchableOpacity
-                          style={styles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenEndDropdown(openEndDropdown === 'year' ? null : 'year');
-                            setOpenStartDropdown(null);
-                          }}
-                        >
-                          <Text style={styles.dateBoxText}>
-                            {endYear ? `${endYear}년` : '년도 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openEndDropdown === 'year' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
-                              {years.map((y) => (
-                                <TouchableOpacity
-                                  key={y}
-                                  style={styles.dropdownItem}
-                                  onPress={() => {
-                                    setEndYear(y);
-                                    setOpenEndDropdown(null);
-                                  }}
-                                >
-                                  <Text>{y}년</Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-
-                      {/* 종료월 */}
-                      <View style={styles.dropdownWrapper}>
-                        <TouchableOpacity
-                          style={styles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenEndDropdown(openEndDropdown === 'month' ? null : 'month');
-                            setOpenStartDropdown(null);
-                          }}
-                        >
-                          <Text style={styles.dateBoxText}>
-                            {endMonth ? `${endMonth}월` : '월 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openEndDropdown === 'month' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
-                              {months.map((m) => (
-                                <TouchableOpacity
-                                  key={m}
-                                  style={styles.dropdownItem}
-                                  onPress={() => {
-                                    setEndMonth(m);
-                                    setOpenEndDropdown(null);
-                                  }}
-                                >
-                                  <Text>{m}월</Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-
-                      {/* 종료주차 */}
-                      <View style={styles.dropdownWrapper}>
-                        <TouchableOpacity
-                          style={styles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenEndDropdown(openEndDropdown === 'week' ? null : 'week');
-                            setOpenStartDropdown(null);
-                          }}
-                        >
-                          <Text style={styles.dateBoxText}>
-                            {endWeek ? `${endWeek}주` : '주차 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openEndDropdown === 'week' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
-                              {weeks.map((w) => (
-                                <TouchableOpacity
-                                  key={w}
-                                  style={styles.dropdownItem}
-                                  onPress={() => {
-                                    setEndWeek(w);
-                                    setOpenEndDropdown(null);
-                                  }}
-                                >
-                                  <Text>{w}주</Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
+                {/* 시작주차 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={(e) => {
+                      e.stopPropagation?.();
+                      setOpenStartDropdown(
+                        openStartDropdown === 'week' ? null : 'week'
+                      );
+                      setOpenEndDropdown(null);
+                    }}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {startWeek ? `${startWeek}주` : '주차 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {openStartDropdown === 'week' && (
+                    <View style={[styles.dropdown, styles.dropdownOpen]}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {weeks.map((w) => (
+                          <TouchableOpacity
+                            key={w}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setStartWeek(w);
+                              setOpenStartDropdown(null);
+                            }}
+                          >
+                            <Text>{w}주</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
                     </View>
-                  </View>
-                )}
-
-                {/*
-                  검색 버튼은 "시작/종료 드롭다운이 전부 닫혀 있을 때"만 보인다.
-                  즉 openStartDropdown === null && openEndDropdown === null 일 때 렌더링.
-                */}
-                {openStartDropdown === null && openEndDropdown === null && (
-                  <View style={{ alignItems: 'center', marginTop: 20 }}>
-                    <TouchableOpacity
-                      style={styles.periodSearchButton}
-                      onPress={() => {
-                        setOpenStartDropdown(null);
-                        setOpenEndDropdown(null);
-                        handlePeriodSearch();
-                      }}
-                    >
-                      <Text style={styles.periodSearchButtonText}>검색</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
+                  )}
+                </View>
               </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+              {/* 시작날짜 드롭다운이 개별적으로 열려 있을 때만 확인 버튼 표시 */}
+              {openStartDropdown !== null && (
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={() => {
+                    setOpenStartDropdown(null);
+                  }}
+                >
+                  <Text style={styles.confirmButtonText}>확인</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* 종료날짜 섹션은 "시작날짜 드롭다운이 열려 있지 않을 때"만 보인다. */}
+          {openStartDropdown === null && (
+            <View style={styles.dateGroup}>
+              <Text style={styles.dateGroupLabel}>종료날짜</Text>
+              <View style={styles.dateRow}>
+                {/* 종료년도 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={(e) => {
+                      e.stopPropagation?.();
+                      setOpenEndDropdown(
+                        openEndDropdown === 'year' ? null : 'year'
+                      );
+                      setOpenStartDropdown(null);
+                    }}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {endYear ? `${endYear}년` : '년도 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {openEndDropdown === 'year' && (
+                    <View style={[styles.dropdown, styles.dropdownOpen]}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {years.map((y) => (
+                          <TouchableOpacity
+                            key={y}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setEndYear(y);
+                              setOpenEndDropdown(null);
+                            }}
+                          >
+                            <Text>{y}년</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+
+                {/* 종료월 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={(e) => {
+                      e.stopPropagation?.();
+                      setOpenEndDropdown(
+                        openEndDropdown === 'month' ? null : 'month'
+                      );
+                      setOpenStartDropdown(null);
+                    }}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {endMonth ? `${endMonth}월` : '월 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {openEndDropdown === 'month' && (
+                    <View style={[styles.dropdown, styles.dropdownOpen]}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {months.map((m) => (
+                          <TouchableOpacity
+                            key={m}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setEndMonth(m);
+                              setOpenEndDropdown(null);
+                            }}
+                          >
+                            <Text>{m}월</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+
+                {/* 종료주차 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={(e) => {
+                      e.stopPropagation?.();
+                      setOpenEndDropdown(
+                        openEndDropdown === 'week' ? null : 'week'
+                      );
+                      setOpenStartDropdown(null);
+                    }}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {endWeek ? `${endWeek}주` : '주차 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {openEndDropdown === 'week' && (
+                    <View style={[styles.dropdown, styles.dropdownOpen]}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {weeks.map((w) => (
+                          <TouchableOpacity
+                            key={w}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setEndWeek(w);
+                              setOpenEndDropdown(null);
+                            }}
+                          >
+                            <Text>{w}주</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+              </View>
+              {/* 종료날짜 드롭다운이 개별적으로 열려 있을 때만 확인 버튼 표시 */}
+              {openEndDropdown !== null && (
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={() => {
+                    setOpenEndDropdown(null);
+                  }}
+                >
+                  <Text style={styles.confirmButtonText}>확인</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* 시작/종료 드롭다운이 모두 닫혔을 때 검색 버튼 */}
+          {openStartDropdown === null && openEndDropdown === null && (
+            <View style={{ alignItems: 'center', marginTop: 20 }}>
+              <TouchableOpacity
+                style={styles.periodSearchButton}
+                onPress={() => {
+                  handlePeriodSearch();
+                }}
+              >
+                <Text style={styles.periodSearchButtonText}>검색</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+  </TouchableWithoutFeedback>
+</Modal>
 
 
       {/* 주문 상세보기 모달 */}
@@ -1824,6 +1848,18 @@ const styles = StyleSheet.create({
   resetButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  confirmButton: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

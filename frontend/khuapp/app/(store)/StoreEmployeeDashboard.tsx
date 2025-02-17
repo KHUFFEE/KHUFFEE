@@ -69,12 +69,6 @@ interface LocalOrder {
 interface StoreEmployeeDashboardProps {
   storeName: string;
 }
-interface LayoutProps {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
 
 /** 숫자를 천 단위로 포맷하는 함수 */
 const formatPrice = (value: number): string => {
@@ -709,14 +703,17 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
   const [detailModalVisible, setDetailModalVisible] = useState<boolean>(false);
   const [detailGroupOrders, setDetailGroupOrders] = useState<StoreOrderData[]>([]);
   const [detailGroupDate, setDetailGroupDate] = useState<string>('');
-// (2) 연/월/주차 별로 드롭다운을 열지 여부
-const [showStartYearList, setShowStartYearList] = useState(false);
-const [showStartMonthList, setShowStartMonthList] = useState(false);
-const [showStartWeekList, setShowStartWeekList] = useState(false);
+    // (1) 버튼별 Layout 정보
 
-const [showEndYearList, setShowEndYearList] = useState(false);
-const [showEndMonthList, setShowEndMonthList] = useState(false);
-const [showEndWeekList, setShowEndWeekList] = useState(false);
+  
+  // (2) 연/월/주차 별로 드롭다운을 열지 여부
+  const [showStartYearList, setShowStartYearList] = useState(false);
+  const [showStartMonthList, setShowStartMonthList] = useState(false);
+  const [showStartWeekList, setShowStartWeekList] = useState(false);
+
+  const [showEndYearList, setShowEndYearList] = useState(false);
+  const [showEndMonthList, setShowEndMonthList] = useState(false);
+  const [showEndWeekList, setShowEndWeekList] = useState(false);
   /** 매장 정보 불러오기 */
   useEffect(() => {
     const fetchStoreInfo = async () => {
@@ -1163,6 +1160,7 @@ const [showEndWeekList, setShowEndWeekList] = useState(false);
 
       {/* 주문 상세보기 모달 */}
       {/* 기간조회 모달 */}
+      {/* 기간조회 모달 */}
       <Modal
         visible={showPeriodModal}
         transparent={true}
@@ -1177,33 +1175,97 @@ const [showEndWeekList, setShowEndWeekList] = useState(false);
             <View style={styles.dateGroup}>
               <Text style={styles.dateGroupLabel}>시작날짜</Text>
               <View style={styles.dateRow}>
-                {/* 시작년도 선택 */}
-                <TouchableOpacity
-                  style={styles.dateBox}
-                  onPress={() => setShowStartYearList(!showStartYearList)}
-                >
-                  <Text style={styles.dateBoxText}>
-                    {startYear ? `${startYear}년` : '년도 선택'}
-                  </Text>
-                </TouchableOpacity>
-                {/* 시작월 선택 */}
-                <TouchableOpacity
-                  style={styles.dateBox}
-                  onPress={() => setShowStartMonthList(!showStartMonthList)}
-                >
-                  <Text style={styles.dateBoxText}>
-                    {startMonth ? `${startMonth}월` : '월 선택'}
-                  </Text>
-                </TouchableOpacity>
-                {/* 시작주차 선택 */}
-                <TouchableOpacity
-                  style={styles.dateBox}
-                  onPress={() => setShowStartWeekList(!showStartWeekList)}
-                >
-                  <Text style={styles.dateBoxText}>
-                    {startWeek ? `${startWeek}주` : '주차 선택'}
-                  </Text>
-                </TouchableOpacity>
+
+                {/* 년도 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={() => setShowStartYearList(!showStartYearList)}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {startYear ? `${startYear}년` : '년도 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {showStartYearList && (
+                    <View style={styles.dropdown}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {years.map((y) => (
+                          <TouchableOpacity
+                            key={y}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setStartYear(y);
+                              setShowStartYearList(false);
+                            }}
+                          >
+                            <Text>{y}년</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+
+                {/* 월 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={() => setShowStartMonthList(!showStartMonthList)}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {startMonth ? `${startMonth}월` : '월 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {showStartMonthList && (
+                    <View style={styles.dropdown}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {months.map((m) => (
+                          <TouchableOpacity
+                            key={m}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setStartMonth(m);
+                              setShowStartMonthList(false);
+                            }}
+                          >
+                            <Text>{m}월</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+
+                {/* 주차 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={() => setShowStartWeekList(!showStartWeekList)}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {startWeek ? `${startWeek}주` : '주차 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {showStartWeekList && (
+                    <View style={styles.dropdown}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {weeks.map((w) => (
+                          <TouchableOpacity
+                            key={w}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setStartWeek(w);
+                              setShowStartWeekList(false);
+                            }}
+                          >
+                            <Text>{w}주</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+
               </View>
             </View>
 
@@ -1211,145 +1273,99 @@ const [showEndWeekList, setShowEndWeekList] = useState(false);
             <View style={styles.dateGroup}>
               <Text style={styles.dateGroupLabel}>종료날짜</Text>
               <View style={styles.dateRow}>
-                {/* 종료년도 선택 */}
-                <TouchableOpacity
-                  style={styles.dateBox}
-                  onPress={() => setShowEndYearList(!showEndYearList)}
-                >
-                  <Text style={styles.dateBoxText}>
-                    {endYear ? `${endYear}년` : '년도 선택'}
-                  </Text>
-                </TouchableOpacity>
-                {/* 종료월 선택 */}
-                <TouchableOpacity
-                  style={styles.dateBox}
-                  onPress={() => setShowEndMonthList(!showEndMonthList)}
-                >
-                  <Text style={styles.dateBoxText}>
-                    {endMonth ? `${endMonth}월` : '월 선택'}
-                  </Text>
-                </TouchableOpacity>
-                {/* 종료주차 선택 */}
-                <TouchableOpacity
-                  style={styles.dateBox}
-                  onPress={() => setShowEndWeekList(!showEndWeekList)}
-                >
-                  <Text style={styles.dateBoxText}>
-                    {endWeek ? `${endWeek}주` : '주차 선택'}
-                  </Text>
-                </TouchableOpacity>
+
+                {/* 년도 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={() => setShowEndYearList(!showEndYearList)}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {endYear ? `${endYear}년` : '년도 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {showEndYearList && (
+                    <View style={styles.dropdown}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {years.map((y) => (
+                          <TouchableOpacity
+                            key={y}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setEndYear(y);
+                              setShowEndYearList(false);
+                            }}
+                          >
+                            <Text>{y}년</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+
+                {/* 월 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={() => setShowEndMonthList(!showEndMonthList)}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {endMonth ? `${endMonth}월` : '월 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {showEndMonthList && (
+                    <View style={styles.dropdown}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {months.map((m) => (
+                          <TouchableOpacity
+                            key={m}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setEndMonth(m);
+                              setShowEndMonthList(false);
+                            }}
+                          >
+                            <Text>{m}월</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+
+                {/* 주차 */}
+                <View style={styles.dropdownWrapper}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={() => setShowEndWeekList(!showEndWeekList)}
+                  >
+                    <Text style={styles.dateBoxText}>
+                      {endWeek ? `${endWeek}주` : '주차 선택'}
+                    </Text>
+                  </TouchableOpacity>
+                  {showEndWeekList && (
+                    <View style={styles.dropdown}>
+                      <ScrollView style={styles.dropdownScroll}>
+                        {weeks.map((w) => (
+                          <TouchableOpacity
+                            key={w}
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setEndWeek(w);
+                              setShowEndWeekList(false);
+                            }}
+                          >
+                            <Text>{w}주</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+
               </View>
             </View>
-
-            {/* 드롭다운 영역 - 각 선택 버튼 아래에 나타남 */}
-            {showStartYearList && (
-              <View style={[styles.dropdownContainer,{left: 50},{bottom: -50}  ]}>
-                <ScrollView style={styles.dropdownScroll}>
-                  {years.map((y) => (
-                    <TouchableOpacity
-                      key={y}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setStartYear(y);
-                        setShowStartYearList(false);
-                      }}
-                    >
-                      <Text>{y}년</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-            {showStartMonthList && (
-              <View style={[styles.dropdownContainer, { top: 110, left: 140 }]}>
-                <ScrollView style={styles.dropdownScroll}>
-                  {months.map((m) => (
-                    <TouchableOpacity
-                      key={m}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setStartMonth(m);
-                        setShowStartMonthList(false);
-                      }}
-                    >
-                      <Text>{m}월</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-            {showStartWeekList && (
-              <View style={[styles.dropdownContainer, { top: 110, left: 260 }]}>
-                <ScrollView style={styles.dropdownScroll}>
-                  {weeks.map((w) => (
-                    <TouchableOpacity
-                      key={w}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setStartWeek(w);
-                        setShowStartWeekList(false);
-                      }}
-                    >
-                      <Text>{w}주</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-            {showEndYearList && (
-              <View style={[styles.dropdownContainer, { top: 240, left: 20 }]}>
-                <ScrollView style={styles.dropdownScroll}>
-                  {years.map((y) => (
-                    <TouchableOpacity
-                      key={y}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setEndYear(y);
-                        setShowEndYearList(false);
-                      }}
-                    >
-                      <Text>{y}년</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-            {showEndMonthList && (
-              <View style={[styles.dropdownContainer, { top: 240, left: 140 }]}>
-                <ScrollView style={styles.dropdownScroll}>
-                  {months.map((m) => (
-                    <TouchableOpacity
-                      key={m}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setEndMonth(m);
-                        setShowEndMonthList(false);
-                      }}
-                    >
-                      <Text>{m}월</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-            {showEndWeekList && (
-              <View style={[styles.dropdownContainer, { top: 240, left: 260 }]}>
-                <ScrollView style={styles.dropdownScroll}>
-                  {weeks.map((w) => (
-                    <TouchableOpacity
-                      key={w}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setEndWeek(w);
-                        setShowEndWeekList(false);
-                      }}
-                    >
-                      <Text>{w}주</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
 
             {/* 검색/취소 버튼 */}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
@@ -1609,11 +1625,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   /** 새로 추가 */
-  dropdownContainer: {
+  dropdownWrapper: {
+    position: 'relative',
+    marginHorizontal: 4, // 버튼 사이 간격
+  },
+  dropdown: {
     position: 'absolute',
-    top: 50, // dateBox 높이 아래에 맞춰서 조정
-    left: 10, // 필요시 위치 조정
-    width: 75, // 드롭다운 폭
+    top: '100%', // 버튼 바로 아래
+    left: 0,
+    width: '100%', // 버튼과 동일 폭
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ccc',
@@ -1625,7 +1645,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    width: 120, 
   },
   periodSearchButton: {
     backgroundColor: '#3b82f6',

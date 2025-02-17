@@ -14,8 +14,9 @@ class StoreOrderCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         today = date.today()
         validated_data['기간'] = get_기간_string(today)
+        new_value = validated_data.get('매장_발주량')
         
-        # duplicate 여부를 ORM 필터로 확인 (id 칼럼은 사용하지 않음)
+        # duplicate 여부 확인 (매장_id, 품목_id, 기간이 같은 경우)
         duplicate_qs = StoreOrder.objects.filter(
             매장_id=validated_data['매장_id'],
             품목_id=validated_data['품목_id'],
@@ -23,41 +24,50 @@ class StoreOrderCreateSerializer(serializers.ModelSerializer):
         )
         
         if duplicate_qs.exists():
-            # 중복이 있을 경우, raw SQL로 기존 행의 매장_발주량을 업데이트
-            table_name = StoreOrder._meta.db_table  # "매장_발주"
-            # ForeignKey 필드는 이미 instance가 들어있으므로 pk 추출
-            store_pk = validated_data['매장_id'].pk if hasattr(validated_data['매장_id'], 'pk') else validated_data['매장_id']
-            item_pk = validated_data['품목_id'].pk if hasattr(validated_data['품목_id'], 'pk') else validated_data['품목_id']
-            period_val = validated_data['기간']
-            add_amount = validated_data['매장_발주량']
-            
-            with connection.cursor() as cursor:
-                update_sql = f"""
-                    UPDATE {table_name}
-                    SET 매장_발주량 = 매장_발주량 + %s
-                    WHERE 매장_id = %s AND 품목_id = %s AND 기간 = %s
-                """
-                cursor.execute(update_sql, [add_amount, store_pk, item_pk, period_val])
+            # new_value가 빈 문자열("") 인지 먼저 체크
+            if new_value == "" or float(new_value) == 0:
+                duplicate_qs.delete()
+                # 삭제 후, 삭제된 행의 정보를 담은 더미 인스턴스를 생성하여 반환
+                instance = StoreOrder()
+                instance.매장_id = validated_data['매장_id']
+                instance.품목_id = validated_data['품목_id']
+                instance.기간 = validated_data['기간']
+                instance.매장_발주량 = 0
+                return instance
+            else:
+                # 기존 주문이 있다면, 매장_발주량을 더함 (0이 아닌 경우)
+                table_name = StoreOrder._meta.db_table  # "매장_발주"
+                store_pk = validated_data['매장_id'].pk if hasattr(validated_data['매장_id'], 'pk') else validated_data['매장_id']
+                item_pk = validated_data['품목_id'].pk if hasattr(validated_data['품목_id'], 'pk') else validated_data['품목_id']
+                period_val = validated_data['기간']
+                add_amount = new_value
                 
-                # 업데이트된 매장_발주량을 다시 조회
-                select_sql = f"""
-                    SELECT 매장_발주량
-                    FROM {table_name}
-                    WHERE 매장_id = %s AND 품목_id = %s AND 기간 = %s
-                """
-                cursor.execute(select_sql, [store_pk, item_pk, period_val])
-                row = cursor.fetchone()
-                new_amount = row[0] if row else add_amount
+                with connection.cursor() as cursor:
+                    update_sql = f"""
+                        UPDATE {table_name}
+                        SET 매장_발주량 = 매장_발주량 + %s
+                        WHERE 매장_id = %s AND 품목_id = %s AND 기간 = %s
+                    """
+                    cursor.execute(update_sql, [add_amount, store_pk, item_pk, period_val])
+                    
+                    # 변경 후 다시 조회
+                    select_sql = f"""
+                        SELECT 매장_발주량
+                        FROM {table_name}
+                        WHERE 매장_id = %s AND 품목_id = %s AND 기간 = %s
+                    """
+                    cursor.execute(select_sql, [store_pk, item_pk, period_val])
+                    row = cursor.fetchone()
+                    new_amount = row[0] if row else add_amount
 
-            # serializer가 반환할 instance는 DB 조회 없이 수동으로 구성합니다.
-            instance = StoreOrder()
-            instance.매장_id = validated_data['매장_id']
-            instance.품목_id = validated_data['품목_id']
-            instance.기간 = period_val
-            instance.매장_발주량 = new_amount
-            return instance
-        
-        # duplicate가 아니면 기존 방식대로 생성
+                instance = StoreOrder()
+                instance.매장_id = validated_data['매장_id']
+                instance.품목_id = validated_data['품목_id']
+                instance.기간 = period_val
+                instance.매장_발주량 = new_amount
+                return instance
+
+        # duplicate가 없으면, 그대로 생성
         return super().create(validated_data)
 
 class StoreOrderListSerializer(serializers.ModelSerializer):

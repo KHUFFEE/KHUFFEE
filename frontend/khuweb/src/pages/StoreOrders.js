@@ -1,6 +1,5 @@
-// frontend/khuweb/src/pages/StoreOrders.js
 import React, { useState, useEffect } from 'react';
-import { fetchOrders, fetchItems, fetchSuppliers, fetchStores } from '../api/api';
+import { fetchOrders, fetchItems, fetchSuppliers, fetchStores, updateStoreOrder } from '../api/api';
 import '../styles/StoreOrders.css';
 
 const StoreOrders = () => {
@@ -25,7 +24,7 @@ const StoreOrders = () => {
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
   const weeks = [1, 2, 3, 4, 5];
 
-  // 원하는 매장명 순서 (StoreListView에서 받아온 매장 중 해당 이름들을 기준으로 정렬)
+  // 원하는 매장명 순서
   const desiredStoreOrder = [
     "푸른솔",
     "의과대학",
@@ -37,13 +36,16 @@ const StoreOrders = () => {
     "멀티미디어관"
   ];
 
-  // API 호출 공통 함수: params에 따라 최신 주문(page=1) 또는 특정 기간 조회
+  // 수정 모드 관련 상태
+  const [isEditMode, setIsEditMode] = useState(false);
+  // editedOrders: { [itemId]: { [storeId]: newValue, ... } }
+  const [editedOrders, setEditedOrders] = useState({});
+
+  // API 호출 공통 함수
   const fetchData = async (params = { page: 1 }) => {
     try {
       setLoading(true);
-      // 주문 API 호출 (기간 파라미터가 있으면 해당 기간으로 조회)
       const ordersResponse = await fetchOrders(params);
-      // Items, Suppliers, Stores API를 동시에 호출
       const [itemsData, suppliersData, storesData] = await Promise.all([
         fetchItems(),
         fetchSuppliers(),
@@ -61,12 +63,10 @@ const StoreOrders = () => {
     }
   };
 
-  // 초기 렌더링 시 기본적으로 최신 주문(최신 주차: page=1) 조회
   useEffect(() => {
     fetchData({ page: 1 });
   }, []);
 
-  // 검색 버튼 클릭: 선택된 년도, 월, 주차를 조합해 "YYYY.MM.N" 형식의 기간 문자열 생성
   const handleSearch = () => {
     if (!selectedYear || !selectedMonth || !selectedWeek) {
       alert("년도, 월, 주차를 모두 선택해주세요.");
@@ -77,7 +77,6 @@ const StoreOrders = () => {
     fetchData({ 기간: period });
   };
 
-  // 최신 주문(최신 주차)으로 리셋
   const handleReset = () => {
     setSelectedYear('');
     setSelectedMonth('');
@@ -85,7 +84,6 @@ const StoreOrders = () => {
     fetchData({ page: 1 });
   };
 
-  // 주문 데이터를 품목별로 그룹화 (ordersData.orders: [{매장_id, 품목_id, 기간, 매장_발주량}, ...])
   const groupedOrders = () => {
     const grouping = {};
     if (ordersData && ordersData.orders) {
@@ -102,20 +100,17 @@ const StoreOrders = () => {
 
   const ordersByItem = groupedOrders();
 
-  // 모든 품목(Items)로 행 생성 – 주문이 없는 품목도 포함
-  // "종류" 필드를 정렬용으로 추가 (화면에는 출력하지 않음)
   const tableRows = items.map(item => {
     const supplier = suppliers.find(s => s.협력사_id === item.협력사_id) || {};
     return {
       itemId: item.품목_id,
       supplierName: supplier.협력사명 || "N/A",
       itemName: item.품목명 || "N/A",
-      type: item.종류 || "", // 정렬에 사용 (화면에는 출력하지 않음)
+      type: item.종류 || "",
       orders: ordersByItem[item.품목_id] || {}
     };
   });
 
-  // 정렬: 협력사 오름차순, 그 다음 종류, 그리고 품목명 오름차순
   const sortedTableRows = tableRows.sort((a, b) => {
     const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
     if (cmpSupplier !== 0) return cmpSupplier;
@@ -124,68 +119,188 @@ const StoreOrders = () => {
     return a.itemName.localeCompare(b.itemName);
   });
 
-  // 원하는 매장 순서에 따라 매장 객체 배열 생성 (매장명이 없는 경우 제외)
   const orderedStores = desiredStoreOrder
     .map(storeName => stores.find(s => s.매장명 === storeName))
     .filter(Boolean);
+
+  // 각 행의 합계 계산
+  const getRowSum = (row) =>
+    orderedStores.reduce((sum, store) => {
+      const val = row.orders[store.매장_id];
+      return sum + (val ? Number(val) : 0);
+    }, 0);
+
+  // 각 매장별 합계 계산
+  const storeTotals = orderedStores.map(store =>
+    sortedTableRows.reduce((sum, row) => sum + (row.orders[store.매장_id] ? Number(row.orders[store.매장_id]) : 0), 0)
+  );
+  // 전체 합계 계산
+  const grandTotal = sortedTableRows.reduce((sum, row) => sum + getRowSum(row), 0);
+
+  // 편집 모드 토글: 수정 버튼 클릭 시, 기존 주문 데이터를 복사해 editedOrders 초기화
+  const handleEditToggle = () => {
+    if (!isEditMode) {
+      const init = {};
+      sortedTableRows.forEach(row => {
+        init[row.itemId] = { ...row.orders };
+      });
+      setEditedOrders(init);
+    }
+    setIsEditMode(!isEditMode);
+  };
+
+  // 수정 중 해당 셀의 값을 변경
+  const handleOrderChange = (itemId, storeId, value) => {
+    setEditedOrders(prev => ({
+      ...prev,
+      [itemId]: {
+        ...prev[itemId],
+        [storeId]: value
+      }
+    }));
+  };
+
+  // 수정 완료 버튼 클릭 시, 변경된 주문 데이터를 업데이트 API 호출 후 재조회
+  const handleEditSubmit = async () => {
+    try {
+      const updates = [];
+      for (const itemId in editedOrders) {
+        for (const storeId in editedOrders[itemId]) {
+          const newValue = editedOrders[itemId][storeId];
+          // 만약 기존 주문과 변경이 없으면 생략
+          const originalVal = tableRows.find(row => row.itemId === itemId)?.orders[storeId];
+          // newValue가 빈 문자열이나 0이면, updateStoreOrder API 호출 시 0 값을 보내고(백엔드에서 삭제 처리)
+          if (newValue === "" || Number(newValue) === 0) {
+            // 여기도 동일하게 보내되, 백엔드에서 0이면 삭제하도록 함
+            if (originalVal === 0 || originalVal === "") continue;
+          } else if (newValue === originalVal) continue;
+          const payload = {
+            매장_id: storeId,
+            품목_id: itemId,
+            기간: ordersData.current_period,
+            매장_발주량: Number(newValue)
+          };
+          updates.push(updateStoreOrder(payload));
+        }
+      }
+      await Promise.all(updates);
+      // 업데이트 후 새로 데이터 재조회
+      fetchData({ 기간: ordersData.current_period });
+      setIsEditMode(false);
+    } catch (err) {
+      console.error("주문 수정 실패:", err);
+      alert("주문 수정에 실패하였습니다.");
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
   return (
     <div className="store-orders-container">
-      <h1>발주 취합서</h1>
-
-      {/* 기간 검색 드롭다운 */}
-      <div className="period-search">
-        <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
-          <option value="">년도</option>
-          {years.map(year => (
-            <option key={year} value={year}>{year}</option>
-          ))}
-        </select>
-        <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
-          <option value="">월</option>
-          {months.map(month => (
-            <option key={month} value={month}>{month}</option>
-          ))}
-        </select>
-        <select value={selectedWeek} onChange={(e) => setSelectedWeek(e.target.value)}>
-          <option value="">주차</option>
-          {weeks.map(week => (
-            <option key={week} value={week}>{week}</option>
-          ))}
-        </select>
-        <button className="search-button" onClick={handleSearch}>검색</button>
-        <button className="reset-button" onClick={handleReset}>최신 조회</button>
+      <h2 className="title">발주 취합서</h2>
+      <div className="period-controls">
+        <div className="period-search">
+          <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
+            <option value="">년도</option>
+            {years.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+          <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
+            <option value="">월</option>
+            {months.map(month => (
+              <option key={month} value={month}>{month}</option>
+            ))}
+          </select>
+          <select value={selectedWeek} onChange={(e) => setSelectedWeek(e.target.value)}>
+            <option value="">주차</option>
+            {weeks.map(week => (
+              <option key={week} value={week}>{week}</option>
+            ))}
+          </select>
+          <button className="search-button" onClick={handleSearch}>검색</button>
+          <button className="reset-button" onClick={handleReset}>최신 조회</button>
+          {/* <p>기간: {ordersData?.current_period}</p> */}
+        </div>
+        {/* 수정 버튼은 오른쪽에 그대로 위치 */}
+        <button className="edit-button" onClick={handleEditToggle}>
+          {isEditMode ? "취소" : "수정"}
+        </button>
       </div>
-          
-      <p>기간: {ordersData?.current_period}</p>
       <hr className="divider" />
       <table className="store-orders-table">
         <thead>
           <tr>
-            <th>협력사</th>
-            <th>품목명</th>
+            {/* 번호 헤더: 대각선 대신 "\" 문자 표시 */}
+            <th className="so-number-col diagonal-header"></th>
+            <th className="so-supplier-col">협력사</th>
+            <th className="so-item-col">품목명</th>
             {orderedStores.map(store => (
-              <th key={store.매장_id}>{store.매장명}</th>
+              <th key={store.매장_id} className="so-order-col">{store.매장명}</th>
             ))}
+            <th className="so-sum-col">합계</th>
           </tr>
         </thead>
         <tbody>
-          {sortedTableRows.map((row) => (
+          {sortedTableRows.map((row, index) => (
             <tr key={row.itemId}>
-              <td>{row.supplierName}</td>
-              <td>{row.itemName}</td>
+              <td className="so-number-col">{index + 1}</td>
+              <td className="so-supplier-col">
+                <div className="supplier-cell">{row.supplierName}</div>
+              </td>
+              <td className="so-item-col">
+                <div className="item-cell">{row.itemName}</div>
+              </td>
               {orderedStores.map(store => (
-                <td key={store.매장_id}>
-                  {row.orders[store.매장_id] !== undefined ? row.orders[store.매장_id] : ""}
+                <td key={store.매장_id} className="so-order-col">
+                  {isEditMode ? (
+                    <input
+                      type="number"
+                      value={
+                        editedOrders[row.itemId] &&
+                        editedOrders[row.itemId][store.매장_id] !== undefined
+                          ? editedOrders[row.itemId][store.매장_id]
+                          : ""
+                      }
+                      onChange={(e) =>
+                        handleOrderChange(row.itemId, store.매장_id, e.target.value)
+                      }
+                      style={{ textAlign: "right" }}
+                    />
+                  ) : (
+                    row.orders[store.매장_id] !== undefined
+                      ? row.orders[store.매장_id]
+                      : ""
+                  )}
                 </td>
               ))}
+              <td className="so-sum-col">
+                {getRowSum(row) === 0 ? "-" : getRowSum(row)}
+              </td>
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr>
+            <td className="so-number-col"></td>
+            <td className="so-supplier-col" colSpan="2" style={{ textAlign: 'center' }}>합계</td>
+            {storeTotals.map((total, idx) => (
+              <td key={orderedStores[idx].매장_id} className="so-order-col">
+                {total === 0 ? "-" : total}
+              </td>
+            ))}
+            <td className="so-sum-col">
+              {grandTotal === 0 ? "-" : grandTotal}
+            </td>
+          </tr>
+        </tfoot>
       </table>
+      {isEditMode && (
+        <button className="edit-confirm-button" onClick={handleEditSubmit}>
+          수정완료
+        </button>
+      )}
     </div>
   );
 };

@@ -117,3 +117,18 @@ export const fetchStores = async () => {
   }
   return await response.json();
 };
+
+export const updateStoreOrder = async (orderData) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/store_order_create/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(orderData),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to update store order");
+  }
+  return await response.json();
+};
+

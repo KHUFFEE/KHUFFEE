@@ -1,3 +1,4 @@
+// frontend/khuweb/src/pages/Suppliers.js
 import React, { useEffect, useState } from "react";
 import { fetchSuppliers, addSupplier, deleteSuppliers } from "../api/api";
 import "../styles/Suppliers.css";
@@ -64,55 +65,51 @@ const Suppliers = () => {
 
   // Excel 다운로드 핸들러 (협력사 목록 XLSX 다운로드)
   const handleDownloadExcel = () => {
-    // 협력사 데이터를 객체 배열로 생성 (각 객체가 한 행)
     const data = suppliers.map(supplier => ({
       "협력사명": supplier.협력사명
     }));
 
-    // 워크시트 생성 (헤더 순서를 명시)
     const worksheet = XLSX.utils.json_to_sheet(data, {
       header: ["협력사명"]
     });
 
-    // 새 워크북 생성 후 워크시트 추가
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-    // XLSX 파일로 저장 (파일명: "협력사 목록.xlsx", 파일 형식: xlsx)
     XLSX.writeFile(workbook, "협력사 목록.xlsx", { bookType: "xlsx" });
   };
 
   return (
     <div className="suppliers-container">
       <h2 className="title">협력사 관리</h2>
-        <div className="controls">
-          <button onClick={handleDownloadExcel} className="download-button">
-            Excel 다운로드
-          </button>
-          <button
-            onClick={() => setShowPopup(true)}
-            className="add-button"
-          >
-            + 협력사 추가
-          </button>
-          <button
-            onClick={() => {
-              setIsDeleteMode((prev) => !prev);
-              if (isDeleteMode) setSelectedSuppliers([]);
-            }}
-            className="delete-button"
-          >
-            {isDeleteMode ? "취소" : "삭제"}
-          </button>
-        </div>
+      <div className="controls">
+        <button onClick={handleDownloadExcel} className="download-button">
+          Excel 다운로드
+        </button>
+        <button
+          onClick={() => setShowPopup(true)}
+          className="add-button"
+        >
+          + 협력사 추가
+        </button>
+        <button
+          onClick={() => {
+            setIsDeleteMode((prev) => !prev);
+            if (isDeleteMode) setSelectedSuppliers([]);
+          }}
+          className="delete-button"
+        >
+          {isDeleteMode ? "취소" : "삭제"}
+        </button>
+      </div>
       <hr className="divider" />
       {error && <p className="suppliers-error">{error}</p>}
       <table className="suppliers-table">
         <thead>
           <tr>
             {isDeleteMode && <th className="suppliers-narrow-col">선택</th>}
-            <th className="suppliers-number-col">번호</th>
-            <th>협력사명</th>
+            <th className="suppliers-number-col diagonal-header"></th>
+            <th className="suppliers-center-col">협력사명</th>
           </tr>
         </thead>
         <tbody>

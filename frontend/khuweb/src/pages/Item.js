@@ -1,5 +1,3 @@
-// frontend/khuweb/src/pages/Item.js
-
 import React, { useEffect, useState } from "react";
 import { fetchItems, fetchSuppliers, addItem, deleteItems, updateItem } from "../api/api";
 import "../styles/Item.css";
@@ -17,17 +15,12 @@ const Item = () => {
   // 편집 중 변경된 값을 저장하는 객체, key: 품목_id, value: 수정된 데이터
   const [editedItems, setEditedItems] = useState({});
   // 정렬 상태: 각 열에 대해 null, "asc", "desc" 중 하나
-  // → 기본 default값: 모든 열 오름차순
   const [sortCriteria, setSortCriteria] = useState({
     품목명: "asc",
     협력사명: "asc",
     종류: "asc",
   });
-  /*  
-    사용자가 정렬 버튼을 누른 순서를 관리하는 배열입니다.
-    초기에는 사용자가 클릭하기 전이므로 빈 배열로 두고,
-    정렬 시 manualSortOrder가 비어있으면 기본순서(["협력사명", "종류", "품목명"])를 사용합니다.
-  */
+  // 사용자가 정렬 버튼을 누른 순서를 관리하는 배열
   const [manualSortOrder, setManualSortOrder] = useState([]);
   // 여러 제품을 추가할 수 있도록 newItems 배열로 상태 관리 (초기 1행)
   const [newItems, setNewItems] = useState([
@@ -44,7 +37,7 @@ const Item = () => {
     }
   ]);
 
-  // 팝업 알림 상태 (App.css에서 공용 스타일로 관리)
+  // 팝업 알림 상태
   const [alertPopup, setAlertPopup] = useState({ show: false, message: "" });
 
   // 품목 목록 불러오기
@@ -52,7 +45,6 @@ const Item = () => {
     const getItems = async () => {
       try {
         const data = await fetchItems();
-        // API로 받아온 순서는 그대로 저장; 화면에서는 정렬된 결과의 인덱스로 번호를 표시
         setItems(data);
       } catch (err) {
         setError("Failed to load items");
@@ -84,9 +76,6 @@ const Item = () => {
       else next = null;
       const newCriteria = { ...prev, [column]: next };
 
-      // 항상 해당 열을 manualSortOrder에서 제거한 후, 
-      // null이 아니라면 (즉, 정렬 활성 상태라면) 배열의 끝에 추가하여
-      // 사용자가 정렬 버튼을 누른 순서를 반영합니다.
       setManualSortOrder((prevOrder) => {
         let newOrder = prevOrder.filter((col) => col !== column);
         if (next !== null) {
@@ -99,7 +88,7 @@ const Item = () => {
     });
   };
 
-  // 정렬 함수: manualSortOrder가 있으면 그 순서를, 없으면 기본 순서(["협력사명", "종류", "품목명"])를 사용
+  // 정렬 함수
   const getSortedItems = () => {
     let sorted = [...items];
     const activeOrder =
@@ -128,7 +117,7 @@ const Item = () => {
 
   const sortedItems = getSortedItems();
 
-  // 입력값 변경 핸들러 (제품 추가 팝업)
+  // 제품 추가 팝업 입력값 변경 핸들러
   const handleInputChange = (index, e) => {
     const { name, value } = e.target;
     setNewItems((prev) => {
@@ -283,9 +272,8 @@ const Item = () => {
     }
   };
 
-  // Excel 다운로드 핸들러 (제품 목록 XLSX 다운로드)
+  // Excel 다운로드 핸들러
   const handleDownloadExcel = () => {
-    // 정렬된 제품 데이터를 객체 배열로 생성 (각 객체가 한 행을 나타냄)
     const data = sortedItems.map(item => {
       const supplier = suppliers.find(s => s.협력사_id === item.협력사_id);
       return {
@@ -300,21 +288,13 @@ const Item = () => {
         "출고단위": item.출고단위
       };
     });
-
-    // json_to_sheet 함수를 사용하여 워크시트 생성 (열 순서를 명시적으로 지정)
     const worksheet = XLSX.utils.json_to_sheet(data, {
       header: ["품목명", "협력사명", "종류", "규격", "단위", "입고단가", "입고단위", "입고단위단가", "출고단위"]
     });
-    
-    // 새 워크북 생성
     const workbook = XLSX.utils.book_new();
-    // 워크북에 워크시트 추가 (시트 이름은 "Sheet1")
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-
-    // 워크북을 XLSX 파일로 저장 (파일명: "제품 목록.xlsx")
     XLSX.writeFile(workbook, "제품 목록.xlsx", { bookType: "xlsx" });
   };
-
 
   return (
     <div className="item-container">
@@ -351,13 +331,14 @@ const Item = () => {
       <hr className="divider" />
       {error && <p className="error">{error}</p>}
 
-      {/* 정렬 가능한 헤더 */}
+      {/* 메인 테이블 (목록) */}
       <table className="item-table">
         <thead>
           <tr>
             {isDeleteMode && <th className="narrow-col">선택</th>}
-            <th>번호</th>
-            <th>
+            <th className="number-col diagonal-header"></th>
+            {/* 편집 모드일 때 품목명, 협력사명 헤더 폭 늘리기 */}
+            <th style={isEditMode ? { width: "200px" } : {}}>
               품목명
               <button className="sort-btn" onClick={() => toggleSort("품목명")}>
                 {sortCriteria.품목명 === "asc"
@@ -367,7 +348,7 @@ const Item = () => {
                   : "—"}
               </button>
             </th>
-            <th>
+            <th style={isEditMode ? { width: "120px" } : {}}>
               협력사명
               <button className="sort-btn" onClick={() => toggleSort("협력사명")}>
                 {sortCriteria.협력사명 === "asc"
@@ -388,11 +369,12 @@ const Item = () => {
               </button>
             </th>
             <th>규격</th>
-            <th>단위</th>
-            <th>입고단가</th>
-            <th>입고단위</th>
-            <th>입고단위단가</th>
-            <th>출고단위</th>
+            <th style={isEditMode ? { width: "35px" } : {}}>단위</th>
+            {/* 헤더는 항상 가운데 정렬 (CSS 적용) */}
+            <th className="right-align">입고단가</th>
+            <th className="right-align">입고단위</th>
+            <th className="right-align">입고단위단가</th>
+            <th className="right-align">출고단위</th>
           </tr>
         </thead>
         <tbody>
@@ -409,8 +391,7 @@ const Item = () => {
                     />
                   </td>
                 )}
-                {/* 번호는 정렬된 배열의 인덱스로 1부터 연속 표시 */}
-                <td>{index + 1}</td>
+                <td className="number-col">{index + 1}</td>
                 <td>
                   {isEditMode ? (
                     <input
@@ -486,7 +467,7 @@ const Item = () => {
                     item.단위
                   )}
                 </td>
-                <td>
+                <td className="right-align">
                   {isEditMode ? (
                     <input
                       type="number"
@@ -495,12 +476,13 @@ const Item = () => {
                       value={editedItems[item.품목_id]?.입고단가}
                       disabled
                       className="calc-input"
+                      style={{ textAlign: "right" }}
                     />
                   ) : (
                     <span>{item.입고단가}</span>
                   )}
                 </td>
-                <td>
+                <td className="right-align">
                   {isEditMode ? (
                     <input
                       type="number"
@@ -509,12 +491,13 @@ const Item = () => {
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "입고단위", e.target.value)
                       }
+                      style={{ textAlign: "right" }}
                     />
                   ) : (
                     item.입고단위
                   )}
                 </td>
-                <td>
+                <td className="right-align">
                   {isEditMode ? (
                     <input
                       type="number"
@@ -523,12 +506,13 @@ const Item = () => {
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "입고단위단가", e.target.value)
                       }
+                      style={{ textAlign: "right" }}
                     />
                   ) : (
                     item.입고단위단가
                   )}
                 </td>
-                <td>
+                <td className="right-align">
                   {isEditMode ? (
                     <input
                       type="number"
@@ -537,6 +521,7 @@ const Item = () => {
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "출고단위", e.target.value)
                       }
+                      style={{ textAlign: "right" }}
                     />
                   ) : (
                     item.출고단위
@@ -589,10 +574,10 @@ const Item = () => {
                     <th>종류</th>
                     <th>규격</th>
                     <th>단위</th>
-                    <th>입고단가</th>
-                    <th>입고단위</th>
-                    <th>입고단위단가</th>
-                    <th>출고단위</th>
+                    <th className="right-align">입고단가</th>
+                    <th className="right-align">입고단위</th>
+                    <th className="right-align">입고단위단가</th>
+                    <th className="right-align">출고단위</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -648,8 +633,7 @@ const Item = () => {
                           onChange={(e) => handleInputChange(index, e)}
                         />
                       </td>
-                      <td>
-                        {/* 제품 추가 팝업에서는 입고단가에 회색 배경 적용 */}
+                      <td className="right-align">
                         <input
                           type="number"
                           step="0.01"
@@ -657,30 +641,34 @@ const Item = () => {
                           value={item.입고단가}
                           disabled
                           className="calc-input"
+                          style={{ textAlign: "right" }}
                         />
                       </td>
-                      <td>
+                      <td className="right-align">
                         <input
                           type="number"
                           name="입고단위"
                           value={item.입고단위}
                           onChange={(e) => handleInputChange(index, e)}
+                          style={{ textAlign: "right" }}
                         />
                       </td>
-                      <td>
+                      <td className="right-align">
                         <input
                           type="number"
                           name="입고단위단가"
                           value={item.입고단위단가}
                           onChange={(e) => handleInputChange(index, e)}
+                          style={{ textAlign: "right" }}
                         />
                       </td>
-                      <td>
+                      <td className="right-align">
                         <input
                           type="number"
                           name="출고단위"
                           value={item.출고단위}
                           onChange={(e) => handleInputChange(index, e)}
+                          style={{ textAlign: "right" }}
                         />
                       </td>
                     </tr>

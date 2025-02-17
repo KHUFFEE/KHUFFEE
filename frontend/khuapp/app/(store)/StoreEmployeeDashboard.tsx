@@ -69,6 +69,12 @@ interface LocalOrder {
 interface StoreEmployeeDashboardProps {
   storeName: string;
 }
+interface LayoutProps {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 /** 숫자를 천 단위로 포맷하는 함수 */
 const formatPrice = (value: number): string => {
@@ -85,7 +91,12 @@ function formatWeekString(dateKey: string): string {
 }
 
 /** 기간 문자열을 만드는 헬퍼: (2025, 2, 3) -> "2025.02.3" */
-function buildPeriodString(y: number, m: number, w: number) {
+function buildPeriodString(y: number | null, m: number | null, w: number | null): string {
+  // 만약 하나라도 null이면 빈 문자열을 반환하거나, 예외 처리를 해줄 수 있음
+  if (y === null || m === null || w === null) {
+    return ''; 
+  }
+
   const mm = String(m).padStart(2, '0');
   return `${y}.${mm}.${w}`;
 }
@@ -686,19 +697,26 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
   // **[/수정]**
 
   // 실제 선택된 기간 (시작/종료)
-  const [startYear, setStartYear] = useState<number>(2025);
-  const [startMonth, setStartMonth] = useState<number>(2);
-  const [startWeek, setStartWeek] = useState<number>(3);
+  const [startYear, setStartYear] = useState<number | null>(null);
+  const [startMonth, setStartMonth] = useState<number | null>(null);
+  const [startWeek, setStartWeek] = useState<number | null>(null);
 
-  const [endYear, setEndYear] = useState<number>(2025);
-  const [endMonth, setEndMonth] = useState<number>(2);
-  const [endWeek, setEndWeek] = useState<number>(4);
+  const [endYear, setEndYear] = useState<number | null>(null);
+  const [endMonth, setEndMonth] = useState<number | null>(null);
+  const [endWeek, setEndWeek] = useState<number | null>(null);
 
   // 주문 상세보기 모달
   const [detailModalVisible, setDetailModalVisible] = useState<boolean>(false);
   const [detailGroupOrders, setDetailGroupOrders] = useState<StoreOrderData[]>([]);
   const [detailGroupDate, setDetailGroupDate] = useState<string>('');
+// (2) 연/월/주차 별로 드롭다운을 열지 여부
+const [showStartYearList, setShowStartYearList] = useState(false);
+const [showStartMonthList, setShowStartMonthList] = useState(false);
+const [showStartWeekList, setShowStartWeekList] = useState(false);
 
+const [showEndYearList, setShowEndYearList] = useState(false);
+const [showEndMonthList, setShowEndMonthList] = useState(false);
+const [showEndWeekList, setShowEndWeekList] = useState(false);
   /** 매장 정보 불러오기 */
   useEffect(() => {
     const fetchStoreInfo = async () => {
@@ -946,28 +964,26 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
         }
 
         return (
-          <View style={styles.container}>
-            {/* 상단 바 */}
-            <View style={styles.filterContainer}>
-              {/* 정렬 토글 */}
-              <TouchableOpacity style={styles.sortButton} onPress={toggleSortOrder}>
-                <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                  {sortOrder === 'desc' ? '최신순' : '오래된 순'}
-                </Text>
-              </TouchableOpacity>
-
-              {/* 기간조회 버튼 */}
-              <TouchableOpacity
-                style={[styles.sortButton, { marginLeft: 8 }]}
-                onPress={() => setShowPeriodModal(true)}
-              >
-                <Text style={{ color: 'white', fontWeight: 'bold' }}>기간조회</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-              <Receipt color="#3b82f6" size={24} style={{ marginRight: 8 }} />
-              <Text style={styles.title}>발주 내역</Text>
+          <View style={[styles.container, { flex: 1 }]}>
+            {/** 수정한 부분: 상단 헤더 영역 추가 (타이틀과 버튼 그룹을 한 줄에 배치) */}
+            <View style={styles.headerRow}>
+              <View style={styles.titleContainer}>
+                <Receipt color="#3b82f6" size={24} style={{ marginRight: 8 }} />
+                <Text style={styles.title}>발주 내역</Text>
+              </View>
+              <View style={styles.rightButtonGroup}>
+                <TouchableOpacity style={styles.sortButton} onPress={toggleSortOrder}>
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                    {sortOrder === 'desc' ? '최신순' : '오래된 순'}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.sortButton, { marginLeft: 8 }]}
+                  onPress={() => setShowPeriodModal(true)}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>기간조회</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {sortedYears.length === 0 ? (
@@ -1146,55 +1162,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
       </View>
 
       {/* 주문 상세보기 모달 */}
-      <Modal
-        visible={detailModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setDetailModalVisible(false)}
-      >
-        <View style={modalStyles.centeredView}>
-          <View style={[modalStyles.modalView, { maxHeight: '80%' }]}>
-            <ScrollView style={receiptStyles.receiptContainer}>
-              <View style={receiptStyles.header}>
-                <Text style={receiptStyles.headerTitle}>주문 상세 내역</Text>
-                <Text style={receiptStyles.headerSubtitle}>{formatWeekString(detailGroupDate)}</Text>
-              </View>
-              <View style={receiptStyles.divider} />
-              {detailGroupOrders.map((order, idx) => (
-                <View key={idx} style={receiptStyles.itemRow}>
-                  <View style={receiptStyles.itemRowLeft}>
-                    <Text style={receiptStyles.itemName}>{order.품목명}</Text>
-                    <Text style={receiptStyles.itemQty}>
-                      x {formatPrice(order.매장_발주량)}개
-                    </Text>
-                  </View>
-                  <View style={receiptStyles.itemRowRight}>
-                    <Text style={receiptStyles.itemPrice}>
-                      {formatPrice(order.totalCost || 0)}원
-                    </Text>
-                  </View>
-                </View>
-              ))}
-              <View style={receiptStyles.divider} />
-              <View style={receiptStyles.footer}>
-                <Text style={receiptStyles.footerText}>
-                  총 합계: {formatPrice(detailGroupOrders.reduce((sum, o) => sum + (o.totalCost || 0), 0))}원
-                </Text>
-              </View>
-            </ScrollView>
-
-            <TouchableOpacity
-              style={modalStyles.closeButton}
-              onPress={() => setDetailModalVisible(false)}
-            >
-              <Text style={modalStyles.textStyle}>닫기</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* **[수정] 기간조회 모달 (시작~종료) + 초기화 버튼 + 날짜 선택 모달 ** */}
-      {/* 기간조회 모달 (시작일/종료일) + 초기화 버튼은 메인 필터바에 별도 노출 */}
+      {/* 기간조회 모달 */}
       <Modal
         visible={showPeriodModal}
         transparent={true}
@@ -1205,28 +1173,185 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           <View style={styles.periodModalInner}>
             <Text style={styles.periodModalTitle}>기간조회</Text>
 
-            {/* "시작일 ~ 종료일" 한 줄 */}
-      {/* 시작날짜·종료날짜를 한 줄에 배치하되, 라벨을 상단에 배치 */}
-            <View style={styles.periodRowInModal}>
-              <View style={{ flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 6 }}>시작날짜</Text>
-                <TouchableOpacity style={styles.dateBox} onPress={() => openDatePicker(true)}>
-                  <Text style={styles.dateBoxText}>{`${startYear}.${startMonth}.${startWeek}`}</Text>
+            {/* 시작날짜 그룹 */}
+            <View style={styles.dateGroup}>
+              <Text style={styles.dateGroupLabel}>시작날짜</Text>
+              <View style={styles.dateRow}>
+                {/* 시작년도 선택 */}
+                <TouchableOpacity
+                  style={styles.dateBox}
+                  onPress={() => setShowStartYearList(!showStartYearList)}
+                >
+                  <Text style={styles.dateBoxText}>
+                    {startYear ? `${startYear}년` : '년도 선택'}
+                  </Text>
                 </TouchableOpacity>
-              </View>
-
-              {/* 가운데 공백(간격) */}
-              <View style={{ width: 16 }} />
-
-              <View style={{ flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 6 }}>종료날짜</Text>
-                <TouchableOpacity style={styles.dateBox} onPress={() => openDatePicker(false)}>
-                  <Text style={styles.dateBoxText}>{`${endYear}.${endMonth}.${endWeek}`}</Text>
+                {/* 시작월 선택 */}
+                <TouchableOpacity
+                  style={styles.dateBox}
+                  onPress={() => setShowStartMonthList(!showStartMonthList)}
+                >
+                  <Text style={styles.dateBoxText}>
+                    {startMonth ? `${startMonth}월` : '월 선택'}
+                  </Text>
+                </TouchableOpacity>
+                {/* 시작주차 선택 */}
+                <TouchableOpacity
+                  style={styles.dateBox}
+                  onPress={() => setShowStartWeekList(!showStartWeekList)}
+                >
+                  <Text style={styles.dateBoxText}>
+                    {startWeek ? `${startWeek}주` : '주차 선택'}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
 
-            {/* 검색/취소 버튼 (초기화는 메인 필터바에 별도 노출) */}
+            {/* 종료날짜 그룹 */}
+            <View style={styles.dateGroup}>
+              <Text style={styles.dateGroupLabel}>종료날짜</Text>
+              <View style={styles.dateRow}>
+                {/* 종료년도 선택 */}
+                <TouchableOpacity
+                  style={styles.dateBox}
+                  onPress={() => setShowEndYearList(!showEndYearList)}
+                >
+                  <Text style={styles.dateBoxText}>
+                    {endYear ? `${endYear}년` : '년도 선택'}
+                  </Text>
+                </TouchableOpacity>
+                {/* 종료월 선택 */}
+                <TouchableOpacity
+                  style={styles.dateBox}
+                  onPress={() => setShowEndMonthList(!showEndMonthList)}
+                >
+                  <Text style={styles.dateBoxText}>
+                    {endMonth ? `${endMonth}월` : '월 선택'}
+                  </Text>
+                </TouchableOpacity>
+                {/* 종료주차 선택 */}
+                <TouchableOpacity
+                  style={styles.dateBox}
+                  onPress={() => setShowEndWeekList(!showEndWeekList)}
+                >
+                  <Text style={styles.dateBoxText}>
+                    {endWeek ? `${endWeek}주` : '주차 선택'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* 드롭다운 영역 - 각 선택 버튼 아래에 나타남 */}
+            {showStartYearList && (
+              <View style={[styles.dropdownContainer, { top: 110, left: 20 }]}>
+                <ScrollView style={styles.dropdownScroll}>
+                  {years.map((y) => (
+                    <TouchableOpacity
+                      key={y}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setStartYear(y);
+                        setShowStartYearList(false);
+                      }}
+                    >
+                      <Text>{y}년</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+            {showStartMonthList && (
+              <View style={[styles.dropdownContainer, { top: 110, left: 140 }]}>
+                <ScrollView style={styles.dropdownScroll}>
+                  {months.map((m) => (
+                    <TouchableOpacity
+                      key={m}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setStartMonth(m);
+                        setShowStartMonthList(false);
+                      }}
+                    >
+                      <Text>{m}월</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+            {showStartWeekList && (
+              <View style={[styles.dropdownContainer, { top: 110, left: 260 }]}>
+                <ScrollView style={styles.dropdownScroll}>
+                  {weeks.map((w) => (
+                    <TouchableOpacity
+                      key={w}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setStartWeek(w);
+                        setShowStartWeekList(false);
+                      }}
+                    >
+                      <Text>{w}주</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+            {showEndYearList && (
+              <View style={[styles.dropdownContainer, { top: 240, left: 20 }]}>
+                <ScrollView style={styles.dropdownScroll}>
+                  {years.map((y) => (
+                    <TouchableOpacity
+                      key={y}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setEndYear(y);
+                        setShowEndYearList(false);
+                      }}
+                    >
+                      <Text>{y}년</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+            {showEndMonthList && (
+              <View style={[styles.dropdownContainer, { top: 240, left: 140 }]}>
+                <ScrollView style={styles.dropdownScroll}>
+                  {months.map((m) => (
+                    <TouchableOpacity
+                      key={m}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setEndMonth(m);
+                        setShowEndMonthList(false);
+                      }}
+                    >
+                      <Text>{m}월</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+            {showEndWeekList && (
+              <View style={[styles.dropdownContainer, { top: 240, left: 260 }]}>
+                <ScrollView style={styles.dropdownScroll}>
+                  {weeks.map((w) => (
+                    <TouchableOpacity
+                      key={w}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setEndWeek(w);
+                        setShowEndWeekList(false);
+                      }}
+                    >
+                      <Text>{w}주</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* 검색/취소 버튼 */}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
               <TouchableOpacity style={styles.periodSearchButton} onPress={handlePeriodSearch}>
                 <Text style={styles.periodSearchButtonText}>검색</Text>
@@ -1379,6 +1504,21 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between', // 왼쪽 타이틀과 오른쪽 버튼 그룹 분리
+    alignItems: 'center',
+    width: '100%',
+    paddingVertical: 10,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rightButtonGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   // **[수정] 기간조회 모달용 스타일 추가 **
   periodModalContainer: {
     flex: 1,
@@ -1419,6 +1559,24 @@ const styles = StyleSheet.create({
   dateBoxText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  /** 새로 추가 */
+  dropdownContainer: {
+    position: 'absolute',
+    top: 50, // dateBox 높이 아래에 맞춰서 조정
+    left: 0, // 필요시 위치 조정
+    width: 100, // 드롭다운 폭
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    zIndex: 999,
+  },
+  dropdownItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   periodSearchButton: {
     backgroundColor: '#3b82f6',
@@ -1512,6 +1670,46 @@ const styles = StyleSheet.create({
   resetButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+    dateColumn: {
+    // 세로로 연/월/주차 버튼을 쌓기 위해
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginHorizontal: 8,
+  },
+  dateColumnTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  tildeText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginHorizontal: 8,
+    alignSelf: 'center',
+    marginTop: 40, // 필요 시 위치 조정
+  },
+  dropdownScroll: {
+    maxHeight: 180, // 5개 정도만 보여주고 스크롤
+  },
+  modalContent: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  dateGroup: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  dateGroupLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
   },
   // **[/수정]**
 });
@@ -1705,6 +1903,67 @@ const orderStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+    // 기간조회 모달 내부 레이아웃
+  modalContent: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  dateGroup: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  dateGroupLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  tildeText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    alignSelf: 'center',
+    marginTop: 20,
+    marginHorizontal: 8,
+  },
+  dateBox: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    minWidth: 80,
+    alignItems: 'center',
+    marginVertical: 4,
+    backgroundColor: '#fff',
+  },
+  dateBoxText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  dropdownContainer: {
+    position: 'absolute',
+    width: 100,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    zIndex: 999,
+  },
+  dropdownScroll: {
+    maxHeight: 180, // 약 5개 아이템 정도 표시 (필요시 조절)
+  },
+  dropdownItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+
 });
 
 const modalStyles = StyleSheet.create({

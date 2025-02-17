@@ -747,11 +747,12 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
   }, [activeView, storeId]);
 
   /** 기본 발주내역 (기간조회가 아닐 때) */
-  const fetchOrders = async (startPage: number, order: 'asc' | 'desc') => {
+  const fetchOrders = async (startPage: number, order: 'asc' | 'desc', forceFetch: boolean = false) => {
     if (!storeId) return;
     setOrdersLoading(true);
 
-    if (!isPeriodSearch) {
+    // 수정: forceFetch가 true면 isPeriodSearch와 상관없이 API 요청을 실행
+    if (forceFetch || !isPeriodSearch) { 
       try {
         let allOrders: StoreOrderData[] = [];
         for (let page = startPage; page < startPage + 5; page++) {
@@ -765,7 +766,7 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           const result = await response.json();
           const orders: StoreOrderData[] = result.orders;
 
-          // items와 조인 + totalCost 계산
+          // (변경 없음) items와 조인 및 totalCost 계산
           const combined = orders.map((o) => {
             const foundItem = items.find((it) => it.품목_id === o.품목_id);
             const unitPrice = foundItem ? parseFloat(foundItem.입고단가) : 0;
@@ -791,7 +792,6 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
         setOrdersLoading(false);
       }
     } else {
-      // 기간조회 중이면 handlePeriodSearch()가 이미 storeOrders에 반영
       setOrdersLoading(false);
     }
   };
@@ -847,9 +847,10 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
     setStoreOrders([]);
     setHasMore(true);
     setOrdersLoading(true);
-
+    
     // 기본 페이지네이션 로직
-    await fetchOrders(1, sortOrder);
+    await fetchOrders(1, sortOrder,true);
+
     setCurrentPage(6);
     setOrdersLoading(false);
   };
@@ -1193,9 +1194,10 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
       </Modal>
 
       {/* **[수정] 기간조회 모달 (시작~종료) + 초기화 버튼 + 날짜 선택 모달 ** */}
+      {/* 기간조회 모달 (시작일/종료일) + 초기화 버튼은 메인 필터바에 별도 노출 */}
       <Modal
         visible={showPeriodModal}
-        transparent
+        transparent={true}
         animationType="slide"
         onRequestClose={() => setShowPeriodModal(false)}
       >
@@ -1203,38 +1205,32 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
           <View style={styles.periodModalInner}>
             <Text style={styles.periodModalTitle}>기간조회</Text>
 
-            {/* "시작 ~ 종료" 한 줄 */}
-            <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
-              <TouchableOpacity
-                style={styles.dateBox}
-                onPress={() => openDatePicker(true)}
-              >
-                <Text style={styles.dateBoxText}>{`${startYear}.${startMonth}.${startWeek}`}</Text>
-              </TouchableOpacity>
+            {/* "시작일 ~ 종료일" 한 줄 */}
+      {/* 시작날짜·종료날짜를 한 줄에 배치하되, 라벨을 상단에 배치 */}
+            <View style={styles.periodRowInModal}>
+              <View style={{ flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 6 }}>시작날짜</Text>
+                <TouchableOpacity style={styles.dateBox} onPress={() => openDatePicker(true)}>
+                  <Text style={styles.dateBoxText}>{`${startYear}.${startMonth}.${startWeek}`}</Text>
+                </TouchableOpacity>
+              </View>
 
-              <Text style={{ marginHorizontal: 8, fontSize: 16, fontWeight: 'bold' }}>~</Text>
+              {/* 가운데 공백(간격) */}
+              <View style={{ width: 16 }} />
 
-              <TouchableOpacity
-                style={styles.dateBox}
-                onPress={() => openDatePicker(false)}
-              >
-                <Text style={styles.dateBoxText}>{`${endYear}.${endMonth}.${endWeek}`}</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 6 }}>종료날짜</Text>
+                <TouchableOpacity style={styles.dateBox} onPress={() => openDatePicker(false)}>
+                  <Text style={styles.dateBoxText}>{`${endYear}.${endMonth}.${endWeek}`}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
-            {/* 검색/초기화/취소 버튼 */}
-            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+            {/* 검색/취소 버튼 (초기화는 메인 필터바에 별도 노출) */}
+            <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
               <TouchableOpacity style={styles.periodSearchButton} onPress={handlePeriodSearch}>
                 <Text style={styles.periodSearchButtonText}>검색</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.periodSearchButton, { backgroundColor: '#999', marginLeft: 10 }]}
-                onPress={handleResetSearch}
-              >
-                <Text style={styles.periodSearchButtonText}>초기화</Text>
-              </TouchableOpacity>
-
               <TouchableOpacity
                 style={[styles.periodSearchButton, { backgroundColor: '#ccc', marginLeft: 10 }]}
                 onPress={() => setShowPeriodModal(false)}
@@ -1246,19 +1242,27 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
         </View>
       </Modal>
 
+      {/* 메인 필터바에 기간조회 활성 시 빨간색 초기화 버튼 노출 */}
+      {isPeriodSearch && (
+        <View style={{ position: 'absolute', top: 10, right: 10 }}>
+          <TouchableOpacity style={styles.resetButton} onPress={handleResetSearch}>
+            <Text style={styles.resetButtonText}>초기화</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* 날짜 선택 모달 (연도/월/주차 리스트) */}
       <Modal
         visible={showDatePickerModal}
-        transparent
+        transparent={true}
         animationType="fade"
         onRequestClose={() => setShowDatePickerModal(false)}
       >
         <View style={styles.datePickerModalContainer}>
           <View style={styles.datePickerModal}>
             <Text style={styles.datePickerTitle}>
-              {selectingStart ? '시작 날짜 선택' : '종료 날짜 선택'}
+              {selectingStart ? '시작일 선택' : '종료일 선택'}
             </Text>
-
             <Text style={styles.datePickerLabel}>연도</Text>
             <ScrollView horizontal style={{ marginBottom: 8 }}>
               {years.map((y) => (
@@ -1270,39 +1274,48 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
                   ]}
                   onPress={() => (selectingStart ? setStartYear(y) : setEndYear(y))}
                 >
-                  <Text
-                    style={{
-                      color: (selectingStart ? startYear : endYear) === y ? '#fff' : '#333',
-                    }}
-                  >
+                  <Text style={{ color: (selectingStart ? startYear : endYear) === y ? '#fff' : '#333' }}>
                     {y}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-
             <Text style={styles.datePickerLabel}>월</Text>
-            <ScrollView horizontal style={{ marginBottom: 8 }}>
-              {months.map((m) => (
-                <TouchableOpacity
-                  key={m}
-                  style={[
-                    styles.pickerItem,
-                    (selectingStart ? startMonth : endMonth) === m && styles.pickerItemActive,
-                  ]}
-                  onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
-                >
-                  <Text
-                    style={{
-                      color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333',
-                    }}
+            {/* 두 줄에 6개씩 */}
+            <View>
+              <ScrollView horizontal style={{ marginBottom: 4 }}>
+                {months.slice(0, 6).map((m) => (
+                  <TouchableOpacity
+                    key={m}
+                    style={[
+                      styles.pickerItem,
+                      (selectingStart ? startMonth : endMonth) === m && styles.pickerItemActive,
+                    ]}
+                    onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
                   >
-                    {m}월
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
+                    <Text style={{ color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333' }}>
+                      {m}월
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <ScrollView horizontal style={{ marginBottom: 8 }}>
+                {months.slice(6).map((m) => (
+                  <TouchableOpacity
+                    key={m}
+                    style={[
+                      styles.pickerItem,
+                      (selectingStart ? startMonth : endMonth) === m && styles.pickerItemActive,
+                    ]}
+                    onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
+                  >
+                    <Text style={{ color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333' }}>
+                      {m}월
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
             <Text style={styles.datePickerLabel}>주차</Text>
             <ScrollView horizontal style={{ marginBottom: 16 }}>
               {weeks.map((w) => (
@@ -1314,28 +1327,18 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ storeNa
                   ]}
                   onPress={() => (selectingStart ? setStartWeek(w) : setEndWeek(w))}
                 >
-                  <Text
-                    style={{
-                      color: (selectingStart ? startWeek : endWeek) === w ? '#fff' : '#333',
-                    }}
-                  >
+                  <Text style={{ color: (selectingStart ? startWeek : endWeek) === w ? '#fff' : '#333' }}>
                     {w}주
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-
-            {/* 확인 버튼 */}
-            <TouchableOpacity
-              style={styles.periodSearchButton}
-              onPress={() => setShowDatePickerModal(false)}
-            >
+            <TouchableOpacity style={styles.periodSearchButton} onPress={() => setShowDatePickerModal(false)}>
               <Text style={styles.periodSearchButtonText}>확인</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-      {/* **[/수정] 끝 ** */}
     </View>
   );
 };
@@ -1499,6 +1502,18 @@ const styles = StyleSheet.create({
   pickerItemActive: {
     backgroundColor: '#3b82f6',
   },
+  // **[수정] 초기화 버튼 스타일 (메인 필터바에 추가) **
+  resetButton: {
+    backgroundColor: 'red',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  resetButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  // **[/수정]**
 });
 
 const orderStyles = StyleSheet.create({

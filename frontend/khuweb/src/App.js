@@ -6,6 +6,9 @@ import Orders from "./pages/StoreOrders";
 import Item from "./pages/Item";
 import Login from "./pages/Login";
 import Suppliers from "./pages/Suppliers";
+import StoreInventory from "./pages/StoreInventory";
+import WarehouseInventory from "./pages/WarehouseInventory";
+
 
 // React Icons
 import { 
@@ -158,10 +161,14 @@ function App() {
                   {showStoreMenu && (
                     <div className="submenu">
                       <NavLink
+                        to="/store/inventory"
+                        className={({ isActive }) => (isActive ? "active" : "")}
+                      >
+                        재고
+                      </NavLink>
+                      <NavLink
                         to="/store/orders"
-                        className={({ isActive }) =>
-                          isActive ? "active" : ""
-                        }
+                        className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         발주 취합서
                       </NavLink>
@@ -188,46 +195,48 @@ function App() {
                   {showWarehouseMenu && (
                     <div className="submenu">
                       <NavLink
+                        to="/warehouse/inventory"
+                        className={({ isActive }) => (isActive ? "active" : "")}
+                      >
+                        재고
+                      </NavLink>
+                      <NavLink
                         to="/warehouse/incoming"
-                        className={({ isActive }) =>
-                          isActive ? "active" : ""
-                        }
+                        className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         입고
                       </NavLink>
                       <NavLink
                         to="/warehouse/outgoing"
-                        className={({ isActive }) =>
-                          isActive ? "active" : ""
-                        }
+                        className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         출고
                       </NavLink>
                       <NavLink
                         to="/warehouse/orders"
-                        className={({ isActive }) =>
-                          isActive ? "active" : ""
-                        }
+                        className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         발주
                       </NavLink>
                     </div>
                   )}
                 </div>
+
               </nav>
             </aside>
             <main className="app-main">
               <Routes>
-                <Route
-                  path="/login"
-                  element={<Login setIsLoggedIn={setIsLoggedIn} />}
-                />
+                <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
                 <Route path="/" element={<Home />} />
+                <Route path="/store/inventory" element={<StoreInventory />} />
                 <Route path="/store/orders" element={<Orders />} />
                 <Route path="/suppliers" element={<Suppliers />} />
                 <Route path="/item" element={<Item />} />
-                {/* 예시: '입출고관리대장' 라우트 */}
-                {/* <Route path="/inventory-log" element={<InventoryLog />} /> */}
+                <Route path="/warehouse/inventory" element={<WarehouseInventory />} />
+                {/* 창고 관련 다른 페이지 예시 */}
+                {/* <Route path="/warehouse/incoming" element={<YourWarehouseIncomingComponent />} />
+                <Route path="/warehouse/outgoing" element={<YourWarehouseOutgoingComponent />} />
+                <Route path="/warehouse/orders" element={<YourWarehouseOrdersComponent />} /> */}
               </Routes>
             </main>
           </div>

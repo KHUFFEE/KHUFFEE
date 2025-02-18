@@ -119,7 +119,7 @@ export const fetchStores = async () => {
 };
 
 export const updateStoreOrder = async (orderData) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/store_order_create/`, {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/store_order_update/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

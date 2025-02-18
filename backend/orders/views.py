@@ -1,12 +1,14 @@
-# backend/orders/views.py
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import date
-from .serializers import StoreOrderCreateSerializer
+from .serializers import StoreOrderCreateSerializer, StoreOrderListSerializer
 from .models import StoreOrder
 from collections import OrderedDict
+
+# 새로 추가: 외래키 모델 임포트
+from accounts.models import Store
+from suppliers.models import Item
 
 class StoreOrderCreateView(APIView):
     def post(self, request):
@@ -111,3 +113,75 @@ class StoreOrderListView(APIView):
             "orders": orders,
         }
         return Response(result, status=status.HTTP_200_OK)
+
+class StoreOrderUpdateView(APIView):
+    def post(self, request):
+        # 필수 필드: 매장_id, 품목_id, 기간, 매장_발주량
+        store_id = request.data.get("매장_id")
+        item_id = request.data.get("품목_id")
+        period = request.data.get("기간")
+        order_amount = request.data.get("매장_발주량")
+        
+        if not (store_id and item_id and period):
+            return Response(
+                {"error": "매장_id, 품목_id, 기간은 필수 입력입니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 외래키 객체로 변환
+        try:
+            store_obj = Store.objects.get(pk=store_id)
+        except Store.DoesNotExist:
+            return Response({"error": "해당 매장을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            item_obj = Item.objects.get(pk=item_id)
+        except Item.DoesNotExist:
+            return Response({"error": "해당 품목을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # 매장_발주량을 정수로 변환 (빈 문자열이나 None은 0으로 처리)
+        try:
+            new_value = int(order_amount) if order_amount not in [None, ""] else 0
+        except ValueError:
+            return Response({"error": "매장_발주량은 정수여야 합니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # .get() 대신 filter()로 기존 주문 조회 (id 필드를 참조하지 않도록)
+        qs = StoreOrder.objects.filter(매장_id=store_obj, 품목_id=item_obj, 기간=period)
+        if qs.exists():
+            if new_value == 0:
+                qs.delete()
+                return Response({
+                    "매장_id": store_obj.pk,
+                    "품목_id": item_obj.pk,
+                    "기간": period,
+                    "매장_발주량": 0
+                }, status=status.HTTP_200_OK)
+            else:
+                qs.update(매장_발주량=new_value)
+                # 존재하는 컬럼으로 명시적으로 정렬하여 id 필드 참조를 피함
+                updated_record = qs.order_by("매장_id", "품목_id", "기간").values("매장_id", "품목_id", "기간", "매장_발주량").first()
+                return Response(updated_record, status=status.HTTP_200_OK)
+        else:
+            if new_value == 0:
+                return Response({
+                    "매장_id": store_obj.pk,
+                    "품목_id": item_obj.pk,
+                    "기간": period,
+                    "매장_발주량": 0
+                }, status=status.HTTP_200_OK)
+            else:
+                StoreOrder.objects.create(
+                    매장_id=store_obj,
+                    품목_id=item_obj,
+                    기간=period,
+                    매장_발주량=new_value
+                )
+                return Response({
+                    "매장_id": store_obj.pk,
+                    "품목_id": item_obj.pk,
+                    "기간": period,
+                    "매장_발주량": new_value
+                }, status=status.HTTP_201_CREATED)
+
+
+

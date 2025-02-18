@@ -78,3 +78,5 @@ class StoreOrderListSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreOrder
         fields = ('매장_id', '품목_id', '기간', '매장_발주량')
+        
+

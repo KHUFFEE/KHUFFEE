@@ -123,6 +123,7 @@
   gap: 10px;
   justify-content: space-between;
   margin-top: -5px;
+  height: 40px; /* 버튼 높이를 기존과 동일하게 유지 (예: 40px) */
 }
 
 .period-search {
@@ -148,8 +149,8 @@
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #007bff;
-  border: 1.6px solid #007bff;
+  color: #8B0000;
+  border: 1.6px solid #8B0000;
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -203,7 +204,7 @@
   cursor: pointer;
 }
 
-/* 토글 아이콘: inline-block으로 표시하며, select-display와 동일한 간격(예: 주차 다음에 8px 간격) */
+/* 토글 아이콘: inline-block으로 표시하며, select-display와 동일한 간격 (예: 주차 다음에 8px 간격) */
 .period-select-box .toggle {
   display: inline-block;
   margin-left: 8px;
@@ -243,7 +244,22 @@
   gap: 10px;
 }
 
-/* ★ 버튼 높이를 기존과 동일하게 유지하기 위한 고정 높이 설정 ★ */
-.period-controls {
-  height: 40px; 
+/* period-select-box 드롭다운 스크롤바 스타일 (웹킷 기반 브라우저) */
+.period-select-box .custom-select::-webkit-scrollbar {
+  width: 10px;
+}
+
+.period-select-box .custom-select::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+.period-select-box .custom-select::-webkit-scrollbar-thumb {
+  background: #B22222; /* 변경된 빨강 계열 */
+  border-radius: 5px;
+  border: 2px solid #f1f1f1;
+}
+
+.period-select-box .custom-select::-webkit-scrollbar-thumb:hover {
+  background: #B22222;
 }

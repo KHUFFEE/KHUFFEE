@@ -35,6 +35,14 @@ const Item = () => {
   ]);
   const [alertPopup, setAlertPopup] = useState({ show: false, message: "" });
 
+  // 숫자 포맷 함수: 입력값에 쉼표를 추가 (숫자 또는 숫자문자열)
+  const formatNumber = (value) => {
+    if (value === null || value === undefined || value === "") return "";
+    const num = parseFloat(value.toString().replace(/,/g, ""));
+    if (isNaN(num)) return "";
+    return num.toLocaleString();
+  };
+
   // 품목 목록 불러오기
   useEffect(() => {
     const getItems = async () => {
@@ -115,9 +123,13 @@ const Item = () => {
   // 제품 추가 팝업 입력값 변경 핸들러
   const handleInputChange = (index, e) => {
     const { name, value } = e.target;
+    // 숫자 필드인 경우 쉼표 제거 후 저장
+    const rawValue = ["입고단가", "입고단위", "입고단위단가", "출고단위"].includes(name)
+      ? value.replace(/,/g, "")
+      : value;
     setNewItems((prev) => {
       const updatedItems = [...prev];
-      updatedItems[index] = { ...updatedItems[index], [name]: value };
+      updatedItems[index] = { ...updatedItems[index], [name]: rawValue };
       // 입고단가 자동 계산
       const unit = parseFloat(updatedItems[index]["입고단위"]);
       const unitPrice = parseFloat(updatedItems[index]["입고단위단가"]);
@@ -234,8 +246,12 @@ const Item = () => {
 
   // 수정 모드 핸들러 (입고단위, 입고단위단가 변경 시 자동 계산)
   const handleEditChange = (itemId, field, value) => {
+    // 숫자 필드인 경우 쉼표 제거
+    const rawValue = ["입고단가", "입고단위", "입고단위단가", "출고단위"].includes(field)
+      ? value.replace(/,/g, "")
+      : value;
     setEditedItems((prev) => {
-      const updatedItem = { ...prev[itemId], [field]: value };
+      const updatedItem = { ...prev[itemId], [field]: rawValue };
       if (field === "입고단위" || field === "입고단위단가") {
         const unit = parseFloat(updatedItem["입고단위"]);
         const unitPrice = parseFloat(updatedItem["입고단위단가"]);
@@ -267,7 +283,6 @@ const Item = () => {
     }
   };
 
-  // Excel 다운로드 핸들러 (xlsx-js-style 적용)
   // Excel 다운로드 핸들러 (xlsx-js-style 적용)
   const handleDownloadExcel = () => {
     // 1. 현재 날짜 및 파일명 생성
@@ -314,7 +329,6 @@ const Item = () => {
     ws["!merges"] = ws["!merges"] || [];
     const titleMerge = { s: { r: 0, c: 0 }, e: { r: 1, c: headers.length - 1 } };
     ws["!merges"].push(titleMerge);
-    // A1 셀에 제목 값과 스타일 적용 (맑은 고딕, 글자크기 14, bold, 가운데 정렬)
     ws["A1"] = {
       v: `카페 쿠피 ${mm}월 제품 목록`,
       t: "s",
@@ -329,16 +343,12 @@ const Item = () => {
         },
       },
     };
-    // **병합된 영역 전체에 외부 테두리 적용**
-    // (A1 셀 이외의 영역에도 빈 셀을 만들어 외부 테두리만 지정)
     for (let r = titleMerge.s.r; r <= titleMerge.e.r; r++) {
       for (let c = titleMerge.s.c; c <= titleMerge.e.c; c++) {
         const addr = XLSX.utils.encode_cell({ r, c });
-        // A1은 이미 처리했으므로 건너뛰고, 값이 없는 셀은 빈 문자열로 채움
         if (addr === "A1") continue;
         if (!ws[addr]) ws[addr] = { t: "s", v: "" };
         ws[addr].s = ws[addr].s || {};
-        // 외부 가장자리만 테두리 지정
         ws[addr].s.border = {
           top: r === titleMerge.s.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
           bottom: r === titleMerge.e.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
@@ -348,7 +358,7 @@ const Item = () => {
       }
     }
 
-    // 5. 헤더 행(4행; 0-indexed row 3) 각 셀에 Arial, bold, 가운데 정렬 및 외부 테두리 적용
+    // 5. 헤더 행(4행; 0-indexed row 3) 스타일 적용
     for (let i = 0; i < headers.length; i++) {
       const cellAddr = XLSX.utils.encode_cell({ r: 3, c: i });
       if (ws[cellAddr]) {
@@ -367,7 +377,7 @@ const Item = () => {
       }
     }
 
-    // 6. 나머지 셀에 기본적으로 Arial 폰트 적용 (제목 A1은 그대로 유지)
+    // 6. 나머지 셀에 기본 Arial 폰트 적용
     for (let cell in ws) {
       if (cell[0] === "!") continue;
       if (cell === "A1") continue;
@@ -376,7 +386,7 @@ const Item = () => {
       ws[cell].s.font = { ...existingFont, name: "Arial" };
     }
 
-    // 7. 각 열의 너비 조정 (각 열의 최대 문자열 길이에 +10 여유)
+    // 7. 각 열의 너비 조정
     const allRows = XLSX.utils.sheet_to_json(ws, { header: 1 });
     const colWidths = [];
     if (allRows && allRows.length > 0) {
@@ -394,7 +404,7 @@ const Item = () => {
     }
     ws["!cols"] = colWidths;
 
-    // 8. 전체 테이블 영역(헤더행(4행)부터 마지막 행까지)의 외부 테두리 적용
+    // 8. 전체 테이블 영역에 외부 테두리 적용
     if (ws["!ref"]) {
       const range = XLSX.utils.decode_range(ws["!ref"]);
       for (let r = range.s.r; r <= range.e.r; r++) {
@@ -419,23 +429,21 @@ const Item = () => {
       }
     }
 
-    // 9. 입고단가 열(헤더 인덱스 5)의 데이터 행(헤더행(4행) 이후)은 오른쪽 정렬
+    // 9. 입고단가 열 오른쪽 정렬
     const range = XLSX.utils.decode_range(ws["!ref"]);
-    for (let r = 4; r <= range.e.r; r++) { // r=4부터 데이터 시작 (0-index: row3은 헤더)
-      const cellAddr = XLSX.utils.encode_cell({ r, c: 5 }); // 6번째 열 (입고단가)
+    for (let r = 4; r <= range.e.r; r++) {
+      const cellAddr = XLSX.utils.encode_cell({ r, c: 5 });
       if (ws[cellAddr]) {
         ws[cellAddr].s = ws[cellAddr].s || {};
-        // 만약 이미 alignment 설정이 있다면 덮어쓰되 헤더와는 다르게 오른쪽 정렬
         ws[cellAddr].s.alignment = { horizontal: "right", vertical: "center" };
       }
     }
 
-    // 10. 워크북 생성 및 저장 (xlsx-js-style 사용)
+    // 10. 워크북 생성 및 저장
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, `카페 쿠피 ${mm}월 제품 목록`);
     XLSX.writeFile(wb, filename);
   };
-
 
   return (
     <div className="item-container">
@@ -609,61 +617,72 @@ const Item = () => {
                 <td className="right-align">
                   {isEditMode ? (
                     <input
-                      type="number"
-                      step="0.01"
+                      type="text"
                       name="입고단가"
-                      value={editedItems[item.품목_id]?.입고단가}
+                      value={formatNumber(editedItems[item.품목_id]?.입고단가)}
                       disabled
                       className="calc-input"
                       style={{ textAlign: "right" }}
                     />
                   ) : (
-                    <span>{item.입고단가}</span>
+                    <span>{formatNumber(item.입고단가)}</span>
                   )}
                 </td>
                 <td className="right-align">
                   {isEditMode ? (
                     <input
-                      type="number"
+                      type="text"
                       name="입고단위"
-                      value={editedItems[item.품목_id]?.입고단위 || ""}
+                      value={formatNumber(editedItems[item.품목_id]?.입고단위 || "")}
                       onChange={(e) =>
-                        handleEditChange(item.품목_id, "입고단위", e.target.value)
+                        handleEditChange(
+                          item.품목_id,
+                          "입고단위",
+                          e.target.value.replace(/,/g, "")
+                        )
                       }
                       style={{ textAlign: "right" }}
                     />
                   ) : (
-                    item.입고단위
+                    <span>{formatNumber(item.입고단위)}</span>
                   )}
                 </td>
                 <td className="right-align">
                   {isEditMode ? (
                     <input
-                      type="number"
+                      type="text"
                       name="입고단위단가"
-                      value={editedItems[item.품목_id]?.입고단위단가 || ""}
+                      value={formatNumber(editedItems[item.품목_id]?.입고단위단가 || "")}
                       onChange={(e) =>
-                        handleEditChange(item.품목_id, "입고단위단가", e.target.value)
+                        handleEditChange(
+                          item.품목_id,
+                          "입고단위단가",
+                          e.target.value.replace(/,/g, "")
+                        )
                       }
                       style={{ textAlign: "right" }}
                     />
                   ) : (
-                    item.입고단위단가
+                    <span>{formatNumber(item.입고단위단가)}</span>
                   )}
                 </td>
                 <td className="right-align">
                   {isEditMode ? (
                     <input
-                      type="number"
+                      type="text"
                       name="출고단위"
-                      value={editedItems[item.품목_id]?.출고단위 || ""}
+                      value={formatNumber(editedItems[item.품목_id]?.출고단위 || "")}
                       onChange={(e) =>
-                        handleEditChange(item.품목_id, "출고단위", e.target.value)
+                        handleEditChange(
+                          item.품목_id,
+                          "출고단위",
+                          e.target.value.replace(/,/g, "")
+                        )
                       }
                       style={{ textAlign: "right" }}
                     />
                   ) : (
-                    item.출고단위
+                    <span>{formatNumber(item.출고단위)}</span>
                   )}
                 </td>
               </tr>
@@ -774,10 +793,10 @@ const Item = () => {
                       </td>
                       <td className="right-align">
                         <input
-                          type="number"
+                          type="text"
                           step="0.01"
                           name="입고단가"
-                          value={item.입고단가}
+                          value={formatNumber(item.입고단가)}
                           disabled
                           className="calc-input"
                           style={{ textAlign: "right" }}
@@ -785,28 +804,49 @@ const Item = () => {
                       </td>
                       <td className="right-align">
                         <input
-                          type="number"
+                          type="text"
                           name="입고단위"
-                          value={item.입고단위}
-                          onChange={(e) => handleInputChange(index, e)}
+                          value={formatNumber(item.입고단위)}
+                          onChange={(e) =>
+                            handleInputChange(index, {
+                              target: {
+                                name: "입고단위",
+                                value: e.target.value.replace(/,/g, ""),
+                              },
+                            })
+                          }
                           style={{ textAlign: "right" }}
                         />
                       </td>
                       <td className="right-align">
                         <input
-                          type="number"
+                          type="text"
                           name="입고단위단가"
-                          value={item.입고단위단가}
-                          onChange={(e) => handleInputChange(index, e)}
+                          value={formatNumber(item.입고단위단가)}
+                          onChange={(e) =>
+                            handleInputChange(index, {
+                              target: {
+                                name: "입고단위단가",
+                                value: e.target.value.replace(/,/g, ""),
+                              },
+                            })
+                          }
                           style={{ textAlign: "right" }}
                         />
                       </td>
                       <td className="right-align">
                         <input
-                          type="number"
+                          type="text"
                           name="출고단위"
-                          value={item.출고단위}
-                          onChange={(e) => handleInputChange(index, e)}
+                          value={formatNumber(item.출고단위)}
+                          onChange={(e) =>
+                            handleInputChange(index, {
+                              target: {
+                                name: "출고단위",
+                                value: e.target.value.replace(/,/g, ""),
+                              },
+                            })
+                          }
                           style={{ textAlign: "right" }}
                         />
                       </td>

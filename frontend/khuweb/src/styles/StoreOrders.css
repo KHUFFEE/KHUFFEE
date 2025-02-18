@@ -28,7 +28,6 @@
   border-radius: 8px;
 }
 
-/* 모든 헤더는 가운데 정렬 */
 .store-orders-table th {
   background-color: #cf888888;
   font-weight: bold;
@@ -36,20 +35,17 @@
   padding: 12px;
 }
 
-/* 테이블 본문 기본 스타일 */
 .store-orders-table th,
 .store-orders-table td {
   border: 1px solid #ddd;
   padding: 12px;
 }
 
-/* 번호열: 헤더와 데이터 모두 가운데 정렬 */
 .so-number-col {
   width: 12px;
   text-align: center;
 }
 
-/* 협력사와 품목열: 데이터는 왼쪽 정렬 */
 .so-supplier-col,
 .so-item-col {
   text-align: left;
@@ -63,31 +59,26 @@
   width: 200px;
 }
 
-/* 협력사 열에 스크롤 적용 */
 .so-supplier-col .supplier-cell {
-  height: 20px; /* 필요에 따라 조정 */
+  height: 20px;
   overflow-y: auto;
   display: block;
 }
 
-/* 주문 열: 데이터는 오른쪽 정렬 */
 .so-order-col {
   text-align: right;
 }
 
-/* 합계 열: 헤더는 가운데, 데이터는 오른쪽 정렬 */
 .so-sum-col {
   text-align: right;
 }
 
-/* 헤더 고정 */
 .store-orders-table thead {
   position: sticky;
   top: -20px;
   z-index: 2;
 }
 
-/* tbody 행 스타일 */
 .store-orders-table tbody tr {
   background: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
@@ -98,8 +89,6 @@
   transform: translateY(-4px);
 }
 
-
-/* tfoot 행도 tbody와 동일한 스타일 */
 .store-orders-table tfoot tr {
   background: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
@@ -113,23 +102,17 @@
 .store-orders-table td input {
   width: 100%;
   box-sizing: border-box;
-
-  /* 불필요한 기본 스타일 제거 */
   border: none;
   padding: 0;
   margin: 0;
   background: transparent;
-
-  /* 셀과 동일한 폰트/라인높이로 맞춤 */
   font-size: inherit;
   line-height: inherit;
   text-align: right;
 }
 
-
-/* 품목명 셀 내 내용 고정 높이 및 스크롤 */
 .item-cell {
-  height: 20px; /* 필요에 따라 조정 */
+  height: 20px;
   overflow-y: auto;
   display: block;
 }
@@ -142,13 +125,11 @@
   margin-top: -5px;
 }
 
-/* period-search: 왼쪽 정렬로 같은 행에 */
 .period-search {
   display: flex;
   gap: 10px;
 }
 
-/* 기간 검색 및 버튼 스타일 */
 .period-search select {
   padding: 8px;
   border: 1px solid #ddd;
@@ -161,14 +142,19 @@
 
 .period-search .search-button,
 .period-search .reset-button {
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: bold;
-  border: 1px solid #007bff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 16px;
   background-color: white;
   color: #007bff;
-  border-radius: 4px;
+  border: 1.6px solid #007bff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
@@ -177,5 +163,87 @@
   background-color: #f7f7f7;
 }
 
+/* period-select-box: 커스텀 드롭다운 박스 + 토글 아이콘 */
+.period-select-box {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 16px;
+  background-color: white;
+  color: #000000;
+  border: 1.6px solid #8B0000;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
 
+.period-select-box:hover {
+  background-color: #f7f7f7;
+}
 
+/* 선택값 표시 영역 (텍스트는 container내에 그대로 보임) */
+.period-select-box .select-display {
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* custom select: native select를 투명하게 전체 영역 덮도록 */
+.period-select-box .custom-select {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 1;
+  cursor: pointer;
+}
+
+/* 토글 아이콘: inline-block으로 표시하며, select-display와 동일한 간격(예: 주차 다음에 8px 간격) */
+.period-select-box .toggle {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* select-group 관련 스타일 */
+.select-group {
+  display: inline-flex;
+  align-items: center;
+}
+
+.select-group span {
+  font-size: 14px;
+  padding: 0;
+  margin: 0;
+}
+
+/* 매장 헤더 칼럼 전용 스타일 */
+.store-orders-table thead th.so-order-col {
+  vertical-align: middle;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.store-orders-table th.so-sum-col,
+.store-orders-table td.so-sum-col,
+.store-orders-table th.so-order-col,
+.store-orders-table td.so-order-col {
+  width: 50px;
+}
+
+.store-action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* ★ 버튼 높이를 기존과 동일하게 유지하기 위한 고정 높이 설정 ★ */
+.period-controls {
+  height: 40px; 
+}

@@ -262,8 +262,7 @@ html, body {
   border-color: #007bff;
 }
 
-.add-button:hover,
-.delete-button:hover {
+.add-button:hover {
   background-color: #f7f7f7;
   color: #007bff;
   border-color: #007bff;

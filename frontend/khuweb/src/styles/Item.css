@@ -14,46 +14,6 @@
   padding: 10px 0;
 }
 
-/* 버튼 기본 스타일 (이미 적용된 스타일 유지) */
-.add-button,
-.edit-button,
-.delete-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 10px 16px;
-  background-color: white;
-  color: #555;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-/* 개별 버튼 hover 효과 (이미 적용된 스타일 유지) */
-.add-button {
-  color: #007bff;
-  border-color: #007bff;
-}
-.add-button:hover,
-.delete-button:hover {
-  background-color: #f7f7f7;
-  color: #007bff;
-  border-color: #007bff;
-}
-.delete-button {
-  color: #d9363e;
-  border-color: #d9363e;
-}
-.delete-button:hover {
-  background-color: #ffe6e6;
-  color: #d9363e;
-  border-color: #d9363e;
-}
-
 .item-table {
   width: 100%;
   border-collapse: separate; /* separate로 변경하여 행 간격 적용 */

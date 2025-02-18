@@ -132,3 +132,16 @@ export const updateStoreOrder = async (orderData) => {
   return await response.json();
 };
 
+export const fetchWarehouseInventory = async (params) => {
+  let url = `${process.env.REACT_APP_API_URL}/api/inventory/warehouse/?`;
+  if (params.기간) {
+    url += `기간=${params.기간}`;
+  } else {
+    url += `page=${params.page || 1}`;
+  }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch warehouse inventory");
+  }
+  return await response.json();
+};

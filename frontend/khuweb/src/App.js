@@ -6,9 +6,12 @@ import Orders from "./pages/StoreOrders";
 import Item from "./pages/Item";
 import Login from "./pages/Login";
 import Suppliers from "./pages/Suppliers";
+import InventoryLog from "./pages/InventoryLog";
 import StoreInventory from "./pages/StoreInventory";
 import WarehouseInventory from "./pages/WarehouseInventory";
-
+import WarehouseIncoming from "./pages/WarehouseIncoming";
+import WarehouseOutgoing from "./pages/WarehouseOutgoing";
+import WarehouseOrder from "./pages/WarehouseOrder";
 
 // React Icons
 import { 
@@ -115,7 +118,7 @@ function App() {
                   {showIntegrationMenu && (
                     <div className="submenu">
                       <NavLink
-                        to="/item"
+                        to="/integration/item"
                         className={({ isActive }) =>
                           isActive ? "active" : ""
                         }
@@ -123,7 +126,7 @@ function App() {
                         제품
                       </NavLink>
                       <NavLink
-                        to="/suppliers"
+                        to="/integration/suppliers"
                         className={({ isActive }) =>
                           isActive ? "active" : ""
                         }
@@ -131,7 +134,7 @@ function App() {
                         협력사
                       </NavLink>
                       <NavLink
-                        to="/inventory-log"
+                        to="/integration/inventorylog"
                         className={({ isActive }) =>
                           isActive ? "active" : ""
                         }
@@ -230,13 +233,13 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/store/inventory" element={<StoreInventory />} />
                 <Route path="/store/orders" element={<Orders />} />
-                <Route path="/suppliers" element={<Suppliers />} />
-                <Route path="/item" element={<Item />} />
+                <Route path="/integration/suppliers" element={<Suppliers />} />
+                <Route path="/integration/inventorylog" element={<InventoryLog />} />
+                <Route path="/integration/item" element={<Item />} />
                 <Route path="/warehouse/inventory" element={<WarehouseInventory />} />
-                {/* 창고 관련 다른 페이지 예시 */}
-                {/* <Route path="/warehouse/incoming" element={<YourWarehouseIncomingComponent />} />
-                <Route path="/warehouse/outgoing" element={<YourWarehouseOutgoingComponent />} />
-                <Route path="/warehouse/orders" element={<YourWarehouseOrdersComponent />} /> */}
+                <Route path="/warehouse/incoming" element={<WarehouseIncoming />} />
+                <Route path="/warehouse/outgoing" element={<WarehouseOutgoing />} />
+                <Route path="/warehouse/orders" element={<WarehouseOrder />} />
               </Routes>
             </main>
           </div>

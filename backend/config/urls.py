@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/accounts/', include('accounts.urls')),  # 로그인 API 추가
     path('api/suppliers/', include('suppliers.urls')),  # suppliers 앱 라우팅 추가
     path('api/orders/', include('orders.urls')),
+    path('api/inventory/', include('inventory.urls')),
 ]
 
 

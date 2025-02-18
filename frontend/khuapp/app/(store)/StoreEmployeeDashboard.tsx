@@ -21,7 +21,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from 'lucide-react-native';
-import { RN_API_URL } from '@env';
+import { RN_API_URL } from '@env'; 
 
 /** 화면 전환 타입 */
 type ViewType = 'dashboard' | 'order-request' | 'order-status' | 'inventory';

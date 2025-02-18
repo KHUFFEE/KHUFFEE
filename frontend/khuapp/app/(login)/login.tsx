@@ -16,7 +16,7 @@ import { RootStackParamList } from './index';
 import { commonStyles } from '../../src/styles/common';
 import { RN_API_URL } from '@env';
 
-console.log(RN_API_URL);
+console.log(RN_API_URL); //안녕하세요 
 
 const LoginScreen: React.FC = () => {
   // react-navigation 사용: 로그인 스크린에 맞는 네비게이션 타입 지정

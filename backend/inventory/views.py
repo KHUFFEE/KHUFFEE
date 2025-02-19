@@ -22,10 +22,22 @@ class StoreInventoryListView(APIView):
 
 class WarehouseInventoryListView(APIView):
     def get(self, request):
+        if request.GET.get("range") == "first_last":
+            qs = WarehouseInventory.objects.all()
+            # id 컬럼 대신 '기간'만 반환하도록 .values()를 사용
+            earliest = qs.order_by("기간").values("기간").first()
+            latest = qs.order_by("-기간").values("기간").first()
+            if earliest and latest:
+                return Response({
+                    "earliest_period": earliest["기간"],
+                    "latest_period": latest["기간"]
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({}, status=status.HTTP_200_OK)
         period = request.GET.get('기간', None)
         qs = WarehouseInventory.objects.all()
         if period:
             qs = qs.filter(기간=period)
-        
         inventories = list(qs.values('매장_id', '품목_id', '기간', '창고_재고량'))
         return Response(inventories, status=status.HTTP_200_OK)
+

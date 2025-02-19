@@ -184,7 +184,7 @@ const Suppliers = () => {
         <thead>
           <tr>
             {isDeleteMode && <th className="suppliers-narrow-col">선택</th>}
-            <th className="suppliers-number-col diagonal-header"></th>
+            <th className="suppliers-number-col">No.</th>
             <th className="suppliers-center-col">협력사명</th>
           </tr>
         </thead>

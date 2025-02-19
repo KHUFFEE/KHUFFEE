@@ -1,11 +1,13 @@
 // 수정해야함
-import { StyleSheet, Dimensions } from 'react-native';
+import { TextInput, StyleSheet, Dimensions } from 'react-native';
 const { height } = Dimensions.get('window');
 
 
 /** 스타일들 */
 export const styles = StyleSheet.create({
-  dashboardContainer: {     // login.tsx 사용
+
+  // login.tsx 밑 공통 compon
+  dashboardContainer: {     // login.tsx, main.tsx , StoreEmployeeDashboard 사용 
     flex: 1,
     backgroundColor: '#fff',
   },
@@ -68,8 +70,8 @@ export const styles = StyleSheet.create({
     height: 50,   //버튼의 높이를 50 픽셀로 설정합니다.
     backgroundColor: '#0D326F',  // 버튼의 배경색을 지정합니다.
     borderRadius: 8,   // 버튼의 모서리를 둥글게 만들어 8 픽셀의 반경을 적용합니다.
-    justifyContent: 'center',  // 자식 요소들을 수직 방향(세로)으로 중앙에 정렬합니다.
-    alignItems: 'center', // 자식 요소들을 수평 방향(가로)으로 중앙에 정렬합니다.
+    justifyContent: 'center',  // // 수직 중앙 정렬 (flexDirection: 'column'인 경우)
+    alignItems: 'center', // 수평 중앙 정렬
     marginTop: 5,  // 버튼 위쪽에 10 픽셀의 여백을 추가합니다.
     // iOS용 그림자 설정
     shadowColor: '#000',            // 그림자의 색상을 검정색으로 설정합니다.
@@ -86,6 +88,89 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+
+
+  //main.tsx 시작 
+  //상단 바 관련
+  head_Container: {     
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#8B0000',
+  },
+  head_storeNameText: {    
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+
+
+
+  //하단 바 관련
+  bottom_navbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#ffffff',
+    paddingVertical: 10,
+    borderTopWidth: 2.5,
+    borderTopColor: '#8B0000',
+  },
+  bottom_navButton: {
+    alignItems: 'center',
+  },
+  bottom_navText: {
+    color: 'black',
+    marginTop: 4,
+  },
+  bottom_activeNavText: {
+    color: '#8B0000',
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+
+
+  //로그아웃 모달 관련
+  bottom_Overlay: {     
+    flex: 1,
+    backgroundColor: 'rgba(68, 60, 60, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bottom_Container: {
+    width: '80%',
+    backgroundColor: '#ffffff',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 5,
+  },
+  bottom_modal_Option: {
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  bottom_modalOptionText: {
+    fontSize: 18,
+    color: '#333',
+  },   // 추
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -247,26 +332,7 @@ export const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  navButton: {
-    alignItems: 'center',
-  },
-  navText: {
-    color: 'black',
-    marginTop: 4,
-  },
-  activeNavText: {
-    color: '#3b82f6',
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
+
   loadMoreButton: {
     alignSelf: 'center',
     marginVertical: 10,

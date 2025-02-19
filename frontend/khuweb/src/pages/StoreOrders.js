@@ -30,10 +30,16 @@ const StoreOrders = () => {
   // 기존의 generatePeriodOptions 대신, API에서 받아온 distinctPeriods를 활용
   const [distinctPeriods, setDistinctPeriods] = useState([]);
 
-  // 드롭다운용 옵션은 API에서 받아온 기간들을 오름차순으로 정렬하여 사용
+  // 드롭다운용 옵션은 API에서 받아온 기간들을 내림차순으로 정렬하여 사용
   const generatePeriodOptions = () => {
     // distinctPeriods는 "YYYY.MM.W" 형식 (월은 이미 2자리여야 함)
-    const sortedPeriods = [...distinctPeriods].sort();
+    const sortedPeriods = [...distinctPeriods].sort((a, b) => {
+      const [yearA, monthA, weekA] = a.split(".").map(Number);
+      const [yearB, monthB, weekB] = b.split(".").map(Number);
+      if (yearA !== yearB) return yearB - yearA;
+      if (monthA !== monthB) return monthB - monthA;
+      return weekB - weekA;
+    });
     return sortedPeriods.map((periodStr) => {
       const parts = periodStr.split(".");
       const label = `${parts[0]}년 ${parts[1].padStart(2, "0")}월 ${parts[2]}주차`;
@@ -446,7 +452,7 @@ const StoreOrders = () => {
       <table className="store-orders-table">
         <thead>
           <tr>
-            <th className="so-number-col diagonal-header"></th>
+            <th className="so-number-col">No.</th>
             <th className="so-supplier-col">협력사</th>
             <th className="so-item-col">품목명</th>
             {orderedStores.map((store) => (

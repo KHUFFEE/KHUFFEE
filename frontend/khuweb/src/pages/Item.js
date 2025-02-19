@@ -291,7 +291,7 @@ const Item = () => {
     const mm = (now.getMonth() + 1).toString().padStart(2, "0");
     const dd = now.getDate().toString().padStart(2, "0");
     const filename = `카페쿠피_제품목록_관리자용_${yyyy}${mm}${dd}.xlsx`;
-
+  
     // 2. JSON 데이터 준비 (헤더 순서 유지)
     const headers = [
       "품목명",
@@ -312,19 +312,20 @@ const Item = () => {
         종류: item.종류,
         규격: item.규격,
         단위: item.단위,
-        입고단가: item.입고단가,
-        입고단위: item.입고단위,
-        입고단위단가: item.입고단위단가,
-        출고단위: item.출고단위,
+        // 숫자형으로 저장 (formatNumber()를 사용하지 않음)
+        입고단가: Number(item.입고단가),
+        입고단위: Number(item.입고단위),
+        입고단위단가: Number(item.입고단위단가),
+        출고단위: Number(item.출고단위),
       };
     });
-
+  
     // 3. 워크시트 생성: 데이터는 A4부터 시작 (즉, 4행부터 헤더+데이터)
     const ws = XLSX.utils.json_to_sheet(data, {
       header: headers,
       origin: "A4",
     });
-
+  
     // 4. 상단 제목 영역 설정 및 병합 (A1 ~ I2)
     ws["!merges"] = ws["!merges"] || [];
     const titleMerge = { s: { r: 0, c: 0 }, e: { r: 1, c: headers.length - 1 } };
@@ -357,7 +358,7 @@ const Item = () => {
         };
       }
     }
-
+  
     // 5. 헤더 행(4행; 0-indexed row 3) 스타일 적용
     for (let i = 0; i < headers.length; i++) {
       const cellAddr = XLSX.utils.encode_cell({ r: 3, c: i });
@@ -376,7 +377,7 @@ const Item = () => {
         ws[cellAddr].s.border = borderObj;
       }
     }
-
+  
     // 6. 나머지 셀에 기본 Arial 폰트 적용
     for (let cell in ws) {
       if (cell[0] === "!") continue;
@@ -385,7 +386,7 @@ const Item = () => {
       const existingFont = ws[cell].s.font || {};
       ws[cell].s.font = { ...existingFont, name: "Arial" };
     }
-
+  
     // 7. 각 열의 너비 조정
     const allRows = XLSX.utils.sheet_to_json(ws, { header: 1 });
     const colWidths = [];
@@ -403,7 +404,7 @@ const Item = () => {
       }
     }
     ws["!cols"] = colWidths;
-
+  
     // 8. 전체 테이블 영역에 외부 테두리 적용
     if (ws["!ref"]) {
       const range = XLSX.utils.decode_range(ws["!ref"]);
@@ -428,22 +429,44 @@ const Item = () => {
         }
       }
     }
-
+  
     // 9. 입고단가 열 오른쪽 정렬
-    const range = XLSX.utils.decode_range(ws["!ref"]);
-    for (let r = 4; r <= range.e.r; r++) {
-      const cellAddr = XLSX.utils.encode_cell({ r, c: 5 });
-      if (ws[cellAddr]) {
-        ws[cellAddr].s = ws[cellAddr].s || {};
-        ws[cellAddr].s.alignment = { horizontal: "right", vertical: "center" };
+    {
+      const range = XLSX.utils.decode_range(ws["!ref"]);
+      for (let r = 4; r <= range.e.r; r++) {
+        const cellAddr = XLSX.utils.encode_cell({ r, c: 5 });
+        if (ws[cellAddr]) {
+          ws[cellAddr].s = ws[cellAddr].s || {};
+          ws[cellAddr].s.alignment = { horizontal: "right", vertical: "center" };
+        }
       }
     }
-
+  
+    // ★ 새로 추가: 입고단위, 입고단위단가, 출고단위 열에 숫자 포맷 적용
+    // 헤더 순서상 해당 열의 인덱스는 6, 7, 8입니다.
+    {
+      const numericColumns = [6, 7, 8]; // 입고단위, 입고단위단가, 출고단위
+      const range = XLSX.utils.decode_range(ws["!ref"]);
+      // 데이터는 A4부터 시작하므로 헤더가 4행(0-index 3)이고, 데이터는 5행(0-index 4)부터
+      for (let r = 4; r <= range.e.r; r++) {
+        numericColumns.forEach((c) => {
+          const cellAddr = XLSX.utils.encode_cell({ r, c });
+          if (ws[cellAddr] && typeof ws[cellAddr].v === "number") {
+            ws[cellAddr].s = ws[cellAddr].s || {};
+            // 숫자형 포맷: 자동으로 세자리마다 쉼표 표시 (실제 값은 숫자형 그대로)
+            ws[cellAddr].s.numFmt = "#,##0";
+          }
+        });
+      }
+    }
+  
     // 10. 워크북 생성 및 저장
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, `카페 쿠피 ${mm}월 제품 목록`);
     XLSX.writeFile(wb, filename);
   };
+  
+  
 
   return (
     <div className="item-container">
@@ -485,7 +508,7 @@ const Item = () => {
         <thead>
           <tr>
             {isDeleteMode && <th className="narrow-col">선택</th>}
-            <th className="number-col diagonal-header"></th>
+            <th className="number-col">No.</th>
             <th style={isEditMode ? { width: "200px" } : {}}>
               품목명
               <button className="sort-btn" onClick={() => toggleSort("품목명")}>

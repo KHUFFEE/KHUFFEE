@@ -13,7 +13,6 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from './index';
-import { commonStyles } from '../../src/styles/common';
 import { styles} from '../../src/components/ui/common/commonstyler'
 import { RN_API_URL } from '@env';
 

@@ -72,22 +72,22 @@ const StoreEmployeeDashboard: React.FC<storename> = ({ storeName }) => {
   return (
     <View style={styles.dashboardContainer}>
       <View style={styles.mainContent}>{renderView()}</View>
-      <View style={styles.navbar}>
-        <TouchableOpacity style={styles.navButton} onPress={() => setActiveView('home')}>
-          <Home color={activeView === 'home' ? '#3b82f6' : 'black'} />
-          <Text style={activeView === 'home' ? styles.activeNavText : styles.navText}>홈</Text>
+      <View style={styles.bottom_navbar}>
+        <TouchableOpacity style={styles.bottom_navButton} onPress={() => setActiveView('home')}>
+          <Home color={activeView === 'home' ? '#8B0000' : 'black'} />
+          <Text style={activeView === 'home' ? styles.bottom_activeNavText : styles.bottom_navText}>홈</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => setActiveView('order-request')}>
-          <ShoppingCart color={activeView === 'order-request' ? '#3b82f6' : 'black'} />
-          <Text style={activeView === 'order-request' ? styles.activeNavText : styles.navText}>발주 요청</Text>
+        <TouchableOpacity style={styles.bottom_navButton} onPress={() => setActiveView('order-request')}>
+          <ShoppingCart color={activeView === 'order-request' ? '#8B0000' : 'black'} />
+          <Text style={activeView === 'order-request' ? styles.bottom_activeNavText : styles.bottom_navText}>발주 요청</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => setActiveView('order-status')}>
-          <Receipt color={activeView === 'order-status' ? '#3b82f6' : 'black'} />
-          <Text style={activeView === 'order-status' ? styles.activeNavText : styles.navText}>발주 내역</Text>
+        <TouchableOpacity style={styles.bottom_navButton} onPress={() => setActiveView('order-status')}>
+          <Receipt color={activeView === 'order-status' ? '#8B0000' : 'black'} />
+          <Text style={activeView === 'order-status' ? styles.bottom_activeNavText : styles.bottom_navText}>발주 내역</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => setActiveView('inventory')}>
-          <Clipboard color={activeView === 'inventory' ? '#3b82f6' : 'black'} />
-          <Text style={activeView === 'inventory' ? styles.activeNavText : styles.navText}>재고 관리</Text>
+        <TouchableOpacity style={styles.bottom_navButton} onPress={() => setActiveView('inventory')}>
+          <Clipboard color={activeView === 'inventory' ? '#8B0000' : 'black'} />
+          <Text style={activeView === 'inventory' ? styles.bottom_activeNavText : styles.bottom_navText}>재고 관리</Text>
         </TouchableOpacity>
       </View>
     </View>

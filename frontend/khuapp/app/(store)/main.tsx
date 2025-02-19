@@ -12,7 +12,7 @@ import { RootStackParamList } from '../(login)/index';
 import { Settings } from 'lucide-react-native';
 import StoreEmployeeDashboard from './StoreEmployeeDashboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { styles} from '../../src/components/ui/common/commonstyler'
 export default function StoreDashboardScreen() {
   const route = useRoute();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
@@ -59,10 +59,10 @@ export default function StoreDashboardScreen() {
   return (
     <View style={styles.dashboardContainer}>
       {/* 상단 헤더 */}
-      <View style={styles.storeNameContainer}>
-        <Text style={styles.storeNameText}>{storeName} 매장</Text>
-        <TouchableOpacity onPress={openSettingsModal} style={styles.settingsIconContainer}>
-          <Settings size={24} color="#3b82f6" />
+      <View style={styles.head_Container}>
+        <Text style={styles.head_storeNameText}>{storeName} </Text>
+        <TouchableOpacity onPress={openSettingsModal}>
+          <Settings size={24} color=" #0D326F" />
         </TouchableOpacity>
       </View>
 
@@ -76,44 +76,44 @@ export default function StoreDashboardScreen() {
         animationType="slide"
         onRequestClose={closeSettingsModal}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <TouchableOpacity style={styles.modalOption} onPress={handleSettings}>
-              <Text style={styles.modalOptionText}>설정 및 개인정보</Text>
+        <View style={styles.bottom_Overlay}>
+          <View style={styles.bottom_Container}>
+            <TouchableOpacity style={styles.bottom_modal_Option} onPress={handleSettings}>
+              <Text style={styles.bottom_modalOptionText}>설정 및 개인정보</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.modalOption} onPress={handleLogoutRequest}>
-              <Text style={styles.modalOptionText}>로그아웃</Text>
+            <TouchableOpacity style={styles.bottom_modal_Option} onPress={handleLogoutRequest}>
+              <Text style={styles.bottom_modalOptionText}>로그아웃</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.modalOption} onPress={closeSettingsModal}>
-              <Text style={styles.modalOptionText}>닫기</Text>
+            <TouchableOpacity style={styles.bottom_modal_Option} onPress={closeSettingsModal}>
+              <Text style={styles.bottom_modalOptionText}>닫기</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {/* 로그아웃 확인 모달 */}
+      {/* 로그아웃 확인 모달 */}  
       <Modal
         visible={showConfirmLogout}
         transparent={true}
         animationType="slide"
         onRequestClose={() => setShowConfirmLogout(false)}
       >
-        <View style={styles.confirmOverlay}>
-          <View style={styles.confirmContainer}>
-            <Text style={styles.confirmTitle}>로그아웃</Text>
-            <Text style={styles.confirmMessage}>정말 로그아웃할까요?</Text>
+        <View style={Commonstyle.confirmOverlay}>
+          <View style={Commonstyle.confirmContainer}>
+            <Text style={Commonstyle.confirmTitle}>로그아웃</Text>
+            <Text style={Commonstyle.confirmMessage}>정말 로그아웃할까요?</Text>
 
             {/* 로그아웃 버튼 */}
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <Text style={styles.logoutButtonText}>로그아웃</Text>
+            <TouchableOpacity style={Commonstyle.logoutButton} onPress={handleLogout}>
+              <Text style={Commonstyle.logoutButtonText}>로그아웃</Text>
             </TouchableOpacity>
 
             {/* 닫기 버튼 */}
             <TouchableOpacity
-              style={styles.closeButton}
+              style={Commonstyle.closeButton}
               onPress={() => setShowConfirmLogout(false)}
             >
-              <Text style={styles.closeButtonText}>닫기</Text>
+              <Text style={Commonstyle.closeButtonText}>닫기</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -122,7 +122,7 @@ export default function StoreDashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const Commonstyle = StyleSheet.create({
   dashboardContainer: {
     flex: 1,
     backgroundColor: '#ffffff',

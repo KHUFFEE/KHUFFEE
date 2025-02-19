@@ -1,15 +1,119 @@
 // 수정해야함
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+const { height } = Dimensions.get('window');
+
 
 /** 스타일들 */
 export const styles = StyleSheet.create({
-  dashboardContainer: {
+  dashboardContainer: {     // login.tsx 사용
     flex: 1,
     backgroundColor: '#fff',
   },
   mainContent: {
     flex: 1,
   },
+  contentContainer: {      //login.tsx 사용 
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  logoContainer: {       //login.tsx 로고 
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logo: {             //login.tsx 로고 이미지 크기 설정
+    width: 100,
+    height: 100,
+    alignSelf: 'center',
+    right: 10,
+    marginBottom: -5,
+  },
+  logo_name: {            //logo 아래 이름
+    fontSize: 27,
+    fontWeight: 700,
+    marginBottom: -10,
+    textAlign: 'center',
+    color: '#3C2415',
+  },
+  form_Container: {
+    width: '100%',
+    paddingHorizontal: 20,
+    backgroundColor: ''   //여기 바꾸면 부모 컨테이너 바뀜 
+  },
+
+  // 개별 TextInput을 감싸는 컨테이너
+  textboxContainer: {
+    // 화면 높이의 35%를 상단 여백으로 사용 (필요에 따라 조정 가능)
+    marginTop: height * 0.00005,
+    opacity: 1,
+  },
+  form_input_box: {
+    width: '100%',
+    height: 50,
+    borderWidth: 2,
+    borderColor: '#B5B5B5', // 원하는 테두리 색으로 변경
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    marginBottom: 5,
+    backgroundColor: '#FFFFFF', // 내부 채우기를 흰색으로 설정
+  },
+  login_errorText: {  // loginScreen.tsx에서 사용
+    color: '#A40F16',
+    fontWeight: 600,
+    marginBottom: 0,
+    textAlign: 'center',
+  },
+  login_button: {   //gd
+    width: '100%', // 버튼의 너비를 화면의 100%로 설정합니다.
+    height: 50,   //버튼의 높이를 50 픽셀로 설정합니다.
+    backgroundColor: '#0D326F',  // 버튼의 배경색을 지정합니다.
+    borderRadius: 8,   // 버튼의 모서리를 둥글게 만들어 8 픽셀의 반경을 적용합니다.
+    justifyContent: 'center',  // 자식 요소들을 수직 방향(세로)으로 중앙에 정렬합니다.
+    alignItems: 'center', // 자식 요소들을 수평 방향(가로)으로 중앙에 정렬합니다.
+    marginTop: 5,  // 버튼 위쪽에 10 픽셀의 여백을 추가합니다.
+    // iOS용 그림자 설정
+    shadowColor: '#000',            // 그림자의 색상을 검정색으로 설정합니다.
+    shadowOffset: { width: 0, height: 2 },  // 그림자의 위치를 버튼 아래쪽으로 2 픽셀 이동시킵니다.
+    shadowOpacity: 0.15,            // 그림자의 투명도를 25%로 설정합니다.
+    shadowRadius: 3.84,             // 그림자의 블러(퍼짐) 정도를 3.84로 설정합니다.
+    
+    // Android용 그림자 설정
+    elevation: 5,                   // Android에서 그림자 효과를 주기 위해 5의 elevation 값을 설정합니다.
+  },
+
+  login_buttonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   container: {
     flex: 1,
     padding: 20,

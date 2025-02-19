@@ -63,7 +63,7 @@ export default function StoreDashboardScreen() {
       <View style={styles.head_Container}>
         <Text style={styles.head_storeNameText}>{storeName} </Text>
         <TouchableOpacity onPress={openSettingsModal}>
-          <Settings size={24} color=" #0D326F" />
+          <Settings size={24} color=" #fff" />
         </TouchableOpacity>
       </View>
 

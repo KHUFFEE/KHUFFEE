@@ -241,11 +241,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
       {!loading && sortedYears.length > 0 && (
         <View style={styles.headerRow}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>발주 내역</Text>
+            <Text style={[styles.title,{textAlign: `center`}]}>발주 내역</Text>
           </View>
           <View style={styles.rightButtonGroup}>
             <TouchableOpacity style={styles.sortButton} onPress={toggleSortOrder}>
-              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 10 }}>
+              <Text style={{ color: '#0D326F', fontWeight: 'bold', fontSize: 11,}}>
                 {sortOrder === 'desc' ? '최신순' : '오래된 순'}
               </Text>
             </TouchableOpacity>
@@ -253,7 +253,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
               style={[styles.sortButton, { marginLeft: 8 }]}
               onPress={() => setShowPeriodModal(true)}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 10 }}>
+              <Text style={{ color: '#0D326F', fontWeight: 'bold', fontSize: 11 }}>
                 기간조회
               </Text>
             </TouchableOpacity>
@@ -265,7 +265,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
       {/* 주문 내역 리스트 */}
       {loading ? (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" color="#3b82f6" />
+      <ActivityIndicator size="large" color="##0D326F" />
       </View> 
         ) : sortedYears.length === 0 ? (
             <Text>아직 발주 내역이 없습니다.</Text>
@@ -308,7 +308,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                         <View key={month} style={{ marginBottom: 10, paddingLeft: 10 }}>
                         <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 5 }}>
                             {month}월{' '}
-                            <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                            <Text style={{ color: '#1e7e34', fontWeight: 'bold' }}>
                             총 {f.formatPrice(monthTotalCost)}원
                             </Text>
                         </Text>
@@ -388,7 +388,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator size="small" color="#3b82f6" />
+                <ActivityIndicator size="small" color="#0D326F" />
               ) : (
                 <Text style={styles.loadMoreButtonText}>더 불러오기</Text>
               )}

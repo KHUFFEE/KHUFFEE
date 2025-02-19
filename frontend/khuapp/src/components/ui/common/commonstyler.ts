@@ -195,7 +195,7 @@ export const styles = StyleSheet.create({
   },
   selectItemCard: {
     width: '100%',
-    height: `1.3%`,
+    height: 70,
     marginBottom: 12,
     borderRadius: 8,
     backgroundColor: '#f0f0f0',
@@ -531,7 +531,13 @@ export const styles = StyleSheet.create({
     width: '100%',
   },
   sortButton: {
-    backgroundColor: '#3b82f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 79,
+    height: 40,
+    backgroundColor: 'white',
+    borderColor: "#0D326F",
+    borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,
@@ -635,7 +641,7 @@ export const styles = StyleSheet.create({
     maxHeight: 180,
   },
   periodSearchButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#0D326F',
     borderRadius: 6,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -648,7 +654,7 @@ export const styles = StyleSheet.create({
   loadMoreButton: {
     alignSelf: 'center',
     marginVertical: 10,
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#0D326F',
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -771,7 +777,7 @@ export const modalStyles = StyleSheet.create({
     marginBottom: 10,
   },
   closeButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#0D326F',
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -794,7 +800,7 @@ export const orderStatusStyles = StyleSheet.create({
     paddingLeft: 4,
   },
   extraCountText: {
-    color: '#3b82f6',
+    color: '#0D326F',
     fontWeight: 'bold',
     marginBottom: 4,
   },
@@ -809,14 +815,18 @@ export const orderStatusStyles = StyleSheet.create({
     marginBottom: 6,
   },
   actionButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'white',
+    borderColor: "#0D326F",
+    borderWidth: 2,
     borderRadius: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    width:90,
+    height:35,
     marginLeft: 10,
+    justifyContent: 'center',  // // 수직 중앙 정렬 (flexDirection: 'column'인 경우)
+    alignItems: 'center',
   },
   actionButtonText: {
-    color: '#fff',
+    color: '#0D326F',
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -871,13 +881,14 @@ export const receiptStyles = StyleSheet.create({
   itemPrice: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#3b82f6',
+    color: '#0D326F',
   },
   footer: {
     marginTop: 10,
     alignItems: 'flex-end',
   },
   footerText: {
+    color: '#1e7e34',
     fontSize: 16,
     fontWeight: 'bold',
   },

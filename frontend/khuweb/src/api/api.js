@@ -145,3 +145,18 @@ export const fetchWarehouseInventory = async (params) => {
   }
   return await response.json();
 };
+export const fetchStoreInventory = async (params) => {
+  let url = `${process.env.REACT_APP_API_URL}/api/inventory/store/?`;
+  if (params.기간) {
+    url += `기간=${params.기간}`;
+  }
+  if (params.매장_id) {
+    url += `&매장_id=${params.매장_id}`;
+  }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch store inventory");
+  }
+  return await response.json();
+};
+

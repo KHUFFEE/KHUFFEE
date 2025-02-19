@@ -1,0 +1,219 @@
+/* 기본 컨테이너 */
+.si-container {
+    padding: 0;
+    max-width: 1250px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    text-align: left;
+  }
+  
+  /* 테이블 스타일 (WarehouseInventory와 동일하게 60% 너비 등 적용) */
+  .si-table {
+    width: 60%; /* WarehouseInventory와 동일 */
+    margin: 20px 0;
+    border-collapse: separate;
+    border-spacing: 0 1px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  .si-table th {
+    font-weight: bold;
+    text-align: center;
+    padding: 12px;
+  }
+  
+  .si-table th,
+  .si-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+  }
+  
+  /* 열 너비: WarehouseInventory와 동일 */
+  .si-number-col {
+    width: 5px;
+    text-align: center;
+  }
+  
+  .si-supplier-col {
+    width: 80px;
+    text-align: left;
+  }
+  
+  .si-item-col {
+    width: 170px;
+    text-align: left;
+  }
+  
+  .si-sum-col {
+    width: 60px;
+    text-align: right;
+  }
+  
+  .si-cost-col {
+    width: 50px;
+    text-align: right;
+  }
+  
+  .si-table thead {
+    position: sticky;
+    top: -20px;
+    z-index: 2;
+    background-color: #cf8888;
+  }
+  
+  .si-table tbody tr {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+  }
+  
+  .si-table tbody tr:hover {
+    transform: translateY(-4px);
+  }
+  
+  .si-table tfoot tr {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+  }
+  
+  .si-table tfoot tr:hover {
+    transform: translateY(-4px);
+  }
+  
+  .si-table td input {
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    font-size: inherit;
+    line-height: inherit;
+    text-align: right;
+  }
+  
+  /* 스크롤되는 셀 */
+  .supplier-cell,
+  .item-cell {
+    height: 20px;
+    overflow-y: auto;
+    display: block;
+  }
+  
+  /* period-controls 및 드롭다운 스타일 (기존과 동일) */
+  .period-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin-top: -5px;
+    height: 40px;
+  }
+  
+  .period-search {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .period-search select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    appearance: none;
+    outline: none;
+  }
+  
+  .period-select-box {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 16px;
+    background-color: white;
+    color: #000000;
+    border: 1.6px solid #8B0000;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .period-select-box:hover {
+    background-color: #f7f7f7;
+  }
+  
+  .period-select-box .select-display {
+    z-index: 2;
+    pointer-events: none;
+  }
+  
+  .period-select-box .custom-select {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 1;
+    cursor: pointer;
+  }
+  
+  .period-select-box .toggle {
+    display: inline-block;
+    margin-left: 8px;
+    vertical-align: middle;
+    cursor: pointer;
+    z-index: 2;
+  }
+  
+  .reset-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px 16px;
+    background-color: white;
+    color: #8B0000;
+    border: 1.6px solid #8B0000;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .reset-button:hover {
+    background-color: #f7f7f7;
+  }
+  
+  /* 스크롤바 스타일 (웹킷 기반) */
+  .period-select-box .custom-select::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  .period-select-box .custom-select::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+  }
+  
+  .period-select-box .custom-select::-webkit-scrollbar-thumb {
+    background: #B22222;
+    border-radius: 5px;
+    border: 2px solid #f1f1f1;
+  }
+  
+  .period-select-box .custom-select::-webkit-scrollbar-thumb:hover {
+    background: #B22222;
+  }
+  
+  .warehouse-action-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  

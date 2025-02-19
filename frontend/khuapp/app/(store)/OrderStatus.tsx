@@ -229,9 +229,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   }, [storeId]);
   if (loading) {
     return (
-      <View style={orderStyles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text style={orderStyles.loadingText}>로딩 중...</Text>
+      <View style={styles.loading_Container}>
+        <ActivityIndicator size="large" color="#0D326F80" />
+        <Text style={styles.loading_Text}>로딩 중...</Text>
       </View>
     );
   }

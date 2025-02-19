@@ -14,9 +14,10 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from './index';
 import { commonStyles } from '../../src/styles/common';
+import { styles} from '../../src/components/ui/common/commonstyler'
 import { RN_API_URL } from '@env';
 
-// console.log(RN_API_URL); 
+//  console.log(RN_API_URL); 
 
 const LoginScreen: React.FC = () => {
   // react-navigation 사용: 로그인 스크린에 맞는 네비게이션 타입 지정
@@ -24,7 +25,9 @@ const LoginScreen: React.FC = () => {
   const [매장명, set매장명] = useState('');
   const [매장_비밀번호, set매장_비밀번호] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-
+  // 포커스 상태를 관리하는 state 추가
+  const [isStoreNameFocused, setIsStoreNameFocused] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const handleLogin = async () => {
     // 이전 에러 메시지 초기화
     setErrorMessage('');
@@ -69,51 +72,58 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <View style={commonStyles.container}>
+    <View style={styles.dashboardContainer}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={commonStyles.container}
+        style={styles.dashboardContainer}
       >
         <ScrollView
-          contentContainerStyle={commonStyles.contentContainer}
+          contentContainerStyle={styles.contentContainer}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={commonStyles.logoContainer}>
-            <Text style={commonStyles.title}>카페쿠피 물류 관리</Text>
+          <View style={styles.logoContainer}>
             <Image
-              source={require('../../assets/img/logo.png')}
-              style={commonStyles.logo}
+              source={require('../../assets/img/logo2.png')}
+              style={styles.logo}
               resizeMode="contain"
             />
+            <Text style={styles.logo_name}>cafeKHUFFEE</Text>
+            
           </View>
 
-          <View style={commonStyles.formContainer}>
+          <View style={styles.form_Container}>
+             {/* 매장명 입력창을 감싸는 컨테이너 */}
+             <View style={styles.textboxContainer}>
             <TextInput
-              style={commonStyles.input}
+              style={[styles.form_input_box,매장명 ? { color: '#000000' } : { color: '#B3B3B3' }]}
               placeholder="매장명을 입력하세요"
               value={매장명}
               onChangeText={set매장명}
               autoCapitalize="none"
               autoCorrect={false}
             />
+            </View>
 
+            {/* 비밀번호 입력창을 감싸는 컨테이너 */}
+            <View style={styles.textboxContainer}>
             <TextInput
-              style={commonStyles.input}
+              style={[styles.form_input_box,매장_비밀번호 ? { color: '#000000' } : { color: '#B3B3B3' }]}
               placeholder="비밀번호를 입력하세요"
               value={매장_비밀번호}
               onChangeText={set매장_비밀번호}
               secureTextEntry
               autoCapitalize="none"
             />
+            </View>
 
-            {errorMessage ? <Text style={commonStyles.errorText}>{errorMessage}</Text> : null}
+            {errorMessage ? <Text style={styles.login_errorText}>{errorMessage}</Text> : null}
 
             <TouchableOpacity
-              style={commonStyles.button}
+              style={styles.login_button}
               onPress={handleLogin}
               activeOpacity={0.8}
             >
-              <Text style={commonStyles.buttonText}>로그인</Text>
+              <Text style={styles.login_buttonText}>로그인</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

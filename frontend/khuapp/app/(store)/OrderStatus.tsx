@@ -35,7 +35,7 @@ interface OrderStatusProps {
 const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     // 주문 내역 관련 상태
   const [storeOrders, setStoreOrders] = useState<StoreOrderData[]>([]);
-  const [ordersLoading, setOrdersLoading] = useState<boolean>(false);
+  const [loading, setloading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -79,7 +79,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   // 주문 내역 API 호출 함수
   const fetchOrders = async (startPage: number, order: 'asc' | 'desc', forceFetch: boolean = false) => {
     if (!storeId) return;
-    setOrdersLoading(true);
+    setloading(true);
     if (forceFetch || !isPeriodSearch) {
       try {
         let allOrders: StoreOrderData[] = [];
@@ -115,10 +115,10 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
       } catch (error) {
         console.error('발주 내역 조회 중 오류:', error);
       } finally {
-        setOrdersLoading(false);
+        setloading(false);
       }
     } else {
-      setOrdersLoading(false);
+      setloading(false);
     }
   };
 
@@ -129,7 +129,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     setShowPeriodModal(false);
     setStoreOrders([]);
     setHasMore(false);
-    setOrdersLoading(true);
+    setloading(true);
     const sp = f.buildPeriodString(startYear, startMonth, startWeek);
     const ep = f.buildPeriodString(endYear, endMonth, endWeek);
     try {
@@ -137,7 +137,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
       const response = await fetch(url);
       if (!response.ok) {
         console.error('기간 검색 실패');
-        setOrdersLoading(false);
+        setloading(false);
         return;
       }
       const data = await response.json();
@@ -159,7 +159,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     } catch (error) {
       console.error('기간 조회 오류:', error);
     } finally {
-      setOrdersLoading(false);
+      setloading(false);
     }
   };
 
@@ -169,10 +169,10 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     setIsPeriodSearch(false);
     setStoreOrders([]);
     setHasMore(true);
-    setOrdersLoading(true);
+    setloading(true);
     await fetchOrders(1, sortOrder, true);
     setCurrentPage(6);
-    setOrdersLoading(false);
+    setloading(false);
   };
 
   // 정렬 토글
@@ -218,23 +218,29 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     if (storeId) {
       setStoreOrders([]);
       setHasMore(true);
-      setOrdersLoading(true);
+      setloading(true);
       setIsPeriodSearch(false);
       (async () => {
         await fetchOrders(1, sortOrder);
         setCurrentPage(6);
-        setOrdersLoading(false);
+        setloading(false);
       })();
     }
   }, [storeId]);
-
+  if (loading) {
+    return (
+      <View style={orderStyles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text style={orderStyles.loadingText}>로딩 중...</Text>
+      </View>
+    );
+  }
   return (
     <View style={styles.container}>
       {/* 전체 상단 헤더: 로딩중이거나 주문 내역이 없으면 숨김 */}
-      {!ordersLoading && sortedYears.length > 0 && (
+      {!loading && sortedYears.length > 0 && (
         <View style={styles.headerRow}>
           <View style={styles.titleContainer}>
-            <Receipt color="#3b82f6" size={24} style={{ marginRight: 8 }} />
             <Text style={styles.title}>발주 내역</Text>
           </View>
           <View style={styles.rightButtonGroup}>
@@ -257,7 +263,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   
 
       {/* 주문 내역 리스트 */}
-      {ordersLoading ? (
+      {loading ? (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <ActivityIndicator size="large" color="#3b82f6" />
       </View> 
@@ -379,9 +385,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                 await fetchOrders(currentPage, sortOrder);
                 setCurrentPage((prev) => prev + 5);
               }}
-              disabled={ordersLoading}
+              disabled={loading}
             >
-              {ordersLoading ? (
+              {loading ? (
                 <ActivityIndicator size="small" color="#3b82f6" />
               ) : (
                 <Text style={styles.loadMoreButtonText}>더 불러오기</Text>

@@ -155,25 +155,337 @@ export const styles = StyleSheet.create({
   bottom_modalOptionText: {
     fontSize: 18,
     color: '#333',
-  },   // 추
+  },   
+
+  //로딩 관련 처리 
+  loading_Container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loading_Text: {
+    marginTop: 3,
+    fontSize: 16,
+    fontWeight: '600',
+    left: 5,
+    color: '#00000080',
+    alignItems: 'center', // 수평 중앙 정렬
+  },
 
 
 
+  //발주요청 상품 선택 관련 
+  tableInfo: {
+    flexDirection: 'row',  // 수평으로 정렬
+    alignItems: 'center',
+    flex: 1,               // 남은 공간을 모두 사용
+  },
+  tableCell: {
+    flex: 1,               // 각 셀이 동일한 너비를 가지도록
+    fontSize: 14,
+    color: '#000',
+    textAlign: 'center',   // 가운데 정렬 (원하는 정렬에 따라 변경)
+  },
+  selectItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  selectItemCard: {
+    width: '100%',
+    height: `1.3%`,
+    marginBottom: 12,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    flexWrap: 'wrap',          // 필요 시 요소들을 다음 줄로 넘김
+    justifyContent: 'space-between',
+  },
+  selectItemInfo: {
+    marginBottom: 8,
+  },
+  selectItemName: {
+    flex: 3,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+    width: '100%',
+
+  },  
+  price_unit_Text: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1e7e34',   
+
+  },
+
+  unitText: {
+    flex: 0.7,
+    fontSize: 14,
+    color: 'black',
+    fontWeight: '500', 
+ 
+  },
+
+  actionsContainer: {
+    flex:1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    
+  },
+  quantityButton: {
+    width: 28,
+    height: 28,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 2,
+  },
+  quantityInput: {
+    width: 40,
+    height: 28,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    textAlign: 'center',
+    borderRadius: 4,
+    marginHorizontal: 2,
+    fontSize: 14,
+    padding: 0,
+  },
+
+  priceText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0D326F',
+  },
+  confirmationItemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 13,
+    marginTop: 4,
+  },
+  orderButton: {
+    width: 50,              // 고정 너비
+    height: 50, 
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    borderRadius: 8,
+
+    alignItems: 'center',
+    justifyContent: `center`,
+    borderColor: '#0D326F',
+    borderWidth: 3,
+
+  },
+  orderButtonText: {
+    color: '#0D326F',
+    fontSize: 16,
+    fontWeight: 'bold',
+    
+  },
+  order_request_Button: {
+    backgroundColor: '#0D326F',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  order_request_ButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  removeButton: {
+    width: 28,
+    height: 28,
+    backgroundColor: '#ef4444',
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
+  },
+  // 상품선택하기 헤더 관련
+  headerContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1.5,
+    borderColor: '#8B0000',
+  },
+  item_headerText: {
+    flex: 1.5,
+    fontSize: 16,
+    fontWeight: '500',
+    color: 'black',
+    textAlign: 'left',
+
+  },
+  unit_headerText: {
+    flex: 0.4,
+    fontSize: 16,
+    fontWeight: '500',
+    color: 'black',
+    marginHorizontal: -30,
+
+  },
+  price_headerText: {
+    flex: 0.8,
+    fontSize: 16,
+    fontWeight: '500',
+    color: 'black',
+
+  },
+  
+  listContainer: {
+    marginTop: 10,
+  },
+    scrollContainer: {
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+    backgroundColor: '#fff',
+  },
+  fixedHeaderContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#f0f0f0',
+    zIndex: 999, // 다른 요소보다 위에 표시
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+  },
+  fixedHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  // 스크롤 영역 상단에 헤더 높이만큼의 여백을 줍니다.
+  scrollContainerWithHeader: {
+    paddingTop: 50, // 고정 헤더의 높이에 맞게 조정
+    paddingHorizontal: 12,
+    paddingBottom: 20,
+    backgroundColor: '#fff',
+  },
+  categorySection: {
+    paddingTop: 10,
+    paddingBottom: 5,
+    // borderBottomWidth: 1, // 추후 삭제 예정
+  },
+
+  categoryList: {
+    marginBottom: 5,
+    paddingHorizontal: 16,
+  },
+
+  categoryButton: {
+    marginHorizontal: 3,
+    borderRadius: 8,
+    backgroundColor: 'white',
+    borderColor: '#B5B5B5',
+    borderWidth: 1,
+    width: 70,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryButtonActive: {
+    borderColor: '#0D326F',
+    borderWidth: 2.5,
+  },
+  categoryButtonText: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  categoryButtonTextActive: {
+    color: '#0D326F',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    right: 15,
+    paddingHorizontal: 16,
+  },
+
+  footerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  footerPriceText: {
+    color: `#A40F16`,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  footerButton: {
+    backgroundColor: '#0D326F',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  footerButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  footerButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  selectedItemsSection: {
+    width: 500,
+    height: 300,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderColor: '#aaa',
+    marginTop: 10,
+  },
+  totalText: {
+    color: '#8B0000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+  contentContainerStyle:{
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center', // 세로 중앙 정렬도 가능
+  },
 
 
 
@@ -412,35 +724,8 @@ export const orderStyles = StyleSheet.create({
     backgroundColor: '#fff',
     flex: 1,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    paddingHorizontal: 16,
-  },
-  categorySection: {
-    paddingVertical: 16,
-  },
-  categoryList: {
-    paddingHorizontal: 12,
-  },
-  categoryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    marginHorizontal: 4,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-  },
-  categoryButtonActive: {
-    backgroundColor: '#3b82f6',
-  },
-  categoryButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  categoryButtonTextActive: {
-    color: 'white',
-  },
+
+
   productsSection: {
     paddingVertical: 16,
   },
@@ -450,152 +735,7 @@ export const orderStyles = StyleSheet.create({
     paddingHorizontal: 5,
     justifyContent: 'space-between',
   },
-  selectedItemsSection: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-  },
-  selectedItemCard: {
-    width: '48%',
-    minHeight: 120,
-    marginBottom: 12,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-  },
-  selectedItemInfo: {
-    marginBottom: 8,
-  },
-  selectedItemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  unitText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  quantityButton: {
-    width: 28,
-    height: 28,
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 2,
-  },
-  quantityInput: {
-    width: 40,
-    height: 28,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    textAlign: 'center',
-    borderRadius: 4,
-    marginHorizontal: 2,
-    fontSize: 14,
-    padding: 0,
-  },
-  removeButton: {
-    width: 28,
-    height: 28,
-    backgroundColor: '#ef4444',
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 4,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 13,
-    marginTop: 4,
-  },
-  orderButton: {
-    backgroundColor: '#3b82f6',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  orderButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  footerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    backgroundColor: '#fff',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-  footerPriceText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  footerButton: {
-    backgroundColor: '#3b82f6',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  footerButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  footerButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  priceText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#3b82f6',
-  },
-  confirmationItemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-  },
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 15,
-    borderTopWidth: 1,
-    borderColor: '#aaa',
-    marginTop: 10,
-  },
-  totalText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+ 
 });
 
 export const modalStyles = StyleSheet.create({

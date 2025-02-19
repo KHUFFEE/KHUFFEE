@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  SafeAreaView,
   View,
   Text,
   StyleSheet,
@@ -57,7 +58,7 @@ export default function StoreDashboardScreen() {
   };
 
   return (
-    <View style={styles.dashboardContainer}>
+    <SafeAreaView  style={styles.dashboardContainer}>
       {/* 상단 헤더 */}
       <View style={styles.head_Container}>
         <Text style={styles.head_storeNameText}>{storeName} </Text>
@@ -118,7 +119,7 @@ export default function StoreDashboardScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 

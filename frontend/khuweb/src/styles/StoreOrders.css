@@ -7,12 +7,6 @@
   text-align: left;
 }
 
-.store-orders-container h1 {
-  margin: 20px 0;
-  font-size: 28px;
-  font-weight: bold;
-}
-
 .store-orders-container p {
   margin: 10px 0 20px;
   font-size: 16px;
@@ -29,7 +23,6 @@
 }
 
 .store-orders-table th {
-  background-color: #cf888888;
   font-weight: bold;
   text-align: center;
   padding: 12px;
@@ -77,6 +70,7 @@
   position: sticky;
   top: -20px;
   z-index: 2;
+  background-color: #cf8888
 }
 
 .store-orders-table tbody tr {

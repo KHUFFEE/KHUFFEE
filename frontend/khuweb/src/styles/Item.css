@@ -29,11 +29,11 @@
   position: sticky;
   top: -20px; /* 부모 패딩 20px 만큼 음수로 설정 */
   z-index: 2;
+  background-color: #cf8888;
 }
 
 /* 모든 헤더 셀 중앙 정렬 */
 .item-table th {
-  background-color: #cf888888;
   font-weight: bold;
   text-align: center;
 }

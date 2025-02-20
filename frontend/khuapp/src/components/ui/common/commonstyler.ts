@@ -174,7 +174,11 @@ export const styles = StyleSheet.create({
   },
 
 
-
+  actionColumn: {
+    width: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   //발주요청 상품 선택 관련 
   tableInfo: {
     flexDirection: 'row',  // 수평으로 정렬
@@ -193,43 +197,45 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
   },
+// 상품 행 컨테이너 (선택 버튼 포함)
   selectItemCard: {
     width: '100%',
-    height: 70,
-    marginBottom: 12,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 10,
+    paddingVertical: 12,           // 내부 패딩 12px
     paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
     flexDirection: 'row',
-    flexWrap: 'wrap',          // 필요 시 요소들을 다음 줄로 넘김
+    alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 1,               // 각 row 사이 간격 (1px)
   },
   selectItemInfo: {
     marginBottom: 8,
   },
-  selectItemName: {
+  selectItemName: {   // 상품명 셀
     flex: 3,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 2,
     width: '100%',
-
-  },  
-  price_unit_Text: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1e7e34',   
-
+    borderRightWidth: 1,           // 오른쪽 경계 추가
+    borderRightColor: '#ddd',
   },
-
-  unitText: {
+  unitText: {         // 출고단위 셀
     flex: 0.7,
     fontSize: 14,
     color: 'black',
-    fontWeight: '500', 
- 
+    fontWeight: '500',
+    borderRightWidth: 1,           // 오른쪽 경계 추가
+    borderRightColor: '#ddd',
+  },
+  price_unit_Text: {  // 가격 셀 (마지막이므로 border 생략)
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1e7e34',
+
   },
 
   actionsContainer: {
@@ -318,40 +324,46 @@ export const styles = StyleSheet.create({
     marginLeft: 4,
   },
   // 상품선택하기 헤더 관련
-  headerContainer: {
-    width: '100%',
+  headerContainer: {     
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 10,
+    paddingVertical: 12,           // 내부 패딩 12px
     paddingHorizontal: 12,
-    borderBottomWidth: 1.5,
-    borderColor: '#8B0000',
+    backgroundColor: '#cf8888',
+    borderWidth: 1,                // 전체 테두리 1px
+    borderColor: '#ddd',
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
   },
-  item_headerText: {
-    flex: 1.5,
+  item_headerText: {    // 상품명 셀
+    flex: 3,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
     color: 'black',
     textAlign: 'left',
-
+    borderRightWidth: 1,           // 오른쪽 경계 추가
+    borderRightColor: '#ddd',
   },
-  unit_headerText: {
-    flex: 0.4,
+  unit_headerText: {    // 출고단위 셀
+    flex: 0.7,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
     color: 'black',
-    marginHorizontal: -30,
-
+    textAlign: 'center',
+    borderRightWidth: 1,
+    borderRightColor: '#ddd',
   },
-  price_headerText: {
-    flex: 0.8,
+  price_headerText: {   // 가격 셀
+    flex: 1,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
     color: 'black',
-
+    textAlign: 'center',           // 중앙 정렬
+    },
+  // 선택 버튼 셀 (헤더에는 빈 셀로 추가)
+  selectHeaderCell: {
+    width: 50,                     // 상품 행의 선택 버튼과 동일한 너비
   },
-  
   listContainer: {
     marginTop: 10,
   },
@@ -390,6 +402,7 @@ export const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 5,
     // borderBottomWidth: 1, // 추후 삭제 예정
+
   },
 
   categoryList: {

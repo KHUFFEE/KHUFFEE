@@ -9,7 +9,7 @@ import {
   Modal,
   ActivityIndicator,
 } from 'react-native';
-import { Plus, Minus, X as LucideX } from 'lucide-react-native';
+import { Plus, Minus, X as LucideX, AlignCenter } from 'lucide-react-native';
 import {
   StoreOrderRequestProps,
   APIProduct,
@@ -135,50 +135,48 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       return (
         <View key={product.품목_id} style={styles.selectItemCard}>
           <View style={styles.selectItemRow}>
+            {/* 첫 번째 열: 상품명 */}
             <Text style={styles.selectItemName}>{product.품목명}</Text>
-            <Text style={[styles.unitText, { textAlign: 'left' }]}>
+            
+            {/* 두 번째 열: 출고단위 */}
+            <Text style={[styles.unitText, { textAlign: 'center' }]}>
               {f.formatPrice(product.출고단위)}{product.단위}
             </Text>
-            <Text style={[styles.price_unit_Text, { flex: 1, textAlign: 'left' }]}>
-              {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
-            </Text>
+            {/* 세 번째 열: 합계 금액 및 액션 버튼들 */}
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={[styles.priceText]}>
+                합계 금액: {f.formatPrice(computedPrice)}원
+              </Text>
+              <View style={styles.actionsContainer}>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
+                >
+                  <Minus color="black" size={18} />
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.quantityInput}
+                  value={selected.customQuantity}
+                  keyboardType="numeric"
+                  onChangeText={text => updateCustomQuantity(product.품목_id, text)}
+                />
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => updateQuantity(product.품목_id, product.출고단위)}
+                >
+                  <Plus color="black" size={18} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => removeItem(product.품목_id)}
+                >
+                  <LucideX color="white" size={18} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            {/* 네 번째 열: 헤더 정렬 유지를 위한 빈 뷰 */}
+            <View style={{ width: 50 }} />
           </View>
-
-          {/* 워언 텍스트 바로 아래에 총 가격 정보 */}
-          <View style={{ marginTop: 6 }}>
-            <Text style={styles.priceText}>
-              합계 금액: {f.formatPrice(computedPrice)}원
-            </Text>
-          </View>
-
-          {/* 액션 버튼들 */}
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity
-              style={styles.quantityButton}
-              onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
-            >
-              <Minus color="black" size={18} />
-            </TouchableOpacity>
-            <TextInput
-              style={styles.quantityInput}
-              value={selected.customQuantity}
-              keyboardType="numeric"
-              onChangeText={text => updateCustomQuantity(product.품목_id, text)}
-            />
-            <TouchableOpacity
-              style={styles.quantityButton}
-              onPress={() => updateQuantity(product.품목_id, product.출고단위)}
-            >
-              <Plus color="black" size={18} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removeItem(product.품목_id)}
-            >
-              <LucideX color="white" size={18} />
-            </TouchableOpacity>
-          </View>
-
           {selected.error && <Text style={styles.errorText}>{selected.error}</Text>}
         </View>
       );
@@ -187,7 +185,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
         <View key={product.품목_id} style={styles.selectItemCard}>
           <View style={styles.selectItemRow}>
             <Text style={styles.selectItemName}>{product.품목명}</Text>
-            <Text style={[styles.unitText, { textAlign: 'left' }]}>
+            <Text style={[styles.unitText, { textAlign: 'center' }]}>
               {f.formatPrice(product.출고단위)}{product.단위}
             </Text>
             <Text style={[styles.price_unit_Text, { flex: 1, textAlign: 'center' }]}>
@@ -201,7 +199,6 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       );
     }
   };
-
   return (
     <View style={{ flex: 1 }}>
       {!isConfirmation ? (
@@ -221,7 +218,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 style={styles.categoryList}
                 contentContainerStyle={{
                   flexGrow: 1,
-                  justifyContent: 'center',
+                  justifyContent: 'flex-start',
                   alignItems: 'center',
                 }}
               >
@@ -270,10 +267,11 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             <View style={styles.headerContainer}>
               <Text style={styles.item_headerText}>상품명</Text>
               <Text style={styles.unit_headerText}>출고단위</Text>
-              <Text style={[styles.price_headerText,{textAlign: "center"}]}>가격
-              </Text>
-               {/* 버튼(선택) 자리. 텍스트가 없어도 flex 비율만 맞춰줌 */}
+              <Text style={styles.price_headerText}>가격</Text>
+              {/* 선택 버튼 자리: 상품 행과 동일한 너비를 갖는 빈 셀 */}
+              <View style={styles.selectHeaderCell} />
             </View>
+
 
             {/* 인덱스 3: 상품 카드 리스트 */}
             <View style={styles.listContainer}>

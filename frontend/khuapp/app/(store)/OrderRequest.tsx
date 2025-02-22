@@ -1,4 +1,4 @@
-// src/components/ui/OrderRequest.tsx
+// C:\Users\usert\Desktop\KHUFFEE\frontend\khuapp\app\(store)\OrderRequest.tsx
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -9,7 +9,7 @@ import {
   Modal,
   ActivityIndicator,
 } from 'react-native';
-import { Plus, Minus, X as LucideX, AlignCenter } from 'lucide-react-native';
+import { Plus, Minus, X as LucideX } from 'lucide-react-native';
 import {
   StoreOrderRequestProps,
   APIProduct,
@@ -24,6 +24,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   onOrderComplete,
   onNewOrder,
 }) => {
+  // 상태 변수 선언
   const [apiItems, setApiItems] = useState<APIProduct[]>([]);
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -38,6 +39,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
 
+  // API 데이터 불러오기
   useEffect(() => {
     f.fetchApiItems()
       .then((data) => {
@@ -56,10 +58,13 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       .catch((err) => console.error('협력사 데이터 불러오기 오류:', err));
   }, []);
 
+  // 제품 목록 관련 상수
   const uniqueCategories = f.getUniqueCategories(apiItems);
   const filteredProducts = f.getFilteredProducts(apiItems, selectedCategory);
   const sortedProducts = f.sortProductsBySupplierAndName(filteredProducts, suppliers);
+  const totalPrice = f.calculateTotalPrice(selectedItems);
 
+  // 이벤트 핸들러
   const addItem = (product: APIProduct) => {
     const updatedItems = f.addItemToSelectedItems(selectedItems, product);
     setSelectedItems(updatedItems);
@@ -108,65 +113,59 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     setOrderSubmitted(false);
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loading_Container}>
-        <ActivityIndicator size="large" color="#0D326F80" />
-        <Text style={styles.loading_Text}>로딩 중...</Text>
-      </View>
-    );
-  }
-
-  if (fetchError) {
-    return (
-      <View style={styles.container}>
-        <Text>{fetchError}</Text>
-      </View>
-    );
-  }
-
-  const totalPrice = f.calculateTotalPrice(selectedItems);
-
   // 선택된 상품 카드 렌더링 함수
   const renderProductCard = (product: APIProduct) => {
     const selected = selectedItems.find(item => item.품목_id === product.품목_id);
     if (selected) {
       const computedPrice = selected.quantity * parseFloat(selected.입고단가);
       return (
-        <View key={product.품목_id} style={styles.selectItemCard}>
-          <View style={styles.selectItemRow}>
-            {/* 첫 번째 열: 상품명 */}
-            <Text style={styles.selectItemName}>{product.품목명}</Text>
-            
-            {/* 두 번째 열: 출고단위 */}
-            <Text style={[styles.unitText, { textAlign: 'center' }]}>
-              {f.formatPrice(product.출고단위)}{product.단위}
-            </Text>
-            {/* 세 번째 열: 합계 금액 및 액션 버튼들 */}
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={[styles.priceText]}>
-                합계 금액: {f.formatPrice(computedPrice)}원
+        <View testID="selectItemCard" key={product.품목_id} style={styles.selectItemCard}>
+          <View testID="cardContent" style={styles.cardContent}>
+            {/* 첫번째 행: 제품 정보 영역 */}
+            <View testID="selectItemRowContainer" style={styles.selectItemRowContainer}>
+              <Text testID="selectItemName" style={styles.selectItemName}>
+                {product.품목명}
               </Text>
-              <View style={styles.actionsContainer}>
+              <Text testID="unitText" style={styles.unitText}>
+                {f.formatPrice(product.출고단위)}{product.단위}
+              </Text>
+              <Text testID="price_unit_Text" style={styles.price_unit_Text}>
+                {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
+              </Text>
+            </View>
+            {/* 두번째 행: 가격 정보와 액션 버튼 그룹 */}
+            <View testID="selectItemCardFooter_selected" style={styles.selectItemCardFooter_selected}>
+              {/* 첫번째 자식: 가격 정보 */}
+              <View testID="priceContainer" style={styles.priceContainer}>
+                <Text testID="priceText" style={styles.priceText}>
+                  합계 금액: {f.formatPrice(computedPrice)}원
+                </Text>
+              </View>
+              {/* 두번째 자식: 액션 버튼 그룹 */}
+              <View testID="actionButtonsContainer" style={styles.actionButtonsContainer}>
                 <TouchableOpacity
+                  testID="quantityButton"
                   style={styles.quantityButton}
                   onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
                 >
                   <Minus color="black" size={18} />
                 </TouchableOpacity>
                 <TextInput
+                  testID="quantityInput"
                   style={styles.quantityInput}
                   value={selected.customQuantity}
                   keyboardType="numeric"
                   onChangeText={text => updateCustomQuantity(product.품목_id, text)}
                 />
                 <TouchableOpacity
+                  testID="quantityButton"
                   style={styles.quantityButton}
                   onPress={() => updateQuantity(product.품목_id, product.출고단위)}
                 >
                   <Plus color="black" size={18} />
                 </TouchableOpacity>
                 <TouchableOpacity
+                  testID="removeButton"
                   style={styles.removeButton}
                   onPress={() => removeItem(product.품목_id)}
                 >
@@ -174,119 +173,157 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 </TouchableOpacity>
               </View>
             </View>
-            {/* 네 번째 열: 헤더 정렬 유지를 위한 빈 뷰 */}
-            <View style={{ width: 50 }} />
           </View>
-          {selected.error && <Text style={styles.errorText}>{selected.error}</Text>}
+          {selected.error && (
+            <Text testID="errorText" style={styles.errorText}>
+              {selected.error}
+            </Text>
+          )}
         </View>
       );
     } else {
       return (
-        <View key={product.품목_id} style={styles.selectItemCard}>
-          <View style={styles.selectItemRow}>
-            <Text style={styles.selectItemName}>{product.품목명}</Text>
-            <Text style={[styles.unitText, { textAlign: 'center' }]}>
-              {f.formatPrice(product.출고단위)}{product.단위}
-            </Text>
-            <Text style={[styles.price_unit_Text, { flex: 1, textAlign: 'center' }]}>
-              {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
-            </Text>
-            <TouchableOpacity style={styles.orderButton} onPress={() => addItem(product)}>
-              <Text style={styles.orderButtonText}>선택</Text>
-            </TouchableOpacity>
+        <View testID="selectItemCard" key={product.품목_id} style={styles.selectItemCard}>
+          <View style={styles.cardContent}>
+            {/* 첫번째 행: 제품 정보 영역 */}
+            <View testID="selectItemRowContainer" style={styles.selectItemRowContainer}>
+              <Text testID="selectItemName" style={styles.selectItemName}>
+                {product.품목명}
+              </Text>
+              <Text testID="unitText" style={styles.unitText}>
+                {f.formatPrice(product.출고단위)}{product.단위}
+              </Text>
+              <Text testID="price_unit_Text" style={styles.price_unit_Text}>
+                {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
+              </Text>
+            </View>
+            {/* 두번째 행: 선택 버튼 영역 */}
+            <View testID="selectItemCardFooter" style={styles.selectItemCardFooter}>
+              <TouchableOpacity
+                testID="orderButton"
+                style={styles.orderButton}
+                onPress={() => addItem(product)}
+              >
+                <Text testID="orderButtonText" style={styles.orderButtonText}>
+                  선택
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       );
     }
   };
+
+  if (loading) {
+    return (
+      <View testID="loading_Container" style={styles.loading_Container}>
+        <ActivityIndicator size="large" color="#0D326F80" />
+        <Text testID="loading_Text" style={styles.loading_Text}>로딩 중...</Text>
+      </View>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <View testID="container" style={styles.container}>
+        <Text>{fetchError}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1 }}>
       {!isConfirmation ? (
         <>
-          {/* 전체 container를 감싼 단일 ScrollView */}
           <ScrollView
+            testID="scrollContainer"
             contentContainerStyle={styles.scrollContainer}
-            // stickyHeaderIndices는 인덱스 2 (상품 목록의 헤더)만 고정시킵니다.
-            stickyHeaderIndices={[2]}
+            stickyHeaderIndices={[0]}
           >
-            {/* 인덱스 0: 카테고리 영역 */}
-            <View style={styles.categorySection}>
-              <Text style={styles.sectionTitle}>상품 유형 선택</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.categoryList}
-                contentContainerStyle={{
-                  flexGrow: 1,
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                }}
-              >
-                <TouchableOpacity
-                  style={[
-                    styles.categoryButton,
-                    selectedCategory === null && styles.categoryButtonActive,
-                  ]}
-                  onPress={() => setSelectedCategory(null)}
+            {/* 고정 헤더 영역 */}
+            <View testID="fixedHeaderContainer" style={styles.fixedHeaderContainer}>
+              {/* 카테고리 영역 */}
+              <View testID="categorySection" style={styles.categorySection}>
+                <Text testID="sectionTitle" style={styles.sectionTitle}>상품 유형 선택</Text>
+                <ScrollView
+                  testID="categoryList"
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.categoryList}
+                  contentContainerStyle={{
+                    flexGrow: 1,
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                  }}
                 >
-                  <Text
-                    style={[
-                      styles.categoryButtonText,
-                      selectedCategory === null && styles.categoryButtonTextActive,
-                    ]}
-                  >
-                    전체
-                  </Text>
-                </TouchableOpacity>
-                {uniqueCategories.map((cat, idx) => (
                   <TouchableOpacity
-                    key={idx}
+                    testID="categoryButton"
                     style={[
                       styles.categoryButton,
-                      selectedCategory === cat && styles.categoryButtonActive,
+                      selectedCategory === null && styles.categoryButtonActive,
                     ]}
-                    onPress={() => setSelectedCategory(cat)}
+                    onPress={() => setSelectedCategory(null)}
                   >
                     <Text
+                      testID="categoryButtonText"
                       style={[
                         styles.categoryButtonText,
-                        selectedCategory === cat && styles.categoryButtonTextActive,
+                        selectedCategory === null && styles.categoryButtonTextActive,
                       ]}
                     >
-                      {cat}
+                      전체
                     </Text>
                   </TouchableOpacity>
-                ))}
-              </ScrollView>
+                  {uniqueCategories.map((cat, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      testID="categoryButton"
+                      style={[
+                        styles.categoryButton,
+                        selectedCategory === cat && styles.categoryButtonActive,
+                      ]}
+                      onPress={() => setSelectedCategory(cat)}
+                    >
+                      <Text
+                        testID="categoryButtonText"
+                        style={[
+                          styles.categoryButtonText,
+                          selectedCategory === cat && styles.categoryButtonTextActive,
+                        ]}
+                      >
+                        {cat}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+              {/* sectionTitle와 headerContainer를 감싼 영역 */}
+              <View testID="sectionContainer" style={styles.sectionContainer}>
+                <Text testID="sectionTitle" style={styles.sectionTitle}>상품 선택하기</Text>
+                <View testID="headerContainer" style={styles.headerContainer}>
+                  <Text testID="item_headerText" style={styles.item_headerText}>상품명</Text>
+                  <Text testID="unit_headerText" style={styles.unit_headerText}>출고단위</Text>
+                  <Text testID="price_headerText" style={styles.price_headerText}>가격</Text>
+                </View>
+              </View>
             </View>
 
-            {/* 인덱스 1: "상품 선택하기" 텍스트 (고정하지 않음) */}
-            <Text style={styles.sectionTitle}>상품 선택하기</Text>
-
-            {/* 인덱스 2 (sticky): 상품 목록의 헤더 */}
-            <View style={styles.headerContainer}>
-              <Text style={styles.item_headerText}>상품명</Text>
-              <Text style={styles.unit_headerText}>출고단위</Text>
-              <Text style={styles.price_headerText}>가격</Text>
-              {/* 선택 버튼 자리: 상품 행과 동일한 너비를 갖는 빈 셀 */}
-              <View style={styles.selectHeaderCell} />
-            </View>
-
-
-            {/* 인덱스 3: 상품 카드 리스트 */}
-            <View style={styles.listContainer}>
+            {/* 상품 목록 */}
+            <View testID="listContainer" style={styles.listContainer}>
               {sortedProducts.map((product) => renderProductCard(product))}
             </View>
           </ScrollView>
 
           {/* 고정된 푸터 영역 */}
-          <View style={styles.footerContainer}>
-            <Text style={styles.footerPriceText}>
+          <View testID="footerContainer" style={styles.footerContainer}>
+            <Text testID="footerPriceText" style={styles.footerPriceText}>
               {selectedItems.length > 0
                 ? `총 가격  ${f.formatPrice(totalPrice)}원`
                 : '총 가격 0원'}
             </Text>
             <TouchableOpacity
+              testID="footerButton"
               style={[
                 styles.footerButton,
                 selectedItems.length === 0 && styles.footerButtonDisabled,
@@ -294,127 +331,107 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               onPress={handleConfirmOrder}
               disabled={selectedItems.length === 0}
             >
-              <Text style={styles.footerButtonText}>발주확인</Text>
+              <Text testID="footerButtonText" style={styles.footerButtonText}>발주확인</Text>
             </TouchableOpacity>
           </View>
         </>
       ) : (
-        // 선택한 상품 확인 화면 (발주 확인 모드)
         <ScrollView
-          style={{ flex: 1, backgroundColor: '#fff' }} // 외부 ScrollView 스타일
-          contentContainerStyle={styles.container} // 내부 컨텐츠 레이아웃 스타일 (수정된 부분)
+          testID="container"
+          style={{ flex: 1, backgroundColor: '#fff' }}
         >
-          <View style={styles.selectedItemsSection}>
-            <Text style={[styles.sectionTitle,{textAlign: `center`}]}>선택한 상품 확인</Text>
+          <View testID="confirm_selectedItemsSection" style={styles.confirm_selectedItemsSection}>
+            <Text testID="confirm_sectionTitle" style={[styles.confirm_sectionTitle, { textAlign: 'center' }]}>선택한 상품 확인</Text>
             {selectedItems.map((item) => {
               const itemTotal = item.quantity * parseFloat(item.입고단가);
               return (
-                <View key={item.품목_id} style={styles.confirmationItemRow}>
+                <View testID="confirmationItemRow" key={item.품목_id} style={styles.confirmationItemRow}>
                   <View style={{ flex: 2 }}>
-                    <Text style={styles.selectItemName}>{item.품목명}</Text>
-                    <Text style={styles.unitText}>
-                      수량: {item.quantity}
-                      {item.단위} (출고단위: {item.출고단위})
+                    <Text testID="confirm_selectItemName" style={styles.confirm_selectItemName}>{item.품목명}</Text>
+                    <Text testID="confirm_unitText" style={styles.confirm_unitText}>
+                      수량: {item.quantity}{item.단위} (출고단위: {item.출고단위})
                     </Text>
                   </View>
                   <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                    <Text style={styles.priceText}>{f.formatPrice(itemTotal)}원</Text>
+                    <Text testID="confirm_priceText" style={styles.confirm_priceText}>{f.formatPrice(itemTotal)}원</Text>
                   </View>
                 </View>
               );
             })}
-            <View style={styles.totalRow}>
-              <Text style={styles.totalText}>총합계:</Text>
-              <Text style={styles.totalText}>{f.formatPrice(totalPrice)}원</Text>
+            <View testID="totalRow" style={styles.totalRow}>
+              <Text testID="totalText" style={styles.totalText}>총합계:</Text>
+              <Text testID="totalText" style={styles.totalText}>{f.formatPrice(totalPrice)}원</Text>
             </View>
             <TouchableOpacity
+              testID="order_request_Button"
               style={[styles.order_request_Button, orderSubmitted && { opacity: 0.5 }]}
               onPress={handleOrderSubmit}
               disabled={orderSubmitted}
             >
-              <Text style={styles.order_request_ButtonText}>발주요청하기</Text>
+              <Text testID="order_request_ButtonText" style={styles.order_request_ButtonText}>발주요청하기</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.order_request_Button, { backgroundColor: 'white'},{borderColor:`#0D326F`},{borderWidth:1},{marginTop: 10 }]}
+              testID="order_request_Button"
+              style={[
+                styles.order_request_Button,
+                { backgroundColor: 'white' },
+                { borderColor: '#0D326F' },
+                { borderWidth: 1 },
+                { marginTop: 10 },
+              ]}
               onPress={() => setIsConfirmation(false)}
             >
-              <Text style={[styles.order_request_ButtonText,{color: '#0D326F'}]}>뒤로가기</Text>
+              <Text testID="order_request_ButtonText" style={[styles.order_request_ButtonText, { color: '#0D326F' }]}>뒤로가기</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
 
-      {/* 발주 오류 모달 */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={modalStyles.centeredView}>
-          <View style={modalStyles.modalView}>
-            <Text style={modalStyles.modalTitle}>발주 오류</Text>
+      {/* 모달들 */}
+      <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
+        <View testID="centeredView" style={modalStyles.centeredView}>
+          <View testID="modalView" style={modalStyles.modalView}>
+            <Text testID="modalTitle" style={modalStyles.modalTitle}>발주 오류</Text>
             {errorMessages.map((msg, idx) => (
-              <Text key={idx} style={modalStyles.modalText}>
+              <Text key={idx} testID="modalText" style={modalStyles.modalText}>
                 {msg}
               </Text>
             ))}
-            <TouchableOpacity
-              style={modalStyles.closeButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={modalStyles.textStyle}>확인</Text>
+            <TouchableOpacity testID="closeButton" style={modalStyles.closeButton} onPress={() => setModalVisible(false)}>
+              <Text testID="textStyle" style={modalStyles.textStyle}>확인</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {/* 발주 완료 모달 */}
-      <Modal
-        visible={orderCompleteModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setOrderCompleteModalVisible(false)}
-      >
-        <View style={modalStyles.centeredView}>
-          <View style={modalStyles.modalView}>
-            <Text style={modalStyles.modalTitle}>발주 완료</Text>
-            <Text style={modalStyles.modalText}>
+      <Modal visible={orderCompleteModalVisible} transparent animationType="slide" onRequestClose={() => setOrderCompleteModalVisible(false)}>
+        <View testID="centeredView" style={modalStyles.centeredView}>
+          <View testID="modalView" style={modalStyles.modalView}>
+            <Text testID="modalTitle" style={modalStyles.modalTitle}>발주 완료</Text>
+            <Text testID="modalText" style={modalStyles.modalText}>
               모든 발주 요청이 성공적으로 전송되었습니다.
             </Text>
-            <TouchableOpacity
-              style={modalStyles.closeButton}
-              onPress={() => {
+            <TouchableOpacity testID="closeButton" style={modalStyles.closeButton} onPress={() => {
                 setOrderCompleteModalVisible(false);
                 onOrderComplete();
-              }}
-            >
-              <Text style={modalStyles.textStyle}>확인</Text>
+              }}>
+              <Text testID="textStyle" style={modalStyles.textStyle}>확인</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {/* 발주 실패 모달 */}
-      <Modal
-        visible={orderFailureModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setOrderFailureModalVisible(false)}
-      >
-        <View style={modalStyles.centeredView}>
-          <View style={modalStyles.modalView}>
-            <Text style={modalStyles.modalTitle}>발주 실패</Text>
+      <Modal visible={orderFailureModalVisible} transparent animationType="slide" onRequestClose={() => setOrderFailureModalVisible(false)}>
+        <View testID="centeredView" style={modalStyles.centeredView}>
+          <View testID="modalView" style={modalStyles.modalView}>
+            <Text testID="modalTitle" style={modalStyles.modalTitle}>발주 실패</Text>
             {orderFailureMessages.map((msg, idx) => (
-              <Text key={idx} style={modalStyles.modalText}>
+              <Text key={idx} testID="modalText" style={modalStyles.modalText}>
                 {msg}
               </Text>
             ))}
-            <TouchableOpacity
-              style={modalStyles.closeButton}
-              onPress={() => setOrderFailureModalVisible(false)}
-            >
-              <Text style={modalStyles.textStyle}>확인</Text>
+            <TouchableOpacity testID="closeButton" style={modalStyles.closeButton} onPress={() => setOrderFailureModalVisible(false)}>
+              <Text testID="textStyle" style={modalStyles.textStyle}>확인</Text>
             </TouchableOpacity>
           </View>
         </View>

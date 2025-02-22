@@ -19,6 +19,7 @@
     "react-dom": "^18.3.1",
     "react-native": "^0.76.7",
     "react-native-safe-area-context": "^4.14.1",
+    "react-native-size-matters": "^0.4.2",
     "react-scripts": "^5.0.1",
     "web-vitals": "^4.2.4"
   }

@@ -103,7 +103,7 @@ DATABASES = {
         'NAME': 'khuffee',  # MySQL 데이터베이스 이름
         'USER': 'root',  # MySQL 유저명
      # 'PASSWORD': '9420',  # MySQL 비밀번호
-        'PASSWORD': '9420',  # MySQL 비밀번호
+        'PASSWORD': '42906126!f',  # MySQL 비밀번호
         'HOST': 'localhost',  # 로컬 개발이면 'localhost'
         'PORT': '3306',  # 기본 MySQL 포트
         'OPTIONS': {

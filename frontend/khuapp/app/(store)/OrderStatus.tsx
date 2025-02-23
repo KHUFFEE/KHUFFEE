@@ -24,7 +24,7 @@ import {
 } from 'lucide-react-native';
 import { RN_API_URL } from '@env';
 import { StoreOrderData, APIProduct } from '../../src/components/ui/common/types';
-import { styles, orderStyles, modalStyles, orderStatusStyles, receiptStyles } from '../../src/components/ui/common/commonstyler';
+import { styles, modalStyles, orderStatusStyles, receiptStyles } from '../../src/components/ui/common/commonstyler';
 import * as f from '../../src/components/ui/common/function';
 
 interface OrderStatusProps {

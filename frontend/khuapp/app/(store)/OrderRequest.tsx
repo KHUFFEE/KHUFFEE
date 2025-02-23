@@ -15,7 +15,7 @@ import {
   APIProduct,
   SelectedItem,
 } from '../../src/components/ui/common/types';
-import { orderStyles, modalStyles, styles } from '../../src/components/ui/common/commonstyler';
+import { modalStyles, styles } from '../../src/components/ui/common/commonstyler';
 import * as f from '../../src/components/ui/common/function';
 
 const OrderRequest: React.FC<StoreOrderRequestProps> = ({

@@ -2,6 +2,7 @@
 import { Platform,TextInput, StyleSheet, Dimensions } from 'react-native';
 const { height: screenHeight } = Dimensions.get('window');
 import { scale,verticalScale,moderateScale } from 'react-native-size-matters';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 /** 스타일들 */
 export const styles = StyleSheet.create({
 
@@ -174,7 +175,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     // justifyContent: 'space-between',
     marginBottom: moderateScale(1),
-    height:'1.5%',
+    height:hp(15),
   },
   selectItemInfo: {
     marginBottom: 8,
@@ -792,16 +793,6 @@ export const styles = StyleSheet.create({
 
 });
 
-export const orderStyles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    flex: 1,
-  },
-
-
- 
-});
-
 export const modalStyles = StyleSheet.create({
   centeredView: {
     flex: 1,
@@ -951,3 +942,35 @@ export const receiptStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+export const inventoryStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#0D326F',
+  },
+  itemContainer: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  itemText: {
+    fontSize: 16,
+    marginBottom: 4,
+    color: '#333',
+  },
+  message: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+});
+
+

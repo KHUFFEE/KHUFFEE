@@ -9,6 +9,7 @@ import OrderStatus from './OrderStatus';
 import Inventory from './Inventory';
 import {styles } from '../../src/components/ui/common/commonstyler';
 import { StoreOrderData, APIProduct, LocalOrder, ViewType, storename } from '../../src/components/ui/common/types';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const StoreEmployeeDashboard: React.FC<storename> = ({ storeName }) => {
   const [activeView, setActiveView] = useState<ViewType>('home');
@@ -63,7 +64,7 @@ const StoreEmployeeDashboard: React.FC<storename> = ({ storeName }) => {
       case 'order-status':
         return <OrderStatus storeId={storeId} items={items} />;
       case 'inventory':
-        return <Inventory />;
+        return <Inventory storeId={storeId} />;
       default:
         return null;
     }

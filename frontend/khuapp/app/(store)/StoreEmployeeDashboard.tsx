@@ -68,7 +68,7 @@ const StoreEmployeeDashboard: React.FC<storename> = ({ storeName }) => {
         return null;
     }
   };
-
+//하단 바 
   return (
     <View style={styles.dashboardContainer}>
       <View style={styles.mainContent}>{renderView()}</View>

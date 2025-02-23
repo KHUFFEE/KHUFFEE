@@ -1,8 +1,7 @@
 // 수정해야함
-import { TextInput, StyleSheet, Dimensions } from 'react-native';
-const { height } = Dimensions.get('window');
-
-
+import { Platform,TextInput, StyleSheet, Dimensions } from 'react-native';
+const { height: screenHeight } = Dimensions.get('window');
+import { scale,verticalScale,moderateScale } from 'react-native-size-matters';
 /** 스타일들 */
 export const styles = StyleSheet.create({
 
@@ -35,7 +34,7 @@ export const styles = StyleSheet.create({
     fontWeight: 700,
     marginBottom: -10,
     textAlign: 'center',
-    color: '#3C2415',
+    color: '#8B0000',
   },
   form_Container: {
     width: '100%',
@@ -46,7 +45,7 @@ export const styles = StyleSheet.create({
   // 개별 TextInput을 감싸는 컨테이너
   textboxContainer: {
     // 화면 높이의 35%를 상단 여백으로 사용 (필요에 따라 조정 가능)
-    marginTop: height * 0.00005,
+    marginTop: screenHeight * 0.00005,
     opacity: 1,
   },
   form_input_box: {
@@ -93,7 +92,7 @@ export const styles = StyleSheet.create({
 
   //main.tsx 시작 
   //상단 바 관련
-  head_Container: {     
+  head_Container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -102,15 +101,11 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 2.5,
     borderBottomColor: '#8B0000',
   },
-  head_storeNameText: {    
+  head_storeNameText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: 'black',
   },
-
-
-
-  //하단 바 관련
   bottom_navbar: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -131,10 +126,7 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 4,
   },
-
-
-  //로그아웃 모달 관련
-  bottom_Overlay: {     
+  bottom_Overlay: {
     flex: 1,
     backgroundColor: 'rgba(68, 60, 60, 0.5)',
     justifyContent: 'center',
@@ -155,9 +147,7 @@ export const styles = StyleSheet.create({
   bottom_modalOptionText: {
     fontSize: 18,
     color: '#333',
-  },   
-
-  //로딩 관련 처리 
+  },
   loading_Container: {
     flex: 1,
     justifyContent: 'center',
@@ -170,80 +160,65 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     left: 5,
     color: '#00000080',
-    alignItems: 'center', // 수평 중앙 정렬
+    alignItems: 'center',
   },
 
-
-  actionColumn: {
-    width: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  //발주요청 상품 선택 관련 
-  tableInfo: {
-    flexDirection: 'row',  // 수평으로 정렬
-    alignItems: 'center',
-    flex: 1,               // 남은 공간을 모두 사용
-  },
-  tableCell: {
-    flex: 1,               // 각 셀이 동일한 너비를 가지도록
-    fontSize: 14,
-    color: '#000',
-    textAlign: 'center',   // 가운데 정렬 (원하는 정렬에 따라 변경)
-  },
-  selectItemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-// 상품 행 컨테이너 (선택 버튼 포함)
+  // OrderRequest.tsx 관련 스타일
   selectItemCard: {
-    width: '100%',
-    paddingVertical: 12,           // 내부 패딩 12px
-    paddingHorizontal: 12,
+    paddingVertical: moderateScale(12),
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd',
     flexDirection: 'row',
+    // flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 1,               // 각 row 사이 간격 (1px)
+    // justifyContent: 'space-between',
+    marginBottom: moderateScale(1),
+    height:'1.5%',
   },
   selectItemInfo: {
     marginBottom: 8,
   },
-  selectItemName: {   // 상품명 셀
-    flex: 3,
-    fontSize: 16,
+  selectItemName: {
+    width: '60%',
+    fontSize: moderateScale(14),
     fontWeight: '600',
     marginBottom: 2,
-    width: '100%',
-    borderRightWidth: 1,           // 오른쪽 경계 추가
+    borderRightWidth: 1,
     borderRightColor: '#ddd',
+    textAlign: 'left',
+    letterSpacing: -0.5,
   },
-  unitText: {         // 출고단위 셀
-    flex: 0.7,
-    fontSize: 14,
+  unitText: {
+    width: '20%',
+    fontSize: moderateScale(14),
     color: 'black',
     fontWeight: '500',
-    borderRightWidth: 1,           // 오른쪽 경계 추가
+    borderRightWidth: 1,
     borderRightColor: '#ddd',
+    paddingLeft: moderateScale(5),
+  
   },
-  price_unit_Text: {  // 가격 셀 (마지막이므로 border 생략)
-    flex: 1,
-    fontSize: 14,
+  price_unit_Text: {
+    width: '20%',
+    fontSize: moderateScale(14),
     fontWeight: '600',
     color: '#1e7e34',
-
+    textAlign: 'center',
+    letterSpacing: -0.5, // 음수 값을 주면 글자 간격이 줄어듭니다.
   },
-
+  columnCenteredView: {
+    width: '30%',
+    height: '30%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column'
+  },
   actionsContainer: {
-    flex:1,
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
-    
   },
   quantityButton: {
     width: 28,
@@ -265,19 +240,10 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     padding: 0,
   },
-
   priceText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#0D326F',
-  },
-  confirmationItemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
   },
   errorText: {
     color: 'red',
@@ -285,23 +251,24 @@ export const styles = StyleSheet.create({
     marginTop: 4,
   },
   orderButton: {
-    width: 50,              // 고정 너비
-    height: 50, 
+    width: '15%',
+    minWidth: moderateScale(30),
+    height: '30%',
+    minHeight: verticalScale(30),
     backgroundColor: '#fff',
-    paddingVertical: 12,
     borderRadius: 8,
-
     alignItems: 'center',
-    justifyContent: `center`,
+    justifyContent: 'center',
     borderColor: '#0D326F',
     borderWidth: 3,
-
+    marginLeft: moderateScale(10),
   },
   orderButtonText: {
     color: '#0D326F',
-    fontSize: 16,
+    fontSize: moderateScale(15),
     fontWeight: 'bold',
-    
+    textAlign: 'center',
+    textAlignVertical: 'center',
   },
   order_request_Button: {
     backgroundColor: '#0D326F',
@@ -323,123 +290,123 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 4,
   },
-  // 상품선택하기 헤더 관련
-  headerContainer: {     
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,           // 내부 패딩 12px
-    paddingHorizontal: 12,
+  headerContainer: {
     backgroundColor: '#cf8888',
-    borderWidth: 1,                // 전체 테두리 1px
+    gap: moderateScale(2),
+    borderWidth: 1,
     borderColor: '#ddd',
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    // justifyContent: 'space-between',
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: moderateScale(8),
   },
-  item_headerText: {    // 상품명 셀
-    flex: 3,
-    fontSize: 16,
+  item_headerText: {
+    width: '60%',
+    fontSize: moderateScale(14),
     fontWeight: 'bold',
     color: 'black',
     textAlign: 'left',
-    borderRightWidth: 1,           // 오른쪽 경계 추가
+    borderRightWidth: 1,
     borderRightColor: '#ddd',
   },
-  unit_headerText: {    // 출고단위 셀
-    flex: 0.7,
-    fontSize: 16,
+  unit_headerText: {
+    width: '20%',
+    fontSize: moderateScale(14),
     fontWeight: 'bold',
     color: 'black',
     textAlign: 'center',
     borderRightWidth: 1,
     borderRightColor: '#ddd',
+
   },
-  price_headerText: {   // 가격 셀
-    flex: 1,
-    fontSize: 16,
+  price_headerText: {
+    width: '20%',
+    fontSize: moderateScale(14),
     fontWeight: 'bold',
     color: 'black',
-    textAlign: 'center',           // 중앙 정렬
-    },
-  // 선택 버튼 셀 (헤더에는 빈 셀로 추가)
-  selectHeaderCell: {
-    width: 50,                     // 상품 행의 선택 버튼과 동일한 너비
+    textAlign: 'center',
+    
+    // borderRightWidth: 1,
+    // borderRightColor: '#ddd',
   },
+
   listContainer: {
-    marginTop: 10,
+    marginTop: 1,
+    marginBottom: 0, // 수정됨: 마지막 아이템이 footer 위에 보이도록 추가
   },
-    scrollContainer: {
+  // 수정됨: scrollContainer 스타일 변경
+  scrollContainer: {
+    flexGrow: 1,           // height 대신 flexGrow 사용하여 내용 확장
     paddingHorizontal: 10,
-    paddingBottom: 10,
+    paddingBottom: 100,    // footer 높이를 고려한 여백 추가
     backgroundColor: '#fff',
   },
   fixedHeaderContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#f0f0f0',
-    zIndex: 999, // 다른 요소보다 위에 표시
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    paddingVertical: moderateScale(10),
+    paddingRight: moderateScale(-5),
+    paddingBottom: moderateScale(-5),
+    zIndex: moderateScale(10),
   },
-  fixedHeaderText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  // 스크롤 영역 상단에 헤더 높이만큼의 여백을 줍니다.
   scrollContainerWithHeader: {
-    paddingTop: 50, // 고정 헤더의 높이에 맞게 조정
+    paddingTop: 50,
     paddingHorizontal: 12,
     paddingBottom: 20,
     backgroundColor: '#fff',
   },
   categorySection: {
     paddingTop: 10,
-    paddingBottom: 5,
-    // borderBottomWidth: 1, // 추후 삭제 예정
-
   },
-
   categoryList: {
-    marginBottom: 5,
-    paddingHorizontal: 16,
+    paddingRight: moderateScale(100),
+    paddingLeft: moderateScale(10),
+    flexDirection: 'row',
   },
-
   categoryButton: {
-    marginHorizontal: 3,
-    borderRadius: 8,
+    ...Platform.select({
+      web: {
+        alignSelf: 'flex-start',
+      },
+      default: {
+        // 기존 flex: 1, flexBasis: 0 제거
+      },
+    }),
+    marginHorizontal: scale(2),
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: verticalScale(5),
+    borderRadius: moderateScale(8),
     backgroundColor: 'white',
     borderColor: '#B5B5B5',
-    borderWidth: 1,
-    width: 70,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderWidth: scale(1),
+    alignItems: 'center', // 텍스트를 수평 중앙 정렬
+    justifyContent: 'center', // 텍스트를 수직 중앙 정렬
   },
   categoryButtonActive: {
     borderColor: '#0D326F',
-    borderWidth: 2.5,
+    borderWidth: scale(2.5),
   },
   categoryButtonText: {
-    fontSize: 20,
+    fontSize: moderateScale(14),
     fontWeight: '700',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    flexShrink: 1,
   },
   categoryButtonTextActive: {
     color: '#0D326F',
   },
+
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 5,
     right: 15,
     paddingHorizontal: 16,
+    width: '100%',
   },
-
   footerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -455,7 +422,7 @@ export const styles = StyleSheet.create({
     right: 0,
   },
   footerPriceText: {
-    color: `#A40F16`,
+    color: '#A40F16',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -474,12 +441,126 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   selectedItemsSection: {
-    width: 500,
-    height: 300,
     paddingVertical: 16,
     paddingHorizontal: 16,
   },
   totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderColor: '#aaa',
+    marginTop: 10,
+  },
+  contentContainerStyle: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  productsSection: {
+    paddingLeft: 8,
+    marginBottom: screenHeight * 0.8,
+  },
+  productGrid: {
+    flexDirection: 'column',
+    paddingHorizontal: 5,
+    justifyContent: 'space-between',
+  },
+  selectItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  cardContent: {
+    flexDirection: 'column',
+    width: '100%',
+  },
+  selectItemRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: moderateScale(2),
+    // justifyContent: 'space-between',
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: moderateScale(8),
+  },
+
+  selectItemCardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingRight: moderateScale(15),
+    paddingTop: moderateScale(8),
+  },
+
+  //선택 될 때 2번째 행 정의
+  selectItemCardFooter_selected: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: moderateScale(12),
+  },
+  actionsContainer_selected: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // justifyContent: 'space-between', // 필요에 따라 'flex-start' 또는 'center'로 조정 가능
+    marginTop: moderateScale(8),
+  },
+  priceContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+
+  // 선택한 상품 확인 css 
+
+  confirm_selectedItemsSection: {
+
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  confirm_sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    width: '100%'
+  },
+  confirmationItemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    width: `100%`,
+  },
+  confirm_selectItemName: {   // 상품명 셀
+    flex: 3,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+    width: '100%',
+
+  },  
+  confirm_unitText: {         // 출고단위 셀
+    flex: 0.7,
+    fontSize: 14,
+    color: 'black',
+    fontWeight: '500', 
+ 
+  },
+  confirm_priceText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0D326F',
+  },
+  confirm_totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 15,
@@ -492,31 +573,6 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
-
-  contentContainerStyle:{
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center', // 세로 중앙 정렬도 가능
-  },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -581,8 +637,6 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     padding: 20,
-    // position: 'relative',// 모달 안에서 드롭다운이 absolute로 펼쳐질 수 있도록
-    // zIndex: 1,
     overflow: 'visible',
   },
   periodModalTitle: {
@@ -623,7 +677,6 @@ export const styles = StyleSheet.create({
   dropdownWrapper: {
     position: 'relative',
     marginHorizontal: 4,
-    // 부모도 zIndex를 기본으로 준다
     zIndex: 1,
   },
   dropdown: {
@@ -635,11 +688,9 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 6,
-    // 기본 zIndex
     zIndex: 10,
     elevation: 10,
   },
-  // ★ 열렸을 때 최상단으로 올리는 스타일
   dropdownOpen: {
     zIndex: 9999,
     elevation: 9999,
@@ -663,7 +714,6 @@ export const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-
   loadMoreButton: {
     alignSelf: 'center',
     marginVertical: 10,
@@ -736,6 +786,10 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  sectionContainer: {
+    backgroundColor: '#fff',
+  },
+
 });
 
 export const orderStyles = StyleSheet.create({
@@ -745,15 +799,6 @@ export const orderStyles = StyleSheet.create({
   },
 
 
-  productsSection: {
-    paddingVertical: 16,
-  },
-  productGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 5,
-    justifyContent: 'space-between',
-  },
  
 });
 

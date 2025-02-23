@@ -3,6 +3,7 @@ import { Platform,TextInput, StyleSheet, Dimensions } from 'react-native';
 const { height: screenHeight } = Dimensions.get('window');
 import { scale,verticalScale,moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { RFValue } from "react-native-responsive-fontsize"
 /** 스타일들 */
 export const styles = StyleSheet.create({
 
@@ -31,7 +32,7 @@ export const styles = StyleSheet.create({
     marginBottom: -5,
   },
   logo_name: {            //logo 아래 이름
-    fontSize: 27,
+    fontSize: RFValue(27),
     fontWeight: 700,
     marginBottom: -10,
     textAlign: 'center',
@@ -85,7 +86,7 @@ export const styles = StyleSheet.create({
 
   login_buttonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: 'bold',
   },
 
@@ -103,7 +104,7 @@ export const styles = StyleSheet.create({
     borderBottomColor: '#8B0000',
   },
   head_storeNameText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     color: 'black',
   },
@@ -146,7 +147,7 @@ export const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
   },
   bottom_modalOptionText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     color: '#333',
   },
   loading_Container: {
@@ -157,7 +158,7 @@ export const styles = StyleSheet.create({
   },
   loading_Text: {
     marginTop: 3,
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     left: 5,
     color: '#00000080',
@@ -182,7 +183,7 @@ export const styles = StyleSheet.create({
   },
   selectItemName: {
     width: '60%',
-    fontSize: moderateScale(14),
+    fontSize: RFValue(14),
     fontWeight: '600',
     marginBottom: 2,
     borderRightWidth: 1,
@@ -192,7 +193,7 @@ export const styles = StyleSheet.create({
   },
   unitText: {
     width: '20%',
-    fontSize: moderateScale(14),
+    fontSize: RFValue(14),
     color: 'black',
     fontWeight: '500',
     borderRightWidth: 1,
@@ -202,7 +203,7 @@ export const styles = StyleSheet.create({
   },
   price_unit_Text: {
     width: '20%',
-    fontSize: moderateScale(14),
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#1e7e34',
     textAlign: 'center',
@@ -238,17 +239,17 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     borderRadius: 4,
     marginHorizontal: 2,
-    fontSize: 14,
+    fontSize: RFValue(14),
     padding: 0,
   },
   priceText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#0D326F',
   },
   errorText: {
     color: 'red',
-    fontSize: 13,
+    fontSize: RFValue(13),
     marginTop: 4,
   },
   orderButton: {
@@ -266,7 +267,7 @@ export const styles = StyleSheet.create({
   },
   orderButtonText: {
     color: '#0D326F',
-    fontSize: moderateScale(15),
+    fontSize: RFValue(15),
     fontWeight: 'bold',
     textAlign: 'center',
     textAlignVertical: 'center',
@@ -279,7 +280,7 @@ export const styles = StyleSheet.create({
   },
   order_request_ButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: 'bold',
   },
   removeButton: {
@@ -306,7 +307,7 @@ export const styles = StyleSheet.create({
   },
   item_headerText: {
     width: '60%',
-    fontSize: moderateScale(14),
+    fontSize: RFValue(14),
     fontWeight: 'bold',
     color: 'black',
     textAlign: 'left',
@@ -315,7 +316,7 @@ export const styles = StyleSheet.create({
   },
   unit_headerText: {
     width: '20%',
-    fontSize: moderateScale(14),
+    fontSize: RFValue(14),
     fontWeight: 'bold',
     color: 'black',
     textAlign: 'center',
@@ -325,7 +326,7 @@ export const styles = StyleSheet.create({
   },
   price_headerText: {
     width: '20%',
-    fontSize: moderateScale(14),
+    fontSize: RFValue(14),
     fontWeight: 'bold',
     color: 'black',
     textAlign: 'center',
@@ -390,7 +391,7 @@ export const styles = StyleSheet.create({
     borderWidth: scale(2.5),
   },
   categoryButtonText: {
-    fontSize: moderateScale(14),
+    fontSize: RFValue(14),
     fontWeight: '700',
     textAlign: 'center',
     textAlignVertical: 'center',
@@ -401,7 +402,7 @@ export const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     marginBottom: 5,
     right: 15,
@@ -424,7 +425,7 @@ export const styles = StyleSheet.create({
   },
   footerPriceText: {
     color: '#A40F16',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: 'bold',
   },
   footerButton: {
@@ -438,7 +439,7 @@ export const styles = StyleSheet.create({
   },
   footerButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: 'bold',
   },
   selectedItemsSection: {
@@ -527,7 +528,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   confirm_sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     marginBottom: 5,
     width: '100%'
@@ -543,7 +544,7 @@ export const styles = StyleSheet.create({
   },
   confirm_selectItemName: {   // 상품명 셀
     flex: 3,
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     marginBottom: 2,
     width: '100%',
@@ -551,13 +552,13 @@ export const styles = StyleSheet.create({
   },  
   confirm_unitText: {         // 출고단위 셀
     flex: 0.7,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: 'black',
     fontWeight: '500', 
  
   },
   confirm_priceText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#0D326F',
   },
@@ -571,7 +572,7 @@ export const styles = StyleSheet.create({
   },
   totalText: {
     color: '#8B0000',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: 'bold',
   },
 
@@ -589,7 +590,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: 'bold',
     marginBottom: 10,
   },
@@ -641,7 +642,7 @@ export const styles = StyleSheet.create({
     overflow: 'visible',
   },
   periodModalTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     marginBottom: 16,
   },
@@ -651,7 +652,7 @@ export const styles = StyleSheet.create({
     marginTop: 12,
   },
   dateGroupLabel: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: 'bold',
     marginBottom: 6,
   },
@@ -672,7 +673,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dateBoxText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
   },
   dropdownWrapper: {
@@ -728,7 +729,7 @@ export const styles = StyleSheet.create({
   },
   loadMoreButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: 'bold',
   },
   datePickerModalContainer: {
@@ -745,12 +746,12 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   datePickerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     marginBottom: 10,
   },
   datePickerLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     marginVertical: 6,
     alignSelf: 'flex-start',
@@ -791,6 +792,18 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 
+  status_container: {
+    flex: 1,
+    // paddingVertical: moderateScale(10),
+    paddingHorizontal:moderateScale(6),
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+
+  flatlist:{
+    height:verticalScale(80)
+  }
 });
 
 export const modalStyles = StyleSheet.create({
@@ -817,12 +830,12 @@ export const modalStyles = StyleSheet.create({
     width: '80%',
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     marginBottom: 15,
   },
   modalText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     marginBottom: 10,
   },
   closeButton: {
@@ -842,7 +855,7 @@ export const modalStyles = StyleSheet.create({
 
 export const orderStatusStyles = StyleSheet.create({
   dateHeader: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     marginBottom: 8,
     color: '#333',
@@ -854,12 +867,12 @@ export const orderStatusStyles = StyleSheet.create({
     marginBottom: 4,
   },
   productName: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     marginBottom: 4,
   },
   quantity: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#555',
     marginBottom: 6,
   },
@@ -876,7 +889,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
   actionButtonText: {
     color: '#0D326F',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: 'bold',
   },
 });
@@ -892,11 +905,11 @@ export const receiptStyles = StyleSheet.create({
     marginBottom: 10,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginTop: 2,
   },
@@ -919,16 +932,16 @@ export const receiptStyles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   itemName: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   itemQty: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginTop: 2,
   },
   itemPrice: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#0D326F',
   },
@@ -938,11 +951,10 @@ export const receiptStyles = StyleSheet.create({
   },
   footerText: {
     color: '#1e7e34',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: 'bold',
   },
 });
-
 export const inventoryStyles = StyleSheet.create({
   container: {
     flex: 1,
@@ -950,26 +962,95 @@ export const inventoryStyles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: 'bold',
     marginBottom: 15,
     color: '#0D326F',
   },
   itemContainer: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    borderBottomWidth: moderateScale(1),
     borderBottomColor: '#ccc',
+    flexDirection: 'row',
+    alignItems: 'center',
+    
   },
   itemText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     marginBottom: 4,
     color: '#333',
+    width: wp(4)
+  },
+  name_itemText: {
+    fontSize: RFValue(16),
+    color: '#333',
+    width: scale(250),
+  },
+  unit_itemText: {
+    fontSize: RFValue(16),
+    color: '#333',
+    width: scale(100)
   },
   message: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#555',
     textAlign: 'center',
     marginTop: 20,
+  },
+  periodText: {
+    fontSize: RFValue(16),
+    color: '#555',
+    textAlign: 'center',
+    marginVertical: 10,
+  },
+    itemsContainer: {
+    flex: 1,   //웹에서 스크롤 되게함 
+    marginBottom: 10,
+    // borderBlockColor:'#ccc',
+    // borderWidth: 1,
+  },
+    term_of_name: {
+      fontSize: RFValue(16),
+      fontWeight: 'bold',
+      marginBottom: moderateScale(5)
+      // borderBlockColor:'#ccc',
+      // borderWidth: 1,
+  },
+  flat_inventory:{
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    width: '100%'
+  },
+  inventory_HeaderContainer: {
+    backgroundColor: '#cf8888',
+    gap: moderateScale(2),
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    // justifyContent: 'space-between',
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: moderateScale(8),
+  },
+  inventory_item_headerText: {
+    width: '60%',
+    fontSize: RFValue(14),
+    fontWeight: 'bold',
+    color: 'black',
+    textAlign: 'left',
+    borderRightWidth: 1,
+    borderRightColor: '#ddd',
+  },
+  inventory_unit_headerText: {
+    width: '20%',
+    fontSize: RFValue(14),
+    fontWeight: 'bold',
+    color: 'black',
+    textAlign: 'center',
+    borderRightWidth: 1,
+    borderRightColor: '#ddd',
+
   },
 });
 

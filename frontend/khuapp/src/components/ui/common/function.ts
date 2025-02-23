@@ -25,7 +25,14 @@ export function buildPeriodString(y: number | null, m: number | null, w: number 
   }
 
 
-
+  export function formatDayString(dateKey: string): string {
+    const [yearStr, monthStr, dayStr] = dateKey.split('.');
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    const day = parseInt(dayStr, 10);
+    return `${year}년 ${month}월 ${day}일`;
+  }
+  
 /** 상품 리스트에서 중복되지 않는 카테고리 추출 */
 export const getUniqueCategories = (apiItems: any[]): string[] => {
   return Array.from(new Set(apiItems.map((item) => item.종류)));
@@ -48,6 +55,7 @@ export const fetchApiItems = async (): Promise<any[]> => {
     return [];
   }
 };
+
 
 /** 협력사 리스트 API 호출 함수 */
 export const fetchSuppliers = async (): Promise<any[]> => { // async는 비동기로 만듦

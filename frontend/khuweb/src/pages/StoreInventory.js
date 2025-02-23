@@ -379,7 +379,7 @@ const StoreInventory = () => {
 
   return (
     <div className="si-container">
-      <h2 className="title">매장 재고 조회</h2>
+      <h2 className="title">매장 일별 재고 조회</h2>
       <div className="period-controls">
         <div className="period-search">
           {/* 매장 선택 */}

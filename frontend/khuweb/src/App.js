@@ -8,6 +8,8 @@ import Login from "./pages/Login";
 import Suppliers from "./pages/Suppliers";
 import InventoryLog from "./pages/InventoryLog";
 import StoreInventory from "./pages/StoreInventory";
+// 추가: 월말 재고 관리를 위한 페이지 (파일명: StoreInventoryMonthEnd.js)
+import StoreInventoryMonthEnd from "./pages/StoreInventoryMonthEnd";
 import WarehouseInventory from "./pages/WarehouseInventory";
 import WarehouseIncoming from "./pages/WarehouseIncoming";
 import WarehouseOutgoing from "./pages/WarehouseOutgoing";
@@ -167,7 +169,14 @@ function App() {
                         to="/store/inventory"
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
-                        재고
+                        일별 재고
+                      </NavLink>
+                      {/* 추가: 월말 재고 탭 (StoreInventoryMonthEnd 컴포넌트로 관리) */}
+                      <NavLink
+                        to="/store/inventory_monthend"
+                        className={({ isActive }) => (isActive ? "active" : "")}
+                      >
+                        월말 재고
                       </NavLink>
                       <NavLink
                         to="/store/orders"
@@ -201,7 +210,7 @@ function App() {
                         to="/warehouse/inventory"
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
-                        재고
+                        일별 재고
                       </NavLink>
                       <NavLink
                         to="/warehouse/incoming"
@@ -232,6 +241,8 @@ function App() {
                 <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
                 <Route path="/" element={<Home />} />
                 <Route path="/store/inventory" element={<StoreInventory />} />
+                {/* 추가: 월말 재고 페이지 라우트 */}
+                <Route path="/store/inventory_monthend" element={<StoreInventoryMonthEnd />} />
                 <Route path="/store/orders" element={<Orders />} />
                 <Route path="/integration/suppliers" element={<Suppliers />} />
                 <Route path="/integration/inventorylog" element={<InventoryLog />} />

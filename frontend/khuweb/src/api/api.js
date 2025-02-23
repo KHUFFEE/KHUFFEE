@@ -145,6 +145,7 @@ export const fetchWarehouseInventory = async (params) => {
   }
   return await response.json();
 };
+
 export const fetchStoreInventory = async (params) => {
   let url = `${process.env.REACT_APP_API_URL}/api/inventory/store/?`;
   if (params.기간) {
@@ -160,3 +161,57 @@ export const fetchStoreInventory = async (params) => {
   return await response.json();
 };
 
+export const fetchStoreMonthEndInventory = async (params) => {
+  let url = `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?`;
+  if (params.기간) {
+    url += `기간=${params.기간}`;
+  }
+  if (params.매장_id) {
+    url += `&매장_id=${params.매장_id}`;
+  }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch store_monthend");
+  }
+  return await response.json();
+};
+
+// 월말 재고 업데이트 함수
+export const updateStoreMonthEndInventory = async (data) => {
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend_inventory_update/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to update store month-end inventory");
+  }
+
+  return await response.json();
+};
+
+// 상태 관리(상태_관리 테이블) 업데이트 함수
+export const updateTableStatus = async (data) => {
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/management/table-status/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to update table status");
+  }
+
+  return await response.json();
+};

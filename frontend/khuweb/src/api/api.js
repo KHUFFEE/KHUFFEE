@@ -199,7 +199,7 @@ export const updateStoreMonthEndInventory = async (data) => {
 // 상태 관리(상태_관리 테이블) 업데이트 함수
 export const updateTableStatus = async (data) => {
   const response = await fetch(
-    `${process.env.REACT_APP_API_URL}/api/management/table-status/`,
+    `${process.env.REACT_APP_API_URL}/api/management/table_status_update/`,
     {
       method: "POST",
       headers: {
@@ -211,6 +211,19 @@ export const updateTableStatus = async (data) => {
 
   if (!response.ok) {
     throw new Error("Failed to update table status");
+  }
+
+  return await response.json();
+};
+
+// 상태 관리(상태_관리 테이블) GET 함수
+export const getTableStatusList = async () => {
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/management/table_status_list/`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch table status list");
   }
 
   return await response.json();

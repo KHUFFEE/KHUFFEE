@@ -1,3 +1,4 @@
+# backend/orders/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -21,6 +22,7 @@ class StoreOrderCreateView(APIView):
 class StoreOrderListView(APIView):
     def get(self, request):
         store_id = request.GET.get('store_id')
+        round_param = request.GET.get('회차')  # 회차 필터링 (GET 파라미터)
         try:
             page = int(request.GET.get('page', 1))
         except ValueError:
@@ -33,61 +35,71 @@ class StoreOrderListView(APIView):
         orders_queryset = StoreOrder.objects.all()
         if store_id:
             orders_queryset = orders_queryset.filter(매장_id=store_id)
+        # 회차 파라미터가 있으면 필터링
+        if round_param:
+            orders_queryset = orders_queryset.filter(회차=round_param)
         
-        # 매장_발주량이 0인 주문은 제외
+        # 매장_발주량 0인 주문 제외
         orders_queryset = orders_queryset.exclude(매장_발주량=0)
         
-        # 매장_id만 따로 조회할 경우 (store_only 파라미터가 true)
+        # 매장_id만 조회하는 경우
         store_only = request.GET.get('store_only', '').lower()
         if store_only == 'true':
             store_ids = orders_queryset.order_by('매장_id').values_list('매장_id', flat=True).distinct()
             return Response({"store_ids": list(store_ids)}, status=status.HTTP_200_OK)
 
-        # 새 기능: 기간 범위 조회 (YYYY.MM.W~YYYY.MM.W)
+        # 기간 범위 조회 (YYYY.MM.W~YYYY.MM.W)
         period_param = request.GET.get('기간')
         if period_param and '~' in period_param:
             start_period, end_period = period_param.split('~')
             start_period = start_period.strip()
             end_period = end_period.strip()
-            orders_for_range = orders_queryset.filter(기간__gte=start_period, 기간__lte=end_period).order_by(ordering)
+            qs = orders_queryset.filter(기간__gte=start_period, 기간__lte=end_period)
+            orders_for_range = qs.order_by(ordering)
             orders = list(orders_for_range.values(
                 '매장_id',
                 '품목_id',
                 '기간',
+                '회차',
                 '매장_발주량'
             ))
             result = {
-                "current_period": f"{start_period} ~ {end_period}",
+                "current_period": f"{start_period}",
+                "current_round": f"전체",  # 범위 조회에서는 회차 개념 없이 전체
                 "current_page": 1,
                 "total_pages": 1,
                 "orders": orders,
             }
             return Response(result, status=status.HTTP_200_OK)
 
-        # 기존 기능: 특정 기간 조회 (정확한 기간 문자열)
+        # 특정 기간 조회 (정확한 기간 문자열)
         if period_param:
-            orders_for_period = orders_queryset.filter(기간=period_param).order_by(ordering)
+            qs = orders_queryset.filter(기간=period_param)
+            orders_for_period = qs.order_by(ordering)
             orders = list(orders_for_period.values(
                 '매장_id',
                 '품목_id',
                 '기간',
+                '회차',
                 '매장_발주량'
             ))
             result = {
                 "current_period": period_param,
+                "current_round": round_param if round_param else None,
                 "current_page": 1,
                 "total_pages": 1,
                 "orders": orders,
             }
             return Response(result, status=status.HTTP_200_OK)
 
-        # 페이지네이션: distinct한 기간 단위로 진행 (한 주차에 해당하는 주문들)
-        all_periods = list(orders_queryset.order_by(ordering).values_list('기간', flat=True))
-        distinct_periods = list(OrderedDict.fromkeys(all_periods))
-        total_pages = len(distinct_periods)
+        # 페이지네이션: distinct (기간, 회차) 쌍으로 진행
+        all_pairs = list(orders_queryset.order_by(ordering).values_list('기간', '회차'))
+        distinct_pairs = list(OrderedDict.fromkeys(all_pairs))
+        total_pages = len(distinct_pairs)
         if total_pages == 0:
             return Response({
                 "current_period": None,
+                "current_round": None,
                 "current_page": 0,
                 "total_pages": 0,
                 "orders": []
@@ -97,17 +109,20 @@ class StoreOrderListView(APIView):
             return Response({"error": f"페이지 번호는 1부터 {total_pages} 사이여야 합니다."},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        selected_period = distinct_periods[page - 1]
-        orders_for_period = orders_queryset.filter(기간=selected_period).order_by(ordering)
+        selected_pair = distinct_pairs[page - 1]
+        selected_period, selected_round = selected_pair
+        orders_for_period = orders_queryset.filter(기간=selected_period, 회차=selected_round).order_by(ordering)
         orders = list(orders_for_period.values(
             '매장_id',
             '품목_id',
             '기간',
+            '회차',
             '매장_발주량'
         ))
 
         result = {
             "current_period": selected_period,
+            "current_round": selected_round,
             "current_page": page,
             "total_pages": total_pages,
             "orders": orders,
@@ -116,37 +131,40 @@ class StoreOrderListView(APIView):
 
 class StoreOrderUpdateView(APIView):
     def post(self, request):
-        # 필수 필드: 매장_id, 품목_id, 기간, 매장_발주량
         store_id = request.data.get("매장_id")
         item_id = request.data.get("품목_id")
         period = request.data.get("기간")
         order_amount = request.data.get("매장_발주량")
         
         if not (store_id and item_id and period):
-            return Response(
-                {"error": "매장_id, 품목_id, 기간은 필수 입력입니다."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "매장_id, 품목_id, 기간은 필수 입력입니다."},
+                            status=status.HTTP_400_BAD_REQUEST)
         
-        # 외래키 객체로 변환
         try:
             store_obj = Store.objects.get(pk=store_id)
         except Store.DoesNotExist:
-            return Response({"error": "해당 매장을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "해당 매장을 찾을 수 없습니다."},
+                            status=status.HTTP_404_NOT_FOUND)
         
         try:
             item_obj = Item.objects.get(pk=item_id)
         except Item.DoesNotExist:
-            return Response({"error": "해당 품목을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "해당 품목을 찾을 수 없습니다."},
+                            status=status.HTTP_404_NOT_FOUND)
         
-        # 매장_발주량을 정수로 변환 (빈 문자열이나 None은 0으로 처리)
         try:
             new_value = int(order_amount) if order_amount not in [None, ""] else 0
         except ValueError:
-            return Response({"error": "매장_발주량은 정수여야 합니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "매장_발주량은 정수여야 합니다."},
+                            status=status.HTTP_400_BAD_REQUEST)
         
-        # .get() 대신 filter()로 기존 주문 조회 (id 필드를 참조하지 않도록)
-        qs = StoreOrder.objects.filter(매장_id=store_obj, 품목_id=item_obj, 기간=period)
+        # 요청 데이터의 "회차"를 받아서 사용 (기본값 1)
+        try:
+            round_val = int(request.data.get("회차", 1))
+        except ValueError:
+            round_val = 1
+        
+        qs = StoreOrder.objects.filter(매장_id=store_obj, 품목_id=item_obj, 기간=period, 회차=round_val)
         if qs.exists():
             if new_value == 0:
                 qs.delete()
@@ -154,12 +172,14 @@ class StoreOrderUpdateView(APIView):
                     "매장_id": store_obj.pk,
                     "품목_id": item_obj.pk,
                     "기간": period,
+                    "회차": round_val,
                     "매장_발주량": 0
                 }, status=status.HTTP_200_OK)
             else:
                 qs.update(매장_발주량=new_value)
-                # 존재하는 컬럼으로 명시적으로 정렬하여 id 필드 참조를 피함
-                updated_record = qs.order_by("매장_id", "품목_id", "기간").values("매장_id", "품목_id", "기간", "매장_발주량").first()
+                updated_record = qs.order_by("매장_id", "품목_id", "기간", "회차")\
+                                   .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")\
+                                   .first()
                 return Response(updated_record, status=status.HTTP_200_OK)
         else:
             if new_value == 0:
@@ -167,6 +187,7 @@ class StoreOrderUpdateView(APIView):
                     "매장_id": store_obj.pk,
                     "품목_id": item_obj.pk,
                     "기간": period,
+                    "회차": round_val,
                     "매장_발주량": 0
                 }, status=status.HTTP_200_OK)
             else:
@@ -174,14 +195,13 @@ class StoreOrderUpdateView(APIView):
                     매장_id=store_obj,
                     품목_id=item_obj,
                     기간=period,
+                    회차=round_val,
                     매장_발주량=new_value
                 )
                 return Response({
                     "매장_id": store_obj.pk,
                     "품목_id": item_obj.pk,
                     "기간": period,
+                    "회차": round_val,
                     "매장_발주량": new_value
                 }, status=status.HTTP_201_CREATED)
-
-
-

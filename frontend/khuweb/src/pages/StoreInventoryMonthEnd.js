@@ -474,6 +474,7 @@ const StoreInventoryMonthEnd = () => {
     `${selectedYear}.${selectedMonth}` === latestPeriodValue &&
     tableStatus !== null
   ) {
+    // eslint-disable-next-line
     const [latestYear, latestMonth] = latestPeriodValue.split(".");
     if (tableStatus === 1) {
       statusMessage = `현재 매니저가 ${parseInt(latestMonth, 10)}월 재고 입력이 가능한 상태입니다.\n매니저의 ${parseInt(latestMonth, 10)}월 재고 입력을 제한하기 위해서는 마감 버튼을 클릭해주세요.`;
@@ -486,6 +487,9 @@ const StoreInventoryMonthEnd = () => {
     }
   }
 
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+  
   return (
     <div className="store-orders-container">
       <h2 className="title">매장 월말 재고 조회</h2>

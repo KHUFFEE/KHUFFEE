@@ -1,4 +1,3 @@
-// C:\Users\usert\Desktop\KHUFFEE\frontend\khuapp\app\(store)\OrderRequest.tsx
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -117,105 +116,113 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   // 선택된 상품 카드 렌더링 함수
   const renderProductCard = (product: APIProduct) => {
     const selected = selectedItems.find(item => item.품목_id === product.품목_id);
-    // 선택된 경우 기본 카드 스타일에 선택 스타일을 병합합니다.
     const cardStyle = selected
       ? [styles.selectItemCard, styles.selectedItemCard]
       : styles.selectItemCard;
 
-    // 선택된 상품 UI
     if (selected) {
       const computedPrice = selected.quantity * parseFloat(selected.입고단가);
       return (
         <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
-          <View testID="cardContent" style={styles.cardContent}>
-            {/* 첫번째 행: 제품 정보 및 취소 버튼 */}
-            <View testID="selectedItemRowContainer" style={styles.selectedItemRowContainer}>
-              <Text testID="selectItemName" style={styles.selectItemName}>
-                {product.품목명}
-              </Text>
-              <Text testID="price_unit_Text" style={styles.price_unit_Text}>
-                {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
-              </Text>
-              <TouchableOpacity
-                testID="orderButton"
-                style={[styles.orderButton, { borderColor: '#ef4444' }]}
-                onPress={() => removeItem(product.품목_id)}
-              >
-                <Text testID="orderButtonText" style={[styles.orderButtonText, { color: '#ef4444' }]}>
-                  취소
+          <View testID="cardContent" style={[styles.cardContent, { position: 'relative' }]}>
+            {/* 상품 정보 고정 영역 */}
+            <View testID="productInfoContainer" style={styles.productInfoContainer}>
+              <View testID="selectedItemRowContainer" style={styles.selectedItemRowContainer}>
+                <Text testID="selectItemName" style={styles.selectItemName}>
+                  {product.품목명}
                 </Text>
-              </TouchableOpacity>
+                <Text testID="price_unit_Text" style={styles.price_unit_Text}>
+                  {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
+                </Text>
+                <TouchableOpacity
+                  testID="orderButton"
+                  style={[styles.orderButton, { borderColor: '#ef4444' }]}
+                  onPress={() => removeItem(product.품목_id)}
+                >
+                  <Text testID="orderButtonText" style={[styles.orderButtonText, { color: '#ef4444' }]}>
+                    취소
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            {/* selectItemCardFooter_selected 내부 */}
-            <View testID="selectItemCardFooter_selected" style={styles.selectItemCardFooter_selected}>
-              {/* 첫 번째 행: 합계 금액과 출고 단위 */}
-              <View
-                testID="Row1"
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                }}
-              >
-                <Text testID="priceText" style={styles.priceText}>
-                  합계 금액: {f.formatPrice(computedPrice)}원
-                </Text>
-                <Text testID="unitText" style={styles.unitText}>
-                  출고단위: {f.formatPrice(product.출고단위)}{product.단위}
-                </Text>
-              </View>
-
-              {/* 두 번째 행: quantityControlContainer가 오른쪽 끝에 위치 */}
-              <View testID= 'name'style={{ marginTop: moderateScale(8), alignItems: 'flex-end', marginLeft: 'auto'}}>
-                <View testID="quantityControlContainer" style={styles.quantityControlContainer}>
-                  <TouchableOpacity
-                    testID="decrementButton"
-                    style={[
-                      styles.quantityButton,
-                      selected.quantity <= product.출고단위 && styles.disabledButton,
-                    ]}
-                    onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
-                    disabled={selected.quantity <= product.출고단위}
-                  >
-                    <Minus testID="마이너스" color="#333" size={20} />
-                  </TouchableOpacity>
-                  <TextInput
-                    testID="quantityInput"
-                    style={styles.quantityText}
-                    value={selected.customQuantity}
-                    keyboardType="numeric"
-                    onChangeText={text => updateCustomQuantity(product.품목_id, text)}
-                  />
-                  <TouchableOpacity
-                    testID="incrementButton"
-                    style={styles.quantityButton}
-                    onPress={() => updateQuantity(product.품목_id, product.출고단위)}
-                  >
-                    <Plus color="#333" size={20} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* 에러 메시지가 있을 경우 */}
-              {selected.error && (
-                <View style={styles.errorContainer}>
-                  <Text testID="errorText" style={styles.errorText}>
-                    {selected.error}
+      
+            {/* 추가 영역: 선택 시 확장되어 아래쪽으로 추가 (상품 정보에는 영향 없음) */}
+            {selected && (
+              <View testID="additionalRow" style={styles.additionalRowContainer}>
+                {/* Row1: 합계 금액과 출고 단위 */}
+                <View
+                  testID="Row1"
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                    marginTop: moderateScale(4),
+                  }}
+                >
+                  <Text testID="priceText" style={styles.priceText}>
+                    합계 금액: {f.formatPrice(computedPrice)}원
+                  </Text>
+                  <Text testID="unitText" style={styles.unitText}>
+                    출고단위: {f.formatPrice(product.출고단위)}{product.단위}
                   </Text>
                 </View>
-              )}
-            </View>
+                {/* Row2: 수량 조절 컨트롤 (오른쪽 정렬) */}
+                <View
+                  testID="Row2"
+                  style={{
+                    marginTop: moderateScale(8),
+                    alignItems: 'flex-end',
+                  }}
+                >
+                  <View testID="quantityControlContainer" style={styles.quantityControlContainer}>
+                    <TouchableOpacity
+                      testID="decrementButton"
+                      style={[
+                        styles.quantityButton,
+                        selected.quantity <= product.출고단위 && styles.disabledButton,
+                      ]}
+                      onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
+                      disabled={selected.quantity <= product.출고단위}
+                    >
+                      <Minus testID="마이너스" color="#333" size={20} />
+                    </TouchableOpacity>
+                    <TextInput
+                      testID="quantityInput"
+                      style={styles.quantityText}
+                      value={selected.customQuantity}
+                      keyboardType="numeric"
+                      onChangeText={text => updateCustomQuantity(product.품목_id, text)}
+                    />
+                    <TouchableOpacity
+                      testID="incrementButton"
+                      style={styles.quantityButton}
+                      onPress={() => updateQuantity(product.품목_id, product.출고단위)}
+                    >
+                      <Plus color="#333" size={20} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            )}
           </View>
+          {selected.error && (
+            <View testID="errorContainer" style={styles.errorContainer}>
+              <Text
+                testID="errorText"
+                style={styles.errorText}
+                numberOfLines={1}
+              >
+                {selected.error}
+              </Text>
+            </View>
+          )}
         </View>
       );
-    }
-    // 선택되지 않은 상품 UI
-    else {
+    } else {
       return (
         <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
           <View style={styles.cardContent}>
-            {/* 첫번째 행: 제품 정보 및 선택 버튼 */}
             <View testID="selectItemRowContainer" style={styles.selectItemRowContainer}>
               <Text testID="selectItemName" style={styles.selectItemName}>
                 {product.품목명}
@@ -243,7 +250,9 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     return (
       <View testID="loading_Container" style={styles.loading_Container}>
         <ActivityIndicator size="large" color="#0D326F80" />
-        <Text testID="loading_Text" style={styles.loading_Text}>로딩 중...</Text>
+        <Text testID="loading_Text" style={styles.loading_Text}>
+          로딩 중...
+        </Text>
       </View>
     );
   }
@@ -267,9 +276,10 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           >
             {/* 고정 헤더 영역 */}
             <View testID="fixedHeaderContainer" style={styles.fixedHeaderContainer}>
-              {/* 카테고리 영역 */}
               <View testID="categorySection" style={styles.categorySection}>
-                <Text testID="sectionTitle" style={styles.sectionTitle}>상품 유형 선택</Text>
+                <Text testID="sectionTitle" style={styles.sectionTitle}>
+                  상품 유형 선택
+                </Text>
                 <ScrollView
                   testID="categoryList"
                   horizontal
@@ -322,12 +332,17 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   ))}
                 </ScrollView>
               </View>
-              {/* sectionTitle와 headerContainer */}
               <View testID="sectionContainer" style={styles.sectionContainer}>
-                <Text testID="sectionTitle" style={styles.sectionTitle}>상품 선택하기</Text>
+                <Text testID="sectionTitle" style={styles.sectionTitle}>
+                  상품 선택하기
+                </Text>
                 <View testID="headerContainer" style={styles.headerContainer}>
-                  <Text testID="item_headerText" style={styles.item_headerText}>상품명</Text>
-                  <Text testID="price_headerText" style={styles.price_headerText}>가격</Text>
+                  <Text testID="item_headerText" style={styles.item_headerText}>
+                    상품명
+                  </Text>
+                  <Text testID="price_headerText" style={styles.price_headerText}>
+                    가격
+                  </Text>
                   <Text testID="여백" style={{ width: '10%' }}></Text>
                 </View>
               </View>
@@ -355,14 +370,19 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               onPress={handleConfirmOrder}
               disabled={selectedItems.length === 0}
             >
-              <Text testID="footerButtonText" style={styles.footerButtonText}>발주확인</Text>
+              <Text testID="footerButtonText" style={styles.footerButtonText}>
+                발주확인
+              </Text>
             </TouchableOpacity>
           </View>
         </>
       ) : (
         <ScrollView testID="container" style={{ flex: 1, backgroundColor: '#fff' }}>
           <View testID="confirm_selectedItemsSection" style={styles.confirm_selectedItemsSection}>
-            <Text testID="confirm_sectionTitle" style={[styles.confirm_sectionTitle, { textAlign: 'center' }]}>
+            <Text
+              testID="confirm_sectionTitle"
+              style={[styles.confirm_sectionTitle, { textAlign: 'center' }]}
+            >
               선택한 상품 확인
             </Text>
             {selectedItems.map((item) => {
@@ -374,7 +394,8 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       {item.품목명}
                     </Text>
                     <Text testID="confirm_unitText" style={styles.confirm_unitText}>
-                      수량: {item.quantity}{item.단위} (출고단위: {item.출고단위})
+                      수량: {item.quantity}
+                      {item.단위} (출고단위: {item.출고단위})
                     </Text>
                   </View>
                   <View style={{ flex: 1, alignItems: 'flex-end' }}>
@@ -386,7 +407,9 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               );
             })}
             <View testID="totalRow" style={styles.totalRow}>
-              <Text testID="totalText" style={styles.totalText}>총합계:</Text>
+              <Text testID="totalText" style={styles.totalText}>
+                총합계:
+              </Text>
               <Text testID="totalText" style={styles.totalText}>
                 {f.formatPrice(totalPrice)}원
               </Text>
@@ -420,7 +443,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
         </ScrollView>
       )}
 
-      {/* 모달들 */}
+      {/* 모달 영역 */}
       <Modal
         visible={modalVisible}
         transparent
@@ -429,7 +452,9 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       >
         <View testID="centeredView" style={modalStyles.centeredView}>
           <View testID="modalView" style={modalStyles.modalView}>
-            <Text testID="modalTitle" style={modalStyles.modalTitle}>발주 오류</Text>
+            <Text testID="modalTitle" style={modalStyles.modalTitle}>
+              발주 오류
+            </Text>
             {errorMessages.map((msg, idx) => (
               <Text key={idx} testID="modalText" style={modalStyles.modalText}>
                 {msg}
@@ -440,7 +465,9 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               style={modalStyles.closeButton}
               onPress={() => setModalVisible(false)}
             >
-              <Text testID="textStyle" style={modalStyles.textStyle}>확인</Text>
+              <Text testID="textStyle" style={modalStyles.textStyle}>
+                확인
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -454,7 +481,9 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       >
         <View testID="centeredView" style={modalStyles.centeredView}>
           <View testID="modalView" style={modalStyles.modalView}>
-            <Text testID="modalTitle" style={modalStyles.modalTitle}>발주 완료</Text>
+            <Text testID="modalTitle" style={modalStyles.modalTitle}>
+              발주 완료
+            </Text>
             <Text testID="modalText" style={modalStyles.modalText}>
               모든 발주 요청이 성공적으로 전송되었습니다.
             </Text>
@@ -466,7 +495,9 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 onOrderComplete();
               }}
             >
-              <Text testID="textStyle" style={modalStyles.textStyle}>확인</Text>
+              <Text testID="textStyle" style={modalStyles.textStyle}>
+                확인
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -480,7 +511,9 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       >
         <View testID="centeredView" style={modalStyles.centeredView}>
           <View testID="modalView" style={modalStyles.modalView}>
-            <Text testID="modalTitle" style={modalStyles.modalTitle}>발주 실패</Text>
+            <Text testID="modalTitle" style={modalStyles.modalTitle}>
+              발주 실패
+            </Text>
             {orderFailureMessages.map((msg, idx) => (
               <Text key={idx} testID="modalText" style={modalStyles.modalText}>
                 {msg}
@@ -491,7 +524,9 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               style={modalStyles.closeButton}
               onPress={() => setOrderFailureModalVisible(false)}
             >
-              <Text testID="textStyle" style={modalStyles.textStyle}>확인</Text>
+              <Text testID="textStyle" style={modalStyles.textStyle}>
+                확인
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

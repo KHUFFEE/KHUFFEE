@@ -6,6 +6,7 @@ const { height: screenHeight } = Dimensions.get('window');
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { RFValue } from 'react-native-responsive-fontsize';
+import { relative } from 'path';
 
 /** 스타일들 */
 export const styles = StyleSheet.create({
@@ -193,11 +194,14 @@ export const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   unitText: {
-    width: '100%',
+    // width: '100%',
     fontSize: RFValue(12),
     color: '#555555',
     fontWeight: '500',
-    textAlign: 'center',
+    textAlign: 'left',
+    position: 'relative',
+    width: wp(30),
+    right: wp(5),
   },
   price_unit_Text: {
     width: '20%',
@@ -224,7 +228,8 @@ export const styles = StyleSheet.create({
     fontSize: RFValue(14),
     fontWeight: '600',
     color: '#0D326F',
-    width: '100%'
+    position: 'relative',
+    left: wp(0.5)
   },
   orderButton: {
     width: '10%',
@@ -438,6 +443,7 @@ export const styles = StyleSheet.create({
   cardContent: {
     flexDirection: 'column',
     width: '100%',
+    // height: hp(3)
   },
   selectItemRowContainer: {
     flexDirection: 'row',
@@ -452,6 +458,7 @@ export const styles = StyleSheet.create({
     gap: moderateScale(2),
     paddingRight: moderateScale(6),
     paddingLeft: moderateScale(2),
+    marginTop: moderateScale(20)
   },
   selectItemCardFooter: {
     flexDirection: 'row',
@@ -465,13 +472,21 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingLeft: moderateScale(2),
+    // top: moderateScale(500)
   },
   actionsContainer_selected: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
-
+  additionalRowContainer: {
+    // paddingTop: moderateScale(5)
+    // 추가로 내부 요소들의 간격은 개별 스타일에서 조절
+  },
+  productInfoContainer: {
+    height: hp(5), // 기존 카드 높이와 동일하게 설정 (필요 시 조정)
+    justifyContent: 'center',
+  },
   /**********
    * 액션 버튼 영역 관련 스타일
    **********/
@@ -489,6 +504,9 @@ export const styles = StyleSheet.create({
     borderRadius: moderateScale(8),
     overflow: 'hidden',
     marginRight: moderateScale(8),
+    position: 'relative',    // 위치 조정을 위해 추가
+    bottom: moderateScale(8),   // 원하는 만큼 아래로 이동 (예: moderateScale(4))
+    left: moderateScale(5),
   },
   quantityButton: {
     minWidth: wp('10'), // 최소 너비 설정,
@@ -505,8 +523,9 @@ export const styles = StyleSheet.create({
     // height: '100%',
     // maxWidth: wp(17)
     flexGrow: 1,
-    minWidth: moderateScale(30),         // 한 글자일 때 최소 넓이
-    maxWidth: moderateScale(50),          // 글자가 늘어나도 최대 넓이 제한
+    minWidth: moderateScale(20),         // 한 글자일 때 최소 넓이
+    maxWidth: moderateScale(60),          // 글자가 늘어나도 최대 넓이 제한
+    height: moderateScale(40), // 고정 높이 설정
   },
   deleteButton: {
     width: '10%',
@@ -536,14 +555,21 @@ export const styles = StyleSheet.create({
     marginTop: hp('0.8%'),
     backgroundColor: '#fdecea',
     borderRadius: moderateScale(4),
-    paddingHorizontal: moderateScale(10),
     paddingVertical: moderateScale(5),
+    position: 'absolute', // 필요에 따라 absolute 사용
+    // 비율 기반으로 left/right 지정
+    left: wp('1'),
+    top: hp('7.5'),
     alignItems: 'center',
     justifyContent: 'center',
+    
   },
   errorText: {
     color: '#d32f2f',
-    fontSize: RFValue(13),
+    fontSize: RFValue(11),
+    flexShrink: 1,
+    // flexWrap: 'nowrap',
+    textAlign: 'left',
   },
   priceContainer: {
     flex: 1,

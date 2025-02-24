@@ -1,9 +1,12 @@
+// C:\Users\usert\Desktop\KHUFFEE\frontend\khuapp\src\components\ui\common\commonstyler.ts
+
 // 수정해야함
-import { Platform,TextInput, StyleSheet, Dimensions } from 'react-native';
+import { Platform, TextInput, StyleSheet, Dimensions } from 'react-native';
 const { height: screenHeight } = Dimensions.get('window');
-import { scale,verticalScale,moderateScale } from 'react-native-size-matters';
+import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { RFValue } from "react-native-responsive-fontsize"
+import { RFValue } from 'react-native-responsive-fontsize';
+
 /** 스타일들 */
 export const styles = StyleSheet.create({
 
@@ -90,8 +93,6 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-
-
   //main.tsx 시작 
   //상단 바 관련
   head_Container: {
@@ -167,24 +168,24 @@ export const styles = StyleSheet.create({
 
   // OrderRequest.tsx 관련 스타일
   selectItemCard: {
-    paddingVertical: moderateScale(12),
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd',
     flexDirection: 'row',
-    // flexGrow: 1,
     alignItems: 'center',
-    // justifyContent: 'space-between',
     marginBottom: moderateScale(1),
-    height:hp(15),
+    height: hp(5),
+  },
+  selectedItemCard: {
+    height: hp(13),
   },
   selectItemInfo: {
     marginBottom: 8,
   },
   selectItemName: {
-    width: '60%',
+    width: '70%',
     fontSize: RFValue(14),
-    fontWeight: '600',
+    fontWeight: '500',
     marginBottom: 2,
     borderRightWidth: 1,
     borderRightColor: '#ddd',
@@ -192,22 +193,19 @@ export const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   unitText: {
-    width: '20%',
-    fontSize: RFValue(14),
-    color: 'black',
+    width: '100%',
+    fontSize: RFValue(12),
+    color: '#555555',
     fontWeight: '500',
-    borderRightWidth: 1,
-    borderRightColor: '#ddd',
-    paddingLeft: moderateScale(5),
-  
+    textAlign: 'center',
   },
   price_unit_Text: {
     width: '20%',
     fontSize: RFValue(14),
     fontWeight: '600',
     color: '#1e7e34',
-    textAlign: 'center',
-    letterSpacing: -0.5, // 음수 값을 주면 글자 간격이 줄어듭니다.
+    textAlign: 'left',
+    letterSpacing: -0.5,
   },
   columnCenteredView: {
     width: '30%',
@@ -222,38 +220,14 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 6,
   },
-  quantityButton: {
-    width: 28,
-    height: 28,
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 2,
-  },
-  quantityInput: {
-    width: 40,
-    height: 28,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    textAlign: 'center',
-    borderRadius: 4,
-    marginHorizontal: 2,
-    fontSize: RFValue(14),
-    padding: 0,
-  },
   priceText: {
     fontSize: RFValue(14),
     fontWeight: '600',
     color: '#0D326F',
-  },
-  errorText: {
-    color: 'red',
-    fontSize: RFValue(13),
-    marginTop: 4,
+    width: '100%'
   },
   orderButton: {
-    width: '15%',
+    width: '10%',
     minWidth: moderateScale(30),
     height: '30%',
     minHeight: verticalScale(30),
@@ -262,12 +236,11 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderColor: '#0D326F',
-    borderWidth: 3,
-    marginLeft: moderateScale(10),
+    borderWidth: moderateScale(2),
   },
   orderButtonText: {
     color: '#0D326F',
-    fontSize: RFValue(15),
+    fontSize: RFValue(12),
     fontWeight: 'bold',
     textAlign: 'center',
     textAlignVertical: 'center',
@@ -290,7 +263,6 @@ export const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 4,
   },
   headerContainer: {
     backgroundColor: '#cf8888',
@@ -301,18 +273,15 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    // justifyContent: 'space-between',
     paddingHorizontal: moderateScale(12),
     paddingVertical: moderateScale(8),
   },
   item_headerText: {
-    width: '60%',
+    width: '70%',
     fontSize: RFValue(14),
     fontWeight: 'bold',
     color: 'black',
     textAlign: 'left',
-    borderRightWidth: 1,
-    borderRightColor: '#ddd',
   },
   unit_headerText: {
     width: '20%',
@@ -322,35 +291,31 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     borderRightWidth: 1,
     borderRightColor: '#ddd',
-
   },
   price_headerText: {
     width: '20%',
     fontSize: RFValue(14),
     fontWeight: 'bold',
     color: 'black',
-    textAlign: 'center',
-    
-    // borderRightWidth: 1,
-    // borderRightColor: '#ddd',
+    textAlign: 'left',
+    marginLeft: moderateScale(15),
   },
 
   listContainer: {
-    marginTop: 1,
-    marginBottom: 0, // 수정됨: 마지막 아이템이 footer 위에 보이도록 추가
+    marginTop: moderateScale(1),
+    marginBottom: moderateScale(0),
   },
-  // 수정됨: scrollContainer 스타일 변경
   scrollContainer: {
-    flexGrow: 1,           // height 대신 flexGrow 사용하여 내용 확장
-    paddingHorizontal: 10,
-    paddingBottom: 100,    // footer 높이를 고려한 여백 추가
+    flexGrow: 1,
+    paddingHorizontal: moderateScale(10),
+    paddingBottom: moderateScale(0),
     backgroundColor: '#fff',
   },
   fixedHeaderContainer: {
     backgroundColor: '#fff',
-    paddingVertical: moderateScale(10),
+    paddingTop: moderateScale(5),
     paddingRight: moderateScale(-5),
-    paddingBottom: moderateScale(-5),
+    paddingBottom: moderateScale(-8),
     zIndex: moderateScale(10),
   },
   scrollContainerWithHeader: {
@@ -360,11 +325,12 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   categorySection: {
-    paddingTop: 10,
+    
   },
   categoryList: {
     paddingRight: moderateScale(100),
-    paddingLeft: moderateScale(10),
+    paddingLeft: moderateScale(5),
+    marginBottom: moderateScale(5),
     flexDirection: 'row',
   },
   categoryButton: {
@@ -373,7 +339,6 @@ export const styles = StyleSheet.create({
         alignSelf: 'flex-start',
       },
       default: {
-        // 기존 flex: 1, flexBasis: 0 제거
       },
     }),
     marginHorizontal: scale(2),
@@ -383,8 +348,8 @@ export const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderColor: '#B5B5B5',
     borderWidth: scale(1),
-    alignItems: 'center', // 텍스트를 수평 중앙 정렬
-    justifyContent: 'center', // 텍스트를 수직 중앙 정렬
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   categoryButtonActive: {
     borderColor: '#0D326F',
@@ -402,11 +367,11 @@ export const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: RFValue(20),
+    fontSize: RFValue(16),
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: moderateScale(5),
     right: 15,
-    paddingHorizontal: 16,
+    paddingHorizontal: moderateScale(16),
     width: '100%',
   },
   footerContainer: {
@@ -416,12 +381,8 @@ export const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
     backgroundColor: '#fff',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    paddingHorizontal: moderateScale(16),
+    height: hp(9.2),
   },
   footerPriceText: {
     color: '#A40F16',
@@ -482,11 +443,16 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: moderateScale(2),
-    // justifyContent: 'space-between',
-    paddingHorizontal: moderateScale(12),
-    paddingVertical: moderateScale(8),
+    paddingRight: moderateScale(6),
+    paddingLeft: moderateScale(2),
   },
-
+  selectedItemRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: moderateScale(2),
+    paddingRight: moderateScale(6),
+    paddingLeft: moderateScale(2),
+  },
   selectItemCardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -494,13 +460,11 @@ export const styles = StyleSheet.create({
     paddingRight: moderateScale(15),
     paddingTop: moderateScale(8),
   },
-
-  //선택 될 때 2번째 행 정의
   selectItemCardFooter_selected: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: moderateScale(12),
+    paddingLeft: moderateScale(2),
   },
   actionsContainer_selected: {
     flex: 1,
@@ -508,22 +472,87 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-
-  actionButtonsContainer: {
+  /**********
+   * 액션 버튼 영역 관련 스타일
+   **********/
+  // 삭제 버튼이 왼쪽에 위치하도록 하기 위해, buttonsRow의 flexDirection을 'row-reverse'로 설정합니다.
+  buttonsRow: {
+    flexDirection: 'column',  // 기존 'row' 대신 'row-reverse'를 사용하여 삭제 버튼이 왼쪽에 오도록 함
+    alignItems: 'center',
+    marginBottom: moderateScale(4),
+  },
+  quantityControlContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    // justifyContent: 'space-between', // 필요에 따라 'flex-start' 또는 'center'로 조정 가능
-    marginTop: moderateScale(8),
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: moderateScale(8),
+    overflow: 'hidden',
+    marginRight: moderateScale(8),
+  },
+  quantityButton: {
+    minWidth: wp('10'), // 최소 너비 설정,
+    height: hp('5'),
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+
+  quantityText: {
+    fontSize: moderateScale(15),
+    textAlign: 'center',
+    color: '#333',
+    // height: '100%',
+    // maxWidth: wp(17)
+    flexGrow: 1,
+    minWidth: moderateScale(30),         // 한 글자일 때 최소 넓이
+    maxWidth: moderateScale(50),          // 글자가 늘어나도 최대 넓이 제한
+  },
+  deleteButton: {
+    width: '10%',
+    minWidth: moderateScale(30),
+    height: '30%',
+    minHeight: verticalScale(30),
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderColor: '#ef4444',
+    borderWidth: 3,
+  },
+  deleteButtonText: {
+    color: '#0D326F',
+    fontSize: RFValue(12),
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+  },
+  disabledButton: {
+    opacity: 0.3,
+  },
+
+  /** 에러 메시지 영역 **/
+  errorContainer: {
+    marginTop: hp('0.8%'),
+    backgroundColor: '#fdecea',
+    borderRadius: moderateScale(4),
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: moderateScale(5),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorText: {
+    color: '#d32f2f',
+    fontSize: RFValue(13),
   },
   priceContainer: {
     flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'column',
+    paddingBottom: moderateScale(40)
   },
 
   // 선택한 상품 확인 css 
-
   confirm_selectedItemsSection: {
-
     paddingVertical: 16,
     paddingHorizontal: 16,
   },
@@ -531,7 +560,7 @@ export const styles = StyleSheet.create({
     fontSize: RFValue(20),
     fontWeight: 'bold',
     marginBottom: 5,
-    width: '100%'
+    width: '100%',
   },
   confirmationItemRow: {
     flexDirection: 'row',
@@ -540,22 +569,20 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderColor: '#ccc',
-    width: `100%`,
+    width: '100%',
   },
-  confirm_selectItemName: {   // 상품명 셀
+  confirm_selectItemName: {
     flex: 3,
     fontSize: RFValue(16),
     fontWeight: '600',
     marginBottom: 2,
     width: '100%',
-
-  },  
-  confirm_unitText: {         // 출고단위 셀
+  },
+  confirm_unitText: {
     flex: 0.7,
     fontSize: RFValue(14),
     color: 'black',
-    fontWeight: '500', 
- 
+    fontWeight: '500',
   },
   confirm_priceText: {
     fontSize: RFValue(14),
@@ -576,12 +603,6 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-
-
-
-
-
-
   container: {
     flex: 1,
     padding: 20,
@@ -590,9 +611,10 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: RFValue(24),
+    fontSize: RFValue(16),
     fontWeight: 'bold',
     marginBottom: 10,
+    paddingHorizontal: moderateScale(16),
   },
   filterContainer: {
     flexDirection: 'row',
@@ -618,7 +640,9 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    paddingVertical: 10,
+    paddingTop: moderateScale(5),
+    paddingRight: moderateScale(-5),
+    paddingBottom: moderateScale(-8),
   },
   titleContainer: {
     flexDirection: 'row',
@@ -718,11 +742,11 @@ export const styles = StyleSheet.create({
   },
   loadMoreButton: {
     alignSelf: 'center',
-    marginVertical: 10,
+    marginVertical: moderateScale(10),
     backgroundColor: '#0D326F',
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: moderateScale(10),
+    paddingHorizontal: moderateScale(20),
   },
   loadMoreButtonLoading: {
     backgroundColor: 'transparent',
@@ -794,15 +818,16 @@ export const styles = StyleSheet.create({
 
   status_container: {
     flex: 1,
-    // paddingVertical: moderateScale(10),
-    paddingHorizontal:moderateScale(6),
+    width: '100%',
+    alignItems: 'stretch',
     justifyContent: 'flex-start',
-    alignItems: 'center',
     backgroundColor: '#fff',
+    paddingHorizontal: moderateScale(10),
   },
 
-  flatlist:{
-    height:verticalScale(80)
+  flatlist: {
+    height: verticalScale(80),
+    width: wp('%'),
   }
 });
 
@@ -878,11 +903,11 @@ export const orderStatusStyles = StyleSheet.create({
   },
   actionButton: {
     backgroundColor: 'white',
-    borderColor: "#0D326F",
+    borderColor: '#0D326F',
     borderWidth: 2,
     borderRadius: 6,
-    width:90,
-    height:35,
+    width: wp(20),
+    height: hp(5),
     marginLeft: 10,
     justifyContent: 'center',  // // 수직 중앙 정렬 (flexDirection: 'column'인 경우)
     alignItems: 'center',
@@ -891,7 +916,12 @@ export const orderStatusStyles = StyleSheet.create({
     color: '#0D326F',
     fontSize: RFValue(14),
     fontWeight: 'bold',
+    textAlign: 'center',
+    textAlignVertical: 'center',
   },
+  flatlist: {
+    height: hp(80),
+  }
 });
 
 export const receiptStyles = StyleSheet.create({
@@ -955,6 +985,7 @@ export const receiptStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 export const inventoryStyles = StyleSheet.create({
   container: {
     flex: 1,
@@ -962,7 +993,7 @@ export const inventoryStyles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: RFValue(24),
+    fontSize: RFValue(16),
     fontWeight: 'bold',
     marginBottom: 15,
     color: '#0D326F',
@@ -972,13 +1003,12 @@ export const inventoryStyles = StyleSheet.create({
     borderBottomColor: '#ccc',
     flexDirection: 'row',
     alignItems: 'center',
-    
   },
   itemText: {
     fontSize: RFValue(16),
     marginBottom: 4,
     color: '#333',
-    width: wp(4)
+    width: wp(4),
   },
   name_itemText: {
     fontSize: RFValue(16),
@@ -988,7 +1018,7 @@ export const inventoryStyles = StyleSheet.create({
   unit_itemText: {
     fontSize: RFValue(16),
     color: '#333',
-    width: scale(100)
+    width: scale(100),
   },
   message: {
     fontSize: RFValue(16),
@@ -1002,24 +1032,20 @@ export const inventoryStyles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 10,
   },
-    itemsContainer: {
+  itemsContainer: {
     flex: 1,   //웹에서 스크롤 되게함 
     marginBottom: 10,
-    // borderBlockColor:'#ccc',
-    // borderWidth: 1,
   },
-    term_of_name: {
-      fontSize: RFValue(16),
-      fontWeight: 'bold',
-      marginBottom: moderateScale(5)
-      // borderBlockColor:'#ccc',
-      // borderWidth: 1,
+  term_of_name: {
+    fontSize: RFValue(16),
+    fontWeight: 'bold',
+    marginBottom: moderateScale(5),
   },
-  flat_inventory:{
+  flat_inventory: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 4,
-    width: '100%'
+    width: '100%',
   },
   inventory_HeaderContainer: {
     backgroundColor: '#cf8888',
@@ -1027,9 +1053,9 @@ export const inventoryStyles = StyleSheet.create({
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
     width: '100%',
+    height: '7%',
     flexDirection: 'row',
     alignItems: 'center',
-    // justifyContent: 'space-between',
     paddingHorizontal: moderateScale(12),
     paddingVertical: moderateScale(8),
   },
@@ -1050,8 +1076,5 @@ export const inventoryStyles = StyleSheet.create({
     textAlign: 'center',
     borderRightWidth: 1,
     borderRightColor: '#ddd',
-
   },
 });
-
-

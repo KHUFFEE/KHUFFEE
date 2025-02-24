@@ -56,9 +56,8 @@ class StoreMonthEndInventoryListView(APIView):
         if store_id:
             inventory_queryset = inventory_queryset.filter(매장_id=store_id)
         
-        # 월말_재고량이 0인 재고는 제외
-        inventory_queryset = inventory_queryset.exclude(월말_재고량=0)
-        
+        # 기존: 월말_재고량이 0인 재고는 제외 -> 제거
+
         # 매장_id만 따로 조회할 경우 (store_only 파라미터가 true)
         store_only = request.GET.get('store_only', '').lower()
         if store_only == 'true':
@@ -260,38 +259,21 @@ class StoreMonthEndInventoryUpdateView(APIView):
         # 기존 월말 재고 조회 (id 필드 참조 없이 filter 사용)
         qs = StoreMonthEndInventory.objects.filter(매장_id=store_obj, 품목_id=item_obj, 기간=period)
         if qs.exists():
-            if new_value == Decimal("0.00"):
-                qs.delete()
-                return Response({
-                    "매장_id": store_obj.pk,
-                    "품목_id": item_obj.pk,
-                    "기간": period,
-                    "월말_재고량": "0.00"
-                }, status=status.HTTP_200_OK)
-            else:
-                qs.update(월말_재고량=new_value)
-                updated_record = qs.order_by("매장_id", "품목_id", "기간") \
-                                   .values("매장_id", "품목_id", "기간", "월말_재고량") \
-                                   .first()
-                return Response(updated_record, status=status.HTTP_200_OK)
+            qs.update(월말_재고량=new_value)
+            updated_record = qs.order_by("매장_id", "품목_id", "기간") \
+                               .values("매장_id", "품목_id", "기간", "월말_재고량") \
+                               .first()
+            return Response(updated_record, status=status.HTTP_200_OK)
         else:
-            if new_value == Decimal("0.00"):
-                return Response({
-                    "매장_id": store_obj.pk,
-                    "품목_id": item_obj.pk,
-                    "기간": period,
-                    "월말_재고량": "0.00"
-                }, status=status.HTTP_200_OK)
-            else:
-                StoreMonthEndInventory.objects.create(
-                    매장_id=store_obj,
-                    품목_id=item_obj,
-                    기간=period,
-                    월말_재고량=new_value
-                )
-                return Response({
-                    "매장_id": store_obj.pk,
-                    "품목_id": item_obj.pk,
-                    "기간": period,
-                    "월말_재고량": new_value
-                }, status=status.HTTP_201_CREATED)
+            StoreMonthEndInventory.objects.create(
+                매장_id=store_obj,
+                품목_id=item_obj,
+                기간=period,
+                월말_재고량=new_value
+            )
+            return Response({
+                "매장_id": store_obj.pk,
+                "품목_id": item_obj.pk,
+                "기간": period,
+                "월말_재고량": new_value
+            }, status=status.HTTP_201_CREATED)

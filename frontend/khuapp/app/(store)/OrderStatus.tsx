@@ -243,7 +243,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
       {/* 전체 상단 헤더: 로딩 중이거나 주문 내역이 없으면 숨김 */}
       {!loading && sortedYears.length > 0 && (
         <View testID="headerRow" style={styles.headerRow}>
-          <View testID="titleContainer" style={styles.titleContainer}>
+          <View testID="titleContainer" style={styles.sectionTitle}>
             <Text testID="title" style={[styles.title, { textAlign: 'center' }]}>
               발주 내역
             </Text>
@@ -276,7 +276,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         <Text>아직 발주 내역이 없습니다.</Text>
       ) : (
         <FlatList
-          testID="flatlist"  style={styles.flatlist}
+          testID="flatlist"  style={orderStatusStyles.flatlist}
           data={sortedYears}
           keyExtractor={(year) => year.toString()}
           renderItem={({ item: year }) => {
@@ -342,19 +342,20 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                     외 {extraCount}개
                                   </Text>
                                 )}
-                                <Text style={[orderStatusStyles.quantity, { marginTop: 'auto' }]}>
+                                <Text testID="quantity"style={[orderStatusStyles.quantity, { marginTop: 'auto' }]}>
                                   발주수량: {f.formatPrice(firstOrder.매장_발주량)}
                                 </Text>
                               </View>
                               <TouchableOpacity
+                                testID='actionButton'
                                 style={[
                                   orderStatusStyles.actionButton,
                                   { alignSelf: 'flex-end', marginLeft: 12 },
                                 ]}
                                 onPress={() => openDetailModal(`${year}.${month}.${week}`, orders)}
                               >
-                                <Text style={orderStatusStyles.actionButtonText}>
-                                  주문 상세보기
+                                <Text testID="actionButtonText"style={orderStatusStyles.actionButtonText}>
+                                  주문 상세
                                 </Text>
                               </TouchableOpacity>
                             </View>
@@ -370,6 +371,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           ListFooterComponent={
             !isPeriodSearch && hasMore ? (
               <TouchableOpacity
+                testID='loadMoreButton'
                 style={styles.loadMoreButton}
                 onPress={async () => {
                   await fetchOrders(currentPage, sortOrder);
@@ -380,7 +382,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                 {loading ? (
                   <ActivityIndicator size="small" color="#0D326F" />
                 ) : (
-                  <Text style={styles.loadMoreButtonText}>더 불러오기</Text>
+                  <Text testID ="loadMoreButtonText" style={styles.loadMoreButtonText}>더 불러오기</Text>
                 )}
               </TouchableOpacity>
             ) : null
@@ -395,9 +397,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         animationType="slide"
         onRequestClose={() => setDetailModalVisible(false)}
       >
-        <View style={modalStyles.centeredView}>
-          <View style={[modalStyles.modalView, { maxHeight: '80%' }]}>
-            <ScrollView style={receiptStyles.receiptContainer}>
+        <View testID= "centeredView" style={modalStyles.centeredView}>
+          <View testID= "modalView" style={[modalStyles.modalView, { maxHeight: '80%' }]}>
+            <ScrollView testID="receiptContainer"style={receiptStyles.receiptContainer}>
               <View style={receiptStyles.header}>
                 <Text style={receiptStyles.headerTitle}>주문 상세 내역</Text>
                 <Text style={receiptStyles.headerSubtitle}>{f.formatWeekString(detailGroupDate)}</Text>

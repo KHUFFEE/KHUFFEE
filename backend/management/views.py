@@ -7,6 +7,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import TableStatus
 
+class TableStatusListView(APIView):
+    def get(self, request):
+        # TableStatus의 모든 레코드에서 테이블과 상태 칼럼만 조회
+        statuses = TableStatus.objects.all().values("테이블", "상태")
+        return Response(list(statuses), status=status.HTTP_200_OK)
+
 class TableStatusUpdateView(APIView):
     def post(self, request):
         table_name = request.data.get('테이블')

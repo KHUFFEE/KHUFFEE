@@ -222,7 +222,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     } else {
       return (
         <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
-          <View style={styles.cardContent}>
+          <View testID="cardContent" style={styles.cardContent}>
             <View testID="selectItemRowContainer" style={styles.selectItemRowContainer}>
               <Text testID="selectItemName" style={styles.selectItemName}>
                 {product.품목명}

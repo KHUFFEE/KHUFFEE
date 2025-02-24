@@ -1037,9 +1037,14 @@ export const inventoryStyles = StyleSheet.create({
     width: wp(4),
   },
   name_itemText: {
-    fontSize: RFValue(16),
-    color: '#333',
-    width: scale(250),
+    width: '70%',
+    fontSize: RFValue(14),
+    fontWeight: '500',
+    marginBottom: 2,
+    borderRightWidth: 1,
+    borderRightColor: '#ddd',
+    textAlign: 'left',
+    letterSpacing: -0.5,
   },
   unit_itemText: {
     fontSize: RFValue(16),
@@ -1078,8 +1083,6 @@ export const inventoryStyles = StyleSheet.create({
     gap: moderateScale(2),
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
-    width: '100%',
-    height: '7%',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: moderateScale(12),
@@ -1091,8 +1094,7 @@ export const inventoryStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'black',
     textAlign: 'left',
-    borderRightWidth: 1,
-    borderRightColor: '#ddd',
+
   },
   inventory_unit_headerText: {
     width: '20%',
@@ -1100,7 +1102,6 @@ export const inventoryStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'black',
     textAlign: 'center',
-    borderRightWidth: 1,
-    borderRightColor: '#ddd',
+
   },
 });

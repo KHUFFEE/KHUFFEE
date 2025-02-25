@@ -38,10 +38,9 @@ const Item = () => {
   // 숫자 포맷 함수: 입력값에 쉼표를 추가 (숫자 또는 숫자문자열)
   const formatNumber = (value) => {
     if (value === null || value === undefined || value === "") return "";
-    const num = parseFloat(value.toString().replace(/,/g, ""));
-    if (isNaN(num)) return "";
-    return num.toLocaleString();
-  };
+    const num = Number(value.toString().replace(/,/g, ""));
+    return num.toLocaleString(undefined, { maximumFractionDigits: 6 });
+  };  
 
   // 품목 목록 불러오기
   useEffect(() => {
@@ -134,7 +133,7 @@ const Item = () => {
       const unit = parseFloat(updatedItems[index]["입고단위"]);
       const unitPrice = parseFloat(updatedItems[index]["입고단위단가"]);
       if (!isNaN(unit) && unit !== 0 && !isNaN(unitPrice)) {
-        updatedItems[index]["입고단가"] = (unitPrice / unit).toFixed(2);
+        updatedItems[index]["입고단가"] = (unitPrice / unit).toFixed(6);
       } else {
         updatedItems[index]["입고단가"] = "";
       }
@@ -256,7 +255,7 @@ const Item = () => {
         const unit = parseFloat(updatedItem["입고단위"]);
         const unitPrice = parseFloat(updatedItem["입고단위단가"]);
         if (!isNaN(unit) && unit !== 0 && !isNaN(unitPrice)) {
-          updatedItem["입고단가"] = (unitPrice / unit).toFixed(2);
+          updatedItem["입고단가"] = (unitPrice / unit).toFixed(6);
         } else {
           updatedItem["입고단가"] = "";
         }
@@ -438,6 +437,7 @@ const Item = () => {
         if (ws[cellAddr]) {
           ws[cellAddr].s = ws[cellAddr].s || {};
           ws[cellAddr].s.alignment = { horizontal: "right", vertical: "center" };
+          ws[cellAddr].s.numFmt = "0.000000";
         }
       }
     }

@@ -27,29 +27,28 @@ interface InventoryItemRowProps {
 
 const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ item, editMode, onValueChange }) => {
   return (
-
-      <View testID='itemContainer' style={inventoryStyles.itemContainer}>
-        <View testID="cardContent"style={styles.cardContent}>
-          <View testID='inventory_selectItemRowContainer'style={inventoryStyles.inventory_selectItemRowContainer}>
-            <Text testID='name_itemText' style={inventoryStyles.name_itemText}>
-              {item.품목명}
+    <View testID='itemContainer' style={inventoryStyles.itemContainer}>
+      <View testID="cardContent" style={styles.cardContent}>
+        <View testID='inventory_selectItemRowContainer' style={inventoryStyles.inventory_selectItemRowContainer}>
+          <Text testID='name_itemText' style={inventoryStyles.name_itemText}>
+            {item.품목명}
+          </Text>
+          {editMode ? (
+            <TextInput
+              testID='itemText'
+              style={inventoryStyles.unit_itemText}
+              value={item.매장_재고량.toString()}
+              keyboardType="numeric"
+              onChangeText={(text) => onValueChange(item.품목_id, text)}
+            />
+          ) : (
+            <Text testID='unit_itemText' style={inventoryStyles.unit_itemText}>
+              {f.formatPrice(item.매장_재고량)}
             </Text>
-            {editMode ? (
-              <TextInput
-                testID='itemText'
-                style={inventoryStyles.itemText}
-                value={item.매장_재고량.toString()}
-                keyboardType="numeric"
-                onChangeText={(text) => onValueChange(item.품목_id, text)}
-              />
-            ) : (
-              <Text testID='unit_itemText' style={inventoryStyles.unit_itemText}>
-                {f.formatPrice(item.매장_재고량)}
-              </Text>
-            )}
-          </View>
+          )}
         </View>
       </View>
+    </View>
   );
 };
 
@@ -193,26 +192,15 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
           />
         )}
       />
-      <View testID='몰라' style={{ marginVertical: moderateScale(2) }}>
-        {editMode ? (
-          <TouchableOpacity
-            style={{ backgroundColor: '#0D326F', padding: 10, borderRadius: 4 }}
-            onPress={handleGlobalSave}
-            disabled={saving}
-          >
-            <Text style={{ color: '#fff', textAlign: 'center' }}>
-              {saving ? '저장 중...' : '전체 저장'}
-            </Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={{ backgroundColor: '#0D326F', padding: 10, borderRadius: 4 }}
-            onPress={() => setEditMode(true)}
-          >
-            <Text style={{ color: '#fff', textAlign: 'center' }}>수정</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      <TouchableOpacity
+        style={inventoryStyles.editButton}
+        onPress={editMode ? handleGlobalSave : () => setEditMode(true)}
+        disabled={saving}
+      >
+        <Text style={inventoryStyles.editButtonText}>
+          {editMode ? (saving ? '저장 중...' : '전체 저장') : '수정'}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };

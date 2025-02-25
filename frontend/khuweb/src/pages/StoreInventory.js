@@ -51,56 +51,56 @@ const StoreInventory = () => {
     }
   };
 
-  // 기간 옵션 생성: 백엔드의 range=first_last 기능을 활용하여 최신/최소 기간만 받아오고, 
-  // 두 기간 사이의 모든 년월(YYYY.MM)을 내림차순으로 생성
-  useEffect(() => {
-    const fetchAllPeriods = async () => {
-      try {
-        // range=first_last 를 직접 호출하여 earliest_period와 latest_period만 가져옴
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/inventory/store/?range=first_last`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch period range");
-        }
-        const periodData = await response.json();
-        if (!periodData.earliest_period || !periodData.latest_period) return;
-        // 파싱 함수 (문자열 "YYYY.MM.DD" → Date 객체)
-        const parsePeriod = (str) => {
-          const parts = str.split(".");
-          return new Date(
-            parseInt(parts[0], 10),
-            parseInt(parts[1], 10) - 1,
-            parseInt(parts[2], 10)
-          );
-        };
-        const minDate = parsePeriod(periodData.earliest_period);
-        const maxDate = parsePeriod(periodData.latest_period);
-        let current = new Date(maxDate);
-        const options = [];
-        while (current >= minDate) {
-          const y = current.getFullYear();
-          const m = (current.getMonth() + 1).toString().padStart(2, "0");
-          const ym = `${y}.${m}`;
-          options.push(ym);
-          current.setMonth(current.getMonth() - 1);
-        }
-        setYearMonthOptions(options);
-        // 기본 선택: 오늘의 연월이 옵션에 있으면 사용, 아니면 최신 옵션(맨 앞)
-        const today = new Date();
-        const defaultYM = `${today.getFullYear()}.${(today.getMonth() + 1)
-          .toString()
-          .padStart(2, "0")}`;
-        if (options.includes(defaultYM)) {
-          setSelectedYearMonth(defaultYM);
-        } else {
-          setSelectedYearMonth(options[0]);
-        }
-      } catch (err) {
-        console.error("Failed to fetch all periods:", err);
+  // 기간 옵션 재갱신 함수 (페이지 로드시와 최신 조회 버튼에서 사용)
+  const refreshPeriods = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/inventory/store/?range=first_last`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch period range");
       }
-    };
-    fetchAllPeriods();
+      const periodData = await response.json();
+      if (!periodData.earliest_period || !periodData.latest_period) return;
+      const parsePeriod = (str) => {
+        const parts = str.split(".");
+        return new Date(
+          parseInt(parts[0], 10),
+          parseInt(parts[1], 10) - 1,
+          parseInt(parts[2], 10)
+        );
+      };
+      const minDate = parsePeriod(periodData.earliest_period);
+      const maxDate = parsePeriod(periodData.latest_period);
+      let current = new Date(maxDate);
+      const options = [];
+      while (current >= minDate) {
+        const y = current.getFullYear();
+        const m = (current.getMonth() + 1).toString().padStart(2, "0");
+        const ym = `${y}.${m}`;
+        options.push(ym);
+        current.setMonth(current.getMonth() - 1);
+      }
+      setYearMonthOptions(options);
+      const today = new Date();
+      const defaultYM = `${today.getFullYear()}.${(today.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`;
+      if (options.includes(defaultYM)) {
+        setSelectedYearMonth(defaultYM);
+      } else {
+        setSelectedYearMonth(options[0]);
+      }
+      const defaultDay = today.getDate().toString().padStart(2, "0");
+      setSelectedDay(defaultDay);
+    } catch (err) {
+      console.error("Failed to fetch all periods:", err);
+    }
+  };
+
+  // 페이지 로드시 기간 옵션 설정
+  useEffect(() => {
+    refreshPeriods();
   }, []);
 
   // 매장 목록을 fetchStores API로 불러와 기본 선택 설정 (ST_101, ST_102 제외)
@@ -153,46 +153,29 @@ const StoreInventory = () => {
     dayOptions.push(d.toString().padStart(2, "0"));
   }
 
-  // "최신 조회" 버튼: 오늘 날짜(및 최신 기간)로 리셋 – 매장은 현재 선택된 매장을 유지
-  const handleReset = () => {
-    const today = new Date();
-    const defaultYM = `${today.getFullYear()}.${(today.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}`;
-    const defaultDay = today.getDate().toString().padStart(2, "0");
-    if (yearMonthOptions.length > 0) {
-      setSelectedYearMonth(
-        yearMonthOptions.includes(defaultYM) ? defaultYM : yearMonthOptions[0]
-      );
-    } else {
-      setSelectedYearMonth(defaultYM);
-    }
-    setSelectedDay(defaultDay);
+  // "최신 조회" 버튼: 기존 선택된 매장은 유지하고 기간을 페이지 로드 시처럼 갱신하여 최신 데이터 조회
+  const handleReset = async () => {
+    await refreshPeriods();
     // 매장은 유지 (즉, 현재 선택된 매장을 그대로 사용)
   };
 
-  // 매장 재고 데이터를 품목_id별로 그룹화 (매장_재고량 합산)
+  // ===== 수정된 부분: 품목(API에서 불러온 items)을 기준으로 테이블 행 생성 =====
+  // 재고 데이터를 품목_id별로 그룹화 (매장_재고량 합산)
   const groupedInventory = {};
   inventoryData.forEach((record) => {
     const itemId = record.품목_id;
-    if (!groupedInventory[itemId]) {
-      groupedInventory[itemId] = 0;
-    }
-    groupedInventory[itemId] += Number(record.매장_재고량);
+    groupedInventory[itemId] = (groupedInventory[itemId] || 0) + Number(record.매장_재고량);
   });
 
-  // 각 품목별 행 생성 (협력사, 품목명, 종류, 입고 단가 포함)
-  const tableRows = Object.keys(groupedInventory).map((itemId) => {
-    const item = items.find((it) => it.품목_id === itemId);
-    const supplier = suppliers.find(
-      (s) => s.협력사_id === (item ? item.협력사_id : null)
-    ) || {};
+  // 품목명을 먼저 불러온 후 각 품목에 해당하는 재고량과 기타 정보를 붙임
+  const tableRows = items.map((item) => {
+    const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
     return {
-      itemId,
+      itemId: item.품목_id,
       supplierName: supplier.협력사명 || "N/A",
-      itemName: item ? item.품목명 : "N/A",
-      type: item ? item.종류 || "" : "",
-      inventory: groupedInventory[itemId],
+      itemName: item.품목명 || "N/A",
+      type: item.종류 || "",
+      inventory: groupedInventory[item.품목_id] || 0,
       unitPrice: item ? Number(item.입고단가) : 0,
     };
   });
@@ -205,6 +188,7 @@ const StoreInventory = () => {
     if (cmpType !== 0) return cmpType;
     return a.itemName.localeCompare(b.itemName);
   });
+  // ===================================================================
 
   const formatNumber = (num) => {
     if (num === "" || num === undefined || num === null || Number(num) === 0)
@@ -275,7 +259,7 @@ const StoreInventory = () => {
         const addr = XLSX.utils.encode_cell({ r, c });
         if (addr === "A1") continue;
         if (!ws[addr]) ws[addr] = { t: "s", v: "" };
-        ws[addr].s = ws[addr].s || {};
+        if (!ws[addr].s) ws[addr].s = {};
         ws[addr].s.border = {
           top: r === titleMerge.s.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
           bottom: r === titleMerge.e.r ? { style: "medium", color: { rgb: "000000" } } : undefined,

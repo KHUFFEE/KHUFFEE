@@ -42,6 +42,13 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // 현재 경로와 비교하여 동일하면 새로고침 실행
+  const handleNavLinkClick = (targetPath) => {
+    if (location.pathname === targetPath) {
+      window.location.reload();
+    }
+  };
+
   useEffect(() => {
     const accessToken = localStorage.getItem("access");
     if (accessToken) {
@@ -93,6 +100,7 @@ function App() {
                 {/* 1. 홈 */}
                 <NavLink
                   to="/"
+                  onClick={() => handleNavLinkClick("/")}
                   className={({ isActive }) =>
                     isActive ? "menu-link active" : "menu-link"
                   }
@@ -121,6 +129,7 @@ function App() {
                     <div className="submenu">
                       <NavLink
                         to="/integration/item"
+                        onClick={() => handleNavLinkClick("/integration/item")}
                         className={({ isActive }) =>
                           isActive ? "active" : ""
                         }
@@ -129,6 +138,7 @@ function App() {
                       </NavLink>
                       <NavLink
                         to="/integration/suppliers"
+                        onClick={() => handleNavLinkClick("/integration/suppliers")}
                         className={({ isActive }) =>
                           isActive ? "active" : ""
                         }
@@ -137,6 +147,7 @@ function App() {
                       </NavLink>
                       <NavLink
                         to="/integration/inventorylog"
+                        onClick={() => handleNavLinkClick("/integration/inventorylog")}
                         className={({ isActive }) =>
                           isActive ? "active" : ""
                         }
@@ -167,6 +178,7 @@ function App() {
                     <div className="submenu">
                       <NavLink
                         to="/store/inventory"
+                        onClick={() => handleNavLinkClick("/store/inventory")}
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         일별 재고
@@ -174,12 +186,14 @@ function App() {
                       {/* 추가: 월말 재고 탭 (StoreInventoryMonthEnd 컴포넌트로 관리) */}
                       <NavLink
                         to="/store/inventory_monthend"
+                        onClick={() => handleNavLinkClick("/store/inventory_monthend")}
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         월말 재고
                       </NavLink>
                       <NavLink
                         to="/store/orders"
+                        onClick={() => handleNavLinkClick("/store/orders")}
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         발주 취합서
@@ -208,24 +222,28 @@ function App() {
                     <div className="submenu">
                       <NavLink
                         to="/warehouse/inventory"
+                        onClick={() => handleNavLinkClick("/warehouse/inventory")}
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         일별 재고
                       </NavLink>
                       <NavLink
                         to="/warehouse/incoming"
+                        onClick={() => handleNavLinkClick("/warehouse/incoming")}
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         입고
                       </NavLink>
                       <NavLink
                         to="/warehouse/outgoing"
+                        onClick={() => handleNavLinkClick("/warehouse/outgoing")}
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         출고
                       </NavLink>
                       <NavLink
                         to="/warehouse/orders"
+                        onClick={() => handleNavLinkClick("/warehouse/orders")}
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         발주

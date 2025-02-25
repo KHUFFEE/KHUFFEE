@@ -12,7 +12,9 @@ const Item = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isActivateMode, setIsActivateMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [selectedActivateItems, setSelectedActivateItems] = useState([]);
   const [editedItems, setEditedItems] = useState({});
   const [sortCriteria, setSortCriteria] = useState({
     품목명: "asc",
@@ -40,19 +42,22 @@ const Item = () => {
     if (value === null || value === undefined || value === "") return "";
     const num = Number(value.toString().replace(/,/g, ""));
     return num.toLocaleString(undefined, { maximumFractionDigits: 6 });
-  };  
+  };
 
-  // 품목 목록 불러오기
+  // 초기 품목 조회: 활성화가 1인 품목만 표시 (전체 중 필터링)
+  const fetchAllItems = async () => {
+    try {
+      // 기본 호출: 활성화된(활성화 === true) 품목만 반환 (백엔드에서 기본 필터)
+      const data = await fetchItems();
+      setItems(data);
+    } catch (err) {
+      setError("Failed to load items");
+    }
+  };
+
+  // 컴포넌트 마운트 시 활성화 품목만 로드
   useEffect(() => {
-    const getItems = async () => {
-      try {
-        const data = await fetchItems();
-        setItems(data);
-      } catch (err) {
-        setError("Failed to load items");
-      }
-    };
-    getItems();
+    fetchAllItems();
   }, []);
 
   // 협력사 목록 불러오기
@@ -141,8 +146,8 @@ const Item = () => {
     });
   };
 
-  // 삭제 모드 체크박스 핸들러
-  const handleCheckboxChange = (e, itemId) => {
+  // 삭제(비활성화) 모드 체크박스 핸들러
+  const handleDeleteCheckboxChange = (e, itemId) => {
     if (e.target.checked) {
       setSelectedItems((prev) => [...prev, itemId]);
     } else {
@@ -150,22 +155,52 @@ const Item = () => {
     }
   };
 
-  // 제품 삭제
+  // 활성화 모드 체크박스 핸들러
+  const handleActivateCheckboxChange = (e, itemId) => {
+    if (e.target.checked) {
+      setSelectedActivateItems((prev) => [...prev, itemId]);
+    } else {
+      setSelectedActivateItems((prev) => prev.filter((id) => id !== itemId));
+    }
+  };
+
+  // 제품 비활성화: API에 {ids, action:"deactivate"} 전송 후 활성화 품목(활성화===1)만 재조회
   const handleDelete = async () => {
     if (selectedItems.length === 0) {
-      setAlertPopup({ show: true, message: "삭제할 품목을 선택해주세요." });
+      setAlertPopup({ show: true, message: "비활성화할 품목을 선택해주세요." });
       return;
     }
     try {
-      await deleteItems(selectedItems);
-      setItems((prev) => prev.filter((item) => !selectedItems.includes(item.품목_id)));
+      await deleteItems({ ids: selectedItems, action: "deactivate" });
+      // 업데이트 후 기본(active) 목록을 다시 로드 (비활성화된 건 제외됨)
+      await fetchAllItems();
       setSelectedItems([]);
       setIsDeleteMode(false);
-      setAlertPopup({ show: true, message: "제품이 성공적으로 삭제되었습니다." });
+      setAlertPopup({ show: true, message: "제품이 성공적으로 비활성화되었습니다." });
     } catch (err) {
-      setAlertPopup({ show: true, message: "제품 삭제에 실패하였습니다." });
+      setAlertPopup({ show: true, message: "제품 비활성화에 실패하였습니다." });
     }
   };
+  
+
+  // 제품 활성화: API에 {ids, action:"activate"} 전송 후 활성화 상태(활성화===0)인 품목 재조회
+  const handleActivateConfirm = async () => {
+    if (selectedActivateItems.length === 0) {
+      setAlertPopup({ show: true, message: "활성화할 품목을 선택해주세요." });
+      return;
+    }
+    try {
+      await deleteItems({ ids: selectedActivateItems, action: "activate" });
+      // 업데이트 후 기본(active) 목록을 다시 로드
+      await fetchAllItems();
+      setSelectedActivateItems([]);
+      setIsActivateMode(false);
+      setAlertPopup({ show: true, message: "제품이 성공적으로 활성화되었습니다." });
+    } catch (err) {
+      setAlertPopup({ show: true, message: "제품 활성화에 실패하였습니다." });
+    }
+  };
+  
 
   // 제품 추가
   const handleSubmit = async () => {
@@ -239,6 +274,7 @@ const Item = () => {
       });
       setEditedItems(initialEdited);
       if (isDeleteMode) setIsDeleteMode(false);
+      if (isActivateMode) setIsActivateMode(false);
     }
     setIsEditMode((prev) => !prev);
   };
@@ -443,17 +479,14 @@ const Item = () => {
     }
   
     // ★ 새로 추가: 입고단위, 입고단위단가, 출고단위 열에 숫자 포맷 적용
-    // 헤더 순서상 해당 열의 인덱스는 6, 7, 8입니다.
     {
       const numericColumns = [6, 7, 8]; // 입고단위, 입고단위단가, 출고단위
       const range = XLSX.utils.decode_range(ws["!ref"]);
-      // 데이터는 A4부터 시작하므로 헤더가 4행(0-index 3)이고, 데이터는 5행(0-index 4)부터
       for (let r = 4; r <= range.e.r; r++) {
         numericColumns.forEach((c) => {
           const cellAddr = XLSX.utils.encode_cell({ r, c });
           if (ws[cellAddr] && typeof ws[cellAddr].v === "number") {
             ws[cellAddr].s = ws[cellAddr].s || {};
-            // 숫자형 포맷: 자동으로 세자리마다 쉼표 표시 (실제 값은 숫자형 그대로)
             ws[cellAddr].s.numFmt = "#,##0";
           }
         });
@@ -465,41 +498,83 @@ const Item = () => {
     XLSX.utils.book_append_sheet(wb, ws, `카페 쿠피 ${mm}월 제품 목록`);
     XLSX.writeFile(wb, filename);
   };
-  
+
+  // 활성화 버튼 클릭 시: API를 호출하여 활성화(활성화===0) 품목만 불러오기 (활성화 모드 토글)
+  const handleActivateButton = async () => {
+    if (!isActivateMode) {
+      try {
+        // 모든 품목 조회 후 inactive(활성화 === false)인 것만 필터
+        const data = await fetchItems(true);
+        const deactivatedItems = data.filter((item) => item.활성화 === false);
+        setItems(deactivatedItems);
+        setIsActivateMode(true);
+        setSelectedActivateItems([]);
+        if (isDeleteMode) setIsDeleteMode(false);
+      } catch (err) {
+        setAlertPopup({ show: true, message: "비활성 품목 불러오기에 실패하였습니다." });
+      }
+    } else {
+      // 활성화 모드 취소 시 기본(active) 목록 복원
+      try {
+        await fetchAllItems();
+        setIsActivateMode(false);
+        setSelectedActivateItems([]);
+      } catch (err) {
+        setAlertPopup({ show: true, message: "품목 불러오기에 실패하였습니다." });
+      }
+    }
+  };
   
 
   return (
     <div className="item-container">
       <h2 className="title">제품 관리</h2>
-      <div className="controls">
-        <button onClick={handleDownloadExcel} className="download-button">
-          Excel 다운로드
-        </button>
-        <button
-          onClick={() => setShowPopup(true)}
-          className="add-button"
-          disabled={isEditMode || isDeleteMode}
-        >
-          + 제품 추가
-        </button>
-        <button
-          onClick={handleEditToggle}
-          className="edit-button"
-          disabled={isDeleteMode}
-        >
-          {isEditMode ? "취소" : "수정"}
-        </button>
-        <button
-          onClick={() => {
-            setIsDeleteMode((prev) => !prev);
-            if (isDeleteMode) setSelectedItems([]);
-          }}
-          className="delete-button"
-          disabled={isEditMode}
-        >
-          {isDeleteMode ? "취소" : "삭제"}
-        </button>
+      <div className="item-controls">
+        <div className="active-controls">
+          <button
+            onClick={handleActivateButton}
+            className="activate-button"
+            disabled={isEditMode || isDeleteMode}
+          >
+            {isActivateMode ? "취소" : "활성화"}
+          </button>
+          <button
+            onClick={() => {
+              setIsDeleteMode((prev) => !prev);
+              if (isDeleteMode) setSelectedItems([]);
+            }}
+            className="delete-button"
+            disabled={isEditMode || isActivateMode}
+          >
+            {isDeleteMode ? "취소" : "비활성화"}
+          </button>
+          <span className="control-description">
+            모든 품목은 각각 고유하게 관리됩니다.<br />
+            제품 추가 및 수정 전에는 활성화/비활성화 기능을 통해 상태를 확인해 주세요.
+          </span>
+        </div>
+        
+        <div className="item-action-buttons">
+          <button onClick={handleDownloadExcel} className="download-button">
+            Excel 다운로드
+          </button>
+          <button
+            onClick={() => setShowPopup(true)}
+            className="add-button"
+            disabled={isEditMode || isDeleteMode || isActivateMode}
+          >
+            + 제품 추가
+          </button>
+          <button
+            onClick={handleEditToggle}
+            className="edit-button"
+            disabled={isDeleteMode || isActivateMode}
+          >
+            {isEditMode ? "취소" : "수정"}
+          </button>
+        </div>
       </div>
+
       <hr className="divider" />
       {error && <p className="error">{error}</p>}
 
@@ -507,7 +582,7 @@ const Item = () => {
       <table className="item-table">
         <thead>
           <tr>
-            {isDeleteMode && <th className="narrow-col">선택</th>}
+            {(isDeleteMode || isActivateMode) && <th className="narrow-col">선택</th>}
             <th className="number-col">No.</th>
             <th style={isEditMode ? { width: "200px" } : {}}>
               품목명
@@ -552,15 +627,23 @@ const Item = () => {
             const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id);
             return (
               <tr key={item.품목_id}>
-                {isDeleteMode && (
+                {isDeleteMode ? (
                   <td className="narrow-col">
                     <input
                       type="checkbox"
                       checked={selectedItems.includes(item.품목_id)}
-                      onChange={(e) => handleCheckboxChange(e, item.품목_id)}
+                      onChange={(e) => handleDeleteCheckboxChange(e, item.품목_id)}
                     />
                   </td>
-                )}
+                ) : isActivateMode ? (
+                  <td className="narrow-col">
+                    <input
+                      type="checkbox"
+                      checked={selectedActivateItems.includes(item.품목_id)}
+                      onChange={(e) => handleActivateCheckboxChange(e, item.품목_id)}
+                    />
+                  </td>
+                ) : null}
                 <td className="number-col">{index + 1}</td>
                 <td>
                   {isEditMode ? (
@@ -657,13 +740,8 @@ const Item = () => {
                       type="text"
                       name="입고단위"
                       value={formatNumber(editedItems[item.품목_id]?.입고단위 || "")}
-                      onChange={(e) =>
-                        handleEditChange(
-                          item.품목_id,
-                          "입고단위",
-                          e.target.value.replace(/,/g, "")
-                        )
-                      }
+                      disabled
+                      className="calc-input"
                       style={{ textAlign: "right" }}
                     />
                   ) : (
@@ -676,13 +754,8 @@ const Item = () => {
                       type="text"
                       name="입고단위단가"
                       value={formatNumber(editedItems[item.품목_id]?.입고단위단가 || "")}
-                      onChange={(e) =>
-                        handleEditChange(
-                          item.품목_id,
-                          "입고단위단가",
-                          e.target.value.replace(/,/g, "")
-                        )
-                      }
+                      disabled
+                      className="calc-input"
                       style={{ textAlign: "right" }}
                     />
                   ) : (
@@ -720,10 +793,18 @@ const Item = () => {
           disabled={selectedItems.length === 0}
           className="delete-confirm-button"
         >
-          선택 삭제
+          선택 비활성화
         </button>
       )}
-
+      {isActivateMode && (
+        <button
+          onClick={handleActivateConfirm}
+          disabled={selectedActivateItems.length === 0}
+          className="activate-confirm-button"
+        >
+          선택 활성화
+        </button>
+      )}
       {isEditMode && (
         <button onClick={handleEditSubmit} className="edit-confirm-button">
           수정 완료

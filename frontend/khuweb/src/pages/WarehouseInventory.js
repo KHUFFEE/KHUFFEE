@@ -41,47 +41,49 @@ const WarehouseInventory = () => {
     }
   };
 
-  // 전체 재고 데이터에서 모든 기간을 조회하여 최소/최대 날짜로부터 "YYYY.MM" 옵션 생성
-  useEffect(() => {
-    const fetchAllPeriods = async () => {
-      try {
-        const res = await fetchWarehouseInventory({}); // 기간 필터 없이 전체 조회
-        const allPeriods = res.map(record => record.기간);
-        if (allPeriods.length === 0) return;
-        const dateObjs = allPeriods.map(period => {
-          const parts = period.split(".");
-          return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-        });
-        const minDate = new Date(Math.min(...dateObjs));
-        const maxDate = new Date(Math.max(...dateObjs));
-        // maxDate부터 minDate까지의 "YYYY.MM" 값 내림차순으로 생성
-        let current = new Date(maxDate);
-        const options = [];
-        while (current >= minDate) {
-          const y = current.getFullYear();
-          const m = (current.getMonth() + 1).toString().padStart(2, "0");
-          const ym = `${y}.${m}`;
-          if (!options.includes(ym)) {
-            options.push(ym);
-          }
-          current.setMonth(current.getMonth() - 1);
+  // 기간 옵션 재갱신 함수 (페이지 로드시와 최신 조회 버튼에서 사용)
+  const refreshPeriods = async () => {
+    try {
+      const res = await fetchWarehouseInventory({}); // 기간 필터 없이 전체 조회
+      const allPeriods = res.map(record => record.기간);
+      if (allPeriods.length === 0) return;
+      const dateObjs = allPeriods.map(period => {
+        const parts = period.split(".");
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      });
+      const minDate = new Date(Math.min(...dateObjs));
+      const maxDate = new Date(Math.max(...dateObjs));
+      // maxDate부터 minDate까지의 "YYYY.MM" 값 내림차순으로 생성
+      let current = new Date(maxDate);
+      const options = [];
+      while (current >= minDate) {
+        const y = current.getFullYear();
+        const m = (current.getMonth() + 1).toString().padStart(2, "0");
+        const ym = `${y}.${m}`;
+        if (!options.includes(ym)) {
+          options.push(ym);
         }
-        setYearMonthOptions(options);
-        // 기본 선택: 오늘의 연월이 옵션에 있으면 사용, 아니면 최신 옵션(맨 앞)
-        const today = new Date();
-        const defaultYM = `${today.getFullYear()}.${(today.getMonth() + 1)
-          .toString()
-          .padStart(2, "0")}`;
-        if (options.includes(defaultYM)) {
-          setSelectedYearMonth(defaultYM);
-        } else {
-          setSelectedYearMonth(options[0]);
-        }
-      } catch (err) {
-        console.error("Failed to fetch all periods:", err);
+        current.setMonth(current.getMonth() - 1);
       }
-    };
-    fetchAllPeriods();
+      setYearMonthOptions(options);
+      // 기본 선택: 오늘의 연월이 옵션에 있으면 사용, 아니면 최신 옵션(맨 앞)
+      const today = new Date();
+      const defaultYM = `${today.getFullYear()}.${(today.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`;
+      if (options.includes(defaultYM)) {
+        setSelectedYearMonth(defaultYM);
+      } else {
+        setSelectedYearMonth(options[0]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch all periods:", err);
+    }
+  };
+
+  // 페이지 로드시 기간 옵션 설정
+  useEffect(() => {
+    refreshPeriods();
   }, []);
 
   // 기본: 오늘 날짜를 이용하여 기본 일(day)값 설정
@@ -102,49 +104,39 @@ const WarehouseInventory = () => {
 
   // 선택된 년월에 따른 일(day) 옵션 생성 (해당 월의 총 일수)
   const [year, month] = selectedYearMonth.split(".");
-  const daysInMonth =
-    year && month ? new Date(parseInt(year), parseInt(month), 0).getDate() : 31;
+  const daysInMonth = year && month ? new Date(parseInt(year), parseInt(month), 0).getDate() : 31;
   const dayOptions = [];
   for (let d = 1; d <= daysInMonth; d++) {
     dayOptions.push(d.toString().padStart(2, "0"));
   }
 
-  // "최신 조회" 버튼: 오늘 날짜(또는 옵션에서 최신값)으로 리셋
-  const handleReset = () => {
+  // "최신 조회" 버튼: 오늘 날짜(또는 옵션에서 최신값)으로 리셋하고, 페이지 로드 시와 같이 기간 옵션을 재갱신
+  const handleReset = async () => {
+    await refreshPeriods();
     const today = new Date();
-    const defaultYM = `${today.getFullYear()}.${(today.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}`;
     const defaultDay = today.getDate().toString().padStart(2, "0");
-    if (yearMonthOptions.length > 0) {
-      setSelectedYearMonth(yearMonthOptions.includes(defaultYM) ? defaultYM : yearMonthOptions[0]);
-    } else {
-      setSelectedYearMonth(defaultYM);
-    }
     setSelectedDay(defaultDay);
   };
 
+  // ===== 수정된 부분: 품목명을 API를 통해 먼저 불러오고 재고량을 붙이는 원리 적용 =====
   // 창고 재고 데이터를 품목별로 그룹화 (품목_id 기준)
   const groupedInventory = {};
   inventoryData.forEach((record) => {
     const itemId = record.품목_id;
-    if (!groupedInventory[itemId]) {
-      groupedInventory[itemId] = 0;
-    }
-    groupedInventory[itemId] += Number(record.창고_재고량);
+    groupedInventory[itemId] = (groupedInventory[itemId] || 0) + Number(record.창고_재고량);
   });
 
-  // 각 품목별 행 생성: 품목, 협력사, 종류, 입고 단가 포함
-  const tableRows = Object.keys(groupedInventory).map((itemId) => {
-    const item = items.find((it) => it.품목_id === itemId);
-    const supplier = suppliers.find((s) => s.협력사_id === (item ? item.협력사_id : null)) || {};
+  // 각 품목별 행 생성: 품목, 협력사, 종류, 입고 단가 포함  
+  // → items 배열을 순회하여 품목 정보를 먼저 가져오고, 해당 품목의 재고량은 groupedInventory에서 조회
+  const tableRows = items.map((item) => {
+    const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
     return {
-      itemId,
+      itemId: item.품목_id,
       supplierName: supplier.협력사명 || "N/A",
-      itemName: item ? item.품목명 : "N/A",
-      type: item ? item.종류 || "" : "",
-      inventory: groupedInventory[itemId],
-      unitPrice: item ? Number(item.입고단가) : 0, // 입고 단가
+      itemName: item.품목명 || "N/A",
+      type: item.종류 || "",
+      inventory: groupedInventory[item.품목_id] || 0,
+      unitPrice: item ? Number(item.입고단가) : 0,
     };
   });
 
@@ -156,6 +148,7 @@ const WarehouseInventory = () => {
     if (cmpType !== 0) return cmpType;
     return a.itemName.localeCompare(b.itemName);
   });
+  // ============================================================================
 
   const formatNumber = (num) => {
     if (num === "" || num === undefined || num === null || Number(num) === 0)
@@ -193,8 +186,8 @@ const WarehouseInventory = () => {
     const data = tableRows.map((row) => ({
       "협력사": row.supplierName,
       "품목명": row.itemName,
-      "재고량": row.inventory, // 숫자 그대로 저장
-      "재고 금액": row.inventory * row.unitPrice, // 숫자 계산 값
+      "재고량": row.inventory,
+      "재고 금액": row.inventory * row.unitPrice,
     }));
   
     // 6. 워크시트 생성 (데이터는 A4부터 시작: 4행부터 헤더+데이터)
@@ -333,9 +326,6 @@ const WarehouseInventory = () => {
     XLSX.writeFile(wb, filename);
   };
   
-  
-  
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 

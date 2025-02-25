@@ -6,16 +6,18 @@ from orders.utils import get_기간_string  # 앞서 작성한 헬퍼 함수
 from django.db import connection
 
 class StoreOrderCreateSerializer(serializers.ModelSerializer):
+    # 회차 필드를 추가하고 0~9 범위로 제한, 값이 없으면 기본값 1 사용
+    회차 = serializers.IntegerField(min_value=0, max_value=9, required=False, default=1)
+
     class Meta:
         model = StoreOrder
-        # 클라이언트가 입력하는 필드만 받음 (기간은 자동 계산, 회차는 기본값 1 사용)
-        fields = ('매장_id', '품목_id', '매장_발주량')
+        # 클라이언트가 입력하는 필드에 '회차' 추가
+        fields = ('매장_id', '품목_id', '매장_발주량', '회차')
     
     def create(self, validated_data):
         today = date.today()
         validated_data['기간'] = get_기간_string(today)
-        # 회차 필드는 클라이언트 입력 없이 기본값 1 사용
-        validated_data['회차'] = 1
+        # 회차 값은 serializer에서 검증 및 기본값 처리되므로 별도 할당 불필요
         new_value = validated_data.get('매장_발주량')
         
         duplicate_qs = StoreOrder.objects.filter(

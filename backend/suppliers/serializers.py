@@ -1,3 +1,4 @@
+# backend/suppliers/serializers.py
 from rest_framework import serializers
 from .models import Item, Supplier
 
@@ -13,8 +14,10 @@ class ItemSerializer(serializers.ModelSerializer):
         model = Item
         fields = [
             '품목_id', '협력사_id', '협력사명', '품목명', '종류', '규격', 
-            '단위', '입고단가', '입고단위', '입고단위단가', '출고단위'
+            '단위', '입고단가', '입고단위', '입고단위단가', '출고단위', '활성화'
         ]
+        # 만약 클라이언트에 활성화 값이 노출되지 않아야 한다면 read_only_fields로 지정할 수도 있습니다.
+        # read_only_fields = ['활성화']
 
     def update(self, instance, validated_data):
         # 만약 협력사명이 제공되면, 해당 Supplier 객체를 찾아 협력사_id를 업데이트

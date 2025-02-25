@@ -26,7 +26,7 @@ class Item(models.Model):
     종류 = models.CharField(max_length=255)
     규격 = models.CharField(max_length=255, blank=True, null=True)
     단위 = models.CharField(max_length=50, blank=True, null=True)
-    입고단가 = models.DecimalField(max_digits=10, decimal_places=2)
+    입고단가 = models.DecimalField(max_digits=16, decimal_places=6)
     입고단위 = models.IntegerField(blank=True, null=True)
     입고단위단가 = models.IntegerField(blank=True, null=True)
     출고단위 = models.IntegerField(blank=True, null=True)

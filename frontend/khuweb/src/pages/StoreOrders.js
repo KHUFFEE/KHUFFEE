@@ -542,6 +542,10 @@ const StoreOrders = () => {
           <button className="reset-button" onClick={handleReset} disabled={isEditMode}>
             최신 조회
           </button>
+          <span className="control-description">
+            현재 매니저의 발주는 {managerOrderRound}회차로 저장됩니다.<br />
+            {managerOrderRound + 1}회차로 변경하려면 회차 관리 버튼을 클릭해주세요.
+          </span>
         </div>
         <div className="store-action-buttons">
           {isLatestPeriod && (

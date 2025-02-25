@@ -7,10 +7,15 @@ from .serializers import ItemSerializer, SupplierSerializer
 
 class ItemListView(APIView):
     def get(self, request):
-        # 모든 품목 조회 (활성화 여부와 상관없이 모두 조회)
-        items = Item.objects.all()
+        # 쿼리 파라미터 all=true 가 있으면 모든 품목, 없으면 활성화된 품목만 조회
+        show_all = request.query_params.get('all', 'false').lower() == 'true'
+        if show_all:
+            items = Item.objects.all()
+        else:
+            items = Item.objects.filter(활성화=True)
         serialized_items = ItemSerializer(items, many=True)
         return Response(serialized_items.data, status=status.HTTP_200_OK)
+
 
     def post(self, request):
         data = request.data

@@ -25,8 +25,7 @@ import {
 } from 'lucide-react-native';
 import { RN_API_URL } from '@env';
 import { StoreOrderData, APIProduct } from '../../src/components/ui/common/types';
-// import { styles} from '../../src/components/ui/common/commonstyler';
-import { orderStatusStyles} from '../../src/styles/OrderStatus_styles';
+import { orderStatusStyles } from '../../src/styles/OrderStatus_styles';
 
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
@@ -238,14 +237,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
 
   if (loading) {
     return (
-      <View testID='loading_Container' style={orderStatusStyles.loadingContainer}>
+      <View testID="loadingContainer" style={orderStatusStyles.loadingContainer}>
         <ActivityIndicator size="large" color="#0D326F80" />
         <Text style={orderStatusStyles.emptyText}>로딩 중...</Text>
       </View>
     );
   }
+
   return (
-    <View testID='status_container' style={orderStatusStyles.status_container}>
+    <View testID="status_container" style={orderStatusStyles.status_container}>
       {/* 전체 상단 헤더 */}
       {!loading && sortedYears.length > 0 && (
         <View testID="headerRow" style={orderStatusStyles.headerRow}>
@@ -406,6 +406,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         />
       )}
 
+      {/* 초기화 버튼 */}
+      {isPeriodSearch && (
+        <View style={{ position: 'absolute', top: 10, right: 10 }}>
+          <TouchableOpacity style={orderStatusStyles.resetButton} onPress={handleResetSearch}>
+            <Text style={orderStatusStyles.resetButtonText}>초기화</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* 주문 상세보기 모달 */}
       <Modal
         visible={detailModalVisible}
@@ -463,7 +472,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           setOpenEndDropdown(null);
         }}
       >
-        {/* 모달 밖(검정 배경) 터치 시 드롭다운 닫힘 */}
         <TouchableWithoutFeedback
           onPress={() => {
             setOpenStartDropdown(null);
@@ -471,7 +479,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           }}
         >
           <View style={orderStatusStyles.periodModalContainer}>
-            {/* 모달 안(흰색 배경) */}
             <TouchableWithoutFeedback>
               <View style={orderStatusStyles.periodModalInner}>
                 <View
@@ -492,7 +499,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                     <LucideX color="red" size={24} />
                   </TouchableOpacity>
                 </View>
-                {/* 시작날짜 섹션은 "종료날짜 드롭다운이 열려 있지 않을 때"만 보인다. */}
+                {/* 시작날짜 섹션: 종료날짜 dropdown이 열려있지 않을 때만 보임 */}
                 {openEndDropdown === null && (
                   <View style={orderStatusStyles.dateGroup}>
                     <Text style={orderStatusStyles.dateGroupLabel}>시작날짜</Text>
@@ -518,13 +525,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                   key={y}
                                   style={[
                                     orderStatusStyles.pickerItem,
-                                    (selectingStart ? startYear : endYear) === y && orderStatusStyles.pickerItemActive
+                                    startYear === y && orderStatusStyles.pickerItemActive
                                   ]}
-                                  onPress={() => (selectingStart ? setStartYear(y) : setEndYear(y))}
+                                  onPress={() => setStartYear(y)}
                                 >
-                                  <Text style={{
-                                    color: (selectingStart ? startYear : endYear) === y ? '#fff' : '#333',
-                                  }}>
+                                  <Text style={{ color: startYear === y ? '#fff' : '#333' }}>
                                     {y}년
                                   </Text>
                                 </TouchableOpacity>
@@ -555,13 +560,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                   key={m}
                                   style={[
                                     orderStatusStyles.pickerItem,
-                                    (selectingStart ? startMonth : endMonth) === m && orderStatusStyles.pickerItemActive
+                                    startMonth === m && orderStatusStyles.pickerItemActive
                                   ]}
-                                  onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
+                                  onPress={() => setStartMonth(m)}
                                 >
-                                  <Text style={{
-                                    color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333',
-                                  }}>
+                                  <Text style={{ color: startMonth === m ? '#fff' : '#333' }}>
                                     {m}월
                                   </Text>
                                 </TouchableOpacity>
@@ -592,13 +595,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                   key={w}
                                   style={[
                                     orderStatusStyles.pickerItem,
-                                    (selectingStart ? startWeek : endWeek) === w && orderStatusStyles.pickerItemActive
+                                    startWeek === w && orderStatusStyles.pickerItemActive
                                   ]}
-                                  onPress={() => (selectingStart ? setStartWeek(w) : setEndWeek(w))}
+                                  onPress={() => setStartWeek(w)}
                                 >
-                                  <Text style={{
-                                    color: (selectingStart ? startWeek : endWeek) === w ? '#fff' : '#333',
-                                  }}>
+                                  <Text style={{ color: startWeek === w ? '#fff' : '#333' }}>
                                     {w}주
                                   </Text>
                                 </TouchableOpacity>
@@ -618,6 +619,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                     )}
                   </View>
                 )}
+                {/* 종료날짜 섹션: 시작날짜 dropdown이 열려있지 않을 때만 보임 */}
                 {openStartDropdown === null && (
                   <View style={orderStatusStyles.dateGroup}>
                     <Text style={orderStatusStyles.dateGroupLabel}>종료날짜</Text>
@@ -643,13 +645,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                   key={y}
                                   style={[
                                     orderStatusStyles.pickerItem,
-                                    (selectingStart ? endYear : endYear) === y && orderStatusStyles.pickerItemActive
+                                    endYear === y && orderStatusStyles.pickerItemActive
                                   ]}
-                                  onPress={() => (selectingStart ? setEndYear(y) : setEndYear(y))}
+                                  onPress={() => setEndYear(y)}
                                 >
-                                  <Text style={{
-                                    color: (selectingStart ? endYear : endYear) === y ? '#fff' : '#333',
-                                  }}>
+                                  <Text style={{ color: endYear === y ? '#fff' : '#333' }}>
                                     {y}년
                                   </Text>
                                 </TouchableOpacity>
@@ -679,13 +679,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                   key={m}
                                   style={[
                                     orderStatusStyles.pickerItem,
-                                    (selectingStart ? endMonth : endMonth) === m && orderStatusStyles.pickerItemActive
+                                    endMonth === m && orderStatusStyles.pickerItemActive
                                   ]}
-                                  onPress={() => (selectingStart ? setEndMonth(m) : setEndMonth(m))}
+                                  onPress={() => setEndMonth(m)}
                                 >
-                                  <Text style={{
-                                    color: (selectingStart ? endMonth : endMonth) === m ? '#fff' : '#333',
-                                  }}>
+                                  <Text style={{ color: endMonth === m ? '#fff' : '#333' }}>
                                     {m}월
                                   </Text>
                                 </TouchableOpacity>
@@ -715,13 +713,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                   key={w}
                                   style={[
                                     orderStatusStyles.pickerItem,
-                                    (selectingStart ? endWeek : endWeek) === w && orderStatusStyles.pickerItemActive
+                                    endWeek === w && orderStatusStyles.pickerItemActive
                                   ]}
-                                  onPress={() => (selectingStart ? setEndWeek(w) : setEndWeek(w))}
+                                  onPress={() => setEndWeek(w)}
                                 >
-                                  <Text style={{
-                                    color: (selectingStart ? endWeek : endWeek) === w ? '#fff' : '#333',
-                                  }}>
+                                  <Text style={{ color: endWeek === w ? '#fff' : '#333' }}>
                                     {w}주
                                   </Text>
                                 </TouchableOpacity>
@@ -756,14 +752,8 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-      {isPeriodSearch && (
-        <View style={{ position: 'absolute', top: 10, right: 10 }}>
-          <TouchableOpacity style={orderStatusStyles.resetButton} onPress={handleResetSearch}>
-            <Text style={orderStatusStyles.resetButtonText}>초기화</Text>
-          </TouchableOpacity>
-        </View>
-      )}
 
+      {/* 날짜 선택 모달 */}
       <Modal
         visible={showDatePickerModal}
         transparent={true}
@@ -788,9 +778,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                       paddingHorizontal: 12,
                       marginRight: 6,
                     },
-                    (selectingStart ? startYear : endYear) === y && {
-                      backgroundColor: '#0D326F',
-                    },
+                    (selectingStart ? startYear : endYear) === y && { backgroundColor: '#0D326F' },
                   ]}
                   onPress={() => (selectingStart ? setStartYear(y) : setEndYear(y))}
                 >
@@ -816,9 +804,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                         paddingHorizontal: 12,
                         marginRight: 6,
                       },
-                      (selectingStart ? startMonth : endMonth) === m && {
-                        backgroundColor: '#0D326F',
-                      },
+                      (selectingStart ? startMonth : endMonth) === m && { backgroundColor: '#0D326F' },
                     ]}
                     onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
                   >
@@ -842,9 +828,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                         paddingHorizontal: 12,
                         marginRight: 6,
                       },
-                      (selectingStart ? startMonth : endMonth) === m && {
-                        backgroundColor: '#0D326F',
-                      },
+                      (selectingStart ? startMonth : endMonth) === m && { backgroundColor: '#0D326F' },
                     ]}
                     onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
                   >
@@ -870,9 +854,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                       paddingHorizontal: 12,
                       marginRight: 6,
                     },
-                    (selectingStart ? startWeek : endWeek) === w && {
-                      backgroundColor: '#0D326F',
-                    },
+                    (selectingStart ? startWeek : endWeek) === w && { backgroundColor: '#0D326F' },
                   ]}
                   onPress={() => (selectingStart ? setStartWeek(w) : setEndWeek(w))}
                 >

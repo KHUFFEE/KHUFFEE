@@ -12,7 +12,7 @@ const commonTextStyle = {
 export const orderStatusStyles = StyleSheet.create({
   status_container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#fff',
     padding: moderateScale(16),
   },
   
@@ -26,13 +26,13 @@ export const orderStatusStyles = StyleSheet.create({
     padding: moderateScale(16),
     borderRadius: moderateScale(12),
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 2,
+    // },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 3,
+    // elevation: 2,
   },
   
   sectionTitle: {
@@ -239,6 +239,7 @@ export const orderStatusStyles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: verticalScale(16),
     borderWidth: 1.5,
+    width: wp(50),
     borderColor: '#0D326F',
     shadowColor: '#000',
     shadowOffset: {

@@ -1045,14 +1045,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 
-  status_container: {
-    ...commonTextStyle,
-    flex: 1,
-    alignItems: 'stretch',
-    justifyContent: 'flex-start',
-    backgroundColor: '#fff',
-    paddingHorizontal: moderateScale(10),
-  },
+
 
   flatlist: {
     ...commonTextStyle,
@@ -1397,4 +1390,13 @@ export const inventoryStyles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
   },
+  status_container: {
+    ...commonTextStyle,
+    flex: 1,
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
+    backgroundColor: '#fff',
+    paddingHorizontal: moderateScale(16),
+  },
+
 });

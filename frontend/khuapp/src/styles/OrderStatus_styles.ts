@@ -10,454 +10,602 @@ const commonTextStyle = {
 };
 
 export const orderStatusStyles = StyleSheet.create({
-  /* ========== 로딩 관련 ========== */
-  loading_Container: {
-    ...commonTextStyle,
+  status_container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#F8F9FA',
+    padding: moderateScale(16),
   },
-  loading_Text: {
-    ...commonTextStyle,
-    marginTop: moderateScale(3),
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    left: 5,
-    color: '#00000080',
-    alignItems: 'center',
-  },
-
-  /* ========== 헤더 영역 ========== */
+  
+  // 헤더 스타일
   headerRow: {
-    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    width: '100%',
-    paddingTop: moderateScale(5),
-    paddingRight: moderateScale(-5),
-    paddingBottom: moderateScale(-8),
-  },
-  sectionTitle: {
-    ...commonTextStyle,
-    fontSize: RFValue(18),
-    fontWeight: '700',
-    color: '#0D326F',
-    marginBottom: moderateScale(12),
-    paddingHorizontal: moderateScale(16),
-    width: '100%',
-    borderLeftWidth: 4,
-    borderLeftColor: '#0D326F',
-    paddingLeft: moderateScale(10),
-    marginLeft: moderateScale(5),
-  },
-  title: {
-    ...commonTextStyle,
-    fontSize: RFValue(16),
-    fontWeight: 'bold',
-    marginBottom: 10,
-    paddingHorizontal: moderateScale(16),
-  },
-  rightButtonGroup: {
-    ...commonTextStyle,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sortButton: {
-    ...commonTextStyle,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 79,
-    height: 40,
-    backgroundColor: 'white',
-    borderColor: '#0D326F',
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-
-  /* ========== 목록 및 버튼 ========== */
-  term_of_name: {
-    ...commonTextStyle,
-    fontSize: RFValue(16),
-    fontWeight: 'bold',
-    marginBottom: moderateScale(10),
-    color: '#0D326F',
-  },
-  loadMoreButton: {
-    ...commonTextStyle,
-    alignSelf: 'center',
-    marginVertical: moderateScale(10),
-    backgroundColor: '#0D326F',
-    borderRadius: 8,
-    paddingVertical: moderateScale(10),
-    paddingHorizontal: moderateScale(20),
-  },
-  loadMoreButtonText: {
-    ...commonTextStyle,
-    color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: 'bold',
-  },
-
-  /* ========== FlatList 스타일 (orderStatusStyles) ========== */
-  flatlist: {
-    ...commonTextStyle,
-    height: hp(80),
-  },
-  dateHeader: {
-    ...commonTextStyle,
-    fontSize: RFValue(18),
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
-    paddingLeft: 4,
-  },
-  extraCountText: {
-    ...commonTextStyle,
-    color: '#0D326F',
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  productName: {
-    ...commonTextStyle,
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  quantity: {
-    ...commonTextStyle,
-    fontSize: RFValue(14),
-    color: '#555',
-    marginBottom: 6,
-  },
-  actionButton: {
-    ...commonTextStyle,
-    backgroundColor: 'white',
-    borderColor: '#0D326F',
-    borderWidth: 2,
-    borderRadius: 6,
-    width: wp(20),
-    height: hp(5),
-    marginLeft: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionButtonText: {
-    ...commonTextStyle,
-    color: '#0D326F',
-    fontSize: RFValue(14),
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-
-  /* ========== 모달 관련 (modalStyles) ========== */
-  centeredView: {
-    ...commonTextStyle,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalView: {
-    ...commonTextStyle,
-    margin: moderateScale(20),
-    backgroundColor: '#ffffff',
+    marginBottom: verticalScale(16),
+    backgroundColor: '#fff',
+    padding: moderateScale(16),
     borderRadius: moderateScale(12),
-    padding: moderateScale(25),
-    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    width: '85%',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  closeButton: {
-    ...commonTextStyle,
+  
+  sectionTitle: {
+    flex: 1,
+  },
+  
+  title: {
+    fontSize: RFValue(20),
+    fontWeight: '600',
+    color: '#0D326F',
+  },
+  
+  rightButtonGroup: {
+    flexDirection: 'row',
+    gap: moderateScale(8),
+  },
+  
+  headerButton: {
+    paddingHorizontal: moderateScale(16),
+    paddingVertical: verticalScale(10),
     backgroundColor: '#0D326F',
     borderRadius: moderateScale(25),
-    paddingVertical: moderateScale(12),
-    paddingHorizontal: moderateScale(30),
     elevation: 2,
-    marginTop: moderateScale(20),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.2,
     shadowRadius: 3,
   },
-  textStyle: {
-    ...commonTextStyle,
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: RFValue(16),
-    textAlign: 'center',
-  },
-
-  /* ========== 영수증 관련 (receiptStyles) ========== */
-  receiptContainer: {
-    ...commonTextStyle,
-    width: '100%',
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  header: {
-    ...commonTextStyle,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  headerTitle: {
-    ...commonTextStyle,
-    fontSize: RFValue(20),
-    fontWeight: 'bold',
-  },
-  headerSubtitle: {
-    ...commonTextStyle,
+  
+  headerButtonText: {
+    color: '#FFFFFF',
     fontSize: RFValue(14),
-    color: '#666',
-    marginTop: 2,
-  },
-  divider: {
-    ...commonTextStyle,
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    borderStyle: 'dashed',
-    marginVertical: 8,
-  },
-  itemRow: {
-    ...commonTextStyle,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-  },
-  itemRowLeft: {
-    ...commonTextStyle,
-    flexDirection: 'column',
-  },
-  itemRowRight: {
-    ...commonTextStyle,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
-  },
-  itemName: {
-    ...commonTextStyle,
-    fontSize: RFValue(16),
     fontWeight: '600',
   },
-  itemQty: {
-    ...commonTextStyle,
-    fontSize: RFValue(14),
-    color: '#666',
-    marginTop: 2,
+
+  // 로딩 & 빈 상태
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  itemPrice: {
-    ...commonTextStyle,
+
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  emptyText: {
+    fontSize: RFValue(16),
+    color: '#666666',
+    fontWeight: '500',
+  },
+
+  // 리스트 스타일
+  flatlist: {
+    flex: 1,
+  },
+
+  yearHeader: {
+    fontSize: RFValue(20),
+    fontWeight: '700',
+    color: '#0D326F',
+    marginBottom: verticalScale(16),
+    marginTop: verticalScale(24),
+    paddingLeft: moderateScale(10),
+    borderLeftWidth: 4,
+    borderLeftColor: '#0D326F',
+  },
+
+  monthContainer: {
+    marginBottom: verticalScale(16),
+  },
+
+  monthHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: verticalScale(8),
+    backgroundColor: '#fff',
+    padding: moderateScale(16),
+    borderRadius: moderateScale(12),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+
+  monthTitle: {
+    fontSize: RFValue(18),
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+
+  monthTotal: {
     fontSize: RFValue(16),
     fontWeight: '600',
     color: '#0D326F',
   },
-  footer: {
-    ...commonTextStyle,
-    marginTop: 10,
-    alignItems: 'flex-end',
-  },
-  footerText: {
-    ...commonTextStyle,
-    color: '#1e7e34',
-    fontSize: RFValue(16),
-    fontWeight: 'bold',
+
+  weekContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: moderateScale(12),
+    padding: moderateScale(16),
+    marginBottom: verticalScale(8),
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
 
-  /* ========== 기간조회 및 날짜 선택 모달 (styles) ========== */
-  periodModalContainer: {
-    ...commonTextStyle,
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  periodModalInner: {
-    ...commonTextStyle,
-    width: '80%',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 20,
-    overflow: 'visible',
-  },
-  periodModalTitle: {
-    ...commonTextStyle,
-    fontSize: RFValue(18),
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  dateGroup: {
-    ...commonTextStyle,
-    flex: 1,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  dateGroupLabel: {
-    ...commonTextStyle,
-    fontSize: RFValue(16),
-    fontWeight: 'bold',
-    marginBottom: 6,
-  },
-  dateRow: {
-    ...commonTextStyle,
+  weekHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-  },
-  dateBox: {
-    ...commonTextStyle,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 5,
-    width: 75,
-    height: 30,
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: verticalScale(12),
+    paddingBottom: verticalScale(8),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
   },
-  dateBoxText: {
-    ...commonTextStyle,
+
+  weekTitle: {
+    fontSize: RFValue(16),
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+
+  weekTotal: {
+    fontSize: RFValue(16),
+    fontWeight: '600',
+    color: '#0D326F',
+  },
+
+  orderContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  orderInfo: {
+    flex: 1,
+  },
+
+  productName: {
     fontSize: RFValue(15),
     fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: verticalScale(4),
   },
-  dropdownWrapper: {
-    ...commonTextStyle,
-    position: 'relative',
-    marginHorizontal: 4,
-    zIndex: 1,
+
+  extraCount: {
+    fontSize: RFValue(14),
+    color: '#666666',
+    marginBottom: verticalScale(4),
   },
+
+  quantity: {
+    fontSize: RFValue(14),
+    color: '#1A1A1A',
+    fontWeight: '500',
+  },
+
+  detailButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: moderateScale(16),
+    paddingVertical: verticalScale(8),
+    borderRadius: moderateScale(25),
+    marginLeft: moderateScale(12),
+    borderWidth: 1.5,
+    borderColor: '#0D326F',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+
+  detailButtonText: {
+    color: '#0D326F',
+    fontSize: RFValue(14),
+    fontWeight: '600',
+  },
+
+  loadMoreButton: {
+    backgroundColor: '#FFFFFF',
+    padding: moderateScale(12),
+    borderRadius: moderateScale(25),
+    alignItems: 'center',
+    marginVertical: verticalScale(16),
+    borderWidth: 1.5,
+    borderColor: '#0D326F',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+
+  loadMoreButtonText: {
+    color: '#0D326F',
+    fontSize: RFValue(14),
+    fontWeight: '600',
+  },
+
+  // 모달 스타일
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+
+  modalView: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: moderateScale(16),
+    padding: moderateScale(20),
+    width: wp('90%'),
+    maxHeight: hp('80%'),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  receiptContainer: {
+    flex: 1,
+  },
+
+  header: {
+    marginBottom: verticalScale(16),
+  },
+
+  headerTitle: {
+    fontSize: RFValue(20),
+    fontWeight: '700',
+    color: '#0D326F',
+    marginBottom: verticalScale(4),
+    textAlign: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#e2e8f0',
+    paddingBottom: moderateScale(10),
+  },
+
+  headerSubtitle: {
+    fontSize: RFValue(16),
+    color: '#666666',
+    textAlign: 'center',
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: '#E5E5E5',
+    marginVertical: verticalScale(16),
+  },
+
+  itemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: verticalScale(12),
+    paddingVertical: verticalScale(8),
+    paddingHorizontal: moderateScale(12),
+    backgroundColor: '#f8f9fa',
+    borderRadius: moderateScale(8),
+  },
+
+  itemRowLeft: {
+    flex: 1,
+  },
+
+  itemName: {
+    fontSize: RFValue(15),
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+
+  itemQty: {
+    fontSize: RFValue(14),
+    color: '#666666',
+    marginTop: verticalScale(4),
+  },
+
+  itemPrice: {
+    fontSize: RFValue(15),
+    fontWeight: '600',
+    color: '#0D326F',
+  },
+
+  footer: {
+    marginTop: verticalScale(16),
+    alignItems: 'flex-end',
+    backgroundColor: '#f8f9fa',
+    padding: moderateScale(16),
+    borderRadius: moderateScale(8),
+  },
+
+  footerText: {
+    fontSize: RFValue(18),
+    fontWeight: '700',
+    color: '#0D326F',
+  },
+
+  closeButton: {
+    backgroundColor: '#0D326F',
+    borderRadius: moderateScale(25),
+    padding: moderateScale(12),
+    elevation: 2,
+    alignItems: 'center',
+    marginTop: verticalScale(16),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+
+  textStyle: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: RFValue(16),
+  },
+
+  // 기간 선택 모달 스타일
+  periodModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  periodModalInner: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: moderateScale(16),
+    padding: moderateScale(20),
+    width: wp('90%'),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  periodModalTitle: {
+    fontSize: RFValue(20),
+    fontWeight: '700',
+    color: '#0D326F',
+    marginBottom: verticalScale(20),
+    textAlign: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#e2e8f0',
+    paddingBottom: moderateScale(10),
+  },
+
+  dateGroup: {
+    marginBottom: verticalScale(20),
+  },
+
+  dateGroupLabel: {
+    fontSize: RFValue(16),
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: verticalScale(8),
+  },
+
+  dateRow: {
+    flexDirection: 'row',
+    gap: moderateScale(8),
+  },
+
+  dateBox: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+    padding: moderateScale(12),
+    borderRadius: moderateScale(8),
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+  },
+
+  dateBoxText: {
+    fontSize: RFValue(14),
+    color: '#1A1A1A',
+    textAlign: 'center',
+  },
+
   dropdown: {
-    ...commonTextStyle,
     position: 'absolute',
     top: '100%',
     left: 0,
-    width: '100%',
-    backgroundColor: '#fff',
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: moderateScale(8),
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    zIndex: 10,
-    elevation: 10,
+    borderColor: '#E5E5E5',
+    elevation: 5,
+    zIndex: 1000,
   },
+
   dropdownOpen: {
-    ...commonTextStyle,
-    zIndex: 9999,
-    elevation: 9999,
+    maxHeight: verticalScale(200),
   },
-  dropdownItem: {
-    ...commonTextStyle,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
+
   dropdownScroll: {
-    ...commonTextStyle,
-    maxHeight: 180,
+    maxHeight: verticalScale(200),
   },
+
+  dropdownItem: {
+    padding: moderateScale(12),
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+
+  periodSearchButton: {
+    backgroundColor: '#0D326F',
+    padding: moderateScale(12),
+    borderRadius: moderateScale(25),
+    alignItems: 'center',
+    marginTop: verticalScale(20),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+
+  periodSearchButtonText: {
+    color: '#FFFFFF',
+    fontSize: RFValue(16),
+    fontWeight: '600',
+  },
+
+  resetButton: {
+    backgroundColor: '#DC3545',
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: verticalScale(8),
+    borderRadius: moderateScale(25),
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+
+  resetButtonText: {
+    color: '#FFFFFF',
+    fontSize: RFValue(14),
+    fontWeight: '600',
+  },
+
+  // 드롭다운 관련 스타일
+  dropdownWrapper: {
+    position: 'relative',
+    marginHorizontal: moderateScale(4),
+    zIndex: 1,
+  },
+
   confirmButton: {
-    ...commonTextStyle,
-    backgroundColor: '#3b82f6',
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginTop: 10,
+    backgroundColor: '#0D326F',
+    borderRadius: moderateScale(25),
+    paddingVertical: moderateScale(8),
+    paddingHorizontal: moderateScale(16),
+    marginTop: verticalScale(10),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
+
   confirmButtonText: {
-    ...commonTextStyle,
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontSize: RFValue(14),
+    fontWeight: '600',
     textAlign: 'center',
   },
-  periodSearchButton: {
-    ...commonTextStyle,
-    backgroundColor: '#0D326F',
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  periodSearchButtonText: {
-    ...commonTextStyle,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  resetButton: {
-    ...commonTextStyle,
-    backgroundColor: 'red',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  resetButtonText: {
-    ...commonTextStyle,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+
+  // 날짜 선택 모달 스타일
   datePickerModalContainer: {
-    ...commonTextStyle,
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   datePickerModal: {
-    ...commonTextStyle,
-    width: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 20,
+    width: wp('90%'),
+    backgroundColor: '#FFFFFF',
+    borderRadius: moderateScale(16),
+    padding: moderateScale(20),
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
+
   datePickerTitle: {
-    ...commonTextStyle,
-    fontSize: RFValue(18),
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: RFValue(20),
+    fontWeight: '700',
+    color: '#0D326F',
+    marginBottom: verticalScale(10),
+    textAlign: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#e2e8f0',
+    paddingBottom: moderateScale(10),
+    width: '100%',
   },
+
   datePickerLabel: {
-    ...commonTextStyle,
     fontSize: RFValue(14),
     fontWeight: '600',
-    marginVertical: 6,
+    color: '#1A1A1A',
+    marginVertical: verticalScale(6),
     alignSelf: 'flex-start',
   },
+
   pickerItem: {
-    ...commonTextStyle,
-    backgroundColor: '#eee',
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginRight: 6,
+    backgroundColor: '#F8F9FA',
+    borderRadius: moderateScale(8),
+    paddingVertical: verticalScale(8),
+    paddingHorizontal: moderateScale(12),
+    marginRight: moderateScale(6),
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
   },
+
   pickerItemActive: {
-    ...commonTextStyle,
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#0D326F',
+    borderColor: '#0D326F',
   },
-    status_flatlist: {
-      ...commonTextStyle,
-      height: hp(80),
-    },
-    status_container: {
-      ...commonTextStyle,
-      flex: 1,
-      alignItems: 'stretch',
-      justifyContent: 'flex-start',
-      backgroundColor: '#fff',
-      paddingHorizontal: moderateScale(16),
-    },
-    selectItemRowContainer: {
-      ...commonTextStyle,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: moderateScale(2),
-      paddingRight: moderateScale(6),
-      paddingLeft: moderateScale(2),
-    },
-  });
+
+  itemRowRight: {
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+  },
+});

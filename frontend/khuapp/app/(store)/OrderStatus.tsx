@@ -89,7 +89,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         let allOrders: StoreOrderData[] = [];
         for (let page = startPage; page < startPage + 5; page++) {
           const response = await fetch(
-            `${RN_API_URL}/api/orders/store_order_list?store_id=${storeId}&page=${page}&order=${order}`
+            `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&page=${page}&order=${order}`
           );
           if (!response.ok) {
             console.error('발주 내역 조회 실패, page:', page);
@@ -276,6 +276,8 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         <View testID="몰라" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#0D326F" />
         </View>
+      ) : sortedYears.length === 0 ? (
+        <Text>네트워크 오류로 발주 내역을 불러오지 못했습니다.</Text>
       ) : (
         <FlatList
           ref={flatListRef}

@@ -185,7 +185,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
                       disabled={selected.quantity <= product.출고단위}
                     >
-                      <Minus testID="마이너스" color="#333" size={20} />
+                      <Minus testID="minusIcon" color="#333" size={20} />
                     </TouchableOpacity>
                     <TextInput
                       testID="quantityInput"
@@ -199,7 +199,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       style={styles.quantityButton}
                       onPress={() => updateQuantity(product.품목_id, product.출고단위)}
                     >
-                      <Plus color="#333" size={20} />
+                      <Plus testID="plusIcon" color="#333" size={20} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -208,11 +208,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           </View>
           {selected.error && (
             <View testID="errorContainer" style={styles.errorContainer}>
-              <Text
-                testID="errorText"
-                style={styles.errorText}
-                numberOfLines={1}
-              >
+              <Text testID="errorText" style={styles.errorText} numberOfLines={1}>
                 {selected.error}
               </Text>
             </View>
@@ -249,7 +245,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   if (loading) {
     return (
       <View testID="loading_Container" style={styles.loading_Container}>
-        <ActivityIndicator size="large" color="#0D326F80" />
+        <ActivityIndicator testID="activityIndicator" size="large" color="#0D326F80" />
         <Text testID="loading_Text" style={styles.loading_Text}>
           로딩 중...
         </Text>
@@ -260,13 +256,13 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   if (fetchError) {
     return (
       <View testID="container" style={styles.container}>
-        <Text>{fetchError}</Text>
+        <Text testID="fetchErrorText">{fetchError}</Text>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View testID="전체" style={{ flex: 1 }}>
       {!isConfirmation ? (
         <>
           <ScrollView
@@ -281,7 +277,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   상품 유형 선택
                 </Text>
                 <ScrollView
-                  testID="categoryList"
+                  testID="categoryListScroll"
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={styles.categoryList}
@@ -292,7 +288,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   }}
                 >
                   <TouchableOpacity
-                    testID="categoryButton"
+                    testID="categoryButton_All"
                     style={[
                       styles.categoryButton,
                       selectedCategory === null && styles.categoryButtonActive,
@@ -300,7 +296,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                     onPress={() => setSelectedCategory(null)}
                   >
                     <Text
-                      testID="categoryButtonText"
+                      testID="categoryButtonText_All"
                       style={[
                         styles.categoryButtonText,
                         selectedCategory === null && styles.categoryButtonTextActive,
@@ -312,7 +308,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   {uniqueCategories.map((cat, idx) => (
                     <TouchableOpacity
                       key={idx}
-                      testID="categoryButton"
+                      testID={`categoryButton_${idx}`}
                       style={[
                         styles.categoryButton,
                         selectedCategory === cat && styles.categoryButtonActive,
@@ -320,7 +316,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       onPress={() => setSelectedCategory(cat)}
                     >
                       <Text
-                        testID="categoryButtonText"
+                        testID={`categoryButtonText_${idx}`}
                         style={[
                           styles.categoryButtonText,
                           selectedCategory === cat && styles.categoryButtonTextActive,
@@ -333,7 +329,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 </ScrollView>
               </View>
               <View testID="sectionContainer" style={styles.sectionContainer}>
-                <Text testID="sectionTitle" style={styles.sectionTitle}>
+                <Text testID="sectionTitle_2" style={styles.sectionTitle}>
                   상품 선택하기
                 </Text>
                 <View testID="headerContainer" style={styles.headerContainer}>
@@ -343,7 +339,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   <Text testID="price_headerText" style={styles.price_headerText}>
                     가격
                   </Text>
-                  <Text testID="여백" style={{ width: '10%' }}></Text>
+                  <Text testID="whitespace" style={{ width: '10%' }}></Text>
                 </View>
               </View>
             </View>
@@ -377,7 +373,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           </View>
         </>
       ) : (
-        <ScrollView testID="container" style={{ flex: 1, backgroundColor: '#fff' }}>
+        <ScrollView testID="confirmationContainer" style={{ flex: 1, backgroundColor: '#fff' }}>
           <View testID="confirm_selectedItemsSection" style={styles.confirm_selectedItemsSection}>
             <Text
               testID="confirm_sectionTitle"
@@ -389,7 +385,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               const itemTotal = item.quantity * parseFloat(item.입고단가);
               return (
                 <View testID="confirmationItemRow" key={item.품목_id} style={styles.confirmationItemRow}>
-                  <View style={{ flex: 2 }}>
+                  <View testID="confirmItemLeft" style={{ flex: 2 }}>
                     <Text testID="confirm_selectItemName" style={styles.confirm_selectItemName}>
                       {item.품목명}
                     </Text>
@@ -398,7 +394,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       {item.단위} (출고단위: {item.출고단위})
                     </Text>
                   </View>
-                  <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                  <View testID="confirmItemRight" style={{ flex: 1, alignItems: 'flex-end' }}>
                     <Text testID="confirm_priceText" style={styles.confirm_priceText}>
                       {f.formatPrice(itemTotal)}원
                     </Text>
@@ -410,7 +406,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               <Text testID="totalText" style={styles.totalText}>
                 총합계:
               </Text>
-              <Text testID="totalText" style={styles.totalText}>
+              <Text testID="totalText_2" style={styles.totalText}>
                 {f.formatPrice(totalPrice)}원
               </Text>
             </View>
@@ -425,7 +421,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              testID="order_request_Button"
+              testID="order_request_Button_Back"
               style={[
                 styles.order_request_Button,
                 { backgroundColor: 'white' },
@@ -435,7 +431,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               ]}
               onPress={() => setIsConfirmation(false)}
             >
-              <Text testID="order_request_ButtonText" style={[styles.order_request_ButtonText, { color: '#0D326F' }]}>
+              <Text testID="order_request_ButtonText_Back" style={[styles.order_request_ButtonText, { color: '#0D326F' }]}>
                 뒤로가기
               </Text>
             </TouchableOpacity>
@@ -445,18 +441,19 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
 
       {/* 모달 영역 */}
       <Modal
+        testID="modal"
         visible={modalVisible}
         transparent
         animationType="slide"
         onRequestClose={() => setModalVisible(false)}
       >
-        <View testID="centeredView" style={modalStyles.centeredView}>
+        <View testID="modalCenteredView" style={modalStyles.centeredView}>
           <View testID="modalView" style={modalStyles.modalView}>
             <Text testID="modalTitle" style={modalStyles.modalTitle}>
               발주 오류
             </Text>
             {errorMessages.map((msg, idx) => (
-              <Text key={idx} testID="modalText" style={modalStyles.modalText}>
+              <Text key={idx} testID={`modalText_${idx}`} style={modalStyles.modalText}>
                 {msg}
               </Text>
             ))}
@@ -474,28 +471,29 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       </Modal>
 
       <Modal
+        testID="orderCompleteModal"
         visible={orderCompleteModalVisible}
         transparent
         animationType="slide"
         onRequestClose={() => setOrderCompleteModalVisible(false)}
       >
-        <View testID="centeredView" style={modalStyles.centeredView}>
-          <View testID="modalView" style={modalStyles.modalView}>
-            <Text testID="modalTitle" style={modalStyles.modalTitle}>
+        <View testID="modalCenteredView_2" style={modalStyles.centeredView}>
+          <View testID="modalView_2" style={modalStyles.modalView}>
+            <Text testID="modalTitle_2" style={modalStyles.modalTitle}>
               발주 완료
             </Text>
-            <Text testID="modalText" style={modalStyles.modalText}>
+            <Text testID="modalText_Complete" style={modalStyles.modalText}>
               모든 발주 요청이 성공적으로 전송되었습니다.
             </Text>
             <TouchableOpacity
-              testID="closeButton"
+              testID="closeButton_Complete"
               style={modalStyles.closeButton}
               onPress={() => {
                 setOrderCompleteModalVisible(false);
                 onOrderComplete();
               }}
             >
-              <Text testID="textStyle" style={modalStyles.textStyle}>
+              <Text testID="textStyle_Complete" style={modalStyles.textStyle}>
                 확인
               </Text>
             </TouchableOpacity>
@@ -504,27 +502,28 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       </Modal>
 
       <Modal
+        testID="orderFailureModal"
         visible={orderFailureModalVisible}
         transparent
         animationType="slide"
         onRequestClose={() => setOrderFailureModalVisible(false)}
       >
-        <View testID="centeredView" style={modalStyles.centeredView}>
-          <View testID="modalView" style={modalStyles.modalView}>
-            <Text testID="modalTitle" style={modalStyles.modalTitle}>
+        <View testID="modalCenteredView_3" style={modalStyles.centeredView}>
+          <View testID="modalView_3" style={modalStyles.modalView}>
+            <Text testID="modalTitle_3" style={modalStyles.modalTitle}>
               발주 실패
             </Text>
             {orderFailureMessages.map((msg, idx) => (
-              <Text key={idx} testID="modalText" style={modalStyles.modalText}>
+              <Text key={idx} testID={`modalText_failure_${idx}`} style={modalStyles.modalText}>
                 {msg}
               </Text>
             ))}
             <TouchableOpacity
-              testID="closeButton"
+              testID="closeButton_3"
               style={modalStyles.closeButton}
               onPress={() => setOrderFailureModalVisible(false)}
             >
-              <Text testID="textStyle" style={modalStyles.textStyle}>
+              <Text testID="textStyle_3" style={modalStyles.textStyle}>
                 확인
               </Text>
             </TouchableOpacity>

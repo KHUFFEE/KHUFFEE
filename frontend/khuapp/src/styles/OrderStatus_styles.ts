@@ -444,4 +444,20 @@ export const orderStatusStyles = StyleSheet.create({
       ...commonTextStyle,
       height: hp(80),
     },
+    status_container: {
+      ...commonTextStyle,
+      flex: 1,
+      alignItems: 'stretch',
+      justifyContent: 'flex-start',
+      backgroundColor: '#fff',
+      paddingHorizontal: moderateScale(16),
+    },
+    selectItemRowContainer: {
+      ...commonTextStyle,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: moderateScale(2),
+      paddingRight: moderateScale(6),
+      paddingLeft: moderateScale(2),
+    },
   });

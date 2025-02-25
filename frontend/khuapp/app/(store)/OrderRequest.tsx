@@ -17,7 +17,7 @@ import {
 import { styles,modalStyles,  } from '../../src/components/ui/common/commonstyler';
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
-import { OrderRequeststyle } from '../../src/styles/Orderrequest_style';
+import { OrderRequeststyle } from '../../src/styles/Orderrequest_styles';
 
 const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   storeName,

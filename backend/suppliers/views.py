@@ -7,8 +7,8 @@ from .serializers import ItemSerializer, SupplierSerializer
 
 class ItemListView(APIView):
     def get(self, request):
-        # 활성화(True)인 품목만 조회
-        items = Item.objects.filter(활성화=True)
+        # 모든 품목 조회 (활성화 여부와 상관없이 모두 조회)
+        items = Item.objects.all()
         serialized_items = ItemSerializer(items, many=True)
         return Response(serialized_items.data, status=status.HTTP_200_OK)
 
@@ -39,16 +39,23 @@ class ItemListView(APIView):
         serializer = ItemSerializer(item)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
 class ItemDeleteView(APIView):
     def post(self, request):
-        # 프론트엔드에서 선택된 품목들의 품목_id 리스트를 받아 활성화(False)로 업데이트
         ids = request.data.get("ids", [])
+        action = request.data.get("action", "deactivate")  # 기본값은 비활성화
+
         if not ids:
-            return Response({"error": "삭제할 품목이 선택되지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        updated_count = Item.objects.filter(품목_id__in=ids).update(활성화=False)
+            return Response({"error": "처리할 품목이 선택되지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        target_activation = True if action == "activate" else False
+
+        updated_count = Item.objects.filter(품목_id__in=ids).update(활성화=target_activation)
         if updated_count > 0:
-            return Response({"detail": "선택한 품목들이 비활성화되었습니다."}, status=status.HTTP_200_OK)
+            if target_activation:
+                return Response({"detail": "선택한 품목들이 활성화되었습니다."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"detail": "선택한 품목들이 비활성화되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "해당 품목을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 

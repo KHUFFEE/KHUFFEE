@@ -58,13 +58,13 @@ export const addItem = async (newItem) => {
   return await response.json();
 };
 
-export const deleteItems = async (ids) => {
+export const deleteItems = async (payload) => {
   const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/items/delete/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ ids }),
+    body: JSON.stringify(payload),
   });
   if (!response.ok) {
     throw new Error("Failed to delete items");

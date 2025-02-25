@@ -5,6 +5,8 @@ import {
   fetchSuppliers,
   fetchStores,
   updateStoreOrder,
+  getTableStatusList,
+  updateTableStatus,
 } from "../api/api";
 import "../styles/StoreOrders.css";
 import { storeOrdersDownloadExcel } from "../utils/StoreOrdersDownloadExcel";
@@ -42,6 +44,11 @@ const StoreOrders = () => {
   // 드롭다운 open 상태
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const selectRef = useRef(null);
+
+  // 팝업 관련 상태 (회차 관리)
+  const [showPopup, setShowPopup] = useState(false);
+  // 현재 매니저의 발주 회차 상태, 기본 1로 가정
+  const [managerOrderRound, setManagerOrderRound] = useState(1);
 
   // API GET: 기간 및 회차가 있는 경우 해당 파라미터로 요청, 없으면 페이지번호로 요청
   const fetchData = async (params = { page: 1 }) => {
@@ -252,7 +259,11 @@ const StoreOrders = () => {
   };
 
   const getCellValue = (row, storeId) => {
-    if (isEditMode && editedOrders[row.itemId] && editedOrders[row.itemId][storeId] !== undefined) {
+    if (
+      isEditMode &&
+      editedOrders[row.itemId] &&
+      editedOrders[row.itemId][storeId] !== undefined
+    ) {
       return editedOrders[row.itemId][storeId];
     }
     return row.orders[storeId];
@@ -273,7 +284,12 @@ const StoreOrders = () => {
   const grandTotal = sortedTableRows.reduce((sum, row) => sum + getRowSum(row), 0);
 
   const formatNumber = (num) => {
-    if (num === "" || num === undefined || num === null || Number(num) === 0)
+    if (
+      num === "" ||
+      num === undefined ||
+      num === null ||
+      Number(num) === 0
+    )
       return "-";
     return Number(num).toLocaleString();
   };
@@ -307,7 +323,9 @@ const StoreOrders = () => {
       for (const itemId in editedOrders) {
         for (const storeId in editedOrders[itemId]) {
           const newValue = editedOrders[itemId][storeId];
-          const originalVal = tableRows.find((row) => row.itemId === itemId)?.orders[storeId];
+          const originalVal = tableRows.find(
+            (row) => row.itemId === itemId
+          )?.orders[storeId];
           if (newValue === "" || Number(newValue) === 0) {
             if (originalVal === 0 || originalVal === "") continue;
           } else if (newValue === originalVal) continue;
@@ -380,6 +398,67 @@ const StoreOrders = () => {
       storeTotals,
     });
   };
+
+  // 회차 관리 버튼 클릭 시: getTableStatusList API 호출 후 팝업 표시
+  const handleSessionButtonClick = async () => {
+    try {
+      const statusList = await getTableStatusList();
+      // "매장_발주" 칼럼의 상태 값을 찾음 (없으면 기본 1)
+      const storeOrderStatus = statusList.find(
+        (s) => s.테이블 === "매장_발주"
+      );
+      const currentStatus = storeOrderStatus ? storeOrderStatus.상태 : 1;
+      setManagerOrderRound(currentStatus);
+    } catch (err) {
+      console.error("테이블 상태 조회 실패:", err);
+      setManagerOrderRound(1);
+    }
+    setShowPopup(true);
+  };
+
+  // 팝업창 내 "변경" 버튼 클릭 시: updateTableStatus API 호출 (현재 값 +1)
+  const handleUpdateSession = async () => {
+    try {
+      const newRound = managerOrderRound + 1;
+      await updateTableStatus({ 테이블: "매장_발주", 상태: newRound });
+      setManagerOrderRound(newRound);
+      setShowPopup(false);
+    } catch (err) {
+      console.error("회차 관리 업데이트 실패:", err);
+      alert("회차 관리 업데이트에 실패하였습니다.");
+    }
+  };
+
+  // 현재 선택된 기간과 회차가 최신의 가장 높은 회차인지 확인 (Excel 다운로드 버튼 왼쪽에 회차 관리 버튼 노출)
+  let isLatestPeriod = false;
+  if (
+    distinctPeriods.length > 0 &&
+    selectedYear &&
+    selectedMonth &&
+    selectedWeek &&
+    selectedRound
+  ) {
+    const sortedDistinct = [...distinctPeriods].sort((a, b) => {
+      const [yearA, monthA, weekA, roundA] = a.split(".").map(Number);
+      const [yearB, monthB, weekB, roundB] = b.split(".").map(Number);
+      if (yearA !== yearB) return yearB - yearA;
+      if (monthA !== monthB) return monthB - monthA;
+      if (weekA !== weekB) return weekB - weekA;
+      return roundB - roundA;
+    });
+    // 현재 선택된 회차를 숫자로 비교 (문자열 포맷 문제를 피하기 위해)
+    const currentPeriod = [
+      Number(selectedYear),
+      Number(selectedMonth),
+      Number(selectedWeek),
+      Number(selectedRound),
+    ].join(".");
+    const latestPeriod = sortedDistinct[0]
+      .split(".")
+      .map(Number)
+      .join(".");
+    isLatestPeriod = currentPeriod === latestPeriod;
+  }
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -465,6 +544,11 @@ const StoreOrders = () => {
           </button>
         </div>
         <div className="store-action-buttons">
+          {isLatestPeriod && (
+            <button className="session-button" onClick={handleSessionButtonClick} disabled={isEditMode}>
+              회차 관리
+            </button>
+          )}
           <button onClick={handleExcelDownload} className="download-button" disabled={isEditMode}>
             Excel 다운로드
           </button>
@@ -551,6 +635,27 @@ const StoreOrders = () => {
         <button className="edit-confirm-button" onClick={handleEditSubmit}>
           수정완료
         </button>
+      )}
+      {/* 회차 관리 팝업 */}
+      {showPopup && (
+        <div className="order-popup">
+          <div className="order-popup-content">
+            <h3>!! 주의 !!</h3>
+            <p>
+              현재 매니저의 발주는 {managerOrderRound}회차로 저장됩니다.
+              <br />
+              {managerOrderRound + 1}회차로 변경하려면 변경 버튼을 클릭해주세요.
+            </p>
+            <div className="order-popup-buttons">
+              <button className="popup-cancel" onClick={() => setShowPopup(false)}>
+                취소
+              </button>
+              <button className="popup-confirm" onClick={handleUpdateSession}>
+                변경
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

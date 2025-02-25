@@ -229,16 +229,18 @@
 
   .sime-popup-content {
     background-color: #fff;
-    padding: 40px;
+    padding: 45px;
     border-radius: 8px;
     width: 90%;
-    max-width: 500px;
+    max-width: 550px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
   .sime-popup-content h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
+    font-size: 22px !important;
+    color: #8B0000;
+    margin-top: -12px;
+    margin-bottom: 35px;
     text-align: center;
   }
 
@@ -246,4 +248,8 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+  }
+
+  .sime-popup-content p {
+    font-size: 20px !important; 
   }

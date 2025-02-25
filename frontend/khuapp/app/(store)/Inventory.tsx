@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { RN_API_URL } from '@env';
 import * as f from '../../src/components/ui/common/function';
-import { styles, inventoryStyles } from '../../src/components/ui/common/commonstyler';
+import { inventoryStyles } from '../../src/styles/Inventory_styles';
 import { APIProduct } from '../../src/components/ui/common/types';
 import { moderateScale } from 'react-native-size-matters';
+import { styles} from '../../src/components/ui/common/commonstyler';
 
 // 일간 재고 타입
 export interface MergedInventoryItem extends APIProduct {
@@ -44,7 +45,7 @@ const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ item, inventoryType
 
   return (
     <View testID="itemContainer" style={inventoryStyles.itemContainer}>
-      <View testID="cardContent" style={styles.cardContent}>
+      <View testID="cardContent" style={inventoryStyles.inventory_cardContent}>
         <View testID="inventory_selectItemRowContainer" style={inventoryStyles.inventory_selectItemRowContainer}>
           <Text testID="name_itemText" style={inventoryStyles.name_itemText}>
             {item.품목명}

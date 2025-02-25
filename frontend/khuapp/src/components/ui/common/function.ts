@@ -241,10 +241,56 @@ export const handleOrderSubmitUtil = async (
 ): Promise<{ newOrder?: LocalOrder; failures?: string[] }> => {
   const failures: string[] = [];
 
+  // 기본 회차와 기간 계산: 현재 날짜를 기준으로 (예시)
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth() + 1;
+  const week = Math.ceil(currentDate.getDate() / 7);
+  let currentRound = 1;
+  let currentPeriod = `${year}.${month}.${week}`;
+
+  // 먼저 store_order_list에서 기간 정보를 가져오기 (회차는 여기서 사용하지 않음)
+  try {
+    const orderListResponse = await fetch(
+      `${RN_API_URL}/api/orders/store_order_list?store_id=${storeId}&page=1&order=desc`
+    );
+    if (orderListResponse.ok) {
+      const orderListData = await orderListResponse.json();
+      if (orderListData.current_period) {
+        currentPeriod = orderListData.current_period;
+      }
+    }
+  } catch (error) {
+    console.error("기간 정보를 가져오는 중 오류 발생, 기본값 사용:", error);
+  }
+
+  // table_status_list에서 "매장_발주"의 상태 값을 회차로 사용
+  try {
+    const tableStatusResponse = await fetch(
+      `${RN_API_URL}/api/management/table_status_list/`
+    );
+    if (tableStatusResponse.ok) {
+      const tableStatusData = await tableStatusResponse.json();
+      // "매장_발주"에 해당하는 항목 찾기
+      const 매장발주Status = tableStatusData.find(
+        (item: any) => item.테이블 === "매장_발주"
+      );
+      if (매장발주Status && 매장발주Status.상태 !== undefined) {
+        currentRound = parseInt(매장발주Status.상태, 10);
+      }
+    }
+  } catch (error) {
+    console.error("테이블 상태 정보를 가져오는 중 오류 발생, 기본 회차 사용:", error);
+  }
+
+  // 선택된 각 품목에 대해 POST 요청 전송
   for (const item of selectedItems) {
+    // payload에 회차와 기간 추가
     const payload = {
       매장_id: storeId,
       품목_id: item.품목_id,
+      기간: currentPeriod,
+      회차: currentRound,
       매장_발주량: item.quantity,
     };
 
@@ -262,22 +308,8 @@ export const handleOrderSubmitUtil = async (
     }
   }
 
-  if (failures.length > 0) {
-    return { failures };
-  } else {
-    const newOrder: LocalOrder = {
-      id: Date.now(),
-      date: new Date().toLocaleString(),
-      items: selectedItems.map((item) => ({
-        품목_id: item.품목_id,
-        품목명: item.품목명,
-        quantity: item.quantity,
-        단위: item.단위,
-        출고단위: item.출고단위,
-      })),
-    };
-    return { newOrder };
-  }
+  // 예시에서는 성공 시 newOrder를 빈 객체로 반환 (필요에 따라 로직 수정)
+  return { newOrder: {} as LocalOrder, failures: failures.length > 0 ? failures : undefined };
 };
 
 

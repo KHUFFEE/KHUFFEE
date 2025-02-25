@@ -21,7 +21,7 @@ export const orderStatusStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: verticalScale(16),
+    marginBottom: verticalScale(8),
     backgroundColor: '#fff',
     padding: moderateScale(16),
     borderRadius: moderateScale(12),
@@ -99,33 +99,38 @@ export const orderStatusStyles = StyleSheet.create({
     fontSize: RFValue(20),
     fontWeight: '700',
     color: '#0D326F',
-    marginBottom: verticalScale(16),
-    marginTop: verticalScale(24),
+    marginBottom: verticalScale(8),
+    marginTop: verticalScale(10),
     paddingLeft: moderateScale(10),
     borderLeftWidth: 4,
     borderLeftColor: '#0D326F',
   },
 
   monthContainer: {
-    marginBottom: verticalScale(16),
+    // marginBottom: verticalScale(6),
+    backgroundColor: '#f8f9fa',
+    marginBottom: verticalScale(10),
   },
 
   monthHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: verticalScale(8),
-    backgroundColor: '#fff',
-    padding: moderateScale(16),
-    borderRadius: moderateScale(12),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    // marginBottom: verticalScale(8),
+    paddingLeft: moderateScale(10),
+    gap: moderateScale(10),
+    // backgroundColor: '#fff',
+    // padding: moderateScale(16),
+    // borderRadius: moderateScale(12),
+  //   shadowColor: '#000',
+  //   shadowOffset: {
+  //     width: 0,
+  //     height: 2,
+  //   },
+  //   shadowOpacity: 0.05,
+  //   shadowRadius: 3,
+  //   elevation: 2,
+  // 
   },
 
   monthTitle: {
@@ -237,7 +242,7 @@ export const orderStatusStyles = StyleSheet.create({
     padding: moderateScale(12),
     borderRadius: moderateScale(25),
     alignItems: 'center',
-    marginVertical: verticalScale(16),
+    marginBottom: verticalScale(8),
     borderWidth: 1.5,
     width: wp(50),
     borderColor: '#0D326F',
@@ -249,6 +254,7 @@ export const orderStatusStyles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 1,
+    margin: 'auto'
   },
 
   loadMoreButtonText: {
@@ -502,8 +508,8 @@ export const orderStatusStyles = StyleSheet.create({
 
   dropdownScroll: {
     maxHeight: verticalScale(150),
-    paddingVertical: verticalScale(4),
-    paddingHorizontal: moderateScale(2),
+    // paddingVertical: verticalScale(4),
+    // paddingHorizontal: moderateScale(2),
   },
 
   dropdownItem: {
@@ -642,12 +648,12 @@ export const orderStatusStyles = StyleSheet.create({
   pickerItem: {
     backgroundColor: '#f8f9fa',
     paddingVertical: verticalScale(8),
-    paddingHorizontal: moderateScale(12),
+    // paddingHorizontal: moderateScale(12),
     borderWidth: 1,
     borderColor: '#E5E5E5',
-    marginHorizontal: moderateScale(4),
-    marginVertical: verticalScale(4),
-    borderRadius: moderateScale(6),
+    // marginHorizontal: moderateScale(4),
+    // marginVertical: verticalScale(4),
+    // borderRadius: moderateScale(6),
     alignItems: 'center',
     justifyContent: 'center',
   },

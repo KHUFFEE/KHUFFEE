@@ -25,10 +25,19 @@ class TableStatusUpdateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 0 또는 1이 아닌 값이 들어온다면 예외 처리
-        if not (str(new_status) in ["0", "1"]):
+        # new_status를 정수로 변환 시도
+        try:
+            new_status_int = int(new_status)
+        except ValueError:
             return Response(
-                {"error": "상태 필드는 0 또는 1만 가능합니다."},
+                {"error": "상태 필드는 정수여야 합니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 0부터 9까지의 값만 허용
+        if not (0 <= new_status_int <= 9):
+            return Response(
+                {"error": "상태 필드는 0부터 9까지 가능합니다."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -36,7 +45,7 @@ class TableStatusUpdateView(APIView):
         try:
             # get_or_create 사용 시, 테이블이 없으면 새로 생성
             obj, created = TableStatus.objects.get_or_create(테이블=table_name)
-            obj.상태 = new_status
+            obj.상태 = new_status_int
             obj.save()
 
             return Response({
@@ -48,3 +57,4 @@ class TableStatusUpdateView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+

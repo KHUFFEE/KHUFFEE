@@ -455,8 +455,8 @@ const StoreInventoryMonthEnd = () => {
   }
   const openButtonText =
     tableStatus === 0
-      ? `${parseInt(latestMonthForButton, 10) + 1}월 오픈`
-      : `${parseInt(latestMonthForButton, 10)}월 마감`;
+      ? `${parseInt(latestMonthForButton, 10) + 1}월 오픈하기`
+      : `${parseInt(latestMonthForButton, 10)}월 마감하기`;
 
   // 팝업 메시지에 사용할 현재월과 다음월 계산 (버튼 컨텍스트와 일치하도록)
   const currentMonthNumber = latestMonthForButton ? parseInt(latestMonthForButton, 10) : null;
@@ -662,15 +662,21 @@ const StoreInventoryMonthEnd = () => {
         <div className="sime-popup">
           <div className="sime-popup-content">
             {popupType === "open" ? (
-              <h3>
-                확인 버튼을 누르면 매니저의 {nextMonthNumber}월말 재고 입력이 허용됩니다.
-              </h3>
+              <>
+                <h3>!! 주의 !!</h3>
+                <p>
+                  확인 버튼을 누르면 매니저의 {nextMonthNumber}월말 재고 입력이 허용됩니다.
+                </p>
+              </>
             ) : (
-              <h3>
-                확인 버튼을 누르면 매니저는 {currentMonthNumber}월말 재고 입력이 불가능해지며
-                <br />
-                관리자 외에는 수정 권한이 제한됩니다.
-              </h3>
+              <>
+                <h3>!! 주의 !!</h3>
+                <p>
+                  확인 버튼을 누르면 매니저는 {currentMonthNumber}월말 재고 입력이 불가능해지며
+                  <br />
+                  관리자 외에는 수정 권한이 제한됩니다.
+                </p>
+              </>
             )}
             <div className="sime-popup-buttons">
               <button className="popup-cancel" onClick={() => setPopupType(null)}>취소</button>

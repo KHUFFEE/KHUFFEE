@@ -329,7 +329,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 </ScrollView>
               </View>
               <View testID="sectionContainer" style={styles.sectionContainer}>
-                <Text testID="sectionTitle_2" style={styles.sectionTitle}>
+                <Text testID="sectionTitle_2" style={styles.sectionTitle_2}>
                   상품 선택하기
                 </Text>
                 <View testID="headerContainer" style={styles.headerContainer}>

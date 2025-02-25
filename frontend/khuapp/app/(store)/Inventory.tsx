@@ -27,28 +27,29 @@ interface InventoryItemRowProps {
 
 const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ item, editMode, onValueChange }) => {
   return (
-    <View testID='itemContainer' style={inventoryStyles.itemContainer}>
-      <View style={styles.cardContent}>
-        <View style={styles.selectItemRowContainer}>
-          <Text testID='name_itemText' style={inventoryStyles.name_itemText}>
-            {item.품목명}
-          </Text>
-          {editMode ? (
-            <TextInput
-              testID='itemText'
-              style={inventoryStyles.itemText}
-              value={item.매장_재고량.toString()}
-              keyboardType="numeric"
-              onChangeText={(text) => onValueChange(item.품목_id, text)}
-            />
-          ) : (
-            <Text testID='unit_itemText' style={inventoryStyles.unit_itemText}>
-              {f.formatPrice(item.매장_재고량)}
+
+      <View testID='itemContainer' style={inventoryStyles.itemContainer}>
+        <View testID="cardContent"style={styles.cardContent}>
+          <View testID='inventory_selectItemRowContainer'style={inventoryStyles.inventory_selectItemRowContainer}>
+            <Text testID='name_itemText' style={inventoryStyles.name_itemText}>
+              {item.품목명}
             </Text>
-          )}
+            {editMode ? (
+              <TextInput
+                testID='itemText'
+                style={inventoryStyles.itemText}
+                value={item.매장_재고량.toString()}
+                keyboardType="numeric"
+                onChangeText={(text) => onValueChange(item.품목_id, text)}
+              />
+            ) : (
+              <Text testID='unit_itemText' style={inventoryStyles.unit_itemText}>
+                {f.formatPrice(item.매장_재고량)}
+              </Text>
+            )}
+          </View>
         </View>
       </View>
-    </View>
   );
 };
 
@@ -146,17 +147,17 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
 
   if (loading) {
     return (
-      <View style={styles.loading_Container}>
+      <View testID='loading_Container'style={styles.loading_Container}>
         <ActivityIndicator size="large" color="#0D326F80" />
-        <Text style={styles.loading_Text}>로딩 중...</Text>
+        <Text testID='loading_Text'style={styles.loading_Text}>로딩 중...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={inventoryStyles.container}>
-        <Text style={inventoryStyles.message}>오류 발생: {error}</Text>
+      <View testID="container"style={inventoryStyles.container}>
+        <Text testID='message'style={inventoryStyles.message}>오류 발생: {error}</Text>
       </View>
     );
   }

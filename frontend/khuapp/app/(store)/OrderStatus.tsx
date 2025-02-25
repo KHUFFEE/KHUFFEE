@@ -23,7 +23,9 @@ import {
 } from 'lucide-react-native';
 import { RN_API_URL } from '@env';
 import { StoreOrderData, APIProduct } from '../../src/components/ui/common/types';
-import { styles, modalStyles, orderStatusStyles, receiptStyles, inventoryStyles } from '../../src/components/ui/common/commonstyler';
+import { modalStyles,} from '../../src/components/ui/common/commonstyler';
+import { orderStatusStyles } from '../../src/styles/OrderStatus_styles';
+
 import * as f from '../../src/components/ui/common/function';
 import { moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
@@ -234,9 +236,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
 
   if (loading) {
     return (
-      <View testID='loading_Container' style={styles.loading_Container}>
+      <View testID='loading_Container' style={orderStatusStyles.loading_Container}>
         <ActivityIndicator size="large" color="#0D326F80" />
-        <Text style={styles.loading_Text}>로딩 중...</Text>
+        <Text style={orderStatusStyles.loading_Text}>로딩 중...</Text>
       </View>
     );
   }
@@ -246,21 +248,21 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     <View style={{ flex: 1, overflow: 'hidden' }}>
       {/* 헤더 영역 */}
       {!loading && sortedYears.length > 0 && (
-        <View testID="headerRow" style={styles.headerRow}>
-          <View testID="titleContainer" style={styles.sectionTitle}>
-            <Text testID="title" style={[styles.title, { textAlign: 'center' }]}>
+        <View testID="headerRow" style={orderStatusStyles.headerRow}>
+          <View testID="titleContainer" style={orderStatusStyles.sectionTitle}>
+            <Text testID="title" style={[orderStatusStyles.title, { textAlign: 'center' }]}>
               발주 내역
             </Text>
           </View>
-          <View testID="rightButtonGroup" style={styles.rightButtonGroup}>
-            <TouchableOpacity testID="sortButton" style={styles.sortButton} onPress={toggleSortOrder}>
+          <View testID="rightButtonGroup" style={orderStatusStyles.rightButtonGroup}>
+            <TouchableOpacity testID="sortButton" style={orderStatusStyles.sortButton} onPress={toggleSortOrder}>
               <Text testID="text" style={{ color: '#0D326F', fontWeight: 'bold', fontSize: 11 }}>
                 {sortOrder === 'desc' ? '최신순' : '오래된 순'}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               testID="sortButton"
-              style={[styles.sortButton, { marginLeft: 8 }]}
+              style={[orderStatusStyles.sortButton, { marginLeft: 8 }]}
               onPress={() => setShowPeriodModal(true)}
             >
               <Text testID="text" style={{ color: '#0D326F', fontWeight: 'bold', fontSize: 11 }}>
@@ -282,7 +284,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         <FlatList
           ref={flatListRef}
           testID="flatlist"
-          style={orderStatusStyles.flatlist}
+          style={orderStatusStyles.status_flatlist}
           data={sortedYears}
           keyExtractor={(year) => year.toString()}
           contentContainerStyle={{ flexGrow: 1, paddingHorizontal: moderateScale(16) }}
@@ -300,7 +302,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
             const sortedMonths = sortKeys(Object.keys(monthsObj));
             return (
               <>
-                <Text testID="주문내역" style={inventoryStyles.term_of_name}>
+                <Text testID="주문내역" style={orderStatusStyles.term_of_name}>
                   {year}년 주문내역
                 </Text>
                 {sortedMonths.map((month) => {
@@ -386,7 +388,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
             !isPeriodSearch && hasMore ? (
               <TouchableOpacity
                 testID='loadMoreButton'
-                style={styles.loadMoreButton}
+                style={orderStatusStyles.loadMoreButton}
                 onPress={async () => {
                   await fetchOrders(currentPage, sortOrder);
                   setCurrentPage((prev) => prev + 5);
@@ -396,7 +398,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                 {loading ? (
                   <ActivityIndicator size="small" color="#0D326F" />
                 ) : (
-                  <Text testID="loadMoreButtonText" style={styles.loadMoreButtonText}>
+                  <Text testID="loadMoreButtonText" style={orderStatusStyles.loadMoreButtonText}>
                     더 불러오기
                   </Text>
                 )}
@@ -413,32 +415,32 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         animationType="slide"
         onRequestClose={() => setDetailModalVisible(false)}
       >
-        <View testID="centeredView" style={modalStyles.centeredView}>
-          <View testID="modalView" style={[modalStyles.modalView, { maxHeight: '80%' }]}>
-            <ScrollView testID="receiptContainer" style={receiptStyles.receiptContainer}>
-              <View style={receiptStyles.header}>
-                <Text style={receiptStyles.headerTitle}>주문 상세 내역</Text>
-                <Text style={receiptStyles.headerSubtitle}>{f.formatWeekString(detailGroupDate)}</Text>
+        <View testID="centeredView" style={orderStatusStyles.centeredView}>
+          <View testID="modalView" style={[orderStatusStyles.modalView, { maxHeight: '80%' }]}>
+            <ScrollView testID="receiptContainer" style={orderStatusStyles.receiptContainer}>
+              <View style={orderStatusStyles.header}>
+                <Text style={orderStatusStyles.headerTitle}>주문 상세 내역</Text>
+                <Text style={orderStatusStyles.headerSubtitle}>{f.formatWeekString(detailGroupDate)}</Text>
               </View>
-              <View style={receiptStyles.divider} />
+              <View style={orderStatusStyles.divider} />
               {detailGroupOrders.map((order, idx) => (
-                <View key={idx} style={receiptStyles.itemRow}>
-                  <View style={receiptStyles.itemRowLeft}>
-                    <Text style={receiptStyles.itemName}>{order.품목명}</Text>
-                    <Text style={receiptStyles.itemQty}>
+                <View key={idx} style={orderStatusStyles.itemRow}>
+                  <View style={orderStatusStyles.itemRowLeft}>
+                    <Text style={orderStatusStyles.itemName}>{order.품목명}</Text>
+                    <Text style={orderStatusStyles.itemQty}>
                       x {f.formatPrice(order.매장_발주량)}개
                     </Text>
                   </View>
-                  <View style={receiptStyles.itemRowRight}>
-                    <Text style={receiptStyles.itemPrice}>
+                  <View style={orderStatusStyles.itemRowRight}>
+                    <Text style={orderStatusStyles.itemPrice}>
                       {f.formatPrice(order.totalCost || 0)}원
                     </Text>
                   </View>
                 </View>
               ))}
-              <View style={receiptStyles.divider} />
-              <View style={receiptStyles.footer}>
-                <Text style={receiptStyles.footerText}>
+              <View style={orderStatusStyles.divider} />
+              <View style={orderStatusStyles.footer}>
+                <Text style={orderStatusStyles.footerText}>
                   총 합계: {f.formatPrice(detailTotalCost)}원
                 </Text>
               </View>
@@ -468,11 +470,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
             setOpenEndDropdown(null);
           }}
         >
-          <View style={styles.periodModalContainer}>
+          <View style={orderStatusStyles.periodModalContainer}>
             <TouchableWithoutFeedback>
-              <View style={styles.periodModalInner}>
+              <View style={orderStatusStyles.periodModalInner}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={styles.periodModalTitle}>기간조회</Text>
+                  <Text style={orderStatusStyles.periodModalTitle}>기간조회</Text>
                   <TouchableOpacity
                     onPress={() => {
                       setShowPeriodModal(false);
@@ -484,29 +486,29 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                   </TouchableOpacity>
                 </View>
                 {openEndDropdown === null && (
-                  <View style={styles.dateGroup}>
-                    <Text style={styles.dateGroupLabel}>시작날짜</Text>
-                    <View style={styles.dateRow}>
-                      <View style={styles.dropdownWrapper}>
+                  <View style={orderStatusStyles.dateGroup}>
+                    <Text style={orderStatusStyles.dateGroupLabel}>시작날짜</Text>
+                    <View style={orderStatusStyles.dateRow}>
+                      <View style={orderStatusStyles.dropdownWrapper}>
                         <TouchableOpacity
-                          style={styles.dateBox}
+                          style={orderStatusStyles.dateBox}
                           onPress={(e) => {
                             e.stopPropagation?.();
                             setOpenStartDropdown(openStartDropdown === 'year' ? null : 'year');
                             setOpenEndDropdown(null);
                           }}
                         >
-                          <Text style={styles.dateBoxText}>
+                          <Text style={orderStatusStyles.dateBoxText}>
                             {startYear ? `${startYear}년` : '년도 선택'}
                           </Text>
                         </TouchableOpacity>
                         {openStartDropdown === 'year' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
+                          <View style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
+                            <ScrollView style={orderStatusStyles.dropdownScroll}>
                               {years.map((y) => (
                                 <TouchableOpacity
                                   key={y}
-                                  style={styles.dropdownItem}
+                                  style={orderStatusStyles.dropdownItem}
                                   onPress={() => {
                                     setStartYear(y);
                                     setOpenStartDropdown(null);
@@ -519,26 +521,26 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                           </View>
                         )}
                       </View>
-                      <View style={styles.dropdownWrapper}>
+                      <View style={orderStatusStyles.dropdownWrapper}>
                         <TouchableOpacity
-                          style={styles.dateBox}
+                          style={orderStatusStyles.dateBox}
                           onPress={(e) => {
                             e.stopPropagation?.();
                             setOpenStartDropdown(openStartDropdown === 'month' ? null : 'month');
                             setOpenEndDropdown(null);
                           }}
                         >
-                          <Text style={styles.dateBoxText}>
+                          <Text style={orderStatusStyles.dateBoxText}>
                             {startMonth ? `${startMonth}월` : '월 선택'}
                           </Text>
                         </TouchableOpacity>
                         {openStartDropdown === 'month' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
+                          <View style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
+                            <ScrollView style={orderStatusStyles.dropdownScroll}>
                               {months.map((m) => (
                                 <TouchableOpacity
                                   key={m}
-                                  style={styles.dropdownItem}
+                                  style={orderStatusStyles.dropdownItem}
                                   onPress={() => {
                                     setStartMonth(m);
                                     setOpenStartDropdown(null);
@@ -551,26 +553,26 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                           </View>
                         )}
                       </View>
-                      <View style={styles.dropdownWrapper}>
+                      <View style={orderStatusStyles.dropdownWrapper}>
                         <TouchableOpacity
-                          style={styles.dateBox}
+                          style={orderStatusStyles.dateBox}
                           onPress={(e) => {
                             e.stopPropagation?.();
                             setOpenStartDropdown(openStartDropdown === 'week' ? null : 'week');
                             setOpenEndDropdown(null);
                           }}
                         >
-                          <Text style={styles.dateBoxText}>
+                          <Text style={orderStatusStyles.dateBoxText}>
                             {startWeek ? `${startWeek}주` : '주차 선택'}
                           </Text>
                         </TouchableOpacity>
                         {openStartDropdown === 'week' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
+                          <View style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
+                            <ScrollView style={orderStatusStyles.dropdownScroll}>
                               {weeks.map((w) => (
                                 <TouchableOpacity
                                   key={w}
-                                  style={styles.dropdownItem}
+                                  style={orderStatusStyles.dropdownItem}
                                   onPress={() => {
                                     setStartWeek(w);
                                     setOpenStartDropdown(null);
@@ -585,36 +587,36 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                       </View>
                     </View>
                     {openStartDropdown !== null && (
-                      <TouchableOpacity style={styles.confirmButton} onPress={() => setOpenStartDropdown(null)}>
-                        <Text style={styles.confirmButtonText}>확인</Text>
+                      <TouchableOpacity style={orderStatusStyles.confirmButton} onPress={() => setOpenStartDropdown(null)}>
+                        <Text style={orderStatusStyles.confirmButtonText}>확인</Text>
                       </TouchableOpacity>
                     )}
                   </View>
                 )}
                 {openStartDropdown === null && (
-                  <View style={styles.dateGroup}>
-                    <Text style={styles.dateGroupLabel}>종료날짜</Text>
-                    <View style={styles.dateRow}>
-                      <View style={styles.dropdownWrapper}>
+                  <View style={orderStatusStyles.dateGroup}>
+                    <Text style={orderStatusStyles.dateGroupLabel}>종료날짜</Text>
+                    <View style={orderStatusStyles.dateRow}>
+                      <View style={orderStatusStyles.dropdownWrapper}>
                         <TouchableOpacity
-                          style={styles.dateBox}
+                          style={orderStatusStyles.dateBox}
                           onPress={(e) => {
                             e.stopPropagation?.();
                             setOpenEndDropdown(openEndDropdown === 'year' ? null : 'year');
                             setOpenStartDropdown(null);
                           }}
                         >
-                          <Text style={styles.dateBoxText}>
+                          <Text style={orderStatusStyles.dateBoxText}>
                             {endYear ? `${endYear}년` : '년도 선택'}
                           </Text>
                         </TouchableOpacity>
                         {openEndDropdown === 'year' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
+                          <View style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
+                            <ScrollView style={orderStatusStyles.dropdownScroll}>
                               {years.map((y) => (
                                 <TouchableOpacity
                                   key={y}
-                                  style={styles.dropdownItem}
+                                  style={orderStatusStyles.dropdownItem}
                                   onPress={() => {
                                     setEndYear(y);
                                     setOpenEndDropdown(null);
@@ -627,26 +629,26 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                           </View>
                         )}
                       </View>
-                      <View style={styles.dropdownWrapper}>
+                      <View style={orderStatusStyles.dropdownWrapper}>
                         <TouchableOpacity
-                          style={styles.dateBox}
+                          style={orderStatusStyles.dateBox}
                           onPress={(e) => {
                             e.stopPropagation?.();
                             setOpenEndDropdown(openEndDropdown === 'month' ? null : 'month');
                             setOpenStartDropdown(null);
                           }}
                         >
-                          <Text style={styles.dateBoxText}>
+                          <Text style={orderStatusStyles.dateBoxText}>
                             {endMonth ? `${endMonth}월` : '월 선택'}
                           </Text>
                         </TouchableOpacity>
                         {openEndDropdown === 'month' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
+                          <View style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
+                            <ScrollView style={orderStatusStyles.dropdownScroll}>
                               {months.map((m) => (
                                 <TouchableOpacity
                                   key={m}
-                                  style={styles.dropdownItem}
+                                  style={orderStatusStyles.dropdownItem}
                                   onPress={() => {
                                     setEndMonth(m);
                                     setOpenEndDropdown(null);
@@ -659,26 +661,26 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                           </View>
                         )}
                       </View>
-                      <View style={styles.dropdownWrapper}>
+                      <View style={orderStatusStyles.dropdownWrapper}>
                         <TouchableOpacity
-                          style={styles.dateBox}
+                          style={orderStatusStyles.dateBox}
                           onPress={(e) => {
                             e.stopPropagation?.();
                             setOpenEndDropdown(openEndDropdown === 'week' ? null : 'week');
                             setOpenStartDropdown(null);
                           }}
                         >
-                          <Text style={styles.dateBoxText}>
+                          <Text style={orderStatusStyles.dateBoxText}>
                             {endWeek ? `${endWeek}주` : '주차 선택'}
                           </Text>
                         </TouchableOpacity>
                         {openEndDropdown === 'week' && (
-                          <View style={[styles.dropdown, styles.dropdownOpen]}>
-                            <ScrollView style={styles.dropdownScroll}>
+                          <View style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
+                            <ScrollView style={orderStatusStyles.dropdownScroll}>
                               {weeks.map((w) => (
                                 <TouchableOpacity
                                   key={w}
-                                  style={styles.dropdownItem}
+                                  style={orderStatusStyles.dropdownItem}
                                   onPress={() => {
                                     setEndWeek(w);
                                     setOpenEndDropdown(null);
@@ -693,16 +695,16 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                       </View>
                     </View>
                     {openEndDropdown !== null && (
-                      <TouchableOpacity style={styles.confirmButton} onPress={() => setOpenEndDropdown(null)}>
-                        <Text style={styles.confirmButtonText}>확인</Text>
+                      <TouchableOpacity style={orderStatusStyles.confirmButton} onPress={() => setOpenEndDropdown(null)}>
+                        <Text style={orderStatusStyles.confirmButtonText}>확인</Text>
                       </TouchableOpacity>
                     )}
                   </View>
                 )}
                 {openStartDropdown === null && openEndDropdown === null && (
                   <View style={{ alignItems: 'center', marginTop: 20 }}>
-                    <TouchableOpacity style={styles.periodSearchButton} onPress={() => handlePeriodSearch()}>
-                      <Text style={styles.periodSearchButtonText}>검색</Text>
+                    <TouchableOpacity style={orderStatusStyles.periodSearchButton} onPress={() => handlePeriodSearch()}>
+                      <Text style={orderStatusStyles.periodSearchButtonText}>검색</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -713,8 +715,8 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
       </Modal>
       {isPeriodSearch && (
         <View style={{ position: 'absolute', top: 10, right: 10 }}>
-          <TouchableOpacity style={styles.resetButton} onPress={handleResetSearch}>
-            <Text style={styles.resetButtonText}>초기화</Text>
+          <TouchableOpacity style={orderStatusStyles.resetButton} onPress={handleResetSearch}>
+            <Text style={orderStatusStyles.resetButtonText}>초기화</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -725,19 +727,19 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         animationType="fade"
         onRequestClose={() => setShowDatePickerModal(false)}
       >
-        <View style={styles.datePickerModalContainer}>
-          <View style={styles.datePickerModal}>
-            <Text style={styles.datePickerTitle}>
+        <View style={orderStatusStyles.datePickerModalContainer}>
+          <View style={orderStatusStyles.datePickerModal}>
+            <Text style={orderStatusStyles.datePickerTitle}>
               {selectingStart ? '시작일 선택' : '종료일 선택'}
             </Text>
-            <Text style={styles.datePickerLabel}>연도</Text>
+            <Text style={orderStatusStyles.datePickerLabel}>연도</Text>
             <ScrollView horizontal style={{ marginBottom: 8 }}>
               {years.map((y) => (
                 <TouchableOpacity
                   key={y}
                   style={[
-                    styles.pickerItem,
-                    (selectingStart ? startYear : endYear) === y && styles.pickerItemActive,
+                    orderStatusStyles.pickerItem,
+                    (selectingStart ? startYear : endYear) === y && orderStatusStyles.pickerItemActive,
                   ]}
                   onPress={() => (selectingStart ? setStartYear(y) : setEndYear(y))}
                 >
@@ -747,15 +749,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            <Text style={styles.datePickerLabel}>월</Text>
+            <Text style={orderStatusStyles.datePickerLabel}>월</Text>
             <View>
               <ScrollView horizontal style={{ marginBottom: 4 }}>
                 {months.slice(0, 6).map((m) => (
                   <TouchableOpacity
                     key={m}
                     style={[
-                      styles.pickerItem,
-                      (selectingStart ? startMonth : endMonth) === m && styles.pickerItemActive,
+                      orderStatusStyles.pickerItem,
+                      (selectingStart ? startMonth : endMonth) === m && orderStatusStyles.pickerItemActive,
                     ]}
                     onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
                   >
@@ -770,8 +772,8 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                   <TouchableOpacity
                     key={m}
                     style={[
-                      styles.pickerItem,
-                      (selectingStart ? startMonth : endMonth) === m && styles.pickerItemActive,
+                      orderStatusStyles.pickerItem,
+                      (selectingStart ? startMonth : endMonth) === m && orderStatusStyles.pickerItemActive,
                     ]}
                     onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
                   >
@@ -782,14 +784,14 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                 ))}
               </ScrollView>
             </View>
-            <Text style={styles.datePickerLabel}>주차</Text>
+            <Text style={orderStatusStyles.datePickerLabel}>주차</Text>
             <ScrollView horizontal style={{ marginBottom: 16 }}>
               {weeks.map((w) => (
                 <TouchableOpacity
                   key={w}
                   style={[
-                    styles.pickerItem,
-                    (selectingStart ? startWeek : endWeek) === w && styles.pickerItemActive,
+                    orderStatusStyles.pickerItem,
+                    (selectingStart ? startWeek : endWeek) === w && orderStatusStyles.pickerItemActive,
                   ]}
                   onPress={() => (selectingStart ? setStartWeek(w) : setEndWeek(w))}
                 >
@@ -799,8 +801,8 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            <TouchableOpacity style={styles.periodSearchButton} onPress={() => setShowDatePickerModal(false)}>
-              <Text style={styles.periodSearchButtonText}>확인</Text>
+            <TouchableOpacity style={orderStatusStyles.periodSearchButton} onPress={() => setShowDatePickerModal(false)}>
+              <Text style={orderStatusStyles.periodSearchButtonText}>확인</Text>
             </TouchableOpacity>
           </View>
         </View>

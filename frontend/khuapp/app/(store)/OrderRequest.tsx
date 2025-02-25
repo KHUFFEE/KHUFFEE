@@ -14,9 +14,10 @@ import {
   APIProduct,
   SelectedItem,
 } from '../../src/components/ui/common/types';
-import { modalStyles, styles } from '../../src/components/ui/common/commonstyler';
+import { styles,modalStyles,  } from '../../src/components/ui/common/commonstyler';
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
+import { OrderRequeststyle } from '../../src/styles/Orderrequest_style';
 
 const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   storeName,
@@ -117,29 +118,29 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   const renderProductCard = (product: APIProduct) => {
     const selected = selectedItems.find(item => item.품목_id === product.품목_id);
     const cardStyle = selected
-      ? [styles.selectItemCard, styles.selectedItemCard]
-      : styles.selectItemCard;
+      ? [OrderRequeststyle.selectItemCard, OrderRequeststyle.selectedItemCard]
+      : OrderRequeststyle.selectItemCard;
 
     if (selected) {
       const computedPrice = selected.quantity * parseFloat(selected.입고단가);
       return (
         <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
-          <View testID="cardContent" style={[styles.cardContent, { position: 'relative' }]}>
+          <View testID="cardContent" style={[OrderRequeststyle.cardContent, { position: 'relative' }]}>
             {/* 상품 정보 고정 영역 */}
-            <View testID="productInfoContainer" style={styles.productInfoContainer}>
-              <View testID="selectedItemRowContainer" style={styles.selectedItemRowContainer}>
-                <Text testID="selectItemName" style={styles.selectItemName}>
+            <View testID="productInfoContainer" style={OrderRequeststyle.productInfoContainer}>
+              <View testID="selectedItemRowContainer" style={OrderRequeststyle.selectedItemRowContainer}>
+                <Text testID="selectItemName" style={OrderRequeststyle.selectItemName}>
                   {product.품목명}
                 </Text>
-                <Text testID="price_unit_Text" style={styles.price_unit_Text}>
+                <Text testID="price_unit_Text" style={OrderRequeststyle.price_unit_Text}>
                   {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
                 </Text>
                 <TouchableOpacity
                   testID="orderButton"
-                  style={[styles.orderButton, { borderColor: '#ef4444' }]}
+                  style={[OrderRequeststyle.orderButton, { borderColor: '#ef4444' }]}
                   onPress={() => removeItem(product.품목_id)}
                 >
-                  <Text testID="orderButtonText" style={[styles.orderButtonText, { color: '#ef4444' }]}>
+                  <Text testID="orderButtonText" style={[OrderRequeststyle.orderButtonText, { color: '#ef4444' }]}>
                     취소
                   </Text>
                 </TouchableOpacity>
@@ -148,7 +149,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       
             {/* 추가 영역: 선택 시 확장되어 아래쪽으로 추가 (상품 정보에는 영향 없음) */}
             {selected && (
-              <View testID="additionalRow" style={styles.additionalRowContainer}>
+              <View testID="additionalRow" style={OrderRequeststyle.additionalRowContainer}>
                 {/* Row1: 합계 금액과 출고 단위 */}
                 <View
                   testID="Row1"
@@ -160,10 +161,10 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                     marginTop: moderateScale(4),
                   }}
                 >
-                  <Text testID="priceText" style={styles.priceText}>
+                  <Text testID="priceText" style={OrderRequeststyle.priceText}>
                     합계 금액: {f.formatPrice(computedPrice)}원
                   </Text>
-                  <Text testID="unitText" style={styles.unitText}>
+                  <Text testID="unitText" style={OrderRequeststyle.unitText}>
                     출고단위: {f.formatPrice(product.출고단위)}{product.단위}
                   </Text>
                 </View>
@@ -175,12 +176,12 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                     alignItems: 'flex-end',
                   }}
                 >
-                  <View testID="quantityControlContainer" style={styles.quantityControlContainer}>
+                  <View testID="quantityControlContainer" style={OrderRequeststyle.quantityControlContainer}>
                     <TouchableOpacity
                       testID="decrementButton"
                       style={[
-                        styles.quantityButton,
-                        selected.quantity <= product.출고단위 && styles.disabledButton,
+                        OrderRequeststyle.quantityButton,
+                        selected.quantity <= product.출고단위 && OrderRequeststyle.disabledButton,
                       ]}
                       onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
                       disabled={selected.quantity <= product.출고단위}
@@ -189,14 +190,14 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                     </TouchableOpacity>
                     <TextInput
                       testID="quantityInput"
-                      style={styles.quantityText}
+                      style={OrderRequeststyle.quantityText}
                       value={selected.customQuantity}
                       keyboardType="numeric"
                       onChangeText={text => updateCustomQuantity(product.품목_id, text)}
                     />
                     <TouchableOpacity
                       testID="incrementButton"
-                      style={styles.quantityButton}
+                      style={OrderRequeststyle.quantityButton}
                       onPress={() => updateQuantity(product.품목_id, product.출고단위)}
                     >
                       <Plus testID="plusIcon" color="#333" size={20} />
@@ -207,8 +208,8 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             )}
           </View>
           {selected.error && (
-            <View testID="errorContainer" style={styles.errorContainer}>
-              <Text testID="errorText" style={styles.errorText} numberOfLines={1}>
+            <View testID="errorContainer" style={OrderRequeststyle.errorContainer}>
+              <Text testID="errorText" style={OrderRequeststyle.errorText} numberOfLines={1}>
                 {selected.error}
               </Text>
             </View>
@@ -218,20 +219,20 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     } else {
       return (
         <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
-          <View testID="cardContent" style={styles.cardContent}>
-            <View testID="selectItemRowContainer" style={styles.selectItemRowContainer}>
-              <Text testID="selectItemName" style={styles.selectItemName}>
+          <View testID="cardContent" style={OrderRequeststyle.cardContent}>
+            <View testID="selectItemRowContainer" style={OrderRequeststyle.selectItemRowContainer}>
+              <Text testID="selectItemName" style={OrderRequeststyle.selectItemName}>
                 {product.품목명}
               </Text>
-              <Text testID="price_unit_Text" style={styles.price_unit_Text}>
+              <Text testID="price_unit_Text" style={OrderRequeststyle.price_unit_Text}>
                 {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
               </Text>
               <TouchableOpacity
                 testID="orderButton"
-                style={styles.orderButton}
+                style={OrderRequeststyle.orderButton}
                 onPress={() => addItem(product)}
               >
-                <Text testID="orderButtonText" style={styles.orderButtonText}>
+                <Text testID="orderButtonText" style={OrderRequeststyle.orderButtonText}>
                   선택
                 </Text>
               </TouchableOpacity>
@@ -255,7 +256,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
 
   if (fetchError) {
     return (
-      <View testID="container" style={styles.container}>
+      <View testID="container" style={OrderRequeststyle.container}>
         <Text testID="fetchErrorText">{fetchError}</Text>
       </View>
     );
@@ -267,20 +268,20 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
         <>
           <ScrollView
             testID="scrollContainer"
-            contentContainerStyle={styles.scrollContainer}
+            contentContainerStyle={OrderRequeststyle.scrollContainer}
             stickyHeaderIndices={[0]}
           >
             {/* 고정 헤더 영역 */}
-            <View testID="fixedHeaderContainer" style={styles.fixedHeaderContainer}>
-              <View testID="categorySection" style={styles.categorySection}>
-                <Text testID="sectionTitle" style={styles.sectionTitle}>
+            <View testID="fixedHeaderContainer" style={OrderRequeststyle.fixedHeaderContainer}>
+              <View testID="categorySection" style={OrderRequeststyle.categorySection}>
+                <Text testID="sectionTitle" style={OrderRequeststyle.sectionTitle}>
                   상품 유형 선택
                 </Text>
                 <ScrollView
                   testID="categoryListScroll"
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  style={styles.categoryList}
+                  style={OrderRequeststyle.categoryList}
                   contentContainerStyle={{
                     flexGrow: 1,
                     justifyContent: 'flex-start',
@@ -290,16 +291,16 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   <TouchableOpacity
                     testID="categoryButton_All"
                     style={[
-                      styles.categoryButton,
-                      selectedCategory === null && styles.categoryButtonActive,
+                      OrderRequeststyle.categoryButton,
+                      selectedCategory === null && OrderRequeststyle.categoryButtonActive,
                     ]}
                     onPress={() => setSelectedCategory(null)}
                   >
                     <Text
                       testID="categoryButtonText_All"
                       style={[
-                        styles.categoryButtonText,
-                        selectedCategory === null && styles.categoryButtonTextActive,
+                        OrderRequeststyle.categoryButtonText,
+                        selectedCategory === null && OrderRequeststyle.categoryButtonTextActive,
                       ]}
                     >
                       전체
@@ -310,16 +311,16 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       key={idx}
                       testID={`categoryButton_${idx}`}
                       style={[
-                        styles.categoryButton,
-                        selectedCategory === cat && styles.categoryButtonActive,
+                        OrderRequeststyle.categoryButton,
+                        selectedCategory === cat && OrderRequeststyle.categoryButtonActive,
                       ]}
                       onPress={() => setSelectedCategory(cat)}
                     >
                       <Text
                         testID={`categoryButtonText_${idx}`}
                         style={[
-                          styles.categoryButtonText,
-                          selectedCategory === cat && styles.categoryButtonTextActive,
+                          OrderRequeststyle.categoryButtonText,
+                          selectedCategory === cat && OrderRequeststyle.categoryButtonTextActive,
                         ]}
                       >
                         {cat}
@@ -328,15 +329,15 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   ))}
                 </ScrollView>
               </View>
-              <View testID="sectionContainer" style={styles.sectionContainer}>
-                <Text testID="sectionTitle_2" style={styles.sectionTitle_2}>
+              <View testID="sectionContainer" style={OrderRequeststyle.sectionContainer}>
+                <Text testID="sectionTitle_2" style={OrderRequeststyle.sectionTitle_2}>
                   상품 선택하기
                 </Text>
-                <View testID="headerContainer" style={styles.headerContainer}>
-                  <Text testID="item_headerText" style={styles.item_headerText}>
+                <View testID="headerContainer" style={OrderRequeststyle.headerContainer}>
+                  <Text testID="item_headerText" style={OrderRequeststyle.item_headerText}>
                     상품명
                   </Text>
-                  <Text testID="price_headerText" style={styles.price_headerText}>
+                  <Text testID="price_headerText" style={OrderRequeststyle.price_headerText}>
                     가격
                   </Text>
                   <Text testID="whitespace" style={{ width: '10%' }}></Text>
@@ -345,14 +346,14 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             </View>
 
             {/* 상품 목록 */}
-            <View testID="listContainer" style={styles.listContainer}>
+            <View testID="listContainer" style={OrderRequeststyle.listContainer}>
               {sortedProducts.map((product) => renderProductCard(product))}
             </View>
           </ScrollView>
 
           {/* 고정된 푸터 영역 */}
-          <View testID="footerContainer" style={styles.footerContainer}>
-            <Text testID="footerPriceText" style={styles.footerPriceText}>
+          <View testID="footerContainer" style={OrderRequeststyle.footerContainer}>
+            <Text testID="footerPriceText" style={OrderRequeststyle.footerPriceText}>
               {selectedItems.length > 0
                 ? `총 가격  ${f.formatPrice(totalPrice)}원`
                 : '총 가격 0원'}
@@ -360,13 +361,13 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             <TouchableOpacity
               testID="footerButton"
               style={[
-                styles.footerButton,
-                selectedItems.length === 0 && styles.footerButtonDisabled,
+                OrderRequeststyle.footerButton,
+                selectedItems.length === 0 && OrderRequeststyle.footerButtonDisabled,
               ]}
               onPress={handleConfirmOrder}
               disabled={selectedItems.length === 0}
             >
-              <Text testID="footerButtonText" style={styles.footerButtonText}>
+              <Text testID="footerButtonText" style={OrderRequeststyle.footerButtonText}>
                 발주확인
               </Text>
             </TouchableOpacity>
@@ -374,56 +375,56 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
         </>
       ) : (
         <ScrollView testID="confirmationContainer" style={{ flex: 1, backgroundColor: '#fff' }}>
-          <View testID="confirm_selectedItemsSection" style={styles.confirm_selectedItemsSection}>
+          <View testID="confirm_selectedItemsSection" style={OrderRequeststyle.confirm_selectedItemsSection}>
             <Text
               testID="confirm_sectionTitle"
-              style={[styles.confirm_sectionTitle, { textAlign: 'center' }]}
+              style={[OrderRequeststyle.confirm_sectionTitle, { textAlign: 'center' }]}
             >
               선택한 상품 확인
             </Text>
             {selectedItems.map((item) => {
               const itemTotal = item.quantity * parseFloat(item.입고단가);
               return (
-                <View testID="confirmationItemRow" key={item.품목_id} style={styles.confirmationItemRow}>
+                <View testID="confirmationItemRow" key={item.품목_id} style={OrderRequeststyle.confirmationItemRow}>
                   <View testID="confirmItemLeft" style={{ flex: 2 }}>
-                    <Text testID="confirm_selectItemName" style={styles.confirm_selectItemName}>
+                    <Text testID="confirm_selectItemName" style={OrderRequeststyle.confirm_selectItemName}>
                       {item.품목명}
                     </Text>
-                    <Text testID="confirm_unitText" style={styles.confirm_unitText}>
+                    <Text testID="confirm_unitText" style={OrderRequeststyle.confirm_unitText}>
                       수량: {item.quantity}
                       {item.단위} (출고단위: {item.출고단위})
                     </Text>
                   </View>
                   <View testID="confirmItemRight" style={{ flex: 1, alignItems: 'flex-end' }}>
-                    <Text testID="confirm_priceText" style={styles.confirm_priceText}>
+                    <Text testID="confirm_priceText" style={OrderRequeststyle.confirm_priceText}>
                       {f.formatPrice(itemTotal)}원
                     </Text>
                   </View>
                 </View>
               );
             })}
-            <View testID="totalRow" style={styles.totalRow}>
-              <Text testID="totalText" style={styles.totalText}>
+            <View testID="totalRow" style={OrderRequeststyle.totalRow}>
+              <Text testID="totalText" style={OrderRequeststyle.totalText}>
                 총합계:
               </Text>
-              <Text testID="totalText_2" style={styles.totalText}>
+              <Text testID="totalText_2" style={OrderRequeststyle.totalText}>
                 {f.formatPrice(totalPrice)}원
               </Text>
             </View>
             <TouchableOpacity
               testID="order_request_Button"
-              style={[styles.order_request_Button, orderSubmitted && { opacity: 0.5 }]}
+              style={[OrderRequeststyle.order_request_Button, orderSubmitted && { opacity: 0.5 }]}
               onPress={handleOrderSubmit}
               disabled={orderSubmitted}
             >
-              <Text testID="order_request_ButtonText" style={styles.order_request_ButtonText}>
+              <Text testID="order_request_ButtonText" style={OrderRequeststyle.order_request_ButtonText}>
                 발주요청하기
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               testID="order_request_Button_Back"
               style={[
-                styles.order_request_Button,
+                OrderRequeststyle.order_request_Button,
                 { backgroundColor: 'white' },
                 { borderColor: '#0D326F' },
                 { borderWidth: 1 },
@@ -431,7 +432,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               ]}
               onPress={() => setIsConfirmation(false)}
             >
-              <Text testID="order_request_ButtonText_Back" style={[styles.order_request_ButtonText, { color: '#0D326F' }]}>
+              <Text testID="order_request_ButtonText_Back" style={[OrderRequeststyle.order_request_ButtonText, { color: '#0D326F' }]}>
                 뒤로가기
               </Text>
             </TouchableOpacity>

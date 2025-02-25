@@ -1,16 +1,14 @@
 // app/(store)/OrderStatus.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  Modal,
   ActivityIndicator,
-  TouchableWithoutFeedback,
   FlatList,
+  Modal,
+  TouchableWithoutFeedback,
+  ScrollView
 } from 'react-native';
 import {
   Home,
@@ -25,10 +23,10 @@ import {
 } from 'lucide-react-native';
 import { RN_API_URL } from '@env';
 import { StoreOrderData, APIProduct } from '../../src/components/ui/common/types';
-import { styles, modalStyles, orderStatusStyles, receiptStyles,inventoryStyles } from '../../src/components/ui/common/commonstyler';
+import { styles, modalStyles, orderStatusStyles, receiptStyles, inventoryStyles } from '../../src/components/ui/common/commonstyler';
 import * as f from '../../src/components/ui/common/function';
-import { scale,verticalScale,moderateScale } from 'react-native-size-matters';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { moderateScale } from 'react-native-size-matters';
+import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 
 interface OrderStatusProps {
   storeId: string;
@@ -77,6 +75,10 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   const years = [2025, 2024, 2023, 2022, 2021];
   const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const weeks = [1, 2, 3, 4, 5];
+
+  // FlatList ref와 스크롤 오프셋 저장을 위한 ref
+  const flatListRef = useRef<FlatList>(null);
+  const scrollOffset = useRef(0);
 
   // 주문 내역 API 호출 함수
   const fetchOrders = async (startPage: number, order: 'asc' | 'desc', forceFetch: boolean = false) => {
@@ -232,15 +234,17 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
 
   if (loading) {
     return (
-      <View testID= 'loading_Container'style={styles.loading_Container}>
+      <View testID='loading_Container' style={styles.loading_Container}>
         <ActivityIndicator size="large" color="#0D326F80" />
         <Text style={styles.loading_Text}>로딩 중...</Text>
       </View>
     );
   }
+
   return (
-    <View testID= 'status_container' style={styles.status_container}>
-      {/* 전체 상단 헤더: 로딩 중이거나 주문 내역이 없으면 숨김 */}
+    // 최상위 컨테이너에 overflow: 'hidden'을 주어 전체 페이지 스크롤을 방지합니다.
+    <View style={{ flex: 1, overflow: 'hidden' }}>
+      {/* 헤더 영역 */}
       {!loading && sortedYears.length > 0 && (
         <View testID="headerRow" style={styles.headerRow}>
           <View testID="titleContainer" style={styles.sectionTitle}>
@@ -272,13 +276,23 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         <View testID="몰라" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#0D326F" />
         </View>
-      ) : sortedYears.length === 0 ? (
-        <Text>아직 발주 내역이 없습니다.</Text>
       ) : (
         <FlatList
-          testID="flatlist"  style={orderStatusStyles.flatlist}
+          ref={flatListRef}
+          testID="flatlist"
+          style={orderStatusStyles.flatlist}
           data={sortedYears}
           keyExtractor={(year) => year.toString()}
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: moderateScale(16) }}
+          // 스크롤 오프셋을 추적하여 FlatList가 새 항목 추가 후에도 기존 위치를 유지합니다.
+          onScroll={(e) => {
+            scrollOffset.current = e.nativeEvent.contentOffset.y;
+          }}
+          scrollEventThrottle={16}
+          onContentSizeChange={() => {
+            // 새 콘텐츠가 추가되어도 이전 오프셋으로 스크롤 위치를 복원합니다.
+            flatListRef.current?.scrollToOffset({ offset: scrollOffset.current, animated: false });
+          }}
           renderItem={({ item: year }) => {
             const monthsObj = groupedByYearMonthWeek[year];
             const sortedMonths = sortKeys(Object.keys(monthsObj));
@@ -302,14 +316,14 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                     );
                   }, 0);
                   return (
-                    <View key={month} style={{ marginBottom: moderateScale(10) }}>
+                    <View key={month} testID="card_top" style={{ marginBottom: moderateScale(10) }}>
                       <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 5 }}>
                         {month}월{' '}
                         <Text style={{ color: '#1e7e34', fontWeight: 'bold' }}>
                           총 {f.formatPrice(monthTotalCost)}원
                         </Text>
                       </Text>
-                      {sortedWeeks.map((week) => {
+                      {sortedWeeks.map((week, index) => {
                         const orders = weeksObj[week];
                         const firstOrder = orders[0];
                         const extraCount = orders.length - 1;
@@ -320,6 +334,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                         );
                         return (
                           <View
+                            testID="card_down"
                             key={week}
                             style={{
                               marginBottom: 10,
@@ -332,7 +347,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                             <Text testID='dataHeader' style={orderStatusStyles.dateHeader}>
                               {week}주차 주문 내역 (총 {f.formatPrice(weekTotalCost)}원)
                             </Text>
-                            <View testID='row'style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View testID='row' style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                               <View style={{ flex: 1 }}>
                                 <Text style={orderStatusStyles.productName}>
                                   {firstOrder.품목명}
@@ -342,19 +357,16 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                     외 {extraCount}개
                                   </Text>
                                 )}
-                                <Text testID="quantity"style={[orderStatusStyles.quantity, { marginTop: 'auto' }]}>
+                                <Text testID="quantity" style={[orderStatusStyles.quantity, { marginTop: 'auto' }]}>
                                   발주수량: {f.formatPrice(firstOrder.매장_발주량)}
                                 </Text>
                               </View>
                               <TouchableOpacity
                                 testID='actionButton'
-                                style={[
-                                  orderStatusStyles.actionButton,
-                                  { alignSelf: 'flex-end', marginLeft: 12 },
-                                ]}
+                                style={[orderStatusStyles.actionButton, { alignSelf: 'flex-end', marginLeft: 12 }]}
                                 onPress={() => openDetailModal(`${year}.${month}.${week}`, orders)}
                               >
-                                <Text testID="actionButtonText"style={orderStatusStyles.actionButtonText}>
+                                <Text testID="actionButtonText" style={orderStatusStyles.actionButtonText}>
                                   주문 상세
                                 </Text>
                               </TouchableOpacity>
@@ -382,7 +394,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                 {loading ? (
                   <ActivityIndicator size="small" color="#0D326F" />
                 ) : (
-                  <Text testID ="loadMoreButtonText" style={styles.loadMoreButtonText}>더 불러오기</Text>
+                  <Text testID="loadMoreButtonText" style={styles.loadMoreButtonText}>
+                    더 불러오기
+                  </Text>
                 )}
               </TouchableOpacity>
             ) : null
@@ -397,9 +411,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         animationType="slide"
         onRequestClose={() => setDetailModalVisible(false)}
       >
-        <View testID= "centeredView" style={modalStyles.centeredView}>
-          <View testID= "modalView" style={[modalStyles.modalView, { maxHeight: '80%' }]}>
-            <ScrollView testID="receiptContainer"style={receiptStyles.receiptContainer}>
+        <View testID="centeredView" style={modalStyles.centeredView}>
+          <View testID="modalView" style={[modalStyles.modalView, { maxHeight: '80%' }]}>
+            <ScrollView testID="receiptContainer" style={receiptStyles.receiptContainer}>
               <View style={receiptStyles.header}>
                 <Text style={receiptStyles.headerTitle}>주문 상세 내역</Text>
                 <Text style={receiptStyles.headerSubtitle}>{f.formatWeekString(detailGroupDate)}</Text>
@@ -428,10 +442,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
               </View>
             </ScrollView>
 
-            <TouchableOpacity
-              style={modalStyles.closeButton}
-              onPress={() => setDetailModalVisible(false)}
-            >
+            <TouchableOpacity style={modalStyles.closeButton} onPress={() => setDetailModalVisible(false)}>
               <Text style={modalStyles.textStyle}>닫기</Text>
             </TouchableOpacity>
           </View>
@@ -449,7 +460,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           setOpenEndDropdown(null);
         }}
       >
-        {/* 모달 밖(검정 배경) 터치 시 드롭다운 닫힘 */}
         <TouchableWithoutFeedback
           onPress={() => {
             setOpenStartDropdown(null);
@@ -457,16 +467,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           }}
         >
           <View style={styles.periodModalContainer}>
-            {/* 모달 안(흰색 배경) */}
             <TouchableWithoutFeedback>
               <View style={styles.periodModalInner}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={styles.periodModalTitle}>기간조회</Text>
                   <TouchableOpacity
                     onPress={() => {
@@ -478,7 +481,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                     <LucideX color="red" size={24} />
                   </TouchableOpacity>
                 </View>
-                {/* 시작날짜 섹션은 "종료날짜 드롭다운이 열려 있지 않을 때"만 보인다. */}
                 {openEndDropdown === null && (
                   <View style={styles.dateGroup}>
                     <Text style={styles.dateGroupLabel}>시작날짜</Text>
@@ -505,7 +507,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                   style={styles.dropdownItem}
                                   onPress={() => {
                                     setStartYear(y);
-                                    // 드롭다운 선택 후 개별적으로 닫힘
                                     setOpenStartDropdown(null);
                                   }}
                                 >
@@ -516,7 +517,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                           </View>
                         )}
                       </View>
-                      {/* 시작월 */}
                       <View style={styles.dropdownWrapper}>
                         <TouchableOpacity
                           style={styles.dateBox}
@@ -549,7 +549,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                           </View>
                         )}
                       </View>
-                      {/* 시작주차 */}
                       <View style={styles.dropdownWrapper}>
                         <TouchableOpacity
                           style={styles.dateBox}
@@ -583,23 +582,17 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                         )}
                       </View>
                     </View>
-                    {/* 시작날짜 드롭다운이 개별적으로 열려 있을 때만 확인 버튼 표시 */}
                     {openStartDropdown !== null && (
-                      <TouchableOpacity
-                        style={styles.confirmButton}
-                        onPress={() => setOpenStartDropdown(null)}
-                      >
+                      <TouchableOpacity style={styles.confirmButton} onPress={() => setOpenStartDropdown(null)}>
                         <Text style={styles.confirmButtonText}>확인</Text>
                       </TouchableOpacity>
                     )}
                   </View>
                 )}
-                {/* 종료날짜 섹션은 "시작날짜 드롭다운이 열려 있지 않을 때"만 보인다. */}
                 {openStartDropdown === null && (
                   <View style={styles.dateGroup}>
                     <Text style={styles.dateGroupLabel}>종료날짜</Text>
                     <View style={styles.dateRow}>
-                      {/* 종료년도 */}
                       <View style={styles.dropdownWrapper}>
                         <TouchableOpacity
                           style={styles.dateBox}
@@ -632,7 +625,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                           </View>
                         )}
                       </View>
-                      {/* 종료월 */}
                       <View style={styles.dropdownWrapper}>
                         <TouchableOpacity
                           style={styles.dateBox}
@@ -665,7 +657,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                           </View>
                         )}
                       </View>
-                      {/* 종료주차 */}
                       <View style={styles.dropdownWrapper}>
                         <TouchableOpacity
                           style={styles.dateBox}
@@ -699,24 +690,16 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                         )}
                       </View>
                     </View>
-                    {/* 종료날짜 드롭다운이 개별적으로 열려 있을 때만 확인 버튼 표시 */}
                     {openEndDropdown !== null && (
-                      <TouchableOpacity
-                        style={styles.confirmButton}
-                        onPress={() => setOpenEndDropdown(null)}
-                      >
+                      <TouchableOpacity style={styles.confirmButton} onPress={() => setOpenEndDropdown(null)}>
                         <Text style={styles.confirmButtonText}>확인</Text>
                       </TouchableOpacity>
                     )}
                   </View>
                 )}
-                {/* 시작/종료 드롭다운이 모두 닫혔을 때 검색 버튼 */}
                 {openStartDropdown === null && openEndDropdown === null && (
                   <View style={{ alignItems: 'center', marginTop: 20 }}>
-                    <TouchableOpacity
-                      style={styles.periodSearchButton}
-                      onPress={() => handlePeriodSearch()}
-                    >
+                    <TouchableOpacity style={styles.periodSearchButton} onPress={() => handlePeriodSearch()}>
                       <Text style={styles.periodSearchButtonText}>검색</Text>
                     </TouchableOpacity>
                   </View>
@@ -726,7 +709,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-      {/* 메인 필터바에 기간조회 활성 시 빨간색 초기화 버튼 노출 */}
       {isPeriodSearch && (
         <View style={{ position: 'absolute', top: 10, right: 10 }}>
           <TouchableOpacity style={styles.resetButton} onPress={handleResetSearch}>
@@ -735,7 +717,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         </View>
       )}
 
-      {/* 날짜 선택 모달 (연도/월/주차) */}
       <Modal
         visible={showDatePickerModal}
         transparent={true}
@@ -758,11 +739,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                   ]}
                   onPress={() => (selectingStart ? setStartYear(y) : setEndYear(y))}
                 >
-                  <Text
-                    style={{
-                      color: (selectingStart ? startYear : endYear) === y ? '#fff' : '#333',
-                    }}
-                  >
+                  <Text style={{ color: (selectingStart ? startYear : endYear) === y ? '#fff' : '#333' }}>
                     {y}
                   </Text>
                 </TouchableOpacity>
@@ -780,11 +757,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                     ]}
                     onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
                   >
-                    <Text
-                      style={{
-                        color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333',
-                      }}
-                    >
+                    <Text style={{ color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333' }}>
                       {m}월
                     </Text>
                   </TouchableOpacity>
@@ -800,11 +773,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                     ]}
                     onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
                   >
-                    <Text
-                      style={{
-                        color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333',
-                      }}
-                    >
+                    <Text style={{ color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333' }}>
                       {m}월
                     </Text>
                   </TouchableOpacity>
@@ -822,20 +791,13 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                   ]}
                   onPress={() => (selectingStart ? setStartWeek(w) : setEndWeek(w))}
                 >
-                  <Text
-                    style={{
-                      color: (selectingStart ? startWeek : endWeek) === w ? '#fff' : '#333',
-                    }}
-                  >
+                  <Text style={{ color: (selectingStart ? startWeek : endWeek) === w ? '#fff' : '#333' }}>
                     {w}주
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            <TouchableOpacity
-              style={styles.periodSearchButton}
-              onPress={() => setShowDatePickerModal(false)}
-            >
+            <TouchableOpacity style={styles.periodSearchButton} onPress={() => setShowDatePickerModal(false)}>
               <Text style={styles.periodSearchButtonText}>확인</Text>
             </TouchableOpacity>
           </View>

@@ -2,8 +2,10 @@ import { RN_API_URL } from '@env';
 import {StoreOrderData, APIProduct, SelectedItem, LocalOrder, storename, StoreOrderRequestProps, OrderRequestProps } from '../common/types';
 
 /** 숫자를 천 단위로 포맷하는 함수 */
-export const formatPrice = (value: number): string => {
-  return value.toLocaleString();
+// f.ts (유틸리티 함수 파일)
+export const formatPrice = (value: number | undefined | null): string => {
+  const num = value ?? 0; // value가 undefined 혹은 null이면 0을 사용
+  return num.toLocaleString();
 };
 
 /** "YYYY.MM.W" -> "YYYY년 M월 W주차" (화면 표시용) */

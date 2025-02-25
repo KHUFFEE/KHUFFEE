@@ -1,5 +1,6 @@
-export const fetchItems = async () => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/items/`);
+export const fetchItems = async (all = false) => {
+  const query = all ? '?all=true' : '';
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/items/${query}`);
   if (!response.ok) {
     throw new Error("Failed to fetch items");
   }

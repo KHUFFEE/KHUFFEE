@@ -47,9 +47,9 @@ const Item = () => {
   // 초기 품목 조회: 활성화가 1인 품목만 표시 (전체 중 필터링)
   const fetchAllItems = async () => {
     try {
+      // 기본 호출: 활성화된(활성화 === true) 품목만 반환 (백엔드에서 기본 필터)
       const data = await fetchItems();
-      const activeItems = data.filter(item => item.활성화 === true);
-      setItems(activeItems);
+      setItems(data);
     } catch (err) {
       setError("Failed to load items");
     }
@@ -172,9 +172,8 @@ const Item = () => {
     }
     try {
       await deleteItems({ ids: selectedItems, action: "deactivate" });
-      const data = await fetchItems();
-      const activeItems = data.filter(item => item.활성화 === true);
-      setItems(activeItems);
+      // 업데이트 후 기본(active) 목록을 다시 로드 (비활성화된 건 제외됨)
+      await fetchAllItems();
       setSelectedItems([]);
       setIsDeleteMode(false);
       setAlertPopup({ show: true, message: "제품이 성공적으로 비활성화되었습니다." });
@@ -182,6 +181,7 @@ const Item = () => {
       setAlertPopup({ show: true, message: "제품 비활성화에 실패하였습니다." });
     }
   };
+  
 
   // 제품 활성화: API에 {ids, action:"activate"} 전송 후 활성화 상태(활성화===0)인 품목 재조회
   const handleActivateConfirm = async () => {
@@ -191,9 +191,8 @@ const Item = () => {
     }
     try {
       await deleteItems({ ids: selectedActivateItems, action: "activate" });
-      const data = await fetchItems();
-      const deactivatedItems = data.filter(item => item.활성화 === false);
-      setItems(deactivatedItems);
+      // 업데이트 후 기본(active) 목록을 다시 로드
+      await fetchAllItems();
       setSelectedActivateItems([]);
       setIsActivateMode(false);
       setAlertPopup({ show: true, message: "제품이 성공적으로 활성화되었습니다." });
@@ -201,6 +200,7 @@ const Item = () => {
       setAlertPopup({ show: true, message: "제품 활성화에 실패하였습니다." });
     }
   };
+  
 
   // 제품 추가
   const handleSubmit = async () => {
@@ -503,17 +503,18 @@ const Item = () => {
   const handleActivateButton = async () => {
     if (!isActivateMode) {
       try {
-        const data = await fetchItems();
+        // 모든 품목 조회 후 inactive(활성화 === false)인 것만 필터
+        const data = await fetchItems(true);
         const deactivatedItems = data.filter((item) => item.활성화 === false);
         setItems(deactivatedItems);
         setIsActivateMode(true);
         setSelectedActivateItems([]);
         if (isDeleteMode) setIsDeleteMode(false);
       } catch (err) {
-        setAlertPopup({ show: true, message: "비활성화 품목 불러오기에 실패하였습니다." });
+        setAlertPopup({ show: true, message: "비활성 품목 불러오기에 실패하였습니다." });
       }
     } else {
-      // 활성화 모드 취소 시 다시 활성화 품목만 불러오기
+      // 활성화 모드 취소 시 기본(active) 목록 복원
       try {
         await fetchAllItems();
         setIsActivateMode(false);
@@ -523,6 +524,7 @@ const Item = () => {
       }
     }
   };
+  
 
   return (
     <div className="item-container">

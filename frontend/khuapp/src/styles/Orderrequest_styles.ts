@@ -471,4 +471,12 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(16),
     fontWeight: 'bold',
   },
+  selectItemRowContainer: {
+    ...commonTextStyle,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: moderateScale(2),
+    paddingRight: moderateScale(6),
+    paddingLeft: moderateScale(2),
+  },
 });

@@ -9,7 +9,7 @@ import AppLoading from 'expo-app-loading';
 if ((Text as any).defaultProps == null) {
   (Text as any).defaultProps = {};
 }
-(Text as any).defaultProps.style = { fontFamily: 'NotoSansKR-Regular' };
+(Text as any).defaultProps.style = { fontFamily: 'Pretendard-Regular' };
 
 export type RootStackParamList = {
   Login: undefined;
@@ -20,7 +20,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    'NotoSansKR-Regular': require('../../assets/fonts/NotoSansKR-Regular.ttf'),
+    'Pretendard-Regular': require('../../assets/fonts/Pretendard-Regular.ttf'),
   });
 
   if (!fontsLoaded) {

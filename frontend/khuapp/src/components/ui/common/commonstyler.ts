@@ -1,32 +1,39 @@
 // C:\Users\usert\Desktop\KHUFFEE\frontend\khuapp\src\components\ui\common\commonstyler.ts
 
 // 수정해야함
-import { Platform, TextInput, StyleSheet, Dimensions } from 'react-native';
+import { Platform, TextInput, StyleSheet, Dimensions, Text } from 'react-native';
 const { height: screenHeight } = Dimensions.get('window');
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { relative } from 'path';
-
-/** 스타일들 */
+import { Wheat } from 'lucide-react-native';
+const commonTextStyle = {
+  fontFamily: 'Pretendard-Regular',
+};
 export const styles = StyleSheet.create({
 
   // login.tsx 밑 공통 compon
   dashboardContainer: {     // login.tsx, main.tsx , StoreEmployeeDashboard 사용 
     flex: 1,
     backgroundColor: '#fff',
+    ...commonTextStyle
   },
   mainContent: {
     flex: 1,
+    ...commonTextStyle
+
   },
   contentContainer: {      //login.tsx 사용 
     flex: 1,
     padding: moderateScale(20),
     justifyContent: 'center',
+    ...commonTextStyle
   },
   logoContainer: {       //login.tsx 로고 
     alignItems: 'center',
     marginBottom: 40,
+    ...commonTextStyle
   },
   logo: {             //login.tsx 로고 이미지 크기 설정
     width: moderateScale(100),
@@ -34,6 +41,7 @@ export const styles = StyleSheet.create({
     alignSelf: 'center',
     right: 10,
     marginBottom: moderateScale(-5),
+    ...commonTextStyle
   },
   logo_name: {            //logo 아래 이름
     fontSize: RFValue(27),
@@ -41,11 +49,13 @@ export const styles = StyleSheet.create({
     marginBottom: moderateScale(-10),
     textAlign: 'center',
     color: '#8B0000',
+    ...commonTextStyle
   },
   form_Container: {
     width: '100%',
     paddingHorizontal: moderateScale(20),
-    backgroundColor: ''   //여기 바꾸면 부모 컨테이너 바뀜 
+    backgroundColor: '',   //여기 바꾸면 부모 컨테이너 바뀜 
+    ...commonTextStyle
   },
 
   // 개별 TextInput을 감싸는 컨테이너
@@ -53,6 +63,7 @@ export const styles = StyleSheet.create({
     // 화면 높이의 35%를 상단 여백으로 사용 (필요에 따라 조정 가능)
     marginTop: screenHeight * 0.00005,
     opacity: 1,
+    ...commonTextStyle
   },
   form_input_box: {
     width: '100%',
@@ -63,12 +74,14 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginBottom: 5,
     backgroundColor: '#FFFFFF', // 내부 채우기를 흰색으로 설정
+    ...commonTextStyle
   },
   login_errorText: {  // loginScreen.tsx에서 사용
     color: '#A40F16',
     fontWeight: 600,
     marginBottom: 0,
     textAlign: 'center',
+    ...commonTextStyle
   },
   login_button: {   //gd
     width: '100%', // 버튼의 너비를 화면의 100%로 설정합니다.
@@ -86,12 +99,14 @@ export const styles = StyleSheet.create({
     
     // Android용 그림자 설정
     elevation: 5,                   // Android에서 그림자 효과를 주기 위해 5의 elevation 값을 설정합니다.
+    ...commonTextStyle
   },
 
   login_buttonText: {
     color: '#ffffff',
     fontSize: RFValue(16),
     fontWeight: 'bold',
+    ...commonTextStyle
   },
 
   //main.tsx 시작 
@@ -104,11 +119,14 @@ export const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderBottomWidth: 2.5,
     borderBottomColor: '#8B0000',
+    ...commonTextStyle
+    
   },
   head_storeNameText: {
     fontSize: RFValue(18),
     fontWeight: 'bold',
     color: 'black',
+    ...commonTextStyle
   },
   bottom_navbar: {
     flexDirection: 'row',
@@ -117,24 +135,29 @@ export const styles = StyleSheet.create({
     paddingVertical: moderateScale(10),
     borderTopWidth: moderateScale(2.5),
     borderTopColor: '#8B0000',
+    ...commonTextStyle
   },
   bottom_navButton: {
     alignItems: 'center',
+    ...commonTextStyle
   },
   bottom_navText: {
     color: 'black',
     marginTop: 4,
+    ...commonTextStyle
   },
   bottom_activeNavText: {
     color: '#8B0000',
     fontWeight: 'bold',
     marginTop: 4,
+    ...commonTextStyle
   },
   bottom_Overlay: {
     flex: 1,
     backgroundColor: 'rgba(68, 60, 60, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    ...commonTextStyle
   },
   bottom_Container: {
     width: '80%',
@@ -142,21 +165,25 @@ export const styles = StyleSheet.create({
     padding: moderateScale(20),
     borderRadius: moderateScale(10),
     elevation: 5,
+    ...commonTextStyle
   },
   bottom_modal_Option: {
     paddingVertical: moderateScale(15),
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    ...commonTextStyle
   },
   bottom_modalOptionText: {
     fontSize: RFValue(18),
     color: '#333',
+    ...commonTextStyle
   },
   loading_Container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+    ...commonTextStyle
   },
   loading_Text: {
     marginTop: moderateScale(3),
@@ -165,10 +192,12 @@ export const styles = StyleSheet.create({
     left: 5,
     color: '#00000080',
     alignItems: 'center',
+    ...commonTextStyle
   },
 
   // OrderRequest.tsx 관련 스타일
   selectItemCard: {
+    ...commonTextStyle,
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#e2e8f0',
@@ -185,14 +214,17 @@ export const styles = StyleSheet.create({
     elevation: 2,
   },
   selectedItemCard: {
+    ...commonTextStyle,
     borderColor: '#0D326F',
     borderWidth: 2,
     backgroundColor: '#f8f9fa',
   },
   selectItemInfo: {
+    ...commonTextStyle,
     marginBottom: 8,
   },
   selectItemName: {
+    ...commonTextStyle,
     width: '60%',
     fontSize: RFValue(15),
     fontWeight: '600',
@@ -200,6 +232,7 @@ export const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   unitText: {
+    ...commonTextStyle,
     // width: '100%',
     fontSize: RFValue(12),
     color: '#555555',
@@ -210,6 +243,7 @@ export const styles = StyleSheet.create({
     right: wp(5),
   },
   price_unit_Text: {
+    ...commonTextStyle,
     width: '25%',
     fontSize: RFValue(15),
     fontWeight: '700',
@@ -217,6 +251,7 @@ export const styles = StyleSheet.create({
     textAlign: 'right',
   },
   columnCenteredView: {
+    ...commonTextStyle,
     width: '30%',
     height: '30%',
     alignItems: 'center',
@@ -224,12 +259,14 @@ export const styles = StyleSheet.create({
     flexDirection: 'column'
   },
   actionsContainer: {
+    ...commonTextStyle,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
   },
   priceText: {
+    ...commonTextStyle,
     fontSize: RFValue(14),
     fontWeight: '600',
     color: '#0D326F',
@@ -237,6 +274,7 @@ export const styles = StyleSheet.create({
     left: wp(0.5)
   },
   orderButton: {
+    ...commonTextStyle,
     width: wp(15),
     height: hp(4),
     backgroundColor: '#fff',
@@ -255,11 +293,13 @@ export const styles = StyleSheet.create({
     elevation: 1,
   },
   orderButtonText: {
+    ...commonTextStyle,
     color: '#0D326F',
     fontSize: RFValue(13),
     fontWeight: '700',
   },
   order_request_Button: {
+    ...commonTextStyle,
     backgroundColor: '#0D326F',
     paddingVertical: moderateScale(12),
     paddingHorizontal: moderateScale(20),
@@ -275,11 +315,13 @@ export const styles = StyleSheet.create({
     elevation: 3,
   },
   order_request_ButtonText: {
+    ...commonTextStyle,
     color: 'white',
     fontSize: RFValue(16),
     fontWeight: 'bold',
   },
   removeButton: {
+    ...commonTextStyle,
     width: 28,
     height: 28,
     backgroundColor: '#ef4444',
@@ -288,6 +330,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerContainer: {
+    ...commonTextStyle,
     backgroundColor: '#f8f9fa',
     borderWidth: 1,
     borderColor: '#e2e8f0',
@@ -307,6 +350,7 @@ export const styles = StyleSheet.create({
     elevation: 2,
   },
   item_headerText: {
+    ...commonTextStyle,
     width: '60%',
     fontSize: RFValue(15),
     fontWeight: '700',
@@ -315,6 +359,7 @@ export const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   price_headerText: {
+    ...commonTextStyle,
     width: '25%',
     fontSize: RFValue(15),
     fontWeight: '700',
@@ -324,15 +369,18 @@ export const styles = StyleSheet.create({
   },
 
   listContainer: {
+    ...commonTextStyle,
     marginTop: moderateScale(5),
     marginBottom: moderateScale(0),
   },
   scrollContainer: {
+    ...commonTextStyle,
     flexGrow: 1,
     backgroundColor: '#fff',
     paddingHorizontal: moderateScale(16),
   },
   fixedHeaderContainer: {
+    ...commonTextStyle,
     backgroundColor: '#fff',
     paddingTop: moderateScale(10),
     paddingBottom: moderateScale(5),
@@ -349,12 +397,14 @@ export const styles = StyleSheet.create({
     // elevation: 2,
   },
   scrollContainerWithHeader: {
+    ...commonTextStyle,
     paddingTop: 50,
     paddingHorizontal: 12,
     paddingBottom: 20,
     backgroundColor: '#fff',
   },
   categorySection: {
+    ...commonTextStyle,
     backgroundColor: '#ffffff',
     paddingVertical: moderateScale(15),
     // paddingHorizontal: moderateScale(10),
@@ -372,11 +422,13 @@ export const styles = StyleSheet.create({
     elevation: 3,
   },
   categoryList: {
+    ...commonTextStyle,
     flexDirection: 'row',
     marginTop: moderateScale(10),
     paddingRight: moderateScale(16),
   },
   categoryButton: {
+    ...commonTextStyle,
     marginHorizontal: scale(4),
     paddingHorizontal: moderateScale(15),
     paddingVertical: verticalScale(8),
@@ -396,10 +448,12 @@ export const styles = StyleSheet.create({
     elevation: 2,
   },
   categoryButtonActive: {
+    ...commonTextStyle,
     backgroundColor: '#0D326F',
     borderColor: '#0D326F',
   },
   categoryButtonText: {
+    ...commonTextStyle,
     fontSize: RFValue(14),
     fontWeight: '600',
     color: '#64748b',
@@ -409,6 +463,7 @@ export const styles = StyleSheet.create({
   },
 
   sectionTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: '700',
     color: '#0D326F',
@@ -420,7 +475,22 @@ export const styles = StyleSheet.create({
     paddingLeft: moderateScale(10),
     marginLeft: moderateScale(5)
   },
+  sectionTitle_2: {
+    ...commonTextStyle,
+    fontSize: RFValue(18),
+    fontWeight: '700',
+    color: '#0D326F',
+    marginBottom: moderateScale(0),
+    paddingHorizontal: moderateScale(16),
+    width: '100%',
+    borderLeftWidth: 4,
+    borderLeftColor: '#0D326F',
+    paddingLeft: moderateScale(10),
+    marginLeft: moderateScale(5)
+  },
+
   footerContainer: {
+    ...commonTextStyle,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -440,11 +510,13 @@ export const styles = StyleSheet.create({
     elevation: 5,
   },
   footerPriceText: {
+    ...commonTextStyle,
     color: '#0D326F',
     fontSize: RFValue(18),
     fontWeight: '700',
   },
   footerButton: {
+    ...commonTextStyle,
     backgroundColor: '#0D326F',
     borderRadius: 25,
     paddingHorizontal: wp(6),
@@ -459,18 +531,22 @@ export const styles = StyleSheet.create({
     elevation: 3,
   },
   footerButtonDisabled: {
+    ...commonTextStyle,
     backgroundColor: '#94a3b8',
   },
   footerButtonText: {
+    ...commonTextStyle,
     color: '#fff',
     fontSize: RFValue(16),
     fontWeight: '700',
   },
   selectedItemsSection: {
+    ...commonTextStyle,
     paddingVertical: 16,
     paddingHorizontal: 16,
   },
   totalRow: {
+    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 15,
@@ -479,31 +555,37 @@ export const styles = StyleSheet.create({
     marginTop: 10,
   },
   contentContainerStyle: {
+    ...commonTextStyle,
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   productsSection: {
+    ...commonTextStyle,
     paddingLeft: 8,
     marginBottom: screenHeight * 0.8,
   },
   productGrid: {
+    ...commonTextStyle,
     flexDirection: 'column',
     paddingHorizontal: 5,
     justifyContent: 'space-between',
   },
   selectItemRow: {
+    ...commonTextStyle,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
   },
   cardContent: {
+    ...commonTextStyle,
     flexDirection: 'column',
     width: '100%',
     // height: hp(3)
   },
   selectItemRowContainer: {
+    ...commonTextStyle,
     flexDirection: 'row',
     alignItems: 'center',
     gap: moderateScale(2),
@@ -511,14 +593,16 @@ export const styles = StyleSheet.create({
     paddingLeft: moderateScale(2),
   },
   selectedItemRowContainer: {
+    ...commonTextStyle,
     flexDirection: 'row',
     alignItems: 'center',
     gap: moderateScale(2),
     paddingRight: moderateScale(6),
     paddingLeft: moderateScale(2),
-    marginTop: moderateScale(20)
+    marginTop: moderateScale(0)
   },
   selectItemCardFooter: {
+    ...commonTextStyle,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
@@ -526,6 +610,7 @@ export const styles = StyleSheet.create({
     paddingTop: moderateScale(8),
   },
   selectItemCardFooter_selected: {
+    ...commonTextStyle,
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -533,15 +618,18 @@ export const styles = StyleSheet.create({
     // top: moderateScale(500)
   },
   actionsContainer_selected: {
+    ...commonTextStyle,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
   additionalRowContainer: {
+
     // paddingTop: moderateScale(5)
     // 추가로 내부 요소들의 간격은 개별 스타일에서 조절
   },
   productInfoContainer: {
+    ...commonTextStyle,
     height: hp(5), // 기존 카드 높이와 동일하게 설정 (필요 시 조정)
     justifyContent: 'center',
   },
@@ -550,11 +638,13 @@ export const styles = StyleSheet.create({
    **********/
   // 삭제 버튼이 왼쪽에 위치하도록 하기 위해, buttonsRow의 flexDirection을 'row-reverse'로 설정합니다.
   buttonsRow: {
+    ...commonTextStyle,
     flexDirection: 'column',  // 기존 'row' 대신 'row-reverse'를 사용하여 삭제 버튼이 왼쪽에 오도록 함
     alignItems: 'center',
     marginBottom: moderateScale(4),
   },
   quantityControlContainer: {
+    ...commonTextStyle,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
@@ -565,6 +655,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   quantityButton: {
+    ...commonTextStyle,
     width: wp(12),
     height: hp(5),
     justifyContent: 'center',
@@ -572,6 +663,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   quantityText: {
+    ...commonTextStyle,
     fontSize: RFValue(15),
     fontWeight: '600',
     color: '#0D326F',
@@ -582,6 +674,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   deleteButton: {
+    ...commonTextStyle,
     width: '10%',
     minWidth: moderateScale(30),
     height: '30%',
@@ -594,6 +687,7 @@ export const styles = StyleSheet.create({
     borderWidth: 3,
   },
   deleteButtonText: {
+    ...commonTextStyle,
     color: '#0D326F',
     fontSize: RFValue(12),
     fontWeight: 'bold',
@@ -601,11 +695,13 @@ export const styles = StyleSheet.create({
     textAlignVertical: 'center',
   },
   disabledButton: {
+    ...commonTextStyle,
     opacity: 0.3,
   },
 
   /** 에러 메시지 영역 **/
   errorContainer: {
+    ...commonTextStyle,
     marginTop: hp(1),
     backgroundColor: '#fee2e2',
     borderRadius: moderateScale(8),
@@ -613,11 +709,13 @@ export const styles = StyleSheet.create({
     width: '100%',
   },
   errorText: {
+    ...commonTextStyle,
     color: '#dc2626',
     fontSize: RFValue(12),
     fontWeight: '500',
   },
   priceContainer: {
+    ...commonTextStyle,
     flex: 1,
     flexDirection: 'column',
     paddingBottom: moderateScale(40)
@@ -625,11 +723,13 @@ export const styles = StyleSheet.create({
 
   // 선택한 상품 확인 css 
   confirm_selectedItemsSection: {
+    ...commonTextStyle,
     paddingVertical: moderateScale(20),
     paddingHorizontal: moderateScale(16),
     backgroundColor: '#ffffff',
   },
   confirm_sectionTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(22),
     fontWeight: '700',
     color: '#0D326F',
@@ -641,6 +741,7 @@ export const styles = StyleSheet.create({
     paddingBottom: moderateScale(15),
   },
   confirmationItemRow: {
+    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -654,6 +755,7 @@ export const styles = StyleSheet.create({
     marginBottom: moderateScale(8),
   },
   confirm_selectItemName: {
+    ...commonTextStyle,
     flex: 3,
     fontSize: RFValue(16),
     fontWeight: '600',
@@ -662,17 +764,20 @@ export const styles = StyleSheet.create({
     width: '100%',
   },
   confirm_unitText: {
+    ...commonTextStyle,
     flex: 0.7,
     fontSize: RFValue(14),
     color: '#64748b',
     fontWeight: '500',
   },
   confirm_priceText: {
+    ...commonTextStyle,
     fontSize: RFValue(15),
     fontWeight: '700',
     color: '#0D326F',
   },
   confirm_totalRow: {
+    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: moderateScale(15),
@@ -684,12 +789,14 @@ export const styles = StyleSheet.create({
     borderRadius: moderateScale(8),
   },
   totalText: {
+    ...commonTextStyle,
     color: '#0D326F',
     fontSize: RFValue(18),
     fontWeight: '700',
   },
 
   container: {
+    ...commonTextStyle,
     flex: 1,
     padding: moderateScale(20),
     justifyContent: 'flex-start',
@@ -697,12 +804,15 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: 'bold',
     marginBottom: 10,
     paddingHorizontal: moderateScale(16),
+    ...commonTextStyle
   },
   filterContainer: {
+    ...commonTextStyle,
     flexDirection: 'row',
     marginBottom: 10,
     alignItems: 'center',
@@ -710,6 +820,7 @@ export const styles = StyleSheet.create({
     width: '100%',
   },
   sortButton: {
+    ...commonTextStyle,
     justifyContent: 'center',
     alignItems: 'center',
     width: 79,
@@ -722,6 +833,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
   },
   headerRow: {
+    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -731,20 +843,24 @@ export const styles = StyleSheet.create({
     paddingBottom: moderateScale(-8),
   },
   titleContainer: {
+    ...commonTextStyle,
     flexDirection: 'row',
     alignItems: 'center',
   },
   rightButtonGroup: {
+    ...commonTextStyle,
     flexDirection: 'row',
     alignItems: 'center',
   },
   periodModalContainer: {
+    ...commonTextStyle,
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   periodModalInner: {
+    ...commonTextStyle,
     width: '80%',
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -752,26 +868,31 @@ export const styles = StyleSheet.create({
     overflow: 'visible',
   },
   periodModalTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: 'bold',
     marginBottom: 16,
   },
   dateGroup: {
+    ...commonTextStyle,
     flex: 1,
     alignItems: 'center',
     marginTop: 12,
   },
   dateGroupLabel: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: 'bold',
     marginBottom: 6,
   },
   dateRow: {
+    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
   },
   dateBox: {
+    ...commonTextStyle,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 6,
@@ -783,15 +904,18 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dateBoxText: {
+    ...commonTextStyle,
     fontSize: RFValue(15),
     fontWeight: '600',
   },
   dropdownWrapper: {
+    ...commonTextStyle,
     position: 'relative',
     marginHorizontal: 4,
     zIndex: 1,
   },
   dropdown: {
+    ...commonTextStyle,
     position: 'absolute',
     top: '100%',
     left: 0,
@@ -804,29 +928,35 @@ export const styles = StyleSheet.create({
     elevation: 10,
   },
   dropdownOpen: {
+    ...commonTextStyle,
     zIndex: 9999,
     elevation: 9999,
   },
   dropdownItem: {
+    ...commonTextStyle,
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
   dropdownScroll: {
+    ...commonTextStyle,
     maxHeight: 180,
   },
   periodSearchButton: {
+    ...commonTextStyle,
     backgroundColor: '#0D326F',
     borderRadius: 6,
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
   periodSearchButtonText: {
+    ...commonTextStyle,
     color: '#fff',
     fontWeight: 'bold',
   },
   loadMoreButton: {
+    ...commonTextStyle,
     alignSelf: 'center',
     marginVertical: moderateScale(10),
     backgroundColor: '#0D326F',
@@ -835,20 +965,24 @@ export const styles = StyleSheet.create({
     paddingHorizontal: moderateScale(20),
   },
   loadMoreButtonLoading: {
+    ...commonTextStyle,
     backgroundColor: 'transparent',
   },
   loadMoreButtonText: {
+    ...commonTextStyle,
     color: '#fff',
     fontSize: RFValue(16),
     fontWeight: 'bold',
   },
   datePickerModalContainer: {
+    ...commonTextStyle,
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   datePickerModal: {
+    ...commonTextStyle,
     width: '90%',
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -856,17 +990,20 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   datePickerTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: 'bold',
     marginBottom: 10,
   },
   datePickerLabel: {
+    ...commonTextStyle,
     fontSize: RFValue(14),
     fontWeight: '600',
     marginVertical: 6,
     alignSelf: 'flex-start',
   },
   pickerItem: {
+    ...commonTextStyle,
     backgroundColor: '#eee',
     borderRadius: 6,
     paddingVertical: 8,
@@ -874,19 +1011,23 @@ export const styles = StyleSheet.create({
     marginRight: 6,
   },
   pickerItemActive: {
+    ...commonTextStyle,
     backgroundColor: '#3b82f6',
   },
   resetButton: {
+    ...commonTextStyle,
     backgroundColor: 'red',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 6,
   },
   resetButtonText: {
+    ...commonTextStyle,
     color: '#fff',
     fontWeight: 'bold',
   },
   confirmButton: {
+    ...commonTextStyle,
     backgroundColor: '#3b82f6',
     borderRadius: 6,
     paddingVertical: 8,
@@ -894,15 +1035,18 @@ export const styles = StyleSheet.create({
     marginTop: 10,
   },
   confirmButtonText: {
+    ...commonTextStyle,
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
   },
   sectionContainer: {
+    ...commonTextStyle,
     backgroundColor: '#fff',
   },
 
   status_container: {
+    ...commonTextStyle,
     flex: 1,
     alignItems: 'stretch',
     justifyContent: 'flex-start',
@@ -911,6 +1055,7 @@ export const styles = StyleSheet.create({
   },
 
   flatlist: {
+    ...commonTextStyle,
     height: verticalScale(80),
     width: wp('%'),
   }
@@ -918,12 +1063,14 @@ export const styles = StyleSheet.create({
 
 export const modalStyles = StyleSheet.create({
   centeredView: {
+    ...commonTextStyle,
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalView: {
+    ...commonTextStyle,
     margin: moderateScale(20),
     backgroundColor: '#ffffff',
     borderRadius: moderateScale(12),
@@ -940,6 +1087,7 @@ export const modalStyles = StyleSheet.create({
     width: '85%',
   },
   modalTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(20),
     fontWeight: '700',
     color: '#0D326F',
@@ -951,6 +1099,7 @@ export const modalStyles = StyleSheet.create({
     textAlign: 'center',
   },
   modalText: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     marginBottom: moderateScale(10),
     color: '#1e293b',
@@ -958,6 +1107,7 @@ export const modalStyles = StyleSheet.create({
     lineHeight: moderateScale(22),
   },
   closeButton: {
+    ...commonTextStyle,
     backgroundColor: '#0D326F',
     borderRadius: moderateScale(25),
     paddingVertical: moderateScale(12),
@@ -973,6 +1123,7 @@ export const modalStyles = StyleSheet.create({
     shadowRadius: 3,
   },
   textStyle: {
+    ...commonTextStyle,
     color: '#ffffff',
     fontWeight: '700',
     fontSize: RFValue(16),
@@ -982,6 +1133,7 @@ export const modalStyles = StyleSheet.create({
 
 export const orderStatusStyles = StyleSheet.create({
   dateHeader: {
+    ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: 'bold',
     marginBottom: 8,
@@ -989,21 +1141,25 @@ export const orderStatusStyles = StyleSheet.create({
     paddingLeft: 4,
   },
   extraCountText: {
+    ...commonTextStyle,
     color: '#0D326F',
     fontWeight: 'bold',
     marginBottom: 4,
   },
   productName: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: '600',
     marginBottom: 4,
   },
   quantity: {
+    ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#555',
     marginBottom: 6,
   },
   actionButton: {
+    ...commonTextStyle,
     backgroundColor: 'white',
     borderColor: '#0D326F',
     borderWidth: 2,
@@ -1015,6 +1171,7 @@ export const orderStatusStyles = StyleSheet.create({
     alignItems: 'center',
   },
   actionButtonText: {
+    ...commonTextStyle,
     color: '#0D326F',
     fontSize: RFValue(14),
     fontWeight: 'bold',
@@ -1022,66 +1179,80 @@ export const orderStatusStyles = StyleSheet.create({
     textAlignVertical: 'center',
   },
   flatlist: {
+    ...commonTextStyle,
     height: hp(80),
   }
 });
 
 export const receiptStyles = StyleSheet.create({
   receiptContainer: {
+    ...commonTextStyle,
     width: '100%',
     padding: 20,
     backgroundColor: '#fff',
   },
   header: {
+    ...commonTextStyle,
     alignItems: 'center',
     marginBottom: 10,
   },
   headerTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(20),
     fontWeight: 'bold',
   },
   headerSubtitle: {
+    ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#666',
     marginTop: 2,
   },
   divider: {
+    ...commonTextStyle,
     borderBottomColor: '#ccc',
     borderBottomWidth: 1,
     borderStyle: 'dashed',
     marginVertical: 8,
   },
   itemRow: {
+    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 6,
   },
   itemRowLeft: {
+    ...commonTextStyle,
     flexDirection: 'column',
   },
   itemRowRight: {
+    ...commonTextStyle,
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
   },
   itemName: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: '600',
   },
   itemQty: {
+    ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#666',
     marginTop: 2,
   },
   itemPrice: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: '600',
     color: '#0D326F',
   },
   footer: {
+    ...commonTextStyle,
     marginTop: 10,
     alignItems: 'flex-end',
   },
   footerText: {
+    ...commonTextStyle,
     color: '#1e7e34',
     fontSize: RFValue(16),
     fontWeight: 'bold',
@@ -1090,29 +1261,34 @@ export const receiptStyles = StyleSheet.create({
 
 export const inventoryStyles = StyleSheet.create({
   container: {
+    ...commonTextStyle,
     flex: 1,
     padding: moderateScale(20),
     backgroundColor: '#fff',
   },
   title: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: 'bold',
     marginBottom: 15,
     color: '#0D326F',
   },
   itemContainer: {
+    ...commonTextStyle,
     borderBottomWidth: moderateScale(1),
     borderBottomColor: '#ccc',
     flexDirection: 'row',
     alignItems: 'center',
   },
   itemText: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     marginBottom: 4,
     color: '#333',
     width: wp(4),
   },
   name_itemText: {
+    ...commonTextStyle,
     width: '70%',
     fontSize: RFValue(14),
     fontWeight: '500',
@@ -1123,6 +1299,7 @@ export const inventoryStyles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   unit_itemText: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     color: '#333',
     width: scale(100),
@@ -1131,33 +1308,39 @@ export const inventoryStyles = StyleSheet.create({
     left:moderateScale(30)
   },
   message: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     color: '#555',
     textAlign: 'center',
     marginTop: 20,
   },
   periodText: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     color: '#555',
     textAlign: 'center',
     marginVertical: 10,
   },
   itemsContainer: {
+    ...commonTextStyle,
     flex: 1,   //웹에서 스크롤 되게함 
     marginBottom: 10,
   },
   term_of_name: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: 'bold',
     marginBottom: moderateScale(5),
   },
   flat_inventory: {
+    ...commonTextStyle,
     borderWidth: 1,
     borderColor: '#ccc',
     // borderRadius: 4,
     width: '100%',
   },
   inventory_HeaderContainer: {
+    ...commonTextStyle,
     backgroundColor: '#cf8888',
     gap: moderateScale(2),
     borderTopLeftRadius: 8,
@@ -1168,6 +1351,7 @@ export const inventoryStyles = StyleSheet.create({
     paddingVertical: moderateScale(8),
   },
   inventory_item_headerText: {
+    ...commonTextStyle,
     width: '60%',
     fontSize: RFValue(14),
     fontWeight: 'bold',
@@ -1176,6 +1360,7 @@ export const inventoryStyles = StyleSheet.create({
 
   },
   inventory_unit_headerText: {
+    ...commonTextStyle,
     width: '20%',
     fontSize: RFValue(14),
     fontWeight: 'bold',
@@ -1185,6 +1370,7 @@ export const inventoryStyles = StyleSheet.create({
     left: moderateScale(40)
   },
   inventory_selectItemRowContainer: {
+    ...commonTextStyle,
     flexDirection: 'row',
     alignItems: 'center',
     paddingRight: moderateScale(6),

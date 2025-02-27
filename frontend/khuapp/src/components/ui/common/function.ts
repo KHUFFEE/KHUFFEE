@@ -80,22 +80,27 @@ export const fetchSuppliers = async (): Promise<any[]> => { // async는 비동�
 
 
 
-/** 품목 리스트를 협력사명 및 품목명 기준으로 정렬하는 함수 */
-export const sortProductsBySupplierAndName = (filteredProducts: APIProduct[], suppliers: any[]): APIProduct[] => {
+/** 품목 리스트를 협력사명, 종류, 품목명 기준으로 오름차순 정렬하는 함수 */
+export const sortProductsBySupplierAndName = (
+  filteredProducts: APIProduct[],
+  suppliers: any[]
+): APIProduct[] => {
   return filteredProducts.slice().sort((a, b) => {
     const supplierA = getSupplierName(a, suppliers);
     const supplierB = getSupplierName(b, suppliers);
 
+    // 협력사명 기준 정렬
     if (supplierA < supplierB) return -1;
     if (supplierA > supplierB) return 1;
 
-    const aStartsWithNumber = /^\d/.test(a.품목명);
-    const bStartsWithNumber = /^\d/.test(b.품목명);
-    if (aStartsWithNumber !== bStartsWithNumber) {
-      return aStartsWithNumber ? 1 : -1;
-    }
+    // 협력사가 같다면, 종류 기준 정렬
+    if (a.종류 < b.종류) return -1;
+    if (a.종류 > b.종류) return 1;
+
+    // 협력사와 종류가 같다면, 품목명 기준 정렬
     if (a.품목명 < b.품목명) return -1;
     if (a.품목명 > b.품목명) return 1;
+    
     return 0;
   });
 };

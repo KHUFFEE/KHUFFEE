@@ -508,9 +508,10 @@ html, body {
 
 
 .title {
+  margin-top: 20px;
   margin-bottom: 30px;
-  margin-left: 2px;
-  font-size: 24px;
+  margin-left: 4px;
+  font-size: 26px;
   font-weight: bold;
 }
 

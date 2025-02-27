@@ -186,6 +186,24 @@ const StoreOrders = () => {
     handleReset();
   }, []);
 
+  // 추가된 useEffect: 첫 로드시 managerOrderRound를 업데이트
+  useEffect(() => {
+    const fetchManagerRound = async () => {
+      try {
+        const statusList = await getTableStatusList();
+        const storeOrderStatus = statusList.find((s) => s.테이블 === "매장_발주");
+        const currentStatus = storeOrderStatus ? storeOrderStatus.상태 : 1;
+        setManagerOrderRound(currentStatus);
+      } catch (err) {
+        console.error("Failed to fetch manager order round:", err);
+        setManagerOrderRound(1);
+      }
+    };
+
+    fetchManagerRound();
+  }, []);
+
+
   // displayPeriod 계산 (선택된 값 우선)
   const getDisplayPeriod = () => {
     if (isFreeInput) {

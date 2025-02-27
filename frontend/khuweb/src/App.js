@@ -8,9 +8,10 @@ import Login from "./pages/Login";
 import Suppliers from "./pages/Suppliers";
 import InventoryLog from "./pages/InventoryLog";
 import StoreInventory from "./pages/StoreInventory";
-// 추가: 월말 재고 관리를 위한 페이지 (파일명: StoreInventoryMonthEnd.js)
+// 추가: 월말 재고 관리를 위한 페이지
 import StoreInventoryMonthEnd from "./pages/StoreInventoryMonthEnd";
 import WarehouseInventory from "./pages/WarehouseInventory";
+import WarehouseExpiration from "./pages/WarehouseExpiration"; // 추가된 유통기한 관리 페이지
 import WarehouseIncoming from "./pages/WarehouseIncoming";
 import WarehouseOutgoing from "./pages/WarehouseOutgoing";
 import WarehouseOrder from "./pages/WarehouseOrder";
@@ -34,7 +35,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
-  // 모든 토글 메뉴 기본값 '닫힘(false)'
+  // 모든 토글 메뉴 기본값 '열림(true)'
   const [showIntegrationMenu, setShowIntegrationMenu] = useState(true);
   const [showStoreMenu, setShowStoreMenu] = useState(true);
   const [showWarehouseMenu, setShowWarehouseMenu] = useState(true);
@@ -152,7 +153,7 @@ function App() {
                           isActive ? "active" : ""
                         }
                       >
-                        입출고관리대장
+                        관리 대장
                       </NavLink>
                     </div>
                   )}
@@ -183,7 +184,7 @@ function App() {
                       >
                         일별 재고
                       </NavLink>
-                      {/* 추가: 월말 재고 탭 (StoreInventoryMonthEnd 컴포넌트로 관리) */}
+                      {/* 추가: 월말 재고 탭 */}
                       <NavLink
                         to="/store/inventory_monthend"
                         onClick={() => handleNavLinkClick("/store/inventory_monthend")}
@@ -228,6 +229,20 @@ function App() {
                         일별 재고
                       </NavLink>
                       <NavLink
+                        to="/warehouse/expiration"
+                        onClick={() => handleNavLinkClick("/warehouse/expiration")}
+                        className={({ isActive }) => (isActive ? "active" : "")}
+                      >
+                        유통기한 관리
+                      </NavLink>
+                      <NavLink
+                        to="/warehouse/orders"
+                        onClick={() => handleNavLinkClick("/warehouse/orders")}
+                        className={({ isActive }) => (isActive ? "active" : "")}
+                      >
+                        발주
+                      </NavLink>
+                      <NavLink
                         to="/warehouse/incoming"
                         onClick={() => handleNavLinkClick("/warehouse/incoming")}
                         className={({ isActive }) => (isActive ? "active" : "")}
@@ -241,13 +256,6 @@ function App() {
                       >
                         출고
                       </NavLink>
-                      <NavLink
-                        to="/warehouse/orders"
-                        onClick={() => handleNavLinkClick("/warehouse/orders")}
-                        className={({ isActive }) => (isActive ? "active" : "")}
-                      >
-                        발주
-                      </NavLink>
                     </div>
                   )}
                 </div>
@@ -259,13 +267,14 @@ function App() {
                 <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
                 <Route path="/" element={<Home />} />
                 <Route path="/store/inventory" element={<StoreInventory />} />
-                {/* 추가: 월말 재고 페이지 라우트 */}
+                {/* 월말 재고 페이지 라우트 */}
                 <Route path="/store/inventory_monthend" element={<StoreInventoryMonthEnd />} />
                 <Route path="/store/orders" element={<Orders />} />
                 <Route path="/integration/suppliers" element={<Suppliers />} />
                 <Route path="/integration/inventorylog" element={<InventoryLog />} />
                 <Route path="/integration/item" element={<Item />} />
                 <Route path="/warehouse/inventory" element={<WarehouseInventory />} />
+                <Route path="/warehouse/expiration" element={<WarehouseExpiration />} /> {/* 추가된 유통기한 관리 라우트 */}
                 <Route path="/warehouse/incoming" element={<WarehouseIncoming />} />
                 <Route path="/warehouse/outgoing" element={<WarehouseOutgoing />} />
                 <Route path="/warehouse/orders" element={<WarehouseOrder />} />

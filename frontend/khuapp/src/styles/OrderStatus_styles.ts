@@ -837,4 +837,8 @@ export const dateRangeStyles = StyleSheet.create({
     fontWeight: '500',
     ...commonTextStyle,
   },
+  formContainer: {
+    marginVertical: 20,
+    paddingHorizontal: 10,
+  },
 });

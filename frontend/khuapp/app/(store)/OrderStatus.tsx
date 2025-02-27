@@ -6,13 +6,10 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  TouchableWithoutFeedback,
   FlatList,
   NativeSyntheticEvent,
   NativeScrollEvent,
   Modal,
-  Alert,
-  StyleSheet,
 } from 'react-native';
 import {
   Home,
@@ -32,20 +29,23 @@ import { orderStatusStyles, dateRangeStyles } from '../../src/styles/OrderStatus
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-// 추가: Picker 컴포넌트 임포트 (년도, 월, 주차 선택용)
+// Picker 컴포넌트 임포트 (년도, 월, 주차 선택용)
 import { Picker } from '@react-native-picker/picker';
 
-/* ===========================================================
-   변경 시작: 새 기간조회 모달 컴포넌트 (DateRangeModal) - 년도, 월, 주차 선택
-=========================================================== */
 interface DateRangeModalProps {
   visible: boolean;
   onClose: () => void;
   onConfirm: (startDate: string, endDate: string) => void;
 }
 
+/* ===========================================================
+   변경: 새 기간조회 모달 컴포넌트 (DateRangeModal)
+   - 직접입력(preset '직접입력')을 제외하고는 formContainer 표시 안함.
+   - presetButtons 아래에 확인 버튼(검색 버튼과 동일 스타일)을 추가.
+   - 확인 버튼 클릭 시 설정된 기간으로 조회.
+=========================================================== */
 const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onConfirm }) => {
-  // pickers의 기본값을 빈 문자열로 설정하여 placeholder가 보이도록 함
+  // 날짜 선택 상태들
   const [startYear, setStartYear] = useState('');
   const [startMonth, setStartMonth] = useState('');
   const [startWeek, setStartWeek] = useState('');
@@ -53,20 +53,36 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
   const [endMonth, setEndMonth] = useState('');
   const [endWeek, setEndWeek] = useState('');
   const [activePreset, setActivePreset] = useState<string | null>(null);
+  // 직접입력인 경우에만 formContainer 노출
+  const [showForm, setShowForm] = useState(false);
 
-  // preset 버튼 배열 (‘직접입력’을 선택하면 pickers는 빈 상태로 둠)
+  // 프리셋 버튼 배열
   const presets = ['직접입력', '최근 1개월', '최근 3개월', '최근 6개월', '올해', '1년'];
-
-  // 년도, 월, 주차 선택 옵션 배열
+  // 선택 옵션 배열
   const years = ['2025', '2024', '2023', '2022', '2021', '2020'];
   const months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
   const weeks = ['1', '2', '3', '4', '5'];
 
-  // 프리셋 버튼 클릭 시 날짜 업데이트 (‘직접입력’이면 pickers의 값을 초기화)
+  // 모달이 열릴 때마다 초기화
+  useEffect(() => {
+    if (visible) {
+      setActivePreset(null);
+      setShowForm(false);
+      setStartYear('');
+      setStartMonth('');
+      setStartWeek('');
+      setEndYear('');
+      setEndMonth('');
+      setEndWeek('');
+    }
+  }, [visible]);
+
+  // 프리셋 버튼 클릭 시
   const handlePresetPress = (preset: string) => {
     setActivePreset(preset);
-    const today = new Date();
     if (preset === '직접입력') {
+      setShowForm(true);
+      // 직접입력 시 기존 값 초기화
       setStartYear('');
       setStartMonth('');
       setStartWeek('');
@@ -74,6 +90,8 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
       setEndMonth('');
       setEndWeek('');
     } else {
+      setShowForm(false);
+      const today = new Date();
       let newStartDate = new Date();
       if (preset === '최근 1개월') {
         newStartDate.setMonth(today.getMonth() - 1);
@@ -88,14 +106,14 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
       }
       setStartYear(String(newStartDate.getFullYear()));
       setStartMonth(String(newStartDate.getMonth() + 1).padStart(2, '0'));
-      setStartWeek('1'); // 주차는 기본값 '1'
+      setStartWeek('1'); // 기본값 '1'
       setEndYear(String(today.getFullYear()));
       setEndMonth(String(today.getMonth() + 1).padStart(2, '0'));
-      setEndWeek('1'); // 주차는 기본값 '1'
+      setEndWeek('1'); // 기본값 '1'
     }
   };
 
-  // 검색 버튼 클릭 시 선택된 날짜 범위를 문자열로 만들어 부모에게 전달
+  // 확인/검색 버튼 클릭 시 선택된 날짜 범위를 문자열로 만들어 부모에게 전달
   const handleSearch = () => {
     const startDateDisplay = `${startYear || '년도'}-${startMonth || '월'}-${startWeek ? startWeek + '주' : '주'}`;
     const endDateDisplay = `${endYear || '년도'}-${endMonth || '월'}-${endWeek ? endWeek + '주' : '주'}`;
@@ -115,7 +133,7 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
             </TouchableOpacity>
           </View>
 
-          {/* 프리셋 버튼 */}
+          {/* 프리셋 버튼 영역 */}
           <ScrollView testID="presetButtons" horizontal contentContainerStyle={dateRangeStyles.presetButtons}>
             {presets.map((preset) => (
               <TouchableOpacity
@@ -140,120 +158,129 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
             ))}
           </ScrollView>
 
-          {/* 선택된 날짜 범위 표시 */}
-          <View testID="dateRangeSection" style={dateRangeStyles.dateRangeSection}>
-            <Text testID="dateRangeTitle" style={dateRangeStyles.dateRangeTitle}>날짜 범위</Text>
-            <View testID="dateRangeContainer" style={dateRangeStyles.dateRangeContainer}>
-              <View testID="dateRangeHeader" style={dateRangeStyles.dateRangeHeader}>
-                <View testID="datePart" style={dateRangeStyles.datePart}>
-                  <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>시작</Text>
-                  <Text testID="dateValue" style={dateRangeStyles.dateValue}>
-                    {`${startYear || '년도'}-${startMonth || '월'}-${startWeek ? startWeek + '주' : '주'}`}
-                  </Text>
-                </View>
-                <Text testID="dateSeparator" style={dateRangeStyles.dateSeparator}>~</Text>
-                <View testID="datePart" style={dateRangeStyles.datePart}>
-                  <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>종료</Text>
-                  <Text testID="dateValue" style={dateRangeStyles.dateValue}>
-                    {`${endYear || '년도'}-${endMonth || '월'}-${endWeek ? endWeek + '주' : '주'}`}
-                  </Text>
+          {/* 직접입력이 아닌 경우 preset 선택 후 확인 버튼 표시 */}
+          {activePreset && activePreset !== '직접입력' && (
+            <TouchableOpacity testID="confirmButton" style={dateRangeStyles.searchButton} onPress={handleSearch}>
+              <Text testID="confirmButtonText" style={dateRangeStyles.searchButtonText}>확인</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* 직접입력일 경우 formContainer 표시 (날짜 선택 피커와 검색 버튼) */}
+          {showForm && activePreset === '직접입력' && (
+            <View testID="formContainer" style={dateRangeStyles.formContainer}>
+              {/* 선택된 날짜 범위 표시 */}
+              <View testID="dateRangeSection" style={dateRangeStyles.dateRangeSection}>
+                <Text testID="dateRangeTitle" style={dateRangeStyles.dateRangeTitle}>날짜 범위</Text>
+                <View testID="dateRangeContainer" style={dateRangeStyles.dateRangeContainer}>
+                  <View testID="dateRangeHeader" style={dateRangeStyles.dateRangeHeader}>
+                    <View testID="datePart" style={dateRangeStyles.datePart}>
+                      <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>시작</Text>
+                      <Text testID="dateValue" style={dateRangeStyles.dateValue}>
+                        {`${startYear || '년도'}-${startMonth || '월'}-${startWeek ? startWeek + '주' : '주'}`}
+                      </Text>
+                    </View>
+                    <Text testID="dateSeparator" style={dateRangeStyles.dateSeparator}>~</Text>
+                    <View testID="datePart" style={dateRangeStyles.datePart}>
+                      <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>종료</Text>
+                      <Text testID="dateValue" style={dateRangeStyles.dateValue}>
+                        {`${endYear || '년도'}-${endMonth || '월'}-${endWeek ? endWeek + '주' : '주'}`}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               </View>
-            </View>
-          </View>
 
-          {/* 시작 날짜 Picker */}
-          <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
-            <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>시작날짜 선택</Text>
-            <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
-              <Picker
-                testID="pickerYear"
-                selectedValue={startYear}
-                style={dateRangeStyles.picker}
-                onValueChange={(itemValue) => setStartYear(itemValue)}
-              >
-                <Picker.Item label="년도" value="" />
-                {years.map((y) => (
-                  <Picker.Item key={y} label={`${y}년`} value={y} />
-                ))}
-              </Picker>
-              <Picker
-                testID="pickerMonth"
-                selectedValue={startMonth}
-                style={dateRangeStyles.picker}
-                onValueChange={(itemValue) => setStartMonth(String(itemValue).padStart(2, '0'))}
-              >
-                <Picker.Item label="월" value="" />
-                {months.map((m) => (
-                  <Picker.Item key={m} label={`${m}월`} value={String(m).padStart(2, '0')} />
-                ))}
-              </Picker>
-              <Picker
-                testID="pickerWeek"
-                selectedValue={startWeek}
-                style={dateRangeStyles.picker}
-                onValueChange={(itemValue) => setStartWeek(itemValue)}
-              >
-                <Picker.Item label="주차" value="" />
-                {weeks.map((w) => (
-                  <Picker.Item key={w} label={`${w}주`} value={w} />
-                ))}
-              </Picker>
-            </View>
-          </View>
+              {/* 시작 날짜 Picker */}
+              <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
+                <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>시작날짜 선택</Text>
+                <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
+                  <Picker
+                    testID="pickerYear"
+                    selectedValue={startYear}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setStartYear(itemValue)}
+                  >
+                    <Picker.Item label="년도" value="" />
+                    {years.map((y) => (
+                      <Picker.Item key={y} label={`${y}년`} value={y} />
+                    ))}
+                  </Picker>
+                  <Picker
+                    testID="pickerMonth"
+                    selectedValue={startMonth}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setStartMonth(String(itemValue).padStart(2, '0'))}
+                  >
+                    <Picker.Item label="월" value="" />
+                    {months.map((m) => (
+                      <Picker.Item key={m} label={`${m}월`} value={String(m).padStart(2, '0')} />
+                    ))}
+                  </Picker>
+                  <Picker
+                    testID="pickerWeek"
+                    selectedValue={startWeek}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setStartWeek(itemValue)}
+                  >
+                    <Picker.Item label="주차" value="" />
+                    {weeks.map((w) => (
+                      <Picker.Item key={w} label={`${w}주`} value={w} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
 
-          {/* 종료 날짜 Picker */}
-          <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
-            <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>종료날짜 선택</Text>
-            <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
-              <Picker
-                testID="pickerYear"
-                selectedValue={endYear}
-                style={dateRangeStyles.picker}
-                onValueChange={(itemValue) => setEndYear(itemValue)}
-              >
-                <Picker.Item label="년도" value="" />
-                {years.map((y) => (
-                  <Picker.Item key={y} label={`${y}년`} value={y} />
-                ))}
-              </Picker>
-              <Picker
-                testID="pickerMonth"
-                selectedValue={endMonth}
-                style={dateRangeStyles.picker}
-                onValueChange={(itemValue) => setEndMonth(String(itemValue).padStart(2, '0'))}
-              >
-                <Picker.Item label="월" value="" />
-                {months.map((m) => (
-                  <Picker.Item key={m} label={`${m}월`} value={String(m).padStart(2, '0')} />
-                ))}
-              </Picker>
-              <Picker
-                testID="pickerWeek"
-                selectedValue={endWeek}
-                style={dateRangeStyles.picker}
-                onValueChange={(itemValue) => setEndWeek(itemValue)}
-              >
-                <Picker.Item label="주차" value="" />
-                {weeks.map((w) => (
-                  <Picker.Item key={w} label={`${w}주`} value={w} />
-                ))}
-              </Picker>
-            </View>
-          </View>
+              {/* 종료 날짜 Picker */}
+              <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
+                <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>종료날짜 선택</Text>
+                <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
+                  <Picker
+                    testID="pickerYear"
+                    selectedValue={endYear}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setEndYear(itemValue)}
+                  >
+                    <Picker.Item label="년도" value="" />
+                    {years.map((y) => (
+                      <Picker.Item key={y} label={`${y}년`} value={y} />
+                    ))}
+                  </Picker>
+                  <Picker
+                    testID="pickerMonth"
+                    selectedValue={endMonth}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setEndMonth(String(itemValue).padStart(2, '0'))}
+                  >
+                    <Picker.Item label="월" value="" />
+                    {months.map((m) => (
+                      <Picker.Item key={m} label={`${m}월`} value={String(m).padStart(2, '0')} />
+                    ))}
+                  </Picker>
+                  <Picker
+                    testID="pickerWeek"
+                    selectedValue={endWeek}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setEndWeek(itemValue)}
+                  >
+                    <Picker.Item label="주차" value="" />
+                    {weeks.map((w) => (
+                      <Picker.Item key={w} label={`${w}주`} value={w} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
 
-          {/* 검색 버튼 */}
-          <TouchableOpacity testID="searchButton" style={dateRangeStyles.searchButton} onPress={handleSearch}>
-            <Text testID="searchButtonText" style={dateRangeStyles.searchButtonText}>검색</Text>
-          </TouchableOpacity>
+              {/* 검색 버튼 */}
+              <TouchableOpacity testID="searchButton" style={dateRangeStyles.searchButton} onPress={handleSearch}>
+                <Text testID="searchButtonText" style={dateRangeStyles.searchButtonText}>검색</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </View>
     </Modal>
   );
 };
-/* ===========================================================
-   변경 종료: 새 기간조회 모달 컴포넌트 (DateRangeModal)
-=========================================================== */
 
 interface OrderStatusProps {
   storeId: string;
@@ -268,9 +295,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [isPeriodSearch, setIsPeriodSearch] = useState<boolean>(false);
-  // 기존 기간조회 모달 관련 상태 대신 새 모달을 호출함
+  // 기간조회 모달 관련 상태 (새 모달 사용)
   const [showPeriodModal, setShowPeriodModal] = useState<boolean>(false);
-  // 추가: 새로 선택한 날짜 범위를 저장하는 상태
+  // 새로 선택한 날짜 범위를 저장하는 상태
   const [dateRangeStart, setDateRangeStart] = useState<string>('');
   const [dateRangeEnd, setDateRangeEnd] = useState<string>('');
 
@@ -280,10 +307,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   const [detailGroupDate, setDetailGroupDate] = useState<string>('');
 
   const detailTotalCost = detailGroupOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
-
-  // 드롭다운 관련 상태 등은 기존 코드 유지...
-  const [openStartDropdown, setOpenStartDropdown] = useState<"year" | "month" | "week" | null>(null);
-  const [openEndDropdown, setOpenEndDropdown] = useState<"year" | "month" | "week" | null>(null);
 
   // FlatList ref와 스크롤 오프셋 저장
   const flatListRef = useRef<FlatList>(null);
@@ -335,7 +358,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     }
   };
 
-  // 기간조회 API (변경: 새 모달에서 선택한 날짜 범위를 사용)
+  // 기간조회 API (새 모달에서 선택한 날짜 범위를 사용)
   const handlePeriodSearch = async (startDate: string, endDate: string) => {
     if (!storeId) return;
     setIsPeriodSearch(true);
@@ -377,7 +400,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     }
   };
 
-  /** 초기화 버튼 -> 기간조회 해제, 기본(최신순)으로 재조회 */
+  // 초기화 버튼 -> 기간조회 해제, 기본(최신순)으로 재조회
   const handleResetSearch = async () => {
     setShowPeriodModal(false);
     setIsPeriodSearch(false);
@@ -660,7 +683,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
       </Modal>
 
       {/* ===========================================================
-           변경 시작: 기존 기간조회 모달 제거 및 새 DateRangeModal 사용
+           새 DateRangeModal 적용 (기존 기간조회 모달 제거)
       =========================================================== */}
       <DateRangeModal
         visible={showPeriodModal}
@@ -671,10 +694,8 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         }}
       />
       {/* ===========================================================
-           변경 종료: 새 DateRangeModal 적용
+           날짜 선택 모달은 그대로 유지
       =========================================================== */}
-      
-      {/* 날짜 선택 모달은 그대로 유지 */}
       <Modal
         visible={false}
         transparent={true}

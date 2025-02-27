@@ -92,7 +92,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         let allOrders: StoreOrderData[] = [];
         for (let page = startPage; page < startPage + 5; page++) {
           const response = await fetch(
-            `${RN_API_URL}/api/orders/store_order_list?store_id=${storeId}&page=${page}&order=${order}`
+            `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&page=${page}&order=${order}`
           );
           if (!response.ok) {
             console.error('발주 내역 조회 실패, page:', page);
@@ -140,7 +140,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     const sp = f.buildPeriodString(startYear, startMonth, startWeek);
     const ep = f.buildPeriodString(endYear, endMonth, endWeek);
     try {
-      const url = `${RN_API_URL}/api/orders/store_order_list?store_id=${storeId}&기간=${sp}~${ep}&order=${sortOrder}`;
+      const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${sp}~${ep}&order=${sortOrder}`;
       const response = await fetch(url);
       if (!response.ok) {
         console.error('기간 검색 실패');

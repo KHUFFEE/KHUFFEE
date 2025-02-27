@@ -29,8 +29,10 @@ import { orderStatusStyles, dateRangeStyles } from '../../src/styles/OrderStatus
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-// Picker 컴포넌트 임포트 (년도, 월, 주차 선택용)
 import { Picker } from '@react-native-picker/picker';
+
+// 결합된 주문 데이터 타입 (StoreOrderData와 APIProduct의 속성을 모두 포함)
+type CombinedOrderData = StoreOrderData & Partial<APIProduct>;
 
 interface DateRangeModalProps {
   visible: boolean;
@@ -40,12 +42,8 @@ interface DateRangeModalProps {
 
 /* ===========================================================
    변경: 새 기간조회 모달 컴포넌트 (DateRangeModal)
-   - 직접입력(preset '직접입력')을 제외하고는 formContainer 표시 안함.
-   - presetButtons 아래에 확인 버튼(검색 버튼과 동일 스타일)을 추가.
-   - 확인 버튼 클릭 시 설정된 기간으로 조회.
-=========================================================== */
+========================================================== */
 const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onConfirm }) => {
-  // 날짜 선택 상태들
   const [startYear, setStartYear] = useState('');
   const [startMonth, setStartMonth] = useState('');
   const [startWeek, setStartWeek] = useState('');
@@ -53,17 +51,13 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
   const [endMonth, setEndMonth] = useState('');
   const [endWeek, setEndWeek] = useState('');
   const [activePreset, setActivePreset] = useState<string | null>(null);
-  // 직접입력인 경우에만 formContainer 노출
   const [showForm, setShowForm] = useState(false);
 
-  // 프리셋 버튼 배열
   const presets = ['직접입력', '최근 1개월', '최근 3개월', '최근 6개월', '올해', '1년'];
-  // 선택 옵션 배열
   const years = ['2025', '2024', '2023', '2022', '2021', '2020'];
   const months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
   const weeks = ['1', '2', '3', '4', '5'];
 
-  // 모달이 열릴 때마다 초기화
   useEffect(() => {
     if (visible) {
       setActivePreset(null);
@@ -77,12 +71,10 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
     }
   }, [visible]);
 
-  // 프리셋 버튼 클릭 시
   const handlePresetPress = (preset: string) => {
     setActivePreset(preset);
     if (preset === '직접입력') {
       setShowForm(true);
-      // 직접입력 시 기존 값 초기화
       setStartYear('');
       setStartMonth('');
       setStartWeek('');
@@ -106,14 +98,13 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
       }
       setStartYear(String(newStartDate.getFullYear()));
       setStartMonth(String(newStartDate.getMonth() + 1).padStart(2, '0'));
-      setStartWeek('1'); // 기본값 '1'
+      setStartWeek('1');
       setEndYear(String(today.getFullYear()));
       setEndMonth(String(today.getMonth() + 1).padStart(2, '0'));
-      setEndWeek('1'); // 기본값 '1'
+      setEndWeek('1');
     }
   };
 
-  // 확인/검색 버튼 클릭 시 선택된 날짜 범위를 문자열로 만들어 부모에게 전달
   const handleSearch = () => {
     const startDateDisplay = `${startYear || '년도'}-${startMonth || '월'}-${startWeek ? startWeek + '주' : '주'}`;
     const endDateDisplay = `${endYear || '년도'}-${endMonth || '월'}-${endWeek ? endWeek + '주' : '주'}`;
@@ -125,15 +116,12 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
     <Modal visible={visible} transparent animationType="fade">
       <View testID="modalOverlay" style={dateRangeStyles.modalOverlay}>
         <View testID="modalContainer" style={dateRangeStyles.modalContainer}>
-          {/* 헤더 */}
           <View testID="modalHeader" style={dateRangeStyles.modalHeader}>
             <Text testID="modalTitle" style={dateRangeStyles.modalTitle}>기간조회</Text>
             <TouchableOpacity testID="closeButton" onPress={onClose} style={dateRangeStyles.closeButton}>
               <Text testID="closeButtonText" style={dateRangeStyles.closeButtonText}>✕</Text>
             </TouchableOpacity>
           </View>
-
-          {/* 프리셋 버튼 영역 */}
           <ScrollView testID="presetButtons" horizontal contentContainerStyle={dateRangeStyles.presetButtons}>
             {presets.map((preset) => (
               <TouchableOpacity
@@ -157,18 +145,13 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
               </TouchableOpacity>
             ))}
           </ScrollView>
-
-          {/* 직접입력이 아닌 경우 preset 선택 후 확인 버튼 표시 */}
           {activePreset && activePreset !== '직접입력' && (
             <TouchableOpacity testID="confirmButton" style={dateRangeStyles.searchButton} onPress={handleSearch}>
               <Text testID="confirmButtonText" style={dateRangeStyles.searchButtonText}>확인</Text>
             </TouchableOpacity>
           )}
-
-          {/* 직접입력일 경우 formContainer 표시 (날짜 선택 피커와 검색 버튼) */}
           {showForm && activePreset === '직접입력' && (
             <View testID="formContainer" style={dateRangeStyles.formContainer}>
-              {/* 선택된 날짜 범위 표시 */}
               <View testID="dateRangeSection" style={dateRangeStyles.dateRangeSection}>
                 <Text testID="dateRangeTitle" style={dateRangeStyles.dateRangeTitle}>날짜 범위</Text>
                 <View testID="dateRangeContainer" style={dateRangeStyles.dateRangeContainer}>
@@ -189,8 +172,6 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                   </View>
                 </View>
               </View>
-
-              {/* 시작 날짜 Picker */}
               <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
                 <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>시작날짜 선택</Text>
                 <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
@@ -229,8 +210,6 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                   </Picker>
                 </View>
               </View>
-
-              {/* 종료 날짜 Picker */}
               <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
                 <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>종료날짜 선택</Text>
                 <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
@@ -269,8 +248,6 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                   </Picker>
                 </View>
               </View>
-
-              {/* 검색 버튼 */}
               <TouchableOpacity testID="searchButton" style={dateRangeStyles.searchButton} onPress={handleSearch}>
                 <Text testID="searchButtonText" style={dateRangeStyles.searchButtonText}>검색</Text>
               </TouchableOpacity>
@@ -288,37 +265,40 @@ interface OrderStatusProps {
 }
 
 const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
-  // 주문 내역 관련 상태
-  const [storeOrders, setStoreOrders] = useState<StoreOrderData[]>([]);
-  const [loading, setloading] = useState<boolean>(false);
+  // CombinedOrderData를 사용하는 상태로 변경
+  const [storeOrders, setStoreOrders] = useState<CombinedOrderData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  // 기본 정렬을 최신순('desc')으로 설정
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [isPeriodSearch, setIsPeriodSearch] = useState<boolean>(false);
-  // 기간조회 모달 관련 상태 (새 모달 사용)
   const [showPeriodModal, setShowPeriodModal] = useState<boolean>(false);
-  // 새로 선택한 날짜 범위를 저장하는 상태
   const [dateRangeStart, setDateRangeStart] = useState<string>('');
   const [dateRangeEnd, setDateRangeEnd] = useState<string>('');
 
-  // 주문 상세보기 모달 상태
   const [detailModalVisible, setDetailModalVisible] = useState<boolean>(false);
-  const [detailGroupOrders, setDetailGroupOrders] = useState<StoreOrderData[]>([]);
+  const [detailGroupOrders, setDetailGroupOrders] = useState<CombinedOrderData[]>([]);
   const [detailGroupDate, setDetailGroupDate] = useState<string>('');
 
   const detailTotalCost = detailGroupOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
 
-  // FlatList ref와 스크롤 오프셋 저장
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<FlatList<any>>(null);
   const scrollOffset = useRef(0);
 
-  // 주문 내역 API 호출 함수
+  // sortProductsBySupplierAndName를 사용하여 정렬하는 헬퍼 함수
+  const sortOrders = (orders: CombinedOrderData[], order: 'asc' | 'desc') => {
+    let sorted = f.sortProductsBySupplierAndName(orders as APIProduct[], items) as CombinedOrderData[];
+    return order === 'desc' ? sorted.reverse() : sorted;
+  };
+
+  // API 데이터 호출 및 결합 (CombinedOrderData 타입 적용)
   const fetchOrders = async (startPage: number, order: 'asc' | 'desc', forceFetch: boolean = false) => {
     if (!storeId) return;
-    setloading(true);
+    setLoading(true);
     if (forceFetch || !isPeriodSearch) {
       try {
-        let allOrders: StoreOrderData[] = [];
+        let allOrders: CombinedOrderData[] = [];
         for (let page = startPage; page < startPage + 5; page++) {
           const response = await fetch(
             `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&page=${page}&order=${order}`
@@ -337,12 +317,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
               ...o,
               품목명: foundItem?.품목명 ?? '알 수 없는 품목',
               협력사명: foundItem?.협력사명 ?? '',
+              협력사_id: foundItem?.협력사_id ?? '',
+              종류: foundItem?.종류 ?? '',
               출고단위: foundItem?.출고단위,
               입고단가: foundItem?.입고단가,
               totalCost: qty * unitPrice,
-            };
+            } as CombinedOrderData;
           });
-          allOrders = [...allOrders, ...combined];
+          const sortedCombined = sortOrders(combined, order);
+          allOrders = [...allOrders, ...sortedCombined];
         }
         setStoreOrders((prev) => [...prev, ...allOrders]);
         if (allOrders.length === 0) {
@@ -351,30 +334,28 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
       } catch (error) {
         console.error('발주 내역 조회 중 오류:', error);
       } finally {
-        setloading(false);
+        setLoading(false);
       }
     } else {
-      setloading(false);
+      setLoading(false);
     }
   };
 
-  // 기간조회 API (새 모달에서 선택한 날짜 범위를 사용)
   const handlePeriodSearch = async (startDate: string, endDate: string) => {
     if (!storeId) return;
     setIsPeriodSearch(true);
     setShowPeriodModal(false);
-    // 저장된 날짜 범위 업데이트
     setDateRangeStart(startDate);
     setDateRangeEnd(endDate);
     setStoreOrders([]);
     setHasMore(false);
-    setloading(true);
+    setLoading(true);
     try {
       const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${startDate}~${endDate}&order=${sortOrder}`;
       const response = await fetch(url);
       if (!response.ok) {
         console.error('기간 검색 실패');
-        setloading(false);
+        setLoading(false);
         return;
       }
       const data = await response.json();
@@ -387,37 +368,38 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           ...o,
           품목명: foundItem?.품목명 ?? '알 수 없는 품목',
           협력사명: foundItem?.협력사명 ?? '',
+          협력사_id: foundItem?.협력사_id ?? '',
+          종류: foundItem?.종류 ?? '',
           출고단위: foundItem?.출고단위,
           입고단가: foundItem?.입고단가,
           totalCost: qty * unitPrice,
-        };
+        } as CombinedOrderData;
       });
-      setStoreOrders(combined);
+      setStoreOrders(sortOrders(combined, sortOrder));
     } catch (error) {
       console.error('기간 조회 오류:', error);
     } finally {
-      setloading(false);
+      setLoading(false);
     }
   };
 
-  // 초기화 버튼 -> 기간조회 해제, 기본(최신순)으로 재조회
   const handleResetSearch = async () => {
     setShowPeriodModal(false);
     setIsPeriodSearch(false);
+    // 리셋 시 정렬 순서를 최신순('desc')으로 초기화
+    setSortOrder('desc');
     setStoreOrders([]);
     setHasMore(true);
-    setloading(true);
-    await fetchOrders(1, sortOrder, true);
+    setLoading(true);
+    await fetchOrders(1, 'desc', true);
     setCurrentPage(6);
-    setloading(false);
+    setLoading(false);
   };
 
-  // 정렬 토글
   const toggleSortOrder = () => {
     const newOrder = sortOrder === 'desc' ? 'asc' : 'desc';
     setSortOrder(newOrder);
     if (isPeriodSearch) {
-      // 기간조회인 경우 새로 검색
       handlePeriodSearch(dateRangeStart, dateRangeEnd);
     } else {
       setStoreOrders([]);
@@ -427,14 +409,14 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     }
   };
 
-  // 주문 상세보기 모달 열기
-  const openDetailModal = (dateKey: string, orders: StoreOrderData[]) => {
+  // 상세보기 모달 열 때, 정렬된 데이터가 위에서부터 아래로 쌓이도록 오름차순('asc') 사용
+  const openDetailModal = (dateKey: string, orders: CombinedOrderData[]) => {
     setDetailGroupDate(dateKey);
-    setDetailGroupOrders(orders);
+    const sortedDetailOrders = sortOrders(orders, 'asc');
+    setDetailGroupOrders(sortedDetailOrders);
     setDetailModalVisible(true);
   };
 
-  // 그룹핑: 연/월/주차별로 주문 내역 분류
   const groupedByYearMonthWeek = storeOrders.reduce((acc: any, order) => {
     const [year, month, week] = order.기간.split('.');
     if (!acc[year]) acc[year] = {};
@@ -454,14 +436,16 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
 
   useEffect(() => {
     if (storeId) {
+      // 화면 진입 시 기본 정렬을 최신순('desc')으로 초기화
+      setSortOrder('desc');
       setStoreOrders([]);
       setHasMore(true);
-      setloading(true);
+      setLoading(true);
       setIsPeriodSearch(false);
       (async () => {
-        await fetchOrders(1, sortOrder);
+        await fetchOrders(1, 'desc');
         setCurrentPage(6);
-        setloading(false);
+        setLoading(false);
       })();
     }
   }, [storeId]);
@@ -477,13 +461,10 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
 
   return (
     <View testID="status_container" style={orderStatusStyles.status_container}>
-      {/* 전체 상단 헤더 */}
       {!loading && sortedYears.length > 0 && (
         <View testID="headerRow" style={orderStatusStyles.headerRow}>
           <View testID="sectionTitle" style={orderStatusStyles.sectionTitle}>
-            <Text testID="title" style={orderStatusStyles.title}>
-              발주 내역
-            </Text>
+            <Text testID="title" style={orderStatusStyles.title}>발주 내역</Text>
           </View>
           <View testID="rightButtonGroup" style={orderStatusStyles.rightButtonGroup}>
             <TouchableOpacity 
@@ -492,7 +473,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
               onPress={toggleSortOrder}
             >
               <Text testID="headerButtonText" style={orderStatusStyles.headerButtonText}>
-                {sortOrder === 'desc' ? '최신순' : '오래된 순'}
+                {sortOrder === 'desc' ? '오래된순' : '최신순'}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -508,7 +489,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         </View>
       )}
 
-      {/* 주문 내역 리스트 */}
       {loading ? (
         <View testID="loadingContainer" style={orderStatusStyles.loadingContainer}>
           <ActivityIndicator size="large" color="#0D326F" />
@@ -544,7 +524,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                     return (
                       monthSum +
                       ordersInWeek.reduce(
-                        (weekSum: number, o: StoreOrderData) => weekSum + (o.totalCost || 0),
+                        (weekSum: number, o: CombinedOrderData) => weekSum + (o.totalCost || 0),
                         0
                       )
                     );
@@ -558,11 +538,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                         </Text>
                       </View>
                       {sortedWeeks.map((week) => {
-                        const orders = weeksObj[week];
-                        const firstOrder = orders[0];
-                        const extraCount = orders.length - 1;
-                        const weekTotalCost = orders.reduce(
-                          (sum: number, o: StoreOrderData) => sum + (o.totalCost || 0),
+                        // 현재 주차의 배열은 두 방식으로 정렬합니다.
+                        // - ordersSorted: 현재 토글된 정렬 순서(sortOrder)를 반영 (총합, 외 개수 계산에 사용)
+                        // - ordersAsc: 상세보기에서 사용하는 오름차순 정렬 (항상 첫번째 itemRow에 해당하는 데이터)
+                        const ordersSorted = sortOrders(weeksObj[week], sortOrder);
+                        const ordersAsc = sortOrders(weeksObj[week], 'asc');
+                        const firstOrder = ordersAsc[0];
+                        const extraCount = ordersSorted.length - 1;
+                        const weekTotalCost = ordersSorted.reduce(
+                          (sum: number, o: CombinedOrderData) => sum + (o.totalCost || 0),
                           0
                         );
                         return (
@@ -589,7 +573,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                   발주수량: {f.formatPrice(firstOrder.매장_발주량)}
                                 </Text>
                               </View>
-                              <TouchableOpacity testID="detailButton" style={orderStatusStyles.detailButton} onPress={() => openDetailModal(`${year}.${month}.${week}`, orders)}>
+                              <TouchableOpacity testID="detailButton" style={orderStatusStyles.detailButton} onPress={() => openDetailModal(`${year}.${month}.${week}`, weeksObj[week])}>
                                 <Text testID="detailButtonText" style={orderStatusStyles.detailButtonText}>
                                   상세보기
                                 </Text>
@@ -630,7 +614,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         />
       )}
 
-      {/* 초기화 버튼 */}
       {isPeriodSearch && (
         <View style={{ position: 'absolute', top: 10, right: 10 }}>
           <TouchableOpacity testID="resetButton" style={orderStatusStyles.resetButton} onPress={handleResetSearch}>
@@ -639,7 +622,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         </View>
       )}
 
-      {/* 주문 상세보기 모달 */}
       <Modal
         visible={detailModalVisible}
         transparent
@@ -674,7 +656,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                 </Text>
               </View>
             </ScrollView>
-
             <TouchableOpacity testID="closeButton" style={orderStatusStyles.closeButton} onPress={() => setDetailModalVisible(false)}>
               <Text testID="textStyle" style={orderStatusStyles.textStyle}>닫기</Text>
             </TouchableOpacity>
@@ -682,20 +663,13 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         </View>
       </Modal>
 
-      {/* ===========================================================
-           새 DateRangeModal 적용 (기존 기간조회 모달 제거)
-      =========================================================== */}
       <DateRangeModal
         visible={showPeriodModal}
         onClose={() => setShowPeriodModal(false)}
         onConfirm={(start, end) => {
-          // 선택한 날짜 범위를 기반으로 기간조회 API 호출
           handlePeriodSearch(start, end);
         }}
       />
-      {/* ===========================================================
-           날짜 선택 모달은 그대로 유지
-      =========================================================== */}
       <Modal
         visible={false}
         transparent={true}

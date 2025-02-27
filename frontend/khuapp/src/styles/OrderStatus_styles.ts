@@ -12,7 +12,7 @@ const commonTextStyle = {
 export const orderStatusStyles = StyleSheet.create({
   status_container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#fff',
     padding: moderateScale(16),
   },
   
@@ -21,18 +21,18 @@ export const orderStatusStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: verticalScale(16),
+    marginBottom: verticalScale(8),
     backgroundColor: '#fff',
     padding: moderateScale(16),
     borderRadius: moderateScale(12),
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 2,
+    // },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 3,
+    // elevation: 2,
   },
   
   sectionTitle: {
@@ -99,33 +99,38 @@ export const orderStatusStyles = StyleSheet.create({
     fontSize: RFValue(20),
     fontWeight: '700',
     color: '#0D326F',
-    marginBottom: verticalScale(16),
-    marginTop: verticalScale(24),
+    marginBottom: verticalScale(8),
+    marginTop: verticalScale(10),
     paddingLeft: moderateScale(10),
     borderLeftWidth: 4,
     borderLeftColor: '#0D326F',
   },
 
   monthContainer: {
-    marginBottom: verticalScale(16),
+    // marginBottom: verticalScale(6),
+    backgroundColor: '#f8f9fa',
+    marginBottom: verticalScale(10),
   },
 
   monthHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: verticalScale(8),
-    backgroundColor: '#fff',
-    padding: moderateScale(16),
-    borderRadius: moderateScale(12),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    // marginBottom: verticalScale(8),
+    paddingLeft: moderateScale(10),
+    gap: moderateScale(10),
+    // backgroundColor: '#fff',
+    // padding: moderateScale(16),
+    // borderRadius: moderateScale(12),
+  //   shadowColor: '#000',
+  //   shadowOffset: {
+  //     width: 0,
+  //     height: 2,
+  //   },
+  //   shadowOpacity: 0.05,
+  //   shadowRadius: 3,
+  //   elevation: 2,
+  // 
   },
 
   monthTitle: {
@@ -237,8 +242,9 @@ export const orderStatusStyles = StyleSheet.create({
     padding: moderateScale(12),
     borderRadius: moderateScale(25),
     alignItems: 'center',
-    marginVertical: verticalScale(16),
+    marginBottom: verticalScale(8),
     borderWidth: 1.5,
+    width: wp(50),
     borderColor: '#0D326F',
     shadowColor: '#000',
     shadowOffset: {
@@ -248,6 +254,7 @@ export const orderStatusStyles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 1,
+    margin: 'auto'
   },
 
   loadMoreButtonText: {
@@ -383,7 +390,7 @@ export const orderStatusStyles = StyleSheet.create({
   // 기간 선택 모달 스타일
   periodModalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -391,93 +398,135 @@ export const orderStatusStyles = StyleSheet.create({
   periodModalInner: {
     backgroundColor: '#FFFFFF',
     borderRadius: moderateScale(16),
-    padding: moderateScale(20),
+    padding: moderateScale(24),
     width: wp('90%'),
+    maxHeight: hp('80%'),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
 
   periodModalTitle: {
-    fontSize: RFValue(20),
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#0D326F',
-    marginBottom: verticalScale(20),
-    textAlign: 'center',
-    borderBottomWidth: 2,
+    marginBottom: verticalScale(16),
+    paddingBottom: moderateScale(8),
+    borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
-    paddingBottom: moderateScale(10),
   },
 
   dateGroup: {
-    marginBottom: verticalScale(20),
+    marginBottom: verticalScale(16),
+    backgroundColor: '#f8f9fa',
+    borderRadius: moderateScale(12),
+    padding: moderateScale(16),
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
 
   dateGroupLabel: {
-    fontSize: RFValue(16),
+    fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: verticalScale(8),
+    color: '#0D326F',
+    marginBottom: verticalScale(12),
+    paddingLeft: moderateScale(6),
+    borderLeftWidth: 3,
+    borderLeftColor: '#0D326F',
   },
 
   dateRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     gap: moderateScale(8),
   },
 
   dateBox: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
-    padding: moderateScale(12),
+    backgroundColor: '#FFFFFF',
+    padding: moderateScale(10),
     borderRadius: moderateScale(8),
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#d1d5db',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: verticalScale(42),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
 
   dateBoxText: {
-    fontSize: RFValue(14),
+    fontSize: RFValue(13),
     color: '#1A1A1A',
     textAlign: 'center',
+    fontWeight: '500',
   },
 
   dropdown: {
     position: 'absolute',
-    top: '100%',
+    top: verticalScale(44),
     left: 0,
     right: 0,
     backgroundColor: '#FFFFFF',
     borderRadius: moderateScale(8),
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    elevation: 5,
+    borderColor: '#d1d5db',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 6,
     zIndex: 1000,
+    overflow: 'hidden',
   },
 
   dropdownOpen: {
-    maxHeight: verticalScale(200),
+    maxHeight: verticalScale(150),
   },
 
   dropdownScroll: {
-    maxHeight: verticalScale(200),
+    maxHeight: verticalScale(150),
+    // paddingVertical: verticalScale(4),
+    // paddingHorizontal: moderateScale(2),
   },
 
   dropdownItem: {
-    padding: moderateScale(12),
+    padding: moderateScale(10),
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
   },
 
   periodSearchButton: {
     backgroundColor: '#0D326F',
-    padding: moderateScale(12),
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: moderateScale(20),
     borderRadius: moderateScale(25),
     alignItems: 'center',
     marginTop: verticalScale(20),
+    width: wp('40%'),
+    alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -490,57 +539,61 @@ export const orderStatusStyles = StyleSheet.create({
 
   periodSearchButtonText: {
     color: '#FFFFFF',
-    fontSize: RFValue(16),
+    fontSize: RFValue(15),
     fontWeight: '600',
   },
 
   resetButton: {
-    backgroundColor: '#DC3545',
+    backgroundColor: '#f8fafc',
     paddingHorizontal: moderateScale(12),
-    paddingVertical: verticalScale(8),
+    paddingVertical: verticalScale(6),
     borderRadius: moderateScale(25),
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#DC3545',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 1,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
 
   resetButtonText: {
-    color: '#FFFFFF',
-    fontSize: RFValue(14),
+    color: '#DC3545',
+    fontSize: RFValue(13),
     fontWeight: '600',
   },
 
   // 드롭다운 관련 스타일
   dropdownWrapper: {
     position: 'relative',
-    marginHorizontal: moderateScale(4),
+    flex: 1,
     zIndex: 1,
   },
 
   confirmButton: {
     backgroundColor: '#0D326F',
-    borderRadius: moderateScale(25),
-    paddingVertical: moderateScale(8),
-    paddingHorizontal: moderateScale(16),
+    borderRadius: moderateScale(20),
+    paddingVertical: verticalScale(6),
+    paddingHorizontal: moderateScale(12),
     marginTop: verticalScale(10),
+    alignSelf: 'center',
+    width: wp('22%'),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 1,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
 
   confirmButtonText: {
     color: '#FFFFFF',
-    fontSize: RFValue(14),
+    fontSize: RFValue(12),
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -548,7 +601,7 @@ export const orderStatusStyles = StyleSheet.create({
   // 날짜 선택 모달 스타일
   datePickerModalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -557,25 +610,25 @@ export const orderStatusStyles = StyleSheet.create({
     width: wp('90%'),
     backgroundColor: '#FFFFFF',
     borderRadius: moderateScale(16),
-    padding: moderateScale(20),
+    padding: moderateScale(24),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowRadius: 8,
+    elevation: 8,
   },
 
   datePickerTitle: {
-    fontSize: RFValue(20),
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#0D326F',
-    marginBottom: verticalScale(10),
+    marginBottom: verticalScale(16),
     textAlign: 'center',
-    borderBottomWidth: 2,
+    borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
     paddingBottom: moderateScale(10),
     width: '100%',
@@ -584,19 +637,25 @@ export const orderStatusStyles = StyleSheet.create({
   datePickerLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#1A1A1A',
-    marginVertical: verticalScale(6),
+    color: '#0D326F',
+    marginVertical: verticalScale(8),
     alignSelf: 'flex-start',
+    paddingLeft: moderateScale(4),
+    borderLeftWidth: 3,
+    borderLeftColor: '#0D326F',
   },
 
   pickerItem: {
-    backgroundColor: '#F8F9FA',
-    borderRadius: moderateScale(8),
+    backgroundColor: '#f8f9fa',
     paddingVertical: verticalScale(8),
-    paddingHorizontal: moderateScale(12),
-    marginRight: moderateScale(6),
+    // paddingHorizontal: moderateScale(12),
     borderWidth: 1,
     borderColor: '#E5E5E5',
+    // marginHorizontal: moderateScale(4),
+    // marginVertical: verticalScale(4),
+    // borderRadius: moderateScale(6),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   pickerItemActive: {

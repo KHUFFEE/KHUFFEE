@@ -9,6 +9,7 @@ import {
   updateTableStatus,
 } from "../api/api";
 import "../styles/StoreInventoryMonthEnd.css";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const StoreInventoryMonthEnd = () => {
   // ※ 기존 StoreOrders.js의 ordersData 대신 재고 관련 데이터를 사용
@@ -16,7 +17,8 @@ const StoreInventoryMonthEnd = () => {
   const [items, setItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [stores, setStores] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // 초기 로드시에는 로딩 스피너가 뜨지 않도록 false로 설정
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tableStatus, setTableStatus] = useState(null); // New state for table status
 
@@ -32,7 +34,7 @@ const StoreInventoryMonthEnd = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const selectRef = useRef(null);
 
-  // 원하는 매장 순서 (헤더에 출력할 매장명 – 주의: 기존 StoreOrders.js에서는 "so-"로 관리되던 것이 여기서는 "sime-"로 변경됨)
+  // 원하는 매장 순서 (헤더에 출력할 매장명 – 기존과 동일)
   const desiredStoreOrder = [
     "푸른솔",
     "의과대학",
@@ -53,10 +55,10 @@ const StoreInventoryMonthEnd = () => {
   // 팝업 관련 상태 (null, "open", "close")
   const [popupType, setPopupType] = useState(null);
 
-  // API 호출 공통 함수 – 기존 fetchOrders 대신 fetchStoreMonthEndInventory 사용
-  const fetchData = async (params = { page: 1 }) => {
+  // API 호출 공통 함수 – manual이 true일 때만 로딩 스피너 동작
+  const fetchData = async (params = { page: 1 }, manual = false) => {
     try {
-      setLoading(true);
+      if (manual) setLoading(true);
       const inventoryResponse = await fetchStoreMonthEndInventory(params);
       const [itemsData, suppliersData, storesData] = await Promise.all([
         fetchItems(),
@@ -67,16 +69,17 @@ const StoreInventoryMonthEnd = () => {
       setItems(itemsData);
       setSuppliers(suppliersData);
       setStores(storesData);
-      setLoading(false);
+      if (manual) setLoading(false);
     } catch (err) {
       console.error("데이터 불러오기 실패:", err);
       setError("데이터를 불러오는데 실패하였습니다.");
-      setLoading(false);
+      if (manual) setLoading(false);
     }
   };
 
+  // 초기 로드시에는 manual=false로 호출 → 로딩 스피너 미표시
   useEffect(() => {
-    fetchData({ page: 1 });
+    fetchData({ page: 1 }, false);
   }, []);
 
   // inventoryData.current_period는 "YYYY.MM" 형식임을 가정 (주차 없음)
@@ -119,7 +122,9 @@ const StoreInventoryMonthEnd = () => {
   const refreshDistinctPeriods = async () => {
     try {
       // 첫 페이지를 별도로 호출하여 전체 페이지 수를 가져옴
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=1`);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=1`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch distinct period");
       }
@@ -128,7 +133,9 @@ const StoreInventoryMonthEnd = () => {
       const periodPromises = [];
       for (let p = 1; p <= totalPages; p++) {
         periodPromises.push(
-          fetch(`${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=${p}`)
+          fetch(
+            `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=${p}`
+          )
             .then((response) => {
               if (!response.ok) {
                 throw new Error("Failed to fetch distinct period");
@@ -193,18 +200,18 @@ const StoreInventoryMonthEnd = () => {
         alert("기간을 입력해주세요. (예: 2024.04)");
         return;
       }
-      fetchData({ 기간: freePeriod });
+      fetchData({ 기간: freePeriod }, false);
     } else {
       if (!periodValue) {
         alert("년도와 월을 모두 선택해주세요.");
         return;
       }
-      fetchData({ 기간: periodValue });
+      fetchData({ 기간: periodValue }, false);
     }
   };
 
-  // 수정 전 최신 조회 버튼 클릭 시 모든 기간이 표시되도록 수정 (distinctPeriods를 새로 받아온 후 전체 목록으로 최신 조회 수행)
-  const handleReset = async () => {
+  // 수정 전 최신 조회 버튼 클릭 시 (오직 해당 버튼 클릭 시에만 manual=true → 로딩 스피너 발생)
+  const handleReset = async (manual = false) => {
     if (inventoryData && inventoryData.current_period) {
       const parts = inventoryData.current_period.split(".");
       setSelectedYear(parts[0]);
@@ -215,7 +222,6 @@ const StoreInventoryMonthEnd = () => {
     }
     setFreePeriod("");
     const allPeriods = await refreshDistinctPeriods();
-    // Auto-search using the latest period if available
     if (allPeriods.length > 0) {
       const sorted = [...allPeriods].sort((a, b) => {
         const [yearA, monthA] = a.split(".").map(Number);
@@ -224,9 +230,9 @@ const StoreInventoryMonthEnd = () => {
         return monthB - monthA;
       });
       const latest = sorted[0];
-      handleSearch(latest);
+      fetchData({ 기간: latest }, manual);
     } else {
-      fetchData({ page: 1 });
+      fetchData({ page: 1 }, manual);
     }
   };
 
@@ -242,10 +248,10 @@ const StoreInventoryMonthEnd = () => {
     }
   };
 
-  // New function: If open button is clicked (e.g. "3월 오픈"), post 0 for all items/stores for new period using updateStoreMonthEndInventory,
-  // then refresh distinct periods and auto-search the latest period.
+  // 요청사항: 오픈하기 버튼 클릭 시에만 manual=true → 로딩 스피너 발생
   const handleOpenButtonClick = async () => {
     if (tableStatus === 0) {
+      setLoading(true);
       if (!latestPeriodValue) return;
       const [yearStr, monthStr] = latestPeriodValue.split(".");
       let year = parseInt(yearStr, 10);
@@ -269,16 +275,14 @@ const StoreInventoryMonthEnd = () => {
           });
         });
         await Promise.all(updatePromises);
-        // Refresh distinct periods and auto-search the latest period
         await refreshDistinctPeriods();
-        await fetchData({ 기간: newPeriod });
+        await fetchData({ 기간: newPeriod }, true);
       } catch (err) {
         console.error("오픈 업데이트 실패:", err);
         alert("오픈 업데이트에 실패하였습니다.");
         return;
       }
     }
-    // Then toggle table status
     handleStatusToggle();
   };
 
@@ -425,7 +429,7 @@ const StoreInventoryMonthEnd = () => {
         }
       }
       await Promise.all(updates);
-      fetchData({ 기간: inventoryData.current_period });
+      fetchData({ 기간: inventoryData.current_period }, false);
       setIsEditMode(false);
     } catch (err) {
       console.error("재고 수정 실패:", err);
@@ -453,10 +457,6 @@ const StoreInventoryMonthEnd = () => {
     const parts = latestPeriodValue.split(".");
     latestMonthForButton = parts[1];
   }
-  const openButtonText =
-    tableStatus === 0
-      ? `${parseInt(latestMonthForButton, 10) + 1}월 오픈하기`
-      : `${parseInt(latestMonthForButton, 10)}월 마감하기`;
 
   // 팝업 메시지에 사용할 현재월과 다음월 계산 (버튼 컨텍스트와 일치하도록)
   const currentMonthNumber = latestMonthForButton ? parseInt(latestMonthForButton, 10) : null;
@@ -467,6 +467,12 @@ const StoreInventoryMonthEnd = () => {
         : currentMonthNumber + 1
       : null;
 
+  const openButtonText =
+    tableStatus === 0
+      ? `${nextMonthNumber}월 오픈하기`
+      : `${currentMonthNumber}월 마감하기`;
+    
+
   // 요청사항 2: 최신 기간일 때, 상태 메시지 표시 (3월 마감 상태와 4월 오픈 상태에 따른 메시지)
   let statusMessage = "";
   if (
@@ -474,7 +480,6 @@ const StoreInventoryMonthEnd = () => {
     `${selectedYear}.${selectedMonth}` === latestPeriodValue &&
     tableStatus !== null
   ) {
-    // eslint-disable-next-line
     const [latestYear, latestMonth] = latestPeriodValue.split(".");
     if (tableStatus === 1) {
       statusMessage = `현재 매니저가 ${parseInt(latestMonth, 10)}월 재고 입력이 가능한 상태입니다.\n매니저의 ${parseInt(latestMonth, 10)}월 재고 입력을 제한하기 위해서는 마감 버튼을 클릭해주세요.`;
@@ -487,9 +492,9 @@ const StoreInventoryMonthEnd = () => {
     }
   }
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
-  
+
   return (
     <div className="store-orders-container">
       <h2 className="title">매장 월말 재고 조회</h2>
@@ -550,7 +555,8 @@ const StoreInventoryMonthEnd = () => {
               </svg>
             </span>
           </div>
-          <button className="reset-button" onClick={handleReset} disabled={isEditMode}>
+          {/* 최신 조회 버튼 클릭 시 handleReset(true)로 호출하여 로딩 스피너 발생 */}
+          <button className="reset-button" onClick={() => handleReset(true)} disabled={isEditMode}>
             최신 조회
           </button>
           {latestPeriodValue &&
@@ -611,7 +617,7 @@ const StoreInventoryMonthEnd = () => {
                     <input
                       type="text"
                       inputMode="decimal"
-                      pattern="^\d*(\.\d{0,2})?$"
+                      pattern="^\\d*(\\.\\d{0,2})?$"
                       value={
                         editedInventories[row.itemId] &&
                         editedInventories[row.itemId][store.매장_id] !== undefined
@@ -619,9 +625,8 @@ const StoreInventoryMonthEnd = () => {
                           : ""
                       }
                       onChange={(e) => {
-                        // 콤마 제거 후, 숫자와 소숫점만 허용 (소숫점은 최대 1개, 최대 2자리까지)
                         let newValue = e.target.value.replace(/,/g, "");
-                        if (/^\d*(\.\d{0,2})?$/.test(newValue)) {
+                        if (/^\\d*(\\.\\d{0,2})?$/.test(newValue)) {
                           handleInventoryChange(row.itemId, store.매장_id, newValue);
                         }
                       }}
@@ -684,6 +689,7 @@ const StoreInventoryMonthEnd = () => {
                 className="popup-confirm"
                 onClick={() => {
                   if (popupType === "open") {
+                    // 오픈하기 버튼 클릭 시 로딩 스피너 발생하도록 manual=true
                     handleOpenButtonClick();
                   } else if (popupType === "close") {
                     handleStatusToggle();

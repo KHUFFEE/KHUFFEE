@@ -205,6 +205,7 @@ html, body {
 
 /* 메인 콘텐츠 영역: 라운드 + 입체감 + 내부 스크롤 */
 .app-main {
+  position: relative;
   flex: 1;
   min-height: 0;        /* 스크롤 영역 확보를 위해 */
   margin-right: 20px;   /* 우측 여백 */
@@ -507,9 +508,10 @@ html, body {
 
 
 .title {
+  margin-top: 20px;
   margin-bottom: 30px;
-  margin-left: 2px;
-  font-size: 24px;
+  margin-left: 4px;
+  font-size: 26px;
   font-weight: bold;
 }
 

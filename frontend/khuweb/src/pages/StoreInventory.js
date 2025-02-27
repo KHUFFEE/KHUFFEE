@@ -1,19 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  fetchStoreInventory,
   fetchItems,
-  fetchStores,
   fetchSuppliers,
+  fetchStores,
+  fetchStoreInventory,
+  // fetchStoreInventory는 사용되지 않고 fetchStoreInventory 대신 API 호출 로직 사용 중
+  fetchStoreMonthEndInventory,
+  updateStoreMonthEndInventory,
+  getTableStatusList,
+  updateTableStatus,
 } from "../api/api";
 import "../styles/StoreInventory.css";
 import * as XLSX from "xlsx-js-style";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const StoreInventory = () => {
   const [inventoryData, setInventoryData] = useState([]);
   const [items, setItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [stores, setStores] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // 초기 로드시에는 로딩 스피너가 뜨지 않도록 false로 설정
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // 기간 선택 관련 상태
@@ -30,9 +37,10 @@ const StoreInventory = () => {
   const [isStoreOpen, setIsStoreOpen] = useState(false);
 
   // API 호출: 기간(YYYY.MM.DD)와 매장_id에 해당하는 매장 재고, 품목, 협력사 데이터를 가져옴
-  const fetchData = async (params = {}) => {
+  // manual 인자가 true일 때만 로딩 스피너가 발생
+  const fetchData = async (params = {}, manual = false) => {
     try {
-      setLoading(true);
+      if (manual) setLoading(true);
       const period = params.기간; // 예: "2023.04.05"
       const storeId = params.매장_id;
       const [inventoryRes, itemsRes, suppliersRes] = await Promise.all([
@@ -43,11 +51,11 @@ const StoreInventory = () => {
       setInventoryData(inventoryRes);
       setItems(itemsRes);
       setSuppliers(suppliersRes);
-      setLoading(false);
+      if (manual) setLoading(false);
     } catch (err) {
       console.error("매장 재고 데이터 불러오기 실패:", err);
       setError("데이터를 불러오는데 실패하였습니다.");
-      setLoading(false);
+      if (manual) setLoading(false);
     }
   };
 
@@ -108,7 +116,6 @@ const StoreInventory = () => {
     const fetchAllStores = async () => {
       try {
         const res = await fetchStores();
-        // ST_101, ST_102 제외
         const filteredStores = res.filter(
           (store) => store.매장_id !== "ST_101" && store.매장_id !== "ST_102"
         );
@@ -135,12 +142,12 @@ const StoreInventory = () => {
     setSelectedDay(defaultDay);
   }, []);
 
-  // 사용자가 기간(년월, 일) 또는 매장을 변경하면 바로 API 호출
+  // 사용자가 기간(년월, 일) 또는 매장을 변경하면 바로 API 호출 (manual=false)
   useEffect(() => {
     if (selectedYearMonth && selectedDay && selectedStore) {
       const [year, month] = selectedYearMonth.split(".");
       const period = `${year}.${month}.${selectedDay}`;
-      fetchData({ 기간: period, 매장_id: selectedStore });
+      fetchData({ 기간: period, 매장_id: selectedStore }, false);
     }
   }, [selectedYearMonth, selectedDay, selectedStore]);
 
@@ -153,13 +160,31 @@ const StoreInventory = () => {
     dayOptions.push(d.toString().padStart(2, "0"));
   }
 
-  // "최신 조회" 버튼: 기존 선택된 매장은 유지하고 기간을 페이지 로드 시처럼 갱신하여 최신 데이터 조회
-  const handleReset = async () => {
+  // "최신 조회" 버튼: 매장은 유지하고 기간을 최신으로 갱신하여 데이터 조회 (manual=true)
+  const handleReset = async (manual = false) => {
     await refreshPeriods();
-    // 매장은 유지 (즉, 현재 선택된 매장을 그대로 사용)
+    // 매장은 유지
+    // 최신 조회 시, 최신 기간 옵션을 가져와 API 호출
+    if (yearMonthOptions.length > 0) {
+      // 최신 기간은 yearMonthOptions의 첫번째 (내림차순 정렬되어 있다고 가정)
+      const latest = [...yearMonthOptions].sort((a, b) => {
+        const [yA, mA] = a.split(".").map(Number);
+        const [yB, mB] = b.split(".").map(Number);
+        if (yA !== yB) return yB - yA;
+        return mB - mA;
+      })[0];
+      fetchData({ 기간: latest }, manual);
+    } else {
+      fetchData({ page: 1 }, manual);
+    }
   };
 
-  // ===== 수정된 부분: 품목(API에서 불러온 items)을 기준으로 테이블 행 생성 =====
+  // ===== 수정된 부분: LoadingSpinner를 사용하여 최신 조회 버튼 클릭 시만 로딩 동작 발생 =====
+  // 최신 조회 버튼 onClick에서는 handleReset(true)를 호출합니다.
+  // 나머지 fetchData 호출에서는 manual=false를 전달하여 로딩 스피너를 표시하지 않습니다.
+  // ==========================================================================================
+
+  // ===== 이하 품목 기반 테이블 생성 로직 =====
   // 재고 데이터를 품목_id별로 그룹화 (매장_재고량 합산)
   const groupedInventory = {};
   inventoryData.forEach((record) => {
@@ -167,7 +192,7 @@ const StoreInventory = () => {
     groupedInventory[itemId] = (groupedInventory[itemId] || 0) + Number(record.매장_재고량);
   });
 
-  // 품목명을 먼저 불러온 후 각 품목에 해당하는 재고량과 기타 정보를 붙임
+  // 품목 데이터를 기준으로 테이블 행 생성
   const tableRows = items.map((item) => {
     const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
     return {
@@ -188,7 +213,7 @@ const StoreInventory = () => {
     if (cmpType !== 0) return cmpType;
     return a.itemName.localeCompare(b.itemName);
   });
-  // ===================================================================
+  // ====================================================================
 
   const formatNumber = (num) => {
     if (num === "" || num === undefined || num === null || Number(num) === 0)
@@ -202,11 +227,10 @@ const StoreInventory = () => {
     return `${y}년 ${m}월`;
   };
 
-  // 엑셀 다운로드 함수 (텍스트 내 "매장재고" 사용)
+  // 엑셀 다운로드 함수 (동작은 그대로 유지)
   const handleExcelDownload = () => {
     const [year, month] = selectedYearMonth.split(".");
     const day = selectedDay;
-    // 선택된 매장의 이름 가져오기 (없으면 "매장"으로 기본 처리)
     const storeObj = stores.find((s) => s.매장_id === selectedStore);
     const storeName = storeObj ? storeObj.매장명 : "매장";
     
@@ -216,9 +240,7 @@ const StoreInventory = () => {
     const ddNow = now.getDate().toString().padStart(2, "0");
     const currentDateStr = `${yyyyNow}${mmNow}${ddNow}`;
     
-    // 파일명에 선택된 매장명을 포함
     const filename = `카페쿠피_${year}년_${month}월_${day}일_${storeName}_매장재고_관리자용_(${currentDateStr}).xlsx`;
-    // 시트명 및 상단 제목에 선택된 매장명을 포함
     const sheetName = `${month}월 ${day}일 ${storeName} 재고`;
     const headerTitle = `카페 쿠피 ${month}월 ${day}일 ${storeName} 재고`;
   
@@ -253,7 +275,6 @@ const StoreInventory = () => {
       },
     };
   
-    // 이하 Excel 포맷팅 및 저장 로직은 그대로 유지
     for (let r = titleMerge.s.r; r <= titleMerge.e.r; r++) {
       for (let c = titleMerge.s.c; c <= titleMerge.e.c; c++) {
         const addr = XLSX.utils.encode_cell({ r, c });
@@ -356,9 +377,8 @@ const StoreInventory = () => {
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
     XLSX.writeFile(wb, filename);
   };
-  
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
 
   return (
@@ -460,7 +480,8 @@ const StoreInventory = () => {
               </svg>
             </span>
           </div>
-          <button className="reset-button" onClick={handleReset}>
+          {/* 최신 조회 버튼: onClick에서 handleReset(true) 호출 */}
+          <button className="reset-button" onClick={() => handleReset(true)}>
             최신 조회
           </button>
         </div>

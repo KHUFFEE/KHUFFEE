@@ -1,13 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { fetchWarehouseInventory, fetchItems, fetchSuppliers } from "../api/api";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  fetchWarehouseInventory,
+  fetchItems,
+  fetchSuppliers,
+  fetchStores,
+  updateStoreMonthEndInventory,
+  getTableStatusList,
+  updateTableStatus,
+} from "../api/api";
 import "../styles/WarehouseInventory.css";
 import * as XLSX from "xlsx-js-style";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const WarehouseInventory = () => {
   const [inventoryData, setInventoryData] = useState([]);
   const [items, setItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [stores, setStores] = useState([]);
+  // 초기 로드시에는 로딩 스피너가 뜨지 않도록 false로 설정
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // 년/월 옵션: 전체 재고 데이터에서 기간 필드를 이용하여 "YYYY.MM" 형식 옵션 생성
@@ -16,28 +27,33 @@ const WarehouseInventory = () => {
   // 선택된 일 (예: "05")
   const [selectedDay, setSelectedDay] = useState("");
 
-  // 토글 open 상태 (각 드롭다운 별도 관리)
+  // 매장 선택 상태 (기본 매장은 "ST_103")
+  const [selectedStore, setSelectedStore] = useState("");
+
+  // 드롭다운 토글 상태
   const [isYMOpen, setIsYMOpen] = useState(false);
   const [isDayOpen, setIsDayOpen] = useState(false);
+  const [isStoreOpen, setIsStoreOpen] = useState(false);
 
-  // API 호출: "YYYY.MM.DD" 형식의 기간을 전달하여 창고 재고, 품목, 협력사 데이터를 가져옴
-  const fetchData = async (params = {}) => {
+  // API 호출: "YYYY.MM.DD" 형식의 기간과 매장_id에 해당하는 데이터를 가져옴
+  // manual 인자가 true일 때만 로딩 스피너가 발생
+  const fetchData = async (params = {}, manual = false) => {
     try {
-      setLoading(true);
+      if (manual) setLoading(true);
       const period = params.기간; // 예: "2023.04.05"
       const [inventoryRes, itemsRes, suppliersRes] = await Promise.all([
-        fetchWarehouseInventory({ 기간: period }),
+        fetchWarehouseInventory({ 기간: period, 매장_id: selectedStore }),
         fetchItems(),
         fetchSuppliers(),
       ]);
       setInventoryData(inventoryRes);
       setItems(itemsRes);
       setSuppliers(suppliersRes);
-      setLoading(false);
+      if (manual) setLoading(false);
     } catch (err) {
       console.error("창고 재고 데이터 불러오기 실패:", err);
       setError("데이터를 불러오는데 실패하였습니다.");
-      setLoading(false);
+      if (manual) setLoading(false);
     }
   };
 
@@ -49,11 +65,10 @@ const WarehouseInventory = () => {
       if (allPeriods.length === 0) return;
       const dateObjs = allPeriods.map(period => {
         const parts = period.split(".");
-        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
       });
       const minDate = new Date(Math.min(...dateObjs));
       const maxDate = new Date(Math.max(...dateObjs));
-      // maxDate부터 minDate까지의 "YYYY.MM" 값 내림차순으로 생성
       let current = new Date(maxDate);
       const options = [];
       while (current >= minDate) {
@@ -66,7 +81,6 @@ const WarehouseInventory = () => {
         current.setMonth(current.getMonth() - 1);
       }
       setYearMonthOptions(options);
-      // 기본 선택: 오늘의 연월이 옵션에 있으면 사용, 아니면 최신 옵션(맨 앞)
       const today = new Date();
       const defaultYM = `${today.getFullYear()}.${(today.getMonth() + 1)
         .toString()
@@ -93,32 +107,68 @@ const WarehouseInventory = () => {
     setSelectedDay(defaultDay);
   }, []);
 
-  // 사용자가 년월 또는 일을 변경하면 바로 API 호출
+  // 사용자가 년월 또는 일을 변경하면 바로 API 호출 (manual=false)
   useEffect(() => {
-    if (selectedYearMonth && selectedDay) {
+    if (selectedYearMonth && selectedDay && selectedStore) {
       const [year, month] = selectedYearMonth.split(".");
       const period = `${year}.${month}.${selectedDay}`;
-      fetchData({ 기간: period });
+      fetchData({ 기간: period, 매장_id: selectedStore }, false);
     }
-  }, [selectedYearMonth, selectedDay]);
+  }, [selectedYearMonth, selectedDay, selectedStore]);
 
   // 선택된 년월에 따른 일(day) 옵션 생성 (해당 월의 총 일수)
   const [year, month] = selectedYearMonth.split(".");
-  const daysInMonth = year && month ? new Date(parseInt(year), parseInt(month), 0).getDate() : 31;
+  const daysInMonth =
+    year && month ? new Date(parseInt(year, 10), parseInt(month, 10), 0).getDate() : 31;
   const dayOptions = [];
   for (let d = 1; d <= daysInMonth; d++) {
     dayOptions.push(d.toString().padStart(2, "0"));
   }
 
-  // "최신 조회" 버튼: 오늘 날짜(또는 옵션에서 최신값)으로 리셋하고, 페이지 로드 시와 같이 기간 옵션을 재갱신
-  const handleReset = async () => {
+  // 매장 목록을 fetchStores API로 불러와 기본 선택 설정 (ST_101, ST_102 제외)
+  useEffect(() => {
+    const fetchAllStores = async () => {
+      try {
+        const res = await fetchStores();
+        const filteredStores = res.filter(
+          (store) => store.매장_id !== "ST_101" && store.매장_id !== "ST_102"
+        );
+        setStores(filteredStores);
+        const defaultStore = filteredStores.find(
+          (store) => store.매장_id === "ST_103"
+        );
+        if (defaultStore) {
+          setSelectedStore("ST_103");
+        } else if (filteredStores.length > 0) {
+          setSelectedStore(filteredStores[0].매장_id);
+        }
+      } catch (err) {
+        console.error("매장 데이터를 불러오는데 실패했습니다:", err);
+      }
+    };
+    fetchAllStores();
+  }, []);
+
+  // "최신 조회" 버튼: 매장은 유지하고 최신 기간 옵션으로 API 호출 (manual=true)
+  const handleReset = async (manual = false) => {
     await refreshPeriods();
     const today = new Date();
     const defaultDay = today.getDate().toString().padStart(2, "0");
     setSelectedDay(defaultDay);
+    if (yearMonthOptions.length > 0) {
+      const latest = [...yearMonthOptions].sort((a, b) => {
+        const [yA, mA] = a.split(".").map(Number);
+        const [yB, mB] = b.split(".").map(Number);
+        if (yA !== yB) return yB - yA;
+        return mB - mA;
+      })[0];
+      fetchData({ 기간: latest, 매장_id: selectedStore }, manual);
+    } else {
+      fetchData({ page: 1 }, manual);
+    }
   };
 
-  // ===== 수정된 부분: 품목명을 API를 통해 먼저 불러오고 재고량을 붙이는 원리 적용 =====
+  // ===== 이하 품목 기반 테이블 생성 로직 =====
   // 창고 재고 데이터를 품목별로 그룹화 (품목_id 기준)
   const groupedInventory = {};
   inventoryData.forEach((record) => {
@@ -126,8 +176,7 @@ const WarehouseInventory = () => {
     groupedInventory[itemId] = (groupedInventory[itemId] || 0) + Number(record.창고_재고량);
   });
 
-  // 각 품목별 행 생성: 품목, 협력사, 종류, 입고 단가 포함  
-  // → items 배열을 순회하여 품목 정보를 먼저 가져오고, 해당 품목의 재고량은 groupedInventory에서 조회
+  // 품목 데이터를 기준으로 테이블 행 생성
   const tableRows = items.map((item) => {
     const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
     return {
@@ -156,33 +205,24 @@ const WarehouseInventory = () => {
     return Number(num).toLocaleString();
   };
 
-  // 헬퍼: "YYYY.MM" → "YYYY년 MM월"
+  // 헬퍼: "YYYY.MM" → "YYYY년 MM월" 변환
   const formatYMLabel = (ymStr) => {
     const [y, m] = ymStr.split(".");
     return `${y}년 ${m}월`;
   };
 
   const handleExcelDownload = () => {
-    // 1. 선택한 기간 정보 추출 (selectedYearMonth는 "YYYY.MM" 형식, selectedDay는 "DD")
     const [year, month] = selectedYearMonth.split(".");
-    const day = selectedDay; // 이미 2자리 문자열로 되어 있음
-  
-    // 2. 현재 날짜를 이용해 괄호 안에 들어갈 날짜 문자열 생성 (예: 20250219)
+    const day = selectedDay;
     const now = new Date();
     const yyyyNow = now.getFullYear();
     const mmNow = (now.getMonth() + 1).toString().padStart(2, "0");
     const ddNow = now.getDate().toString().padStart(2, "0");
     const currentDateStr = `${yyyyNow}${mmNow}${ddNow}`;
-  
-    // 3. 파일명 생성: 예) 카페쿠피_2025년_02월_15일_창고재고_관리자용_(20250219).xlsx
     const filename = `카페쿠피_${year}년_${month}월_${day}일_창고재고_관리자용_(${currentDateStr}).xlsx`;
-  
-    // 4. 시트명과 상단 제목에 선택한 기간 정보 적용
     const sheetName = `${month}월 ${day}일 창고 재고`;
     const headerTitle = `카페 쿠피 ${month}월 ${day}일 창고 재고`;
   
-    // 5. Excel에 저장할 데이터 준비 (tableRows를 사용)
-    // 재고량과 재고 금액은 숫자로 저장되어 Excel에서 숫자 포맷 적용이 가능하도록 함.
     const data = tableRows.map((row) => ({
       "협력사": row.supplierName,
       "품목명": row.itemName,
@@ -190,14 +230,12 @@ const WarehouseInventory = () => {
       "재고 금액": row.inventory * row.unitPrice,
     }));
   
-    // 6. 워크시트 생성 (데이터는 A4부터 시작: 4행부터 헤더+데이터)
     const headers = ["협력사", "품목명", "재고량", "재고 금액"];
     const ws = XLSX.utils.json_to_sheet(data, {
       header: headers,
       origin: "A4",
     });
   
-    // 7. 상단 제목 영역 설정 및 병합 (A1 ~ D2)
     ws["!merges"] = ws["!merges"] || [];
     const titleMerge = { s: { r: 0, c: 0 }, e: { r: 1, c: headers.length - 1 } };
     ws["!merges"].push(titleMerge);
@@ -215,6 +253,7 @@ const WarehouseInventory = () => {
         },
       },
     };
+  
     for (let r = titleMerge.s.r; r <= titleMerge.e.r; r++) {
       for (let c = titleMerge.s.c; c <= titleMerge.e.c; c++) {
         const addr = XLSX.utils.encode_cell({ r, c });
@@ -230,7 +269,6 @@ const WarehouseInventory = () => {
       }
     }
   
-    // 8. 헤더 행(4행; 0-indexed row 3) 스타일 적용
     for (let i = 0; i < headers.length; i++) {
       const cellAddr = XLSX.utils.encode_cell({ r: 3, c: i });
       if (ws[cellAddr]) {
@@ -247,7 +285,6 @@ const WarehouseInventory = () => {
       }
     }
   
-    // 9. 나머지 셀에 기본 Arial 폰트 적용
     for (let cell in ws) {
       if (cell[0] === "!") continue;
       if (cell === "A1") continue;
@@ -256,7 +293,6 @@ const WarehouseInventory = () => {
       ws[cell].s.font = { ...existingFont, name: "Arial" };
     }
   
-    // 10. 각 열의 너비 조정
     const allRows = XLSX.utils.sheet_to_json(ws, { header: 1 });
     const colWidths = [];
     if (allRows && allRows.length > 0) {
@@ -274,7 +310,6 @@ const WarehouseInventory = () => {
     }
     ws["!cols"] = colWidths;
   
-    // 11. 전체 테이블 영역에 외부 테두리 적용
     if (ws["!ref"]) {
       const range = XLSX.utils.decode_range(ws["!ref"]);
       for (let r = range.s.r; r <= range.e.r; r++) {
@@ -299,17 +334,14 @@ const WarehouseInventory = () => {
       }
     }
   
-    // 12. "재고량" (세번째 열, index 2)와 "재고 금액" (네번째 열, index 3)에 숫자 형식 및 오른쪽 정렬 적용
     if (ws["!ref"]) {
       const range = XLSX.utils.decode_range(ws["!ref"]);
       for (let r = 4; r <= range.e.r; r++) {
-        // 재고량: 열 인덱스 2
         const qtyCellAddr = XLSX.utils.encode_cell({ r, c: 2 });
         if (ws[qtyCellAddr]) {
           ws[qtyCellAddr].t = "n";
           ws[qtyCellAddr].z = "#,##0";
         }
-        // 재고 금액: 열 인덱스 3
         const amtCellAddr = XLSX.utils.encode_cell({ r, c: 3 });
         if (ws[amtCellAddr]) {
           ws[amtCellAddr].t = "n";
@@ -320,21 +352,19 @@ const WarehouseInventory = () => {
       }
     }
   
-    // 13. 워크북 생성 및 저장 (시트명에 선택한 기간 적용)
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
     XLSX.writeFile(wb, filename);
   };
   
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
-
+  
   return (
     <div className="wi-container">
       <h2 className="title">창고 재고 조회</h2>
       <div className="period-controls">
         <div className="period-search">
-          {/* 년월 선택 버튼 */}
           <div className="period-select-box">
             <div className="select-display">
               {selectedYearMonth ? formatYMLabel(selectedYearMonth) : "년월 선택"}
@@ -365,7 +395,6 @@ const WarehouseInventory = () => {
               </svg>
             </span>
           </div>
-          {/* 일(day) 선택 버튼 */}
           <div className="period-select-box">
             <div className="select-display">{selectedDay}일</div>
             <select
@@ -394,11 +423,11 @@ const WarehouseInventory = () => {
               </svg>
             </span>
           </div>
-          <button className="reset-button" onClick={handleReset}>
+          {/* 최신 조회 버튼 클릭 시 handleReset(true) 호출하여 로딩 스피너 발생 */}
+          <button className="reset-button" onClick={() => handleReset(true)}>
             최신 조회
           </button>
         </div>
-        {/* 다운로드 버튼은 오른쪽 끝에 위치 */}
         <div className="warehouse-action-buttons">
           <button onClick={handleExcelDownload} className="download-button">
             Excel 다운로드

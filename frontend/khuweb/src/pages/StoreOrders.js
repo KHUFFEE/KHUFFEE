@@ -10,6 +10,7 @@ import {
 } from "../api/api";
 import "../styles/StoreOrders.css";
 import { storeOrdersDownloadExcel } from "../utils/StoreOrdersDownloadExcel";
+import LoadingSpinner from "../components/LoadingSpinner"; 
 
 const StoreOrders = () => {
   // 기본 상태
@@ -17,7 +18,8 @@ const StoreOrders = () => {
   const [items, setItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [stores, setStores] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // 초기 로드 시에는 스피너가 뜨지 않도록 false로 설정
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // 수정 모드 관련 상태는 다른 상태들보다 먼저 선언 (getCellValue 등에서 참조)
@@ -51,9 +53,10 @@ const StoreOrders = () => {
   const [managerOrderRound, setManagerOrderRound] = useState(1);
 
   // API GET: 기간 및 회차가 있는 경우 해당 파라미터로 요청, 없으면 페이지번호로 요청
-  const fetchData = async (params = { page: 1 }) => {
+  // 두 번째 인자인 manual이 true일 때만 로딩 상태를 변경하도록 함
+  const fetchData = async (params = { page: 1 }, manual = false) => {
     try {
-      setLoading(true);
+      if (manual) setLoading(true);
       let url = `${process.env.REACT_APP_API_URL}/api/orders/store_order_list/?`;
       if (params.기간) {
         url += `기간=${params.기간}`;
@@ -83,26 +86,27 @@ const StoreOrders = () => {
       setItems(itemsData);
       setSuppliers(suppliersData);
       setStores(storesData);
-      setLoading(false);
+      if (manual) setLoading(false);
       return ordersResponse;
     } catch (err) {
       console.error("데이터 불러오기 실패:", err);
       setError("데이터를 불러오는데 실패하였습니다.");
-      setLoading(false);
+      if (manual) setLoading(false);
       return null;
     }
   };
 
   // handleReset: 최초 로드 및 "최신 조회" 버튼 클릭 시 전체 distinct 기간을 조회한 후
   // 내림차순 정렬하여 최신 기간(예: "2025년 02월 4주차 2회차")을 선택, 해당 기간과 회차로 API 요청
-  const handleReset = async () => {
+  // manual 인자가 true일 때만 로딩 동작을 적용함
+  const handleReset = async (manual = false) => {
     setSelectedYear("");
     setSelectedMonth("");
     setSelectedWeek("");
     setSelectedRound("");
     setFreePeriod("");
     setHasFetchedHighestRound(false);
-    setLoading(true);
+    if (manual) setLoading(true);
     try {
       // 우선 page=1로 초기 데이터 조회 후 전체 페이지 수 확인
       const initialOrders = await fetchOrders({ page: 1 });
@@ -146,16 +150,16 @@ const StoreOrders = () => {
         // 기간은 "YYYY.MM.W" 형식으로 구성하여 API에 요청
         const formattedMonth = parts[1].padStart(2, "0");
         const period = `${parts[0]}.${formattedMonth}.${parts[2]}`;
-        await fetchData({ 기간: period, 회차: parts[3] });
+        await fetchData({ 기간: period, 회차: parts[3] }, manual);
         setHasFetchedHighestRound(true);
       } else {
         // 기간이 없으면 기본적으로 page=1 데이터 표시
-        await fetchData({ page: 1 });
+        await fetchData({ page: 1 }, manual);
       }
     } catch (err) {
       console.error("Failed to fetch distinct periods", err);
     }
-    setLoading(false);
+    if (manual) setLoading(false);
   };
 
   // handleSearch: 사용자가 드롭다운 등으로 기간 선택 시 해당 기간과 회차로 API 요청
@@ -177,7 +181,7 @@ const StoreOrders = () => {
     }
   };
 
-  // 최초 로드 시 handleReset 실행
+  // 최초 로드 시 handleReset 실행 (로딩 동작 없음)
   useEffect(() => {
     handleReset();
   }, []);
@@ -460,7 +464,7 @@ const StoreOrders = () => {
     isLatestPeriod = currentPeriod === latestPeriod;
   }
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
 
   return (
@@ -539,7 +543,8 @@ const StoreOrders = () => {
               </svg>
             </span>
           </div>
-          <button className="reset-button" onClick={handleReset} disabled={isEditMode}>
+          {/* 최신 조회 버튼 클릭 시 handleReset(true) 호출 */}
+          <button className="reset-button" onClick={() => handleReset(true)} disabled={isEditMode}>
             최신 조회
           </button>
           <span className="control-description">

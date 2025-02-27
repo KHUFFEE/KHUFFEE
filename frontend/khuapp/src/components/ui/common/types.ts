@@ -9,10 +9,11 @@ export interface StoreOrderData {
     매장_발주량: number;
     품목명?: string;
     협력사명?: string;
+    종류?: string; // <-- 추가된 속성 (optional)
     출고단위?: number;
     입고단가?: string;
     totalCost?: number;
-  }
+}
 
 /** 서버에서 받아오는 "품목" 타입 */
 export interface APIProduct {

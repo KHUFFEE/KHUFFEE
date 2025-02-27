@@ -6,11 +6,10 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  TouchableWithoutFeedback,
   FlatList,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  Modal
+  Modal,
 } from 'react-native';
 import {
   Home,
@@ -25,11 +24,240 @@ import {
 } from 'lucide-react-native';
 import { RN_API_URL } from '@env';
 import { StoreOrderData, APIProduct } from '../../src/components/ui/common/types';
-import { orderStatusStyles } from '../../src/styles/OrderStatus_styles';
+import { orderStatusStyles, dateRangeStyles } from '../../src/styles/OrderStatus_styles';
 
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { Picker } from '@react-native-picker/picker';
+
+// 결합된 주문 데이터 타입 (StoreOrderData와 APIProduct의 속성을 모두 포함)
+type CombinedOrderData = StoreOrderData & Partial<APIProduct>;
+
+interface DateRangeModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onConfirm: (startDate: string, endDate: string) => void;
+}
+
+/* ===========================================================
+   변경: 새 기간조회 모달 컴포넌트 (DateRangeModal)
+========================================================== */
+const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onConfirm }) => {
+  const [startYear, setStartYear] = useState('');
+  const [startMonth, setStartMonth] = useState('');
+  const [startWeek, setStartWeek] = useState('');
+  const [endYear, setEndYear] = useState('');
+  const [endMonth, setEndMonth] = useState('');
+  const [endWeek, setEndWeek] = useState('');
+  const [activePreset, setActivePreset] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const presets = ['직접입력', '최근 1개월', '최근 3개월', '최근 6개월', '올해', '1년'];
+  const years = ['2025', '2024', '2023', '2022', '2021', '2020'];
+  const months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+  const weeks = ['1', '2', '3', '4', '5'];
+
+  useEffect(() => {
+    if (visible) {
+      setActivePreset(null);
+      setShowForm(false);
+      setStartYear('');
+      setStartMonth('');
+      setStartWeek('');
+      setEndYear('');
+      setEndMonth('');
+      setEndWeek('');
+    }
+  }, [visible]);
+
+  const handlePresetPress = (preset: string) => {
+    setActivePreset(preset);
+    if (preset === '직접입력') {
+      setShowForm(true);
+      setStartYear('');
+      setStartMonth('');
+      setStartWeek('');
+      setEndYear('');
+      setEndMonth('');
+      setEndWeek('');
+    } else {
+      setShowForm(false);
+      const today = new Date();
+      let newStartDate = new Date();
+      if (preset === '최근 1개월') {
+        newStartDate.setMonth(today.getMonth() - 1);
+      } else if (preset === '최근 3개월') {
+        newStartDate.setMonth(today.getMonth() - 3);
+      } else if (preset === '최근 6개월') {
+        newStartDate.setMonth(today.getMonth() - 6);
+      } else if (preset === '올해') {
+        newStartDate = new Date(today.getFullYear(), 0, 1);
+      } else if (preset === '1년') {
+        newStartDate.setFullYear(today.getFullYear() - 1);
+      }
+      setStartYear(String(newStartDate.getFullYear()));
+      setStartMonth(String(newStartDate.getMonth() + 1).padStart(2, '0'));
+      setStartWeek('1');
+      setEndYear(String(today.getFullYear()));
+      setEndMonth(String(today.getMonth() + 1).padStart(2, '0'));
+      setEndWeek('1');
+    }
+  };
+
+  const handleSearch = () => {
+    const startDateDisplay = `${startYear || '년도'}-${startMonth || '월'}-${startWeek ? startWeek + '주' : '주'}`;
+    const endDateDisplay = `${endYear || '년도'}-${endMonth || '월'}-${endWeek ? endWeek + '주' : '주'}`;
+    onConfirm(startDateDisplay, endDateDisplay);
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="fade">
+      <View testID="modalOverlay" style={dateRangeStyles.modalOverlay}>
+        <View testID="modalContainer" style={dateRangeStyles.modalContainer}>
+          <View testID="modalHeader" style={dateRangeStyles.modalHeader}>
+            <Text testID="modalTitle" style={dateRangeStyles.modalTitle}>기간조회</Text>
+            <TouchableOpacity testID="closeButton" onPress={onClose} style={dateRangeStyles.closeButton}>
+              <Text testID="closeButtonText" style={dateRangeStyles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView testID="presetButtons" horizontal contentContainerStyle={dateRangeStyles.presetButtons}>
+            {presets.map((preset) => (
+              <TouchableOpacity
+                key={preset}
+                testID="presetButton"
+                style={[
+                  dateRangeStyles.presetButton,
+                  activePreset === preset && dateRangeStyles.activePresetButton,
+                ]}
+                onPress={() => handlePresetPress(preset)}
+              >
+                <Text
+                  testID="presetButtonText"
+                  style={[
+                    dateRangeStyles.presetButtonText,
+                    activePreset === preset && dateRangeStyles.activePresetButtonText,
+                  ]}
+                >
+                  {preset}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {activePreset && activePreset !== '직접입력' && (
+            <TouchableOpacity testID="confirmButton" style={dateRangeStyles.searchButton} onPress={handleSearch}>
+              <Text testID="confirmButtonText" style={dateRangeStyles.searchButtonText}>확인</Text>
+            </TouchableOpacity>
+          )}
+          {showForm && activePreset === '직접입력' && (
+            <View testID="formContainer" style={dateRangeStyles.formContainer}>
+              <View testID="dateRangeSection" style={dateRangeStyles.dateRangeSection}>
+                <Text testID="dateRangeTitle" style={dateRangeStyles.dateRangeTitle}>날짜 범위</Text>
+                <View testID="dateRangeContainer" style={dateRangeStyles.dateRangeContainer}>
+                  <View testID="dateRangeHeader" style={dateRangeStyles.dateRangeHeader}>
+                    <View testID="datePart" style={dateRangeStyles.datePart}>
+                      <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>시작</Text>
+                      <Text testID="dateValue" style={dateRangeStyles.dateValue}>
+                        {`${startYear || '년도'}-${startMonth || '월'}-${startWeek ? startWeek + '주' : '주'}`}
+                      </Text>
+                    </View>
+                    <Text testID="dateSeparator" style={dateRangeStyles.dateSeparator}>~</Text>
+                    <View testID="datePart" style={dateRangeStyles.datePart}>
+                      <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>종료</Text>
+                      <Text testID="dateValue" style={dateRangeStyles.dateValue}>
+                        {`${endYear || '년도'}-${endMonth || '월'}-${endWeek ? endWeek + '주' : '주'}`}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
+                <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>시작날짜 선택</Text>
+                <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
+                  <Picker
+                    testID="pickerYear"
+                    selectedValue={startYear}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setStartYear(itemValue)}
+                  >
+                    <Picker.Item label="년도" value="" />
+                    {years.map((y) => (
+                      <Picker.Item key={y} label={`${y}년`} value={y} />
+                    ))}
+                  </Picker>
+                  <Picker
+                    testID="pickerMonth"
+                    selectedValue={startMonth}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setStartMonth(String(itemValue).padStart(2, '0'))}
+                  >
+                    <Picker.Item label="월" value="" />
+                    {months.map((m) => (
+                      <Picker.Item key={m} label={`${m}월`} value={String(m).padStart(2, '0')} />
+                    ))}
+                  </Picker>
+                  <Picker
+                    testID="pickerWeek"
+                    selectedValue={startWeek}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setStartWeek(itemValue)}
+                  >
+                    <Picker.Item label="주차" value="" />
+                    {weeks.map((w) => (
+                      <Picker.Item key={w} label={`${w}주`} value={w} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+              <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
+                <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>종료날짜 선택</Text>
+                <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
+                  <Picker
+                    testID="pickerYear"
+                    selectedValue={endYear}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setEndYear(itemValue)}
+                  >
+                    <Picker.Item label="년도" value="" />
+                    {years.map((y) => (
+                      <Picker.Item key={y} label={`${y}년`} value={y} />
+                    ))}
+                  </Picker>
+                  <Picker
+                    testID="pickerMonth"
+                    selectedValue={endMonth}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setEndMonth(String(itemValue).padStart(2, '0'))}
+                  >
+                    <Picker.Item label="월" value="" />
+                    {months.map((m) => (
+                      <Picker.Item key={m} label={`${m}월`} value={String(m).padStart(2, '0')} />
+                    ))}
+                  </Picker>
+                  <Picker
+                    testID="pickerWeek"
+                    selectedValue={endWeek}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setEndWeek(itemValue)}
+                  >
+                    <Picker.Item label="주차" value="" />
+                    {weeks.map((w) => (
+                      <Picker.Item key={w} label={`${w}주`} value={w} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+              <TouchableOpacity testID="searchButton" style={dateRangeStyles.searchButton} onPress={handleSearch}>
+                <Text testID="searchButtonText" style={dateRangeStyles.searchButtonText}>검색</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
 interface OrderStatusProps {
   storeId: string;
@@ -37,59 +265,40 @@ interface OrderStatusProps {
 }
 
 const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
-  // 주문 내역 관련 상태
-  const [storeOrders, setStoreOrders] = useState<StoreOrderData[]>([]);
-  const [loading, setloading] = useState<boolean>(false);
+  // CombinedOrderData를 사용하는 상태로 변경
+  const [storeOrders, setStoreOrders] = useState<CombinedOrderData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  // 기본 정렬을 최신순('desc')으로 설정
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [isPeriodSearch, setIsPeriodSearch] = useState<boolean>(false);
   const [showPeriodModal, setShowPeriodModal] = useState<boolean>(false);
-  // 날짜선택 모달 표시 여부
-  const [showDatePickerModal, setShowDatePickerModal] = useState<boolean>(false);
-  const [selectingStart, setSelectingStart] = useState<boolean>(false);
+  const [dateRangeStart, setDateRangeStart] = useState<string>('');
+  const [dateRangeEnd, setDateRangeEnd] = useState<string>('');
 
-  // 기간 선택 상태
-  const [startYear, setStartYear] = useState<number | null>(null);
-  const [startMonth, setStartMonth] = useState<number | null>(null);
-  const [startWeek, setStartWeek] = useState<number | null>(null);
-  const [endYear, setEndYear] = useState<number | null>(null);
-  const [endMonth, setEndMonth] = useState<number | null>(null);
-  const [endWeek, setEndWeek] = useState<number | null>(null);
-
-  // 주문 상세보기 모달 상태
   const [detailModalVisible, setDetailModalVisible] = useState<boolean>(false);
-  const [detailGroupOrders, setDetailGroupOrders] = useState<StoreOrderData[]>([]);
+  const [detailGroupOrders, setDetailGroupOrders] = useState<CombinedOrderData[]>([]);
   const [detailGroupDate, setDetailGroupDate] = useState<string>('');
 
   const detailTotalCost = detailGroupOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
 
-  // 드롭다운 관련 상태
-  const [openStartDropdown, setOpenStartDropdown] = useState<"year" | "month" | "week" | null>(null);
-  const [openEndDropdown, setOpenEndDropdown] = useState<"year" | "month" | "week" | null>(null);
-
-  /** 날짜선택 모달 열기 (시작/종료 구분) */
-  const openDatePicker = (isStart: boolean) => {
-    setSelectingStart(isStart);
-    setShowDatePickerModal(true);
-  };
-
-  // 연도, 월, 주 배열 (예시)
-  const years = [2025, 2024, 2023, 2022, 2021];
-  const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-  const weeks = [1, 2, 3, 4, 5];
-
-  // FlatList ref와 스크롤 오프셋 저장
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<FlatList<any>>(null);
   const scrollOffset = useRef(0);
 
-  // 주문 내역 API 호출 함수
+  // sortProductsBySupplierAndName를 사용하여 정렬하는 헬퍼 함수
+  const sortOrders = (orders: CombinedOrderData[], order: 'asc' | 'desc') => {
+    let sorted = f.sortProductsBySupplierAndName(orders as APIProduct[], items) as CombinedOrderData[];
+    return order === 'desc' ? sorted.reverse() : sorted;
+  };
+
+  // API 데이터 호출 및 결합 (CombinedOrderData 타입 적용)
   const fetchOrders = async (startPage: number, order: 'asc' | 'desc', forceFetch: boolean = false) => {
     if (!storeId) return;
-    setloading(true);
+    setLoading(true);
     if (forceFetch || !isPeriodSearch) {
       try {
-        let allOrders: StoreOrderData[] = [];
+        let allOrders: CombinedOrderData[] = [];
         for (let page = startPage; page < startPage + 5; page++) {
           const response = await fetch(
             `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&page=${page}&order=${order}`
@@ -108,12 +317,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
               ...o,
               품목명: foundItem?.품목명 ?? '알 수 없는 품목',
               협력사명: foundItem?.협력사명 ?? '',
+              협력사_id: foundItem?.협력사_id ?? '',
+              종류: foundItem?.종류 ?? '',
               출고단위: foundItem?.출고단위,
               입고단가: foundItem?.입고단가,
               totalCost: qty * unitPrice,
-            };
+            } as CombinedOrderData;
           });
-          allOrders = [...allOrders, ...combined];
+          const sortedCombined = sortOrders(combined, order);
+          allOrders = [...allOrders, ...sortedCombined];
         }
         setStoreOrders((prev) => [...prev, ...allOrders]);
         if (allOrders.length === 0) {
@@ -122,29 +334,28 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
       } catch (error) {
         console.error('발주 내역 조회 중 오류:', error);
       } finally {
-        setloading(false);
+        setLoading(false);
       }
     } else {
-      setloading(false);
+      setLoading(false);
     }
   };
 
-  // 기간조회 API
-  const handlePeriodSearch = async () => {
+  const handlePeriodSearch = async (startDate: string, endDate: string) => {
     if (!storeId) return;
     setIsPeriodSearch(true);
     setShowPeriodModal(false);
+    setDateRangeStart(startDate);
+    setDateRangeEnd(endDate);
     setStoreOrders([]);
     setHasMore(false);
-    setloading(true);
-    const sp = f.buildPeriodString(startYear, startMonth, startWeek);
-    const ep = f.buildPeriodString(endYear, endMonth, endWeek);
+    setLoading(true);
     try {
-      const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${sp}~${ep}&order=${sortOrder}`;
+      const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${startDate}~${endDate}&order=${sortOrder}`;
       const response = await fetch(url);
       if (!response.ok) {
         console.error('기간 검색 실패');
-        setloading(false);
+        setLoading(false);
         return;
       }
       const data = await response.json();
@@ -157,37 +368,39 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           ...o,
           품목명: foundItem?.품목명 ?? '알 수 없는 품목',
           협력사명: foundItem?.협력사명 ?? '',
+          협력사_id: foundItem?.협력사_id ?? '',
+          종류: foundItem?.종류 ?? '',
           출고단위: foundItem?.출고단위,
           입고단가: foundItem?.입고단가,
           totalCost: qty * unitPrice,
-        };
+        } as CombinedOrderData;
       });
-      setStoreOrders(combined);
+      setStoreOrders(sortOrders(combined, sortOrder));
     } catch (error) {
       console.error('기간 조회 오류:', error);
     } finally {
-      setloading(false);
+      setLoading(false);
     }
   };
 
-  /** 초기화 버튼 -> 기간조회 해제, 기본(최신순)으로 재조회 */
   const handleResetSearch = async () => {
     setShowPeriodModal(false);
     setIsPeriodSearch(false);
+    // 리셋 시 정렬 순서를 최신순('desc')으로 초기화
+    setSortOrder('desc');
     setStoreOrders([]);
     setHasMore(true);
-    setloading(true);
-    await fetchOrders(1, sortOrder, true);
+    setLoading(true);
+    await fetchOrders(1, 'desc', true);
     setCurrentPage(6);
-    setloading(false);
+    setLoading(false);
   };
 
-  // 정렬 토글
   const toggleSortOrder = () => {
     const newOrder = sortOrder === 'desc' ? 'asc' : 'desc';
     setSortOrder(newOrder);
     if (isPeriodSearch) {
-      handlePeriodSearch();
+      handlePeriodSearch(dateRangeStart, dateRangeEnd);
     } else {
       setStoreOrders([]);
       setHasMore(true);
@@ -196,14 +409,14 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     }
   };
 
-  // 주문 상세보기 모달 열기
-  const openDetailModal = (dateKey: string, orders: StoreOrderData[]) => {
+  // 상세보기 모달 열 때, 정렬된 데이터가 위에서부터 아래로 쌓이도록 오름차순('asc') 사용
+  const openDetailModal = (dateKey: string, orders: CombinedOrderData[]) => {
     setDetailGroupDate(dateKey);
-    setDetailGroupOrders(orders);
+    const sortedDetailOrders = sortOrders(orders, 'asc');
+    setDetailGroupOrders(sortedDetailOrders);
     setDetailModalVisible(true);
   };
 
-  // 그룹핑: 연/월/주차별로 주문 내역 분류
   const groupedByYearMonthWeek = storeOrders.reduce((acc: any, order) => {
     const [year, month, week] = order.기간.split('.');
     if (!acc[year]) acc[year] = {};
@@ -223,14 +436,16 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
 
   useEffect(() => {
     if (storeId) {
+      // 화면 진입 시 기본 정렬을 최신순('desc')으로 초기화
+      setSortOrder('desc');
       setStoreOrders([]);
       setHasMore(true);
-      setloading(true);
+      setLoading(true);
       setIsPeriodSearch(false);
       (async () => {
-        await fetchOrders(1, sortOrder);
+        await fetchOrders(1, 'desc');
         setCurrentPage(6);
-        setloading(false);
+        setLoading(false);
       })();
     }
   }, [storeId]);
@@ -246,13 +461,10 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
 
   return (
     <View testID="status_container" style={orderStatusStyles.status_container}>
-      {/* 전체 상단 헤더 */}
       {!loading && sortedYears.length > 0 && (
         <View testID="headerRow" style={orderStatusStyles.headerRow}>
           <View testID="sectionTitle" style={orderStatusStyles.sectionTitle}>
-            <Text testID="title" style={orderStatusStyles.title}>
-              발주 내역
-            </Text>
+            <Text testID="title" style={orderStatusStyles.title}>발주 내역</Text>
           </View>
           <View testID="rightButtonGroup" style={orderStatusStyles.rightButtonGroup}>
             <TouchableOpacity 
@@ -261,7 +473,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
               onPress={toggleSortOrder}
             >
               <Text testID="headerButtonText" style={orderStatusStyles.headerButtonText}>
-                {sortOrder === 'desc' ? '최신순' : '오래된 순'}
+                {sortOrder === 'desc' ? '오래된순' : '최신순'}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -277,13 +489,12 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         </View>
       )}
 
-      {/* 주문 내역 리스트 */}
       {loading ? (
-        <View style={orderStatusStyles.loadingContainer} testID="loadingContainer">
+        <View testID="loadingContainer" style={orderStatusStyles.loadingContainer}>
           <ActivityIndicator size="large" color="#0D326F" />
         </View>
       ) : sortedYears.length === 0 ? (
-        <View style={orderStatusStyles.emptyContainer} testID="emptyContainer">
+        <View testID="emptyContainer" style={orderStatusStyles.emptyContainer}>
           <Text testID="emptyText" style={orderStatusStyles.emptyText}>아직 발주 내역이 없습니다.</Text>
         </View>
       ) : (
@@ -313,7 +524,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                     return (
                       monthSum +
                       ordersInWeek.reduce(
-                        (weekSum: number, o: StoreOrderData) => weekSum + (o.totalCost || 0),
+                        (weekSum: number, o: CombinedOrderData) => weekSum + (o.totalCost || 0),
                         0
                       )
                     );
@@ -327,11 +538,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                         </Text>
                       </View>
                       {sortedWeeks.map((week) => {
-                        const orders = weeksObj[week];
-                        const firstOrder = orders[0];
-                        const extraCount = orders.length - 1;
-                        const weekTotalCost = orders.reduce(
-                          (sum: number, o: StoreOrderData) => sum + (o.totalCost || 0),
+                        // 현재 주차의 배열은 두 방식으로 정렬합니다.
+                        // - ordersSorted: 현재 토글된 정렬 순서(sortOrder)를 반영 (총합, 외 개수 계산에 사용)
+                        // - ordersAsc: 상세보기에서 사용하는 오름차순 정렬 (항상 첫번째 itemRow에 해당하는 데이터)
+                        const ordersSorted = sortOrders(weeksObj[week], sortOrder);
+                        const ordersAsc = sortOrders(weeksObj[week], 'asc');
+                        const firstOrder = ordersAsc[0];
+                        const extraCount = ordersSorted.length - 1;
+                        const weekTotalCost = ordersSorted.reduce(
+                          (sum: number, o: CombinedOrderData) => sum + (o.totalCost || 0),
                           0
                         );
                         return (
@@ -358,7 +573,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                   발주수량: {f.formatPrice(firstOrder.매장_발주량)}
                                 </Text>
                               </View>
-                              <TouchableOpacity testID="detailButton" style={orderStatusStyles.detailButton} onPress={() => openDetailModal(`${year}.${month}.${week}`, orders)}>
+                              <TouchableOpacity testID="detailButton" style={orderStatusStyles.detailButton} onPress={() => openDetailModal(`${year}.${month}.${week}`, weeksObj[week])}>
                                 <Text testID="detailButtonText" style={orderStatusStyles.detailButtonText}>
                                   상세보기
                                 </Text>
@@ -399,7 +614,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         />
       )}
 
-      {/* 초기화 버튼 */}
       {isPeriodSearch && (
         <View style={{ position: 'absolute', top: 10, right: 10 }}>
           <TouchableOpacity testID="resetButton" style={orderStatusStyles.resetButton} onPress={handleResetSearch}>
@@ -408,7 +622,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         </View>
       )}
 
-      {/* 주문 상세보기 모달 */}
       <Modal
         visible={detailModalVisible}
         transparent
@@ -443,7 +656,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                 </Text>
               </View>
             </ScrollView>
-
             <TouchableOpacity testID="closeButton" style={orderStatusStyles.closeButton} onPress={() => setDetailModalVisible(false)}>
               <Text testID="textStyle" style={orderStatusStyles.textStyle}>닫기</Text>
             </TouchableOpacity>
@@ -451,413 +663,20 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         </View>
       </Modal>
 
-      {/* 기간조회 모달 */}
-      <Modal
+      <DateRangeModal
         visible={showPeriodModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => {
-          setShowPeriodModal(false);
-          setOpenStartDropdown(null);
-          setOpenEndDropdown(null);
+        onClose={() => setShowPeriodModal(false)}
+        onConfirm={(start, end) => {
+          handlePeriodSearch(start, end);
         }}
-      >
-        <TouchableWithoutFeedback
-          onPress={() => {
-            setOpenStartDropdown(null);
-            setOpenEndDropdown(null);
-          }}
-        >
-          <View testID="periodModalContainer" style={orderStatusStyles.periodModalContainer}>
-            <TouchableWithoutFeedback>
-              <View testID="periodModalInner" style={orderStatusStyles.periodModalInner}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text testID="periodModalTitle" style={orderStatusStyles.periodModalTitle}>기간조회</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setShowPeriodModal(false);
-                      setOpenStartDropdown(null);
-                      setOpenEndDropdown(null);
-                    }}
-                  >
-                    <LucideX color="red" size={24} />
-                  </TouchableOpacity>
-                </View>
-                {/* 시작날짜 섹션: 종료날짜 dropdown이 열려있지 않을 때만 보임 */}
-                {openEndDropdown === null && (
-                  <View testID="dateGroup" style={orderStatusStyles.dateGroup}>
-                    <Text testID="dateGroupLabel" style={orderStatusStyles.dateGroupLabel}>시작날짜</Text>
-                    <View testID="dateRow" style={orderStatusStyles.dateRow}>
-                      <View testID="dropdownWrapper" style={orderStatusStyles.dropdownWrapper}>
-                        <TouchableOpacity
-                          testID="dateBox"
-                          style={orderStatusStyles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenStartDropdown(openStartDropdown === 'year' ? null : 'year');
-                            setOpenEndDropdown(null);
-                          }}
-                        >
-                          <Text testID="dateBoxText" style={orderStatusStyles.dateBoxText}>
-                            {startYear ? `${startYear}년` : '년도 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openStartDropdown === 'year' && (
-                          <View testID="dropdown" style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
-                            <ScrollView testID="dropdownScroll" style={orderStatusStyles.dropdownScroll}>
-                              {years.map((y) => (
-                                <TouchableOpacity
-                                  key={y}
-                                  testID="pickerItem"
-                                  style={[
-                                    orderStatusStyles.pickerItem,
-                                    startYear === y && orderStatusStyles.pickerItemActive
-                                  ]}
-                                  onPress={() => setStartYear(y)}
-                                >
-                                  <Text style={{ color: startYear === y ? '#fff' : '#333' }}>
-                                    {y}년
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-                      {/* 시작월 */}
-                      <View testID="dropdownWrapper" style={orderStatusStyles.dropdownWrapper}>
-                        <TouchableOpacity
-                          testID="dateBox"
-                          style={orderStatusStyles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenStartDropdown(openStartDropdown === 'month' ? null : 'month');
-                            setOpenEndDropdown(null);
-                          }}
-                        >
-                          <Text testID="dateBoxText" style={orderStatusStyles.dateBoxText}>
-                            {startMonth ? `${startMonth}월` : '월 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openStartDropdown === 'month' && (
-                          <View testID="dropdown" style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
-                            <ScrollView testID="dropdownScroll" style={orderStatusStyles.dropdownScroll}>
-                              {months.map((m) => (
-                                <TouchableOpacity
-                                  key={m}
-                                  testID="pickerItem"
-                                  style={[
-                                    orderStatusStyles.pickerItem,
-                                    startMonth === m && orderStatusStyles.pickerItemActive
-                                  ]}
-                                  onPress={() => setStartMonth(m)}
-                                >
-                                  <Text style={{ color: startMonth === m ? '#fff' : '#333' }}>
-                                    {m}월
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-                      {/* 시작주차 */}
-                      <View testID="dropdownWrapper" style={orderStatusStyles.dropdownWrapper}>
-                        <TouchableOpacity
-                          testID="dateBox"
-                          style={orderStatusStyles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenStartDropdown(openStartDropdown === 'week' ? null : 'week');
-                            setOpenEndDropdown(null);
-                          }}
-                        >
-                          <Text testID="dateBoxText" style={orderStatusStyles.dateBoxText}>
-                            {startWeek ? `${startWeek}주` : '주차 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openStartDropdown === 'week' && (
-                          <View testID="dropdown" style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
-                            <ScrollView testID="dropdownScroll" style={orderStatusStyles.dropdownScroll}>
-                              {weeks.map((w) => (
-                                <TouchableOpacity
-                                  key={w}
-                                  testID="pickerItem"
-                                  style={[
-                                    orderStatusStyles.pickerItem,
-                                    startWeek === w && orderStatusStyles.pickerItemActive
-                                  ]}
-                                  onPress={() => setStartWeek(w)}
-                                >
-                                  <Text style={{ color: startWeek === w ? '#fff' : '#333' }}>
-                                    {w}주
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-                    </View>
-                    {openStartDropdown !== null && (
-                      <TouchableOpacity testID="confirmButton" style={orderStatusStyles.confirmButton} onPress={() => setOpenStartDropdown(null)}>
-                        <Text testID="confirmButtonText" style={orderStatusStyles.confirmButtonText}>확인</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                )}
-                {/* 종료날짜 섹션: 시작날짜 dropdown이 열려있지 않을 때만 보임 */}
-                {openStartDropdown === null && (
-                  <View testID="dateGroup" style={orderStatusStyles.dateGroup}>
-                    <Text testID="dateGroupLabel" style={orderStatusStyles.dateGroupLabel}>종료날짜</Text>
-                    <View testID="dateRow" style={orderStatusStyles.dateRow}>
-                      <View testID="dropdownWrapper" style={orderStatusStyles.dropdownWrapper}>
-                        <TouchableOpacity
-                          testID="dateBox"
-                          style={orderStatusStyles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenEndDropdown(openEndDropdown === 'year' ? null : 'year');
-                            setOpenStartDropdown(null);
-                          }}
-                        >
-                          <Text testID="dateBoxText" style={orderStatusStyles.dateBoxText}>
-                            {endYear ? `${endYear}년` : '년도 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openEndDropdown === 'year' && (
-                          <View testID="dropdown" style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
-                            <ScrollView testID="dropdownScroll" style={orderStatusStyles.dropdownScroll}>
-                              {years.map((y) => (
-                                <TouchableOpacity
-                                  key={y}
-                                  testID="pickerItem"
-                                  style={[
-                                    orderStatusStyles.pickerItem,
-                                    endYear === y && orderStatusStyles.pickerItemActive
-                                  ]}
-                                  onPress={() => setEndYear(y)}
-                                >
-                                  <Text style={{ color: endYear === y ? '#fff' : '#333' }}>
-                                    {y}년
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-                      <View testID="dropdownWrapper" style={orderStatusStyles.dropdownWrapper}>
-                        <TouchableOpacity
-                          testID="dateBox"
-                          style={orderStatusStyles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenEndDropdown(openEndDropdown === 'month' ? null : 'month');
-                            setOpenStartDropdown(null);
-                          }}
-                        >
-                          <Text testID="dateBoxText" style={orderStatusStyles.dateBoxText}>
-                            {endMonth ? `${endMonth}월` : '월 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openEndDropdown === 'month' && (
-                          <View testID="dropdown" style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
-                            <ScrollView testID="dropdownScroll" style={orderStatusStyles.dropdownScroll}>
-                              {months.map((m) => (
-                                <TouchableOpacity
-                                  key={m}
-                                  testID="pickerItem"
-                                  style={[
-                                    orderStatusStyles.pickerItem,
-                                    endMonth === m && orderStatusStyles.pickerItemActive
-                                  ]}
-                                  onPress={() => setEndMonth(m)}
-                                >
-                                  <Text style={{ color: endMonth === m ? '#fff' : '#333' }}>
-                                    {m}월
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-                      <View testID="dropdownWrapper" style={orderStatusStyles.dropdownWrapper}>
-                        <TouchableOpacity
-                          testID="dateBox"
-                          style={orderStatusStyles.dateBox}
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            setOpenEndDropdown(openEndDropdown === 'week' ? null : 'week');
-                            setOpenStartDropdown(null);
-                          }}
-                        >
-                          <Text testID="dateBoxText" style={orderStatusStyles.dateBoxText}>
-                            {endWeek ? `${endWeek}주` : '주차 선택'}
-                          </Text>
-                        </TouchableOpacity>
-                        {openEndDropdown === 'week' && (
-                          <View testID="dropdown" style={[orderStatusStyles.dropdown, orderStatusStyles.dropdownOpen]}>
-                            <ScrollView testID="dropdownScroll" style={orderStatusStyles.dropdownScroll}>
-                              {weeks.map((w) => (
-                                <TouchableOpacity
-                                  key={w}
-                                  testID="pickerItem"
-                                  style={[
-                                    orderStatusStyles.pickerItem,
-                                    endWeek === w && orderStatusStyles.pickerItemActive
-                                  ]}
-                                  onPress={() => setEndWeek(w)}
-                                >
-                                  <Text style={{ color: endWeek === w ? '#fff' : '#333' }}>
-                                    {w}주
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-                    </View>
-                    {openEndDropdown !== null && (
-                      <TouchableOpacity testID="confirmButton" style={orderStatusStyles.confirmButton} onPress={() => setOpenEndDropdown(null)}>
-                        <Text testID="confirmButtonText" style={orderStatusStyles.confirmButtonText}>확인</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                )}
-                {openStartDropdown === null && openEndDropdown === null && (
-                  <View style={{ alignItems: 'center', marginTop: 20 }}>
-                    <TouchableOpacity testID="periodSearchButton" style={orderStatusStyles.periodSearchButton} onPress={() => handlePeriodSearch()}>
-                      <Text testID="periodSearchButtonText" style={orderStatusStyles.periodSearchButtonText}>검색</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-
-      {/* 날짜 선택 모달 */}
+      />
       <Modal
-        visible={showDatePickerModal}
+        visible={false}
         transparent={true}
         animationType="fade"
-        onRequestClose={() => setShowDatePickerModal(false)}
+        onRequestClose={() => {}}
       >
-        <View testID="datePickerModalContainer" style={orderStatusStyles.datePickerModalContainer}>
-          <View testID="datePickerModal" style={orderStatusStyles.datePickerModal}>
-            <Text testID="datePickerTitle" style={orderStatusStyles.datePickerTitle}>
-              {selectingStart ? '시작일 선택' : '종료일 선택'}
-            </Text>
-            <Text testID="datePickerLabel" style={orderStatusStyles.datePickerLabel}>연도</Text>
-            <ScrollView horizontal style={{ marginBottom: 8 }}>
-              {years.map((y) => (
-                <TouchableOpacity
-                  key={y}
-                  style={[
-                    {
-                      backgroundColor: '#eee',
-                      borderRadius: 6,
-                      paddingVertical: 8,
-                      paddingHorizontal: 12,
-                      marginRight: 6,
-                    },
-                    (selectingStart ? startYear : endYear) === y && { backgroundColor: '#0D326F' },
-                  ]}
-                  onPress={() => (selectingStart ? setStartYear(y) : setEndYear(y))}
-                >
-                  <Text style={{
-                    color: (selectingStart ? startYear : endYear) === y ? '#fff' : '#333',
-                  }}>
-                    {y}년
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            <Text testID="datePickerLabel" style={orderStatusStyles.datePickerLabel}>월</Text>
-            <View>
-              <ScrollView horizontal style={{ marginBottom: 4 }}>
-                {months.slice(0, 6).map((m) => (
-                  <TouchableOpacity
-                    key={m}
-                    style={[
-                      {
-                        backgroundColor: '#eee',
-                        borderRadius: 6,
-                        paddingVertical: 8,
-                        paddingHorizontal: 12,
-                        marginRight: 6,
-                      },
-                      (selectingStart ? startMonth : endMonth) === m && { backgroundColor: '#0D326F' },
-                    ]}
-                    onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
-                  >
-                    <Text style={{
-                      color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333',
-                    }}>
-                      {m}월
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              <ScrollView horizontal style={{ marginBottom: 8 }}>
-                {months.slice(6).map((m) => (
-                  <TouchableOpacity
-                    key={m}
-                    style={[
-                      {
-                        backgroundColor: '#eee',
-                        borderRadius: 6,
-                        paddingVertical: 8,
-                        paddingHorizontal: 12,
-                        marginRight: 6,
-                      },
-                      (selectingStart ? startMonth : endMonth) === m && { backgroundColor: '#0D326F' },
-                    ]}
-                    onPress={() => (selectingStart ? setStartMonth(m) : setEndMonth(m))}
-                  >
-                    <Text style={{
-                      color: (selectingStart ? startMonth : endMonth) === m ? '#fff' : '#333',
-                    }}>
-                      {m}월
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-            <Text testID="datePickerLabel" style={orderStatusStyles.datePickerLabel}>주차</Text>
-            <ScrollView horizontal style={{ marginBottom: 16 }}>
-              {weeks.map((w) => (
-                <TouchableOpacity
-                  key={w}
-                  style={[
-                    {
-                      backgroundColor: '#eee',
-                      borderRadius: 6,
-                      paddingVertical: 8,
-                      paddingHorizontal: 12,
-                      marginRight: 6,
-                    },
-                    (selectingStart ? startWeek : endWeek) === w && { backgroundColor: '#0D326F' },
-                  ]}
-                  onPress={() => (selectingStart ? setStartWeek(w) : setEndWeek(w))}
-                >
-                  <Text style={{
-                    color: (selectingStart ? startWeek : endWeek) === w ? '#fff' : '#333',
-                  }}>
-                    {w}주
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            <TouchableOpacity testID="periodSearchButton" style={orderStatusStyles.periodSearchButton} onPress={() => setShowDatePickerModal(false)}>
-              <Text testID="periodSearchButtonText" style={orderStatusStyles.periodSearchButtonText}>확인</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* 기존 날짜 선택 모달 코드 */}
       </Modal>
     </View>
   );

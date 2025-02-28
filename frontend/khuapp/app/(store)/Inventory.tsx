@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TextInput, TouchableOpacity, StyleSheet, Modal, Button } from 'react-native';
 import { RN_API_URL } from '@env';
 import * as f from '../../src/components/ui/common/function';
-import { styles, } from '../../src/components/ui/common/commonstyler';
+import { styles } from '../../src/components/ui/common/commonstyler';
 import { inventoryStyles } from '../../src/styles/Inventory_styles';
-
 import { APIProduct } from '../../src/components/ui/common/types';
 import { moderateScale } from 'react-native-size-matters';
 
@@ -54,7 +53,7 @@ const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ item, inventoryType
           {inventoryType === 'daily' ? (
             editMode ? (
               <TextInput
-                testID="itemText"
+                testID="unit_itemText"
                 style={inventoryStyles.unit_itemText}
                 value={dailyValue.toString()}
                 keyboardType="numeric"
@@ -68,7 +67,7 @@ const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ item, inventoryType
           ) : (
             editMode ? (
               <TextInput
-                testID="itemText"
+                testID="unit_itemText"
                 style={inventoryStyles.unit_itemText}
                 value={monthlyValue.toString()}
                 keyboardType="numeric"
@@ -350,8 +349,8 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
 
   if (inventoryData.length === 0) {
     return (
-      <View style={inventoryStyles.container}>
-        <Text style={inventoryStyles.message}>재고 데이터가 없습니다.</Text>
+      <View testID="container" style={inventoryStyles.container}>
+        <Text testID="message" style={inventoryStyles.message}>재고 데이터가 없습니다.</Text>
       </View>
     );
   }
@@ -360,17 +359,18 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
     <View testID="status_container" style={inventoryStyles.status_container}>
       {/* 모달: 월별 재고 수정 불가 안내 */}
       <Modal transparent visible={modalVisible} animationType="slide">
-        <View style={modalStyles.overlay}>
-          <View style={modalStyles.modalContainer}>
-            <Text style={modalStyles.modalText}>
+        <View testID="overlay" style={modalStyles.overlay}>
+          <View testID="modalContainer" style={modalStyles.modalContainer}>
+            <Text testID="modalText" style={modalStyles.modalText}>
               월별 재고 입력기간이 아니어서 월별 재고를 변경할 수 없습니다.
             </Text>
             <Button title="확인" onPress={() => setModalVisible(false)} />
           </View>
         </View>
       </Modal>
-      <View style={toggleButtonStyles.container}>
+      <View testID="container" style={toggleButtonStyles.container}>
         <TouchableOpacity
+          testID="button"
           style={[
             toggleButtonStyles.button,
             inventoryType === 'daily' && toggleButtonStyles.buttonActive,
@@ -378,6 +378,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
           onPress={() => handleToggle('daily')}
         >
           <Text
+            testID="buttonText"
             style={[
               toggleButtonStyles.buttonText,
               inventoryType === 'daily' && toggleButtonStyles.buttonTextActive,
@@ -387,6 +388,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
+          testID="button"
           style={[
             toggleButtonStyles.button,
             inventoryType === 'monthly' && toggleButtonStyles.buttonActive,
@@ -394,6 +396,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
           onPress={() => handleToggle('monthly')}
         >
           <Text
+            testID="buttonText"
             style={[
               toggleButtonStyles.buttonText,
               inventoryType === 'monthly' && toggleButtonStyles.buttonTextActive,
@@ -403,45 +406,47 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
           </Text>
         </TouchableOpacity>
       </View>
-      <View style={headerRowStyles.container}>
-        <Text style={inventoryStyles.title}>
-          {inventoryType === 'daily' ? '매장 재고 관리 (일일 현재고)' : '매장 재고 관리 (월간 재고)'}
+      <View testID="headerRowStyles_container" style={headerRowStyles.container}>
+        <Text testID="title" style={inventoryStyles.title}>
+          {inventoryType === 'daily' ? '일일 현재고' : '매장 재고 관리 월간 재고'}
         </Text>
         {inventoryType === 'daily' && (
-          <View style={headerRowStyles.buttonContainer}>
+          <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
             {editMode ? (
               <>
-                <TouchableOpacity style={headerRowStyles.smallButton} onPress={handleGlobalSave} disabled={saving}>
-                  <Text style={headerRowStyles.buttonText}>{saving ? '저장 중...' : '수정완료'}</Text>
+                <TouchableOpacity testID="smallButton" style={headerRowStyles.smallButton} onPress={handleGlobalSave} disabled={saving}>
+                  <Text testID="buttonText" style={headerRowStyles.buttonText}>{saving ? '저장 중...' : '수정완료'}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={headerRowStyles.smallButton} onPress={handleReflectMonthly} disabled={saving}>
-                  <Text style={headerRowStyles.buttonText}>월말 재고 반영</Text>
+                <TouchableOpacity testID="smallButton" style={headerRowStyles.smallButton} onPress={handleReflectMonthly} disabled={saving}>
+                  <Text testID="buttonText" style={headerRowStyles.buttonText}>월말 재고 반영</Text>
                 </TouchableOpacity>
               </>
             ) : (
-              <TouchableOpacity style={headerRowStyles.smallButton} onPress={() => setEditMode(true)}>
-                <Text style={headerRowStyles.buttonText}>수정</Text>
+              <TouchableOpacity testID="smallButton" style={headerRowStyles.smallButton} onPress={() => setEditMode(true)}>
+                <Text testID="buttonText" style={headerRowStyles.buttonText}>수정</Text>
               </TouchableOpacity>
             )}
           </View>
         )}
         {inventoryType === 'monthly' && (
-          <View style={headerRowStyles.buttonContainer}>
+          <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
             {editMode ? (
               <TouchableOpacity
+                testID="smallButton"
                 style={headerRowStyles.smallButton}
                 onPress={handleMonthlySave}
                 disabled={saving || !isMonthlyEditable}
               >
-                <Text style={headerRowStyles.buttonText}>{saving ? '저장 중...' : '월간 수정 완료'}</Text>
+                <Text testID="buttonText" style={headerRowStyles.buttonText}>{saving ? '저장 중...' : '월간 수정 완료'}</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                style={headerRowStyles.smallButton}
+                testID="smallButton"
+                style={[headerRowStyles.smallButton,!isMonthlyEditable && { opacity: 0.5 }]}
                 onPress={() => setEditMode(true)}
                 disabled={!isMonthlyEditable}
               >
-                <Text style={headerRowStyles.buttonText}>월간 재고 수정</Text>
+                <Text testID="buttonText" style={headerRowStyles.buttonText}>월간 재고 수정</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -456,7 +461,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
         </Text>
       </View>
       <FlatList
-        testID="FlatList"
+        testID="flat_inventory"
         data={inventoryData}
         keyExtractor={(item) => item.품목_id}
         style={inventoryStyles.flat_inventory}
@@ -504,9 +509,9 @@ const headerRowStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between', // 변경된 부분',
     marginBottom: moderateScale(10),
-    paddingHorizontal: moderateScale(16),
+    paddingRight: moderateScale(8),
   },
   buttonContainer: {
     flexDirection: 'row',

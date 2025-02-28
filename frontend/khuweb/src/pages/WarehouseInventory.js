@@ -162,11 +162,14 @@ const WarehouseInventory = () => {
         if (yA !== yB) return yB - yA;
         return mB - mA;
       })[0];
-      fetchData({ 기간: latest, 매장_id: selectedStore }, manual);
+      // "YYYY.MM"에 기본 일(defaultDay)을 추가하여 "YYYY.MM.DD" 형식으로 만듦
+      const period = `${latest}.${defaultDay}`;
+      fetchData({ 기간: period, 매장_id: selectedStore }, manual);
     } else {
       fetchData({ page: 1 }, manual);
     }
   };
+
 
   // ===== 이하 품목 기반 테이블 생성 로직 =====
   // 창고 재고 데이터를 품목별로 그룹화 (품목_id 기준)

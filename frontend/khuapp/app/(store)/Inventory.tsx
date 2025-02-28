@@ -408,7 +408,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
       </View>
       <View testID="headerRowStyles_container" style={headerRowStyles.container}>
         <Text testID="title" style={inventoryStyles.title}>
-          {inventoryType === 'daily' ? '일일 현재고' : '월간 재고'}
+          {inventoryType === 'daily' ? '일일 현재고' : '매장 재고 관리 월간 재고'}
         </Text>
         {inventoryType === 'daily' && (
           <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
@@ -442,7 +442,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
             ) : (
               <TouchableOpacity
                 testID="smallButton"
-                style={headerRowStyles.smallButton}
+                style={[headerRowStyles.smallButton,!isMonthlyEditable && { opacity: 0.5 }]}
                 onPress={() => setEditMode(true)}
                 disabled={!isMonthlyEditable}
               >

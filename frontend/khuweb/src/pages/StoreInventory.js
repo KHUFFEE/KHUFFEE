@@ -163,8 +163,7 @@ const StoreInventory = () => {
   // "최신 조회" 버튼: 매장은 유지하고 기간을 최신으로 갱신하여 데이터 조회 (manual=true)
   const handleReset = async (manual = false) => {
     await refreshPeriods();
-    // 매장은 유지
-    // 최신 조회 시, 최신 기간 옵션을 가져와 API 호출
+    // 매장은 유지하고 최신 조회 시 최신 기간 옵션과 선택된 일, 매장 정보를 사용합니다.
     if (yearMonthOptions.length > 0) {
       // 최신 기간은 yearMonthOptions의 첫번째 (내림차순 정렬되어 있다고 가정)
       const latest = [...yearMonthOptions].sort((a, b) => {
@@ -173,11 +172,14 @@ const StoreInventory = () => {
         if (yA !== yB) return yB - yA;
         return mB - mA;
       })[0];
-      fetchData({ 기간: latest }, manual);
+      // 선택된 일(selectedDay)을 추가하여 완전한 기간(YYYY.MM.DD) 형태로 생성
+      const period = `${latest}.${selectedDay}`;
+      fetchData({ 기간: period, 매장_id: selectedStore }, manual);
     } else {
       fetchData({ page: 1 }, manual);
     }
   };
+
 
   // ===== 수정된 부분: LoadingSpinner를 사용하여 최신 조회 버튼 클릭 시만 로딩 동작 발생 =====
   // 최신 조회 버튼 onClick에서는 handleReset(true)를 호출합니다.

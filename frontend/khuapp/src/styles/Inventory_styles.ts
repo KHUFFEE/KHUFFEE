@@ -31,11 +31,11 @@ export const inventoryStyles = StyleSheet.create({
       fontWeight: '700',
       color: '#0D326F',
       marginBottom: moderateScale(12),
-      paddingHorizontal: moderateScale(16),
-      width: '100%',
+      // paddingHorizontal: moderateScale(16),
+      width: '65%',
       borderLeftWidth: 4,
       borderLeftColor: '#0D326F',
-      paddingLeft: moderateScale(10),
+      paddingLeft: moderateScale(5),
       marginLeft: moderateScale(5)
     },
     inventory_HeaderContainer: {

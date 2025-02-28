@@ -269,8 +269,10 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   modalView: {
+
     flex: 1,
     backgroundColor: '#fff',
+
     borderRadius: moderateScale(16),
     padding: moderateScale(20),
     width: wp('90%'),
@@ -710,6 +712,7 @@ export const dateRangeStyles = StyleSheet.create({
     color: '#0a3172',
   },
   closeButton: {
+    ...commonTextStyle,
     padding: moderateScale(5),
   },
   closeButtonText: {
@@ -745,6 +748,7 @@ export const dateRangeStyles = StyleSheet.create({
     color: '#0a3172',
   },
   dateRangeSection: {
+    ...commonTextStyle,
     marginBottom: moderateScale(20),
   },
   dateRangeTitle: {
@@ -789,6 +793,7 @@ export const dateRangeStyles = StyleSheet.create({
     fontWeight: '500',
   },
   pickerContainer: {
+    ...commonTextStyle,
     marginBottom: moderateScale(16),
   },
   pickerTitle: {

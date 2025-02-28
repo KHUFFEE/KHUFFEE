@@ -40,6 +40,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
   
   title: {
+    ...commonTextStyle,
     fontSize: RFValue(20),
     fontWeight: '600',
     color: '#0D326F',
@@ -66,6 +67,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
   
   headerButtonText: {
+    ...commonTextStyle,
     color: '#FFFFFF',
     fontSize: RFValue(14),
     fontWeight: '600',
@@ -85,6 +87,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   emptyText: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     color: '#666666',
     fontWeight: '500',
@@ -96,6 +99,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   yearHeader: {
+    ...commonTextStyle,
     fontSize: RFValue(20),
     fontWeight: '700',
     color: '#0D326F',
@@ -107,39 +111,26 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   monthContainer: {
-    // marginBottom: verticalScale(6),
     backgroundColor: '#f8f9fa',
     marginBottom: verticalScale(10),
   },
 
   monthHeader: {
     flexDirection: 'row',
-    // justifyContent: 'space-between',
     alignItems: 'center',
-    // marginBottom: verticalScale(8),
     paddingLeft: moderateScale(10),
     gap: moderateScale(10),
-    // backgroundColor: '#fff',
-    // padding: moderateScale(16),
-    // borderRadius: moderateScale(12),
-  //   shadowColor: '#000',
-  //   shadowOffset: {
-  //     width: 0,
-  //     height: 2,
-  //   },
-  //   shadowOpacity: 0.05,
-  //   shadowRadius: 3,
-  //   elevation: 2,
-  // 
   },
 
   monthTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: '600',
     color: '#1A1A1A',
   },
 
   monthTotal: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: '600',
     color: '#0D326F',
@@ -173,12 +164,14 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   weekTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: '600',
     color: '#1A1A1A',
   },
 
   weekTotal: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: '600',
     color: '#0D326F',
@@ -195,6 +188,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   productName: {
+    ...commonTextStyle,
     fontSize: RFValue(15),
     fontWeight: '600',
     color: '#1A1A1A',
@@ -202,12 +196,14 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   extraCount: {
+    ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#666666',
     marginBottom: verticalScale(4),
   },
 
   quantity: {
+    ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#1A1A1A',
     fontWeight: '500',
@@ -232,6 +228,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   detailButtonText: {
+    ...commonTextStyle,
     color: '#0D326F',
     fontSize: RFValue(14),
     fontWeight: '600',
@@ -258,6 +255,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   loadMoreButtonText: {
+    ...commonTextStyle,
     color: '#0D326F',
     fontSize: RFValue(14),
     fontWeight: '600',
@@ -268,12 +266,13 @@ export const orderStatusStyles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 
   modalView: {
-    flex:1,
-    backgroundColor: '#FFFFFF',
+
+    flex: 1,
+    backgroundColor: '#fff',
+
     borderRadius: moderateScale(16),
     padding: moderateScale(20),
     width: wp('90%'),
@@ -297,6 +296,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   headerTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(20),
     fontWeight: '700',
     color: '#0D326F',
@@ -308,6 +308,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   headerSubtitle: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
     color: '#666666',
     textAlign: 'center',
@@ -335,18 +336,21 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   itemName: {
+    ...commonTextStyle,
     fontSize: RFValue(15),
     fontWeight: '600',
     color: '#1A1A1A',
   },
 
   itemQty: {
+    ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#666666',
     marginTop: verticalScale(4),
   },
 
   itemPrice: {
+    ...commonTextStyle,
     fontSize: RFValue(15),
     fontWeight: '600',
     color: '#0D326F',
@@ -361,6 +365,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   footerText: {
+    ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: '700',
     color: '#0D326F',
@@ -383,6 +388,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   textStyle: {
+    ...commonTextStyle,
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: RFValue(16),
@@ -413,6 +419,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   periodModalTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: '700',
     color: '#0D326F',
@@ -440,6 +447,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   dateGroupLabel: {
+    ...commonTextStyle,
     fontSize: RFValue(15),
     fontWeight: '600',
     color: '#0D326F',
@@ -476,6 +484,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   dateBoxText: {
+    ...commonTextStyle,
     fontSize: RFValue(13),
     color: '#1A1A1A',
     textAlign: 'center',
@@ -509,8 +518,6 @@ export const orderStatusStyles = StyleSheet.create({
 
   dropdownScroll: {
     maxHeight: verticalScale(150),
-    // paddingVertical: verticalScale(4),
-    // paddingHorizontal: moderateScale(2),
   },
 
   dropdownItem: {
@@ -539,6 +546,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   periodSearchButtonText: {
+    ...commonTextStyle,
     color: '#FFFFFF',
     fontSize: RFValue(15),
     fontWeight: '600',
@@ -562,12 +570,12 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   resetButtonText: {
+    ...commonTextStyle,
     color: '#DC3545',
     fontSize: RFValue(13),
     fontWeight: '600',
   },
 
-  // 드롭다운 관련 스타일
   dropdownWrapper: {
     position: 'relative',
     flex: 1,
@@ -593,13 +601,13 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   confirmButtonText: {
+    ...commonTextStyle,
     color: '#FFFFFF',
     fontSize: RFValue(12),
     fontWeight: '600',
     textAlign: 'center',
   },
 
-  // 날짜 선택 모달 스타일
   datePickerModalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -624,6 +632,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   datePickerTitle: {
+    ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: '700',
     color: '#0D326F',
@@ -636,6 +645,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   datePickerLabel: {
+    ...commonTextStyle,
     fontSize: RFValue(14),
     fontWeight: '600',
     color: '#0D326F',
@@ -649,12 +659,8 @@ export const orderStatusStyles = StyleSheet.create({
   pickerItem: {
     backgroundColor: '#f8f9fa',
     paddingVertical: verticalScale(8),
-    // paddingHorizontal: moderateScale(12),
     borderWidth: 1,
     borderColor: '#E5E5E5',
-    // marginHorizontal: moderateScale(4),
-    // marginVertical: verticalScale(4),
-    // borderRadius: moderateScale(6),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -669,7 +675,6 @@ export const orderStatusStyles = StyleSheet.create({
     alignItems: 'flex-end',
   },
 });
-
 
 export const dateRangeStyles = StyleSheet.create({
   modalOverlay: {
@@ -692,7 +697,6 @@ export const dateRangeStyles = StyleSheet.create({
     elevation: 5,
   },
   modalHeader: {
-    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -717,13 +721,11 @@ export const dateRangeStyles = StyleSheet.create({
     color: '#666',
   },
   presetButtons: {
-    ...commonTextStyle,
     flexDirection: 'row',
     marginBottom: moderateScale(20),
     paddingBottom: moderateScale(8),
   },
   presetButton: {
-    ...commonTextStyle,
     backgroundColor: '#f0f4f9',
     borderWidth: 1,
     borderColor: '#d0dae9',
@@ -733,7 +735,6 @@ export const dateRangeStyles = StyleSheet.create({
     marginRight: moderateScale(8),
   },
   activePresetButton: {
-    ...commonTextStyle,
     backgroundColor: '#e0eaf9',
     borderColor: '#0a3172',
   },
@@ -758,14 +759,12 @@ export const dateRangeStyles = StyleSheet.create({
     marginBottom: moderateScale(12),
   },
   dateRangeContainer: {
-    ...commonTextStyle,
     borderWidth: 1,
     borderColor: '#d0dae9',
     borderRadius: 8,
     overflow: 'hidden',
   },
   dateRangeHeader: {
-    ...commonTextStyle,
     flexDirection: 'row',
     padding: moderateScale(12),
     backgroundColor: '#f0f4f9',
@@ -773,7 +772,6 @@ export const dateRangeStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   datePart: {
-    ...commonTextStyle,
     alignItems: 'center',
   },
   dateLabel: {
@@ -806,12 +804,10 @@ export const dateRangeStyles = StyleSheet.create({
     fontWeight: '500',
   },
   pickerRow: {
-    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   picker: {
-    ...commonTextStyle,
     flex: 1,
     height: hp(44),
     padding: moderateScale(10),
@@ -823,7 +819,6 @@ export const dateRangeStyles = StyleSheet.create({
     marginHorizontal: moderateScale(4),
   },
   searchButton: {
-    ...commonTextStyle,
     width: '100%',
     padding: moderateScale(14),
     backgroundColor: '#0a3172',
@@ -836,7 +831,6 @@ export const dateRangeStyles = StyleSheet.create({
     color: 'white',
     fontSize: RFValue(16),
     fontWeight: '500',
-    ...commonTextStyle,
   },
   formContainer: {
     marginVertical: moderateScale(20),

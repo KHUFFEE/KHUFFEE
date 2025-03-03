@@ -44,11 +44,12 @@ interface DateRangeModalProps {
    변경: 새 기간조회 모달 컴포넌트 (DateRangeModal)
    - 프리셋 선택 시, 현재 날짜를 기준으로 기간을 계산합니다.
      예를 들어, 현재 2025년 3월 2주차라면,
-       • "최근 1개월": 현재(2025년 3월 2주차) ~ 1개월 전 날짜의 주차
+       • "최근 1개월": 현재(2025년 3월 2주) ~ 1개월 전 날짜의 주차
        • "최근 3개월": 현재 ~ 3개월 전
        • "최근 6개월": 현재 ~ 6개월 전
        • "1년": 현재 ~ 1년 전
        • "올해": 2025년 1월 1일부터 현재까지
+   - 생성되는 날짜 문자열은 "YYYY.MM.W" 형식(예: "2025.02.5")이어야 합니다.
 ========================================================== */
 const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onConfirm }) => {
   const [startYear, setStartYear] = useState('');
@@ -109,6 +110,7 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
       } else {
         newStartDate = today;
       }
+      // 주차 계산: 해당 일자가 몇 주차인지(월의 시작을 1주차로 가정)
       const getWeek = (date: Date) => Math.ceil(date.getDate() / 7).toString();
       setStartYear(String(newStartDate.getFullYear()));
       setStartMonth(String(newStartDate.getMonth() + 1).padStart(2, '0'));
@@ -120,8 +122,9 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
   };
 
   const handleSearch = () => {
-    const startDateDisplay = `${startYear || '년도'}-${startMonth || '월'}-${startWeek ? startWeek + '주' : '주'}`;
-    const endDateDisplay = `${endYear || '년도'}-${endMonth || '월'}-${endWeek ? endWeek + '주' : '주'}`;
+    // 수정: 날짜 문자열은 "YYYY.MM.W" 형식으로 생성 (예: "2025.02.5")
+    const startDateDisplay = `${startYear || '년도'}.${startMonth || '월'}.${startWeek || ''}`;
+    const endDateDisplay = `${endYear || '년도'}.${endMonth || '월'}.${endWeek || ''}`;
     onConfirm(startDateDisplay, endDateDisplay);
     onClose();
   };
@@ -173,14 +176,14 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                     <View testID="datePart" style={dateRangeStyles.datePart}>
                       <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>시작</Text>
                       <Text testID="dateValue" style={dateRangeStyles.dateValue}>
-                        {`${startYear || '년도'}-${startMonth || '월'}-${startWeek ? startWeek + '주' : '주'}`}
+                        {`${startYear || '년도'}.${startMonth || '월'}.${startWeek || ''}`}
                       </Text>
                     </View>
                     <Text testID="dateSeparator" style={dateRangeStyles.dateSeparator}>~</Text>
                     <View testID="datePart" style={dateRangeStyles.datePart}>
                       <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>종료</Text>
                       <Text testID="dateValue" style={dateRangeStyles.dateValue}>
-                        {`${endYear || '년도'}-${endMonth || '월'}-${endWeek ? endWeek + '주' : '주'}`}
+                        {`${endYear || '년도'}.${endMonth || '월'}.${endWeek || ''}`}
                       </Text>
                     </View>
                   </View>

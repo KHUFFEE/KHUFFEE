@@ -176,14 +176,14 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                     <View testID="datePart" style={dateRangeStyles.datePart}>
                       <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>시작</Text>
                       <Text testID="dateValue" style={dateRangeStyles.dateValue}>
-                        {`${startYear || '년도'}.${startMonth || '월'}.${startWeek || ''}`}
+                        {`${startYear || '년도'}.${startMonth || '월'}.${startWeek || '주차'}`}
                       </Text>
                     </View>
                     <Text testID="dateSeparator" style={dateRangeStyles.dateSeparator}>~</Text>
                     <View testID="datePart" style={dateRangeStyles.datePart}>
                       <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>종료</Text>
                       <Text testID="dateValue" style={dateRangeStyles.dateValue}>
-                        {`${endYear || '년도'}.${endMonth || '월'}.${endWeek || ''}`}
+                        {`${endYear || '년도'}.${endMonth || '월'}.${endWeek || '주차'}`}
                       </Text>
                     </View>
                   </View>

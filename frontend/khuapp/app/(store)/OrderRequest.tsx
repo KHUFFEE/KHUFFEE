@@ -19,6 +19,8 @@ import { styles, modalStyles } from '../../src/components/ui/common/commonstyler
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { OrderRequeststyle } from '../../src/styles/Orderrequest_styles';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+
 // RN_API_URL 환경 변수 (재고 API 호출에 사용)
 import { RN_API_URL } from '@env';
 
@@ -298,28 +300,26 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             {/* 선택된 품목일 경우 추가 영역 */}
             {selected && (
               <View testID="additionalRowContainer" style={OrderRequeststyle.additionalRowContainer}>
-                {/* Row1: 합계 금액과 출고 단위 */}
+                {/* Row2: 합계 금액과 수량 조절 컨트롤을 오른쪽에 붙여 표시 (gap 없이) */}
                 <View
-                  testID="Row1"
+                  testID="Row2"
                   style={{
                     flexDirection: 'row',
-                    justifyContent: 'space-between',
+                    
+                    justifyContent: 'flex-end', // 오른쪽 정렬
                     alignItems: 'center',
                     width: '100%',
-                    marginTop: moderateScale(4),
+                    marginTop: moderateScale(8),
+                    marginLeft: moderateScale(8),
                   }}
                 >
                   <Text testID="priceText" style={OrderRequeststyle.priceText}>
                     합계 금액: {f.formatPrice(computedPrice)}원
                   </Text>
-                  <Text testID="unitText" style={OrderRequeststyle.unitText}>
-                    출고단위: {f.formatPrice(product.출고단위)}
-                    {product.단위}
-                  </Text>
-                </View>
-                {/* Row2: 수량 조절 컨트롤 (오른쪽 정렬) */}
-                <View testID="Row2" style={{ marginTop: moderateScale(8), alignItems: 'flex-end' }}>
-                  <View testID="quantityControlContainer" style={OrderRequeststyle.quantityControlContainer}>
+                  <View
+                    testID="quantityControlContainer"
+                    style={[OrderRequeststyle.quantityControlContainer, { marginLeft: 0 }]} // gap 없도록 marginLeft 0 설정
+                  >
                     <TouchableOpacity
                       testID="decrementButton"
                       style={[

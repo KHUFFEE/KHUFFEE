@@ -92,7 +92,6 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     width: '25%',
     fontSize: RFValue(14),
-    color: '#64748b',
     textAlign: 'left',
   },
   orderButton: {
@@ -124,11 +123,11 @@ export const OrderRequeststyle = StyleSheet.create({
   },
   priceText: {
     ...commonTextStyle,
-    fontSize: RFValue(14),
+    fontSize: RFValue(12),
     color: '#0D326F',
-    position: 'absolute',
-    width: wp(50),
-    left: wp(1.2),
+    position: 'relative',
+    width: wp(35),
+    // left: wp(1.2),
     textAlign: 'left',
   },
   unitText: {
@@ -138,7 +137,7 @@ export const OrderRequeststyle = StyleSheet.create({
     textAlign: 'left',
     position: 'relative',
     width: wp(30),
-    right: wp(5),
+    // left: wp(1.2),
   },
   quantityControlContainer: {
     ...commonTextStyle,
@@ -150,6 +149,7 @@ export const OrderRequeststyle = StyleSheet.create({
     overflow: 'hidden',
     marginRight: moderateScale(8),
     backgroundColor: '#f8fafc',
+    marginBottom: moderateScale(10),
   },
   quantityButton: {
     ...commonTextStyle,

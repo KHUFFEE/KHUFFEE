@@ -334,8 +334,13 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           startDate = new Date(now.getFullYear() - page, now.getMonth(), now.getDate());
         }
         const periodParam = `${getPeriodString(startDate)}~${getPeriodString(endDate)}`;
-        const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${encodeURIComponent(periodParam)}&order=${order}`;
-        
+        const params = new URLSearchParams({
+          store_id: storeId,
+          기간: periodParam,
+          order: order,
+        });
+        const url = `${RN_API_URL}/api/orders/store_order_list/?${params.toString()}`;
+
         const response = await fetch(url);
         if (!response.ok) {
           console.error('발주 내역 조회 실패, page:', page);
@@ -383,7 +388,12 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     setHasMore(false);
     setLoading(true);
     try {
-      const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${encodeURIComponent(startDate + '~' + endDate)}&order=${sortOrder}`;
+      const params = new URLSearchParams({
+        store_id: storeId,
+        기간: `${startDate}~${endDate}`,
+        order: sortOrder,
+      });
+      const url = `${RN_API_URL}/api/orders/store_order_list/?${params.toString()}`;
       const response = await fetch(url);
       if (!response.ok) {
         console.error('기간 검색 실패');

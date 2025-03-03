@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plus, Minus, X as LucideX, Search } from 'lucide-react-native';
+import { Plus, Minus, X, Search } from 'lucide-react-native';
 import {
   StoreOrderRequestProps,
   APIProduct,
@@ -30,29 +30,18 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   onOrderComplete,
   onNewOrder,
 }) => {
-  // API로부터 받아온 품목 데이터 상태
   const [apiItems, setApiItems] = useState<APIProduct[]>([]);
-  // 협력사 데이터 상태
   const [suppliers, setSuppliers] = useState<any[]>([]);
-  // 로딩 상태
   const [loading, setLoading] = useState<boolean>(true);
-  // API 호출 오류 메시지 상태
   const [fetchError, setFetchError] = useState<string | null>(null);
-  // 선택된 카테고리 상태
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  // 선택된 품목 목록 상태
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
-  // 발주 확인 여부 상태
   const [isConfirmation, setIsConfirmation] = useState<boolean>(false);
-  // 모달 표시 여부 상태
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [orderCompleteModalVisible, setOrderCompleteModalVisible] = useState<boolean>(false);
   const [orderFailureModalVisible, setOrderFailureModalVisible] = useState<boolean>(false);
-  // 발주 실패 메시지 상태
   const [orderFailureMessages, setOrderFailureMessages] = useState<string[]>([]);
-  // 발주 오류 메시지 상태
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
-  // 발주 요청 중복 제출 방지 상태
   const [orderSubmitted, setOrderSubmitted] = useState(false);
 
   // 즐겨찾기 상태 (매장별)
@@ -219,22 +208,17 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
 
   // 매장 재고 정보를 렌더링하는 헬퍼 함수
   const renderInventoryText = (product: APIProduct) => {
-    // 재고 배열에서 해당 품목의 재고 정보를 찾음
     const inv = inventory.find(item => item.품목_id === product.품목_id);
     if (inv) {
       const stock = inv.매장_재고량;
       let formattedStock;
-      // 소수점이 없는 경우 그대로 표시
       if (stock % 1 === 0) {
         formattedStock = stock;
       } else {
-        // 소수점 이하 숫자를 문자열로 변환한 후, 첫 번째 숫자 확인
         const fractionalPart = stock.toString().split('.')[1];
         if (fractionalPart && fractionalPart.charAt(0) === '0') {
-          // 첫 번째 소수 자리가 0이면 정수 부분만 표시
           formattedStock = Math.floor(stock);
         } else {
-          // 그렇지 않으면 소수점 첫째 자리까지 표시
           formattedStock = stock.toFixed(1);
         }
       }
@@ -250,10 +234,8 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       ? [OrderRequeststyle.selectItemCard, OrderRequeststyle.selectedItemCard]
       : OrderRequeststyle.selectItemCard;
 
-    // 즐겨찾기 여부에 따른 스타일 적용
     const isFavorite = favorites.includes(product.품목_id);
 
-    // 즐겨찾기 버튼 UI
     const favoriteButton = (
       <TouchableOpacity
         testID="favoriteButton"
@@ -271,12 +253,10 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       return (
         <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
           <View testID="cardContent" style={[OrderRequeststyle.cardContent]}>
-            {/* 상품 정보 고정 영역 */}
             <View testID="productInfoContainer" style={OrderRequeststyle.productInfoContainer}>
               <View testID="selectedItemRowContainer" style={OrderRequeststyle.selectedItemRowContainer}>
                 <View testID="nameWithFavoriteContainer" style={OrderRequeststyle.nameWithFavoriteContainer}>
                   {favoriteButton}
-                  {/* 상품명과 재고 정보를 줄바꿈하여 표시 */}
                   <Text testID="selectItemName" style={OrderRequeststyle.selectItemName}>
                     {product.품목명}{'\n'}
                     {renderInventoryText(product)}
@@ -296,17 +276,13 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 </TouchableOpacity>
               </View>
             </View>
-
-            {/* 선택된 품목일 경우 추가 영역 */}
             {selected && (
               <View testID="additionalRowContainer" style={OrderRequeststyle.additionalRowContainer}>
-                {/* Row2: 합계 금액과 수량 조절 컨트롤을 오른쪽에 붙여 표시 (gap 없이) */}
                 <View
                   testID="Row2"
                   style={{
                     flexDirection: 'row',
-                    
-                    justifyContent: 'flex-end', // 오른쪽 정렬
+                    justifyContent: 'flex-end',
                     alignItems: 'center',
                     width: '100%',
                     marginTop: moderateScale(8),
@@ -318,7 +294,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   </Text>
                   <View
                     testID="quantityControlContainer"
-                    style={[OrderRequeststyle.quantityControlContainer, { marginLeft: 0 }]} // gap 없도록 marginLeft 0 설정
+                    style={[OrderRequeststyle.quantityControlContainer, { marginLeft: 0 }]}
                   >
                     <TouchableOpacity
                       testID="decrementButton"
@@ -371,7 +347,6 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             <View testID="productCardRow" style={OrderRequeststyle.productCardRow}>
               <View testID="nameWithFavoriteContainer" style={OrderRequeststyle.nameWithFavoriteContainer}>
                 {favoriteButton}
-                {/* 상품명과 재고 정보를 줄바꿈하여 표시 */}
                 <Text testID="productName" style={OrderRequeststyle.productName}>
                   {product.품목명}{'\n'}
                   {renderInventoryText(product)}
@@ -396,7 +371,6 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     }
   };
 
-  // 로딩 상태일 때 렌더링
   if (loading) {
     return (
       <View testID="loading_Container" style={styles.loading_Container}>
@@ -408,7 +382,6 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     );
   }
 
-  // 데이터 불러오기 오류일 때 렌더링
   if (fetchError) {
     return (
       <View testID="container" style={OrderRequeststyle.container}>
@@ -426,7 +399,6 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             contentContainerStyle={OrderRequeststyle.scrollContainer}
             stickyHeaderIndices={[0]}
           >
-            {/* 고정 헤더 영역 */}
             <View testID="fixedHeaderContainer" style={OrderRequeststyle.fixedHeaderContainer}>
               <View testID="categorySection" style={OrderRequeststyle.categorySection}>
                 <Text testID="sectionTitle" style={OrderRequeststyle.sectionTitle}>
@@ -486,24 +458,51 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               </View>
               <View testID="sectionContainer" style={OrderRequeststyle.sectionContainer}>
                 {/* 섹션 타이틀과 돋보기 아이콘을 한 줄에 배치 */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View testID="sectionTitleRow" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Text testID="sectionTitle_2" style={OrderRequeststyle.sectionTitle_2}>
                     상품 선택하기
                   </Text>
-                  <TouchableOpacity onPress={() => setIsSearchActive(!isSearchActive)}>
-                    <Search testID="searchIcon" color="#000" size={20} />
+                  <TouchableOpacity 
+                    testID="searchIconButton"
+                    style={OrderRequeststyle.searchIconContainer}
+                    onPress={() => setIsSearchActive(!isSearchActive)}
+                  >
+                    <Search 
+                      testID="searchIcon" 
+                      color="#0D326F" 
+                      style={OrderRequeststyle.searchIconSize}
+                    />
                   </TouchableOpacity>
                 </View>
-                {/* 돋보기 클릭 시 검색 바 표시 */}
                 {isSearchActive && (
-                  <View style={{ marginTop: 8, marginHorizontal: 16 }}>
+                  <View testID="searchContainer" style={OrderRequeststyle.searchContainer}>
+                    <Search 
+                      testID="searchIconInInput" 
+                      color="#64748b" 
+                      style={OrderRequeststyle.searchIconSize}
+                    />
                     <TextInput
                       testID="searchInput"
-                      style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 4, padding: 8 }}
+                      style={OrderRequeststyle.searchInput}
                       placeholder="상품명을 입력하세요"
                       value={searchText}
                       onChangeText={(text) => setSearchText(text)}
+                      placeholderTextColor="#94a3b8"
+                      autoFocus={true}
                     />
+                    {searchText.length > 0 && (
+                      <TouchableOpacity 
+                        testID="clearSearchButton"
+                        style={OrderRequeststyle.searchIcon}
+                        onPress={() => setSearchText('')}
+                      >
+                        <X 
+                          testID="clearIcon" 
+                          color="#64748b" 
+                          style={OrderRequeststyle.searchIconSize}
+                        />
+                      </TouchableOpacity>
+                    )}
                   </View>
                 )}
                 <View testID="headerContainer" style={OrderRequeststyle.headerContainer}>
@@ -517,14 +516,10 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 </View>
               </View>
             </View>
-
-            {/* 상품 목록 */}
             <View testID="listContainer" style={OrderRequeststyle.listContainer}>
               {displayProducts.map((product) => renderProductCard(product))}
             </View>
           </ScrollView>
-
-          {/* 고정된 푸터 영역 */}
           <View testID="footerContainer" style={OrderRequeststyle.footerContainer}>
             <Text testID="footerPriceText" style={OrderRequeststyle.footerPriceText}>
               {selectedItems.length > 0
@@ -612,8 +607,6 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           </View>
         </ScrollView>
       )}
-
-      {/* 발주 오류 모달 */}
       <Modal
         testID="modal"
         visible={modalVisible}
@@ -643,8 +636,6 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           </View>
         </View>
       </Modal>
-
-      {/* 발주 완료 모달 */}
       <Modal
         testID="orderCompleteModal"
         visible={orderCompleteModalVisible}
@@ -675,8 +666,6 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           </View>
         </View>
       </Modal>
-
-      {/* 발주 실패 모달 */}
       <Modal
         testID="orderFailureModal"
         visible={orderFailureModalVisible}

@@ -1,14 +1,15 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions,TextStyle } from 'react-native';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const { height: screenHeight } = Dimensions.get('window');
 
-const commonTextStyle = {
-  fontFamily: 'Pretendard-Regular',
-};
-
+const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
+  fontFamily: 'PretendardVariable',
+  fontWeight: customStyle.fontWeight ? customStyle.fontWeight : '400',
+  ...customStyle,
+});
 
 
 export const inventoryStyles = StyleSheet.create({

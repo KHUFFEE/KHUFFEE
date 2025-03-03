@@ -1,13 +1,15 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions,TextStyle } from 'react-native';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { RFValue } from 'react-native-responsive-fontsize';
 
 const { height: screenHeight } = Dimensions.get('window');
 
-const commonTextStyle = {
-  fontFamily: 'Pretendard-Regular',
-};
+const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
+  fontFamily: 'PretendardVariable',
+  fontWeight: customStyle.fontWeight ? customStyle.fontWeight : '400',
+  ...customStyle,
+});
 
 export const orderStatusStyles = StyleSheet.create({
   status_container: {
@@ -90,7 +92,6 @@ export const orderStatusStyles = StyleSheet.create({
     ...commonTextStyle,
     fontSize: RFValue(16),
     color: '#666666',
-    fontWeight: '500',
   },
 
   // 리스트 스타일
@@ -206,7 +207,6 @@ export const orderStatusStyles = StyleSheet.create({
     ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#1A1A1A',
-    fontWeight: '500',
   },
 
   detailButton: {
@@ -488,7 +488,6 @@ export const orderStatusStyles = StyleSheet.create({
     fontSize: RFValue(13),
     color: '#1A1A1A',
     textAlign: 'center',
-    fontWeight: '500',
   },
 
   dropdown: {
@@ -754,7 +753,6 @@ export const dateRangeStyles = StyleSheet.create({
   dateRangeTitle: {
     ...commonTextStyle,
     fontSize: RFValue(16),
-    fontWeight: '500',
     color: '#333',
     marginBottom: moderateScale(12),
   },
@@ -783,14 +781,12 @@ export const dateRangeStyles = StyleSheet.create({
   dateValue: {
     ...commonTextStyle,
     fontSize: RFValue(16),
-    fontWeight: '500',
     color: '#0a3172',
   },
   dateSeparator: {
     ...commonTextStyle,
     marginHorizontal: moderateScale(10),
     color: '#666',
-    fontWeight: '500',
   },
   pickerContainer: {
     ...commonTextStyle,
@@ -801,7 +797,6 @@ export const dateRangeStyles = StyleSheet.create({
     fontSize: RFValue(14),
     color: '#333',
     marginBottom: moderateScale(4),
-    fontWeight: '500',
   },
   pickerRow: {
     flexDirection: 'row',
@@ -830,7 +825,6 @@ export const dateRangeStyles = StyleSheet.create({
     ...commonTextStyle,
     color: 'white',
     fontSize: RFValue(16),
-    fontWeight: '500',
   },
   formContainer: {
     marginVertical: moderateScale(20),

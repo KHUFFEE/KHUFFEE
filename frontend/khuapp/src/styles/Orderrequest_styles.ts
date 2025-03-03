@@ -1,13 +1,15 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions,TextStyle  } from 'react-native';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const { height: screenHeight } = Dimensions.get('window');
 
-const commonTextStyle = {
-  fontFamily: 'Pretendard-Regular',
-};
+const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
+  fontFamily: 'PretendardVariable',
+  fontWeight: customStyle.fontWeight ? customStyle.fontWeight : '400',
+  ...customStyle,
+});
 
 export const OrderRequeststyle = StyleSheet.create({
   selectItemCard: {
@@ -20,7 +22,7 @@ export const OrderRequeststyle = StyleSheet.create({
     marginHorizontal: moderateScale(2),
     // padding: moderateScale(15),
     paddingRight: moderateScale(15),
-    paddingVertical: moderateScale(10),
+    // paddingVertical: moderateScale(10),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -90,7 +92,6 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     width: '25%',
     fontSize: RFValue(14),
-    fontWeight: '500',
     color: '#64748b',
     textAlign: 'left',
   },
@@ -127,15 +128,13 @@ export const OrderRequeststyle = StyleSheet.create({
     color: '#0D326F',
     position: 'absolute',
     width: wp(50),
-    right: wp(34),
-
+    left: wp(1.2),
     textAlign: 'left',
   },
   unitText: {
     ...commonTextStyle,
     fontSize: RFValue(12),
     color: '#555555',
-    fontWeight: '500',
     textAlign: 'left',
     position: 'relative',
     width: wp(30),
@@ -177,17 +176,19 @@ export const OrderRequeststyle = StyleSheet.create({
   },
   errorContainer: {
     ...commonTextStyle,
-    marginTop: hp(1),
+    marginTop: moderateScale(2),
     backgroundColor: '#fee2e2',
     borderRadius: moderateScale(8),
     padding: moderateScale(8),
+    marginLeft: moderateScale(8),
+    marginBottom: moderateScale(2),
     width: '100%',
   },
   errorText: {
     ...commonTextStyle,
     color: '#dc2626',
     fontSize: RFValue(12),
-    fontWeight: '500',
+    textAlign: 'center',
   },
   loading_Container: {
     ...commonTextStyle,
@@ -368,7 +369,7 @@ export const OrderRequeststyle = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: moderateScale(16),
     // paddingVertical: moderateScale(12),
-    height: '8%',
+    height: '9%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -419,32 +420,32 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(22),
     fontWeight: '700',
     color: '#0D326F',
-    marginBottom: moderateScale(20),
+    // marginBottom: moderateScale(5),
     width: '100%',
     textAlign: 'center',
     borderBottomWidth: 2,
     borderBottomColor: '#e2e8f0',
-    paddingBottom: moderateScale(15),
+    paddingBottom: moderateScale(5),
   },
   confirmationItemRow: {
     ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: moderateScale(12),
+    paddingVertical: moderateScale(6),
     paddingHorizontal: moderateScale(10),
     borderBottomWidth: 1,
     borderColor: '#e2e8f0',
     width: '100%',
     backgroundColor: '#ffffff',
-    borderRadius: moderateScale(8),
-    marginBottom: moderateScale(8),
+    // borderRadius: moderateScale(8),
+    // marginBottom: moderateScale(8),
   },
   confirm_selectItemName: {
     ...commonTextStyle,
     flex: 3,
     fontSize: RFValue(16),
-    fontWeight: '600',
+    // fontWeight: '600',
     color: '#1e293b',
     marginBottom: moderateScale(4),
     width: '100%',
@@ -453,27 +454,24 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     flex: 0.7,
     fontSize: RFValue(14),
-    color: '#64748b',
-    fontWeight: '500',
+    color: '#0D326F',
   },
   confirm_priceText: {
     ...commonTextStyle,
     fontSize: RFValue(15),
-    color: '#0D326F',
   },
   totalRow: {
     ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 15,
+    paddingVertical: moderateScale(15),
     borderTopWidth: 1,
-    borderColor: '#aaa',
-    marginTop: 10,
+    borderColor: '#e2e8f0',
   },
   totalText: {
     ...commonTextStyle,
     color: '#0D326F',
-    fontSize: RFValue(18),
+    fontSize: RFValue(17),
     fontWeight: '700',
   },
   order_request_Button: {
@@ -541,9 +539,9 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     width: '25%',
     fontSize: RFValue(14),
-    color: '#64748b',
     textAlign: 'left',
   },
+  
   addButton: {
     ...commonTextStyle,
     backgroundColor: '#0D326F',

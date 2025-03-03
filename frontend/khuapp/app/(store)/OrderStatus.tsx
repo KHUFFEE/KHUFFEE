@@ -299,10 +299,33 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     if (forceFetch || !isPeriodSearch) {
       try {
         let allOrders: CombinedOrderData[] = [];
+        const now = new Date();
+
+        // 헬퍼 함수: Date 객체를 "YYYY.MM.W" 포맷으로 변환 (주차는 해당 월의 일수를 7로 나눈 올림값)
+        const getPeriodString = (date: Date): string => {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const week = Math.ceil(date.getDate() / 7);
+          return `${year}.${month}.${week}`;
+        };
+
+        // 페이지 1부터 5페이지까지 한 번에 가져옵니다.
+        // 페이지 1: 현재 날짜부터 1년 전까지,
+        // 페이지 2: 1년 전부터 2년 전까지,
+        // 페이지 3: 2년 전부터 3년 전까지, ... 등
         for (let page = startPage; page < startPage + 5; page++) {
-          const response = await fetch(
-            `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&page=${page}&order=${order}`
-          );
+          let startDate: Date, endDate: Date;
+          if (page === 1) {
+            endDate = now;
+            startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+          } else {
+            endDate = new Date(now.getFullYear() - (page - 1), now.getMonth(), now.getDate());
+            startDate = new Date(now.getFullYear() - page, now.getMonth(), now.getDate());
+          }
+          const periodParam = `${getPeriodString(startDate)}~${getPeriodString(endDate)}`;
+          const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${encodeURIComponent(periodParam)}&order=${order}`;
+          
+          const response = await fetch(url);
           if (!response.ok) {
             console.error('발주 내역 조회 실패, page:', page);
             continue;
@@ -351,7 +374,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     setHasMore(false);
     setLoading(true);
     try {
-      const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${startDate}~${endDate}&order=${sortOrder}`;
+      const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${encodeURIComponent(startDate + '~' + endDate)}&order=${sortOrder}`;
       const response = await fetch(url);
       if (!response.ok) {
         console.error('기간 검색 실패');
@@ -538,9 +561,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                         </Text>
                       </View>
                       {sortedWeeks.map((week) => {
-                        // 현재 주차의 배열은 두 방식으로 정렬합니다.
-                        // - ordersSorted: 현재 토글된 정렬 순서(sortOrder)를 반영 (총합, 외 개수 계산에 사용)
-                        // - ordersAsc: 상세보기에서 사용하는 오름차순 정렬 (항상 첫번째 itemRow에 해당하는 데이터)
                         const ordersSorted = sortOrders(weeksObj[week], sortOrder);
                         const ordersAsc = sortOrders(weeksObj[week], 'asc');
                         const firstOrder = ordersAsc[0];
@@ -588,8 +608,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
               </>
             );
           }}
-          ListFooterComponent={
-            !isPeriodSearch && hasMore ? (
+          ListFooterComponent={ !isPeriodSearch && hasMore ? (
               <TouchableOpacity testID="loadMoreButton" style={orderStatusStyles.loadMoreButton} onPress={async () => {
                 const currentOffset = scrollOffset.current;
                 await fetchOrders(currentPage, sortOrder);
@@ -609,8 +628,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                   </Text>
                 )}
               </TouchableOpacity>
-            ) : null
-          }
+            ) : null }
         />
       )}
 

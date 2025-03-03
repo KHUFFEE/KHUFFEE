@@ -281,16 +281,22 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   testID="Row2"
                   style={{
                     flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
                     width: '100%',
                     marginTop: moderateScale(8),
                     marginLeft: moderateScale(20)
                   }}
                 >
-                  <Text testID="priceText" style={OrderRequeststyle.priceText}>
-                    상품 총액 : {f.formatPrice(computedPrice)}원
-                  </Text>
+                  {/* 변경된 부분: 텍스트 두 개를 세로로 배치하는 컬럼 뷰 추가 */}
+                  <View testID="row1"style={{ flexDirection: 'column',position: 'relative',bottom: moderateScale(7),left:wp(1.2) }}>
+                    <Text testID="unitText" style={OrderRequeststyle.unitText}>
+                      출고단위: {f.formatPrice(product.출고단위)}{product.단위}
+                    </Text>
+                    <Text testID="priceText" style={OrderRequeststyle.priceText}>
+                      상품 총액 : {f.formatPrice(computedPrice)}원
+                    </Text>
+                  </View>
                   <View
                     testID="quantityControlContainer"
                     style={[OrderRequeststyle.quantityControlContainer, { marginLeft: 0 }]}

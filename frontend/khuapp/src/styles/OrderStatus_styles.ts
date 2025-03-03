@@ -677,6 +677,7 @@ export const orderStatusStyles = StyleSheet.create({
 
 export const dateRangeStyles = StyleSheet.create({
   modalOverlay: {
+    ...commonTextStyle,
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     alignItems: 'center',
@@ -696,6 +697,7 @@ export const dateRangeStyles = StyleSheet.create({
     elevation: 5,
   },
   modalHeader: {
+    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -720,11 +722,13 @@ export const dateRangeStyles = StyleSheet.create({
     color: '#666',
   },
   presetButtons: {
+    ...commonTextStyle,
     flexDirection: 'row',
     marginBottom: moderateScale(20),
     paddingBottom: moderateScale(8),
   },
   presetButton: {
+    ...commonTextStyle,
     backgroundColor: '#f0f4f9',
     borderWidth: 1,
     borderColor: '#d0dae9',
@@ -734,6 +738,7 @@ export const dateRangeStyles = StyleSheet.create({
     marginRight: moderateScale(8),
   },
   activePresetButton: {
+    ...commonTextStyle,
     backgroundColor: '#e0eaf9',
     borderColor: '#0a3172',
   },
@@ -757,12 +762,14 @@ export const dateRangeStyles = StyleSheet.create({
     marginBottom: moderateScale(12),
   },
   dateRangeContainer: {
+    ...commonTextStyle,
     borderWidth: 1,
     borderColor: '#d0dae9',
     borderRadius: 8,
     overflow: 'hidden',
   },
   dateRangeHeader: {
+    ...commonTextStyle,
     flexDirection: 'row',
     padding: moderateScale(12),
     backgroundColor: '#f0f4f9',
@@ -770,9 +777,11 @@ export const dateRangeStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   datePart: {
+    ...commonTextStyle,
     alignItems: 'center',
   },
   dateLabel: {
+    ...commonTextStyle,
     ...commonTextStyle,
     fontSize: RFValue(12),
     color: '#666',
@@ -780,15 +789,18 @@ export const dateRangeStyles = StyleSheet.create({
   },
   dateValue: {
     ...commonTextStyle,
+    ...commonTextStyle,
     fontSize: RFValue(16),
     color: '#0a3172',
   },
   dateSeparator: {
     ...commonTextStyle,
+    ...commonTextStyle,
     marginHorizontal: moderateScale(10),
     color: '#666',
   },
   pickerContainer: {
+    ...commonTextStyle,
     ...commonTextStyle,
     marginBottom: moderateScale(16),
   },
@@ -799,12 +811,14 @@ export const dateRangeStyles = StyleSheet.create({
     marginBottom: moderateScale(4),
   },
   pickerRow: {
+    ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   picker: {
+    ...commonTextStyle,
     flex: 1,
-    height: hp(44),
+    height: hp(6),
     padding: moderateScale(10),
     borderWidth: 1,
     borderColor: '#d0dae9',
@@ -814,6 +828,7 @@ export const dateRangeStyles = StyleSheet.create({
     marginHorizontal: moderateScale(4),
   },
   searchButton: {
+    ...commonTextStyle,
     width: '100%',
     padding: moderateScale(14),
     backgroundColor: '#0a3172',
@@ -827,6 +842,7 @@ export const dateRangeStyles = StyleSheet.create({
     fontSize: RFValue(16),
   },
   formContainer: {
+    ...commonTextStyle,
     marginVertical: moderateScale(20),
     paddingHorizontal: moderateScale(10),
   },

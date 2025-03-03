@@ -76,7 +76,7 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(15),
     color: '#1e293b',
     letterSpacing: -0.3,
-    marginLeft: moderateScale(4),
+    // marginLeft: moderateScale(4),
   },
   favoriteButton: {
     padding: moderateScale(2),
@@ -123,10 +123,12 @@ export const OrderRequeststyle = StyleSheet.create({
   priceText: {
     ...commonTextStyle,
     fontSize: RFValue(14),
-    fontWeight: '600',
     color: '#0D326F',
-    position: 'relative',
-    left: wp(0.5),
+    position: 'absolute',
+    width: wp(50),
+    right: wp(34),
+
+    textAlign: 'left',
   },
   unitText: {
     ...commonTextStyle,
@@ -362,8 +364,8 @@ export const OrderRequeststyle = StyleSheet.create({
     borderTopColor: '#e2e8f0',
     backgroundColor: '#fff',
     paddingHorizontal: moderateScale(16),
-    paddingVertical: moderateScale(12),
-    height: hp(6.5),
+    // paddingVertical: moderateScale(12),
+    height: '8%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -376,7 +378,7 @@ export const OrderRequeststyle = StyleSheet.create({
   footerPriceText: {
     ...commonTextStyle,
     color: '#0D326F',
-    fontSize: RFValue(18),
+    fontSize: RFValue(17),
     fontWeight: '700',
   },
   footerButton: {
@@ -401,8 +403,7 @@ export const OrderRequeststyle = StyleSheet.create({
   footerButtonText: {
     ...commonTextStyle,
     color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: '700',
+    fontSize: RFValue(13),
   },
   confirm_selectedItemsSection: {
     ...commonTextStyle,
@@ -455,7 +456,6 @@ export const OrderRequeststyle = StyleSheet.create({
   confirm_priceText: {
     ...commonTextStyle,
     fontSize: RFValue(15),
-    fontWeight: '700',
     color: '#0D326F',
   },
   totalRow: {

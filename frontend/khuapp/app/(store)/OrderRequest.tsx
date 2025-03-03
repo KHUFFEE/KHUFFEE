@@ -8,13 +8,14 @@ import {
   Modal,
   ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Plus, Minus, X as LucideX } from 'lucide-react-native';
 import {
   StoreOrderRequestProps,
   APIProduct,
   SelectedItem,
 } from '../../src/components/ui/common/types';
-import { styles,modalStyles,  } from '../../src/components/ui/common/commonstyler';
+import { styles, modalStyles } from '../../src/components/ui/common/commonstyler';
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { OrderRequeststyle } from '../../src/styles/Orderrequest_styles';
@@ -39,6 +40,44 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   const [orderFailureMessages, setOrderFailureMessages] = useState<string[]>([]);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
+
+  // 즐겨찾기 상태 (매장별)
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  // 즐겨찾기 데이터 저장 key (storeId 별)
+  const getFavoritesKey = (storeId: string) => `favorites_${storeId}`;
+
+  // 매장 별 즐겨찾기 데이터 로딩
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        if (!storeId) return;
+        const jsonValue = await AsyncStorage.getItem(getFavoritesKey(storeId));
+        const favs = jsonValue ? JSON.parse(jsonValue) : [];
+        setFavorites(favs);
+      } catch (e) {
+        console.error('즐겨찾기 불러오기 실패:', e);
+      }
+    };
+    loadFavorites();
+  }, [storeId]);
+
+  // 즐겨찾기 토글 함수
+  const toggleFavorite = async (productId: string) => {
+    let newFavorites: string[];
+    if (favorites.includes(productId)) {
+      newFavorites = favorites.filter((id) => id !== productId);
+    } else {
+      newFavorites = [...favorites, productId];
+    }
+    try {
+      if (!storeId) return;
+      await AsyncStorage.setItem(getFavoritesKey(storeId), JSON.stringify(newFavorites));
+      setFavorites(newFavorites);
+    } catch (e) {
+      console.error('즐겨찾기 업데이트 실패:', e);
+    }
+  };
 
   // API 데이터 불러오기
   useEffect(() => {
@@ -116,10 +155,23 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
 
   // 선택된 상품 카드 렌더링 함수
   const renderProductCard = (product: APIProduct) => {
-    const selected = selectedItems.find(item => item.품목_id === product.품목_id);
+    const selected = selectedItems.find((item) => item.품목_id === product.품목_id);
     const cardStyle = selected
       ? [OrderRequeststyle.selectItemCard, OrderRequeststyle.selectedItemCard]
       : OrderRequeststyle.selectItemCard;
+
+    // 즐겨찾기 버튼 UI
+    const favoriteButton = (
+      <TouchableOpacity
+        testID="favoriteButton"
+        onPress={() => toggleFavorite(product.품목_id)}
+        style={{ marginLeft: moderateScale(8) }}
+      >
+        <Text style={{ fontSize: moderateScale(18) }}>
+          {favorites.includes(product.품목_id) ? '★' : '☆'}
+        </Text>
+      </TouchableOpacity>
+    );
 
     if (selected) {
       const computedPrice = selected.quantity * parseFloat(selected.입고단가);
@@ -135,6 +187,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 <Text testID="price_unit_Text" style={OrderRequeststyle.price_unit_Text}>
                   {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
                 </Text>
+                {favoriteButton}
                 <TouchableOpacity
                   testID="orderButton"
                   style={[OrderRequeststyle.orderButton, { borderColor: '#ef4444' }]}
@@ -146,7 +199,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 </TouchableOpacity>
               </View>
             </View>
-      
+
             {/* 추가 영역: 선택 시 확장되어 아래쪽으로 추가 (상품 정보에는 영향 없음) */}
             {selected && (
               <View testID="additionalRow" style={OrderRequeststyle.additionalRowContainer}>
@@ -165,17 +218,12 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                     합계 금액: {f.formatPrice(computedPrice)}원
                   </Text>
                   <Text testID="unitText" style={OrderRequeststyle.unitText}>
-                    출고단위: {f.formatPrice(product.출고단위)}{product.단위}
+                    출고단위: {f.formatPrice(product.출고단위)}
+                    {product.단위}
                   </Text>
                 </View>
                 {/* Row2: 수량 조절 컨트롤 (오른쪽 정렬) */}
-                <View
-                  testID="Row2"
-                  style={{
-                    marginTop: moderateScale(8),
-                    alignItems: 'flex-end',
-                  }}
-                >
+                <View testID="Row2" style={{ marginTop: moderateScale(8), alignItems: 'flex-end' }}>
                   <View testID="quantityControlContainer" style={OrderRequeststyle.quantityControlContainer}>
                     <TouchableOpacity
                       testID="decrementButton"
@@ -193,7 +241,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       style={OrderRequeststyle.quantityText}
                       value={selected.customQuantity}
                       keyboardType="numeric"
-                      onChangeText={text => updateCustomQuantity(product.품목_id, text)}
+                      onChangeText={(text) => updateCustomQuantity(product.품목_id, text)}
                     />
                     <TouchableOpacity
                       testID="incrementButton"
@@ -227,6 +275,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               <Text testID="price_unit_Text" style={OrderRequeststyle.price_unit_Text}>
                 {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
               </Text>
+              {favoriteButton}
               <TouchableOpacity
                 testID="orderButton"
                 style={OrderRequeststyle.orderButton}

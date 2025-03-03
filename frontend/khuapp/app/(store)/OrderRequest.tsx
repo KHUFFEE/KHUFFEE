@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plus, Minus, X as LucideX } from 'lucide-react-native';
+import { Plus, Minus, X as LucideX, Search } from 'lucide-react-native';
 import {
   StoreOrderRequestProps,
   APIProduct,
@@ -55,6 +55,10 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
 
   // 즐겨찾기 상태 (매장별)
   const [favorites, setFavorites] = useState<string[]>([]);
+  // 돋보기(검색) 활성화 상태
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  // 검색 텍스트 상태
+  const [searchText, setSearchText] = useState('');
 
   // 즐겨찾기 데이터 저장 key (storeId 별)
   const getFavoritesKey = (storeId: string) => `favorites_${storeId}`;
@@ -145,6 +149,14 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     // 즐겨찾기 상태가 같으면 기존 정렬 방식 적용
     return f.sortProductsBySupplierAndName([a, b], suppliers)[0] === a ? -1 : 1;
   });
+
+  // 검색 기능: 검색 바가 활성화되고 입력값이 있을 경우 필터링
+  let displayProducts = sortedProducts;
+  if (isSearchActive && searchText.trim().length > 0) {
+    displayProducts = sortedProducts.filter((product) =>
+      product.품목명.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }
   
   // 선택한 품목들의 총 가격 계산
   const totalPrice = f.calculateTotalPrice(selectedItems);
@@ -224,7 +236,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           formattedStock = stock.toFixed(1);
         }
       }
-      return <Text testID= "현재고"style={{ color: '#FF4500' }}>현재고: {formattedStock}개</Text>;
+      return <Text testID="현재고" style={{ color: '#FF4500' }}>현재고: {formattedStock}개</Text>;
     }
     return null;
   };
@@ -473,9 +485,27 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 </ScrollView>
               </View>
               <View testID="sectionContainer" style={OrderRequeststyle.sectionContainer}>
-                <Text testID="sectionTitle_2" style={OrderRequeststyle.sectionTitle_2}>
-                  상품 선택하기
-                </Text>
+                {/* 섹션 타이틀과 돋보기 아이콘을 한 줄에 배치 */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text testID="sectionTitle_2" style={OrderRequeststyle.sectionTitle_2}>
+                    상품 선택하기
+                  </Text>
+                  <TouchableOpacity onPress={() => setIsSearchActive(!isSearchActive)}>
+                    <Search testID="searchIcon" color="#000" size={20} />
+                  </TouchableOpacity>
+                </View>
+                {/* 돋보기 클릭 시 검색 바 표시 */}
+                {isSearchActive && (
+                  <View style={{ marginTop: 8, marginHorizontal: 16 }}>
+                    <TextInput
+                      testID="searchInput"
+                      style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 4, padding: 8 }}
+                      placeholder="상품명을 입력하세요"
+                      value={searchText}
+                      onChangeText={(text) => setSearchText(text)}
+                    />
+                  </View>
+                )}
                 <View testID="headerContainer" style={OrderRequeststyle.headerContainer}>
                   <Text testID="item_headerText" style={OrderRequeststyle.item_headerText}>
                     상품명
@@ -490,7 +520,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
 
             {/* 상품 목록 */}
             <View testID="listContainer" style={OrderRequeststyle.listContainer}>
-              {sortedProducts.map((product) => renderProductCard(product))}
+              {displayProducts.map((product) => renderProductCard(product))}
             </View>
           </ScrollView>
 

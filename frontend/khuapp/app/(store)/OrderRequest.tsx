@@ -20,8 +20,6 @@ import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { OrderRequeststyle } from '../../src/styles/Orderrequest_styles';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-
-// RN_API_URL 환경 변수 (재고 API 호출에 사용)
 import { RN_API_URL } from '@env';
 import { RFValue } from 'react-native-responsive-fontsize';
 
@@ -129,7 +127,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   // 제품 목록 관련 상수
   const uniqueCategories = f.getUniqueCategories(apiItems);
   const filteredProducts = f.getFilteredProducts(apiItems, selectedCategory);
-  
+
   // 즐겨찾기 상품을 상단에 표시하도록 정렬
   const sortedProducts = filteredProducts.sort((a, b) => {
     const aIsFavorite = favorites.includes(a.품목_id);
@@ -223,7 +221,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           formattedStock = stock.toFixed(1);
         }
       }
-      return <Text testID="현재고" style={{ color: '#3A9D23', fontSize:RFValue(14) }}>현재고: {formattedStock}개</Text>;
+      return <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(14) }}>현재고: {formattedStock}개</Text>;
     }
     return null;
   };
@@ -254,7 +252,6 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       return (
         <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
           <View testID="cardContent" style={[OrderRequeststyle.cardContent]}>
-            {/* selected 상태일 때, 컨테이너 높이를 auto로 설정 */}
             <View testID="productInfoContainer" style={[OrderRequeststyle.productInfoContainer, { height: 'auto' }]}>
               <View testID="selectedItemRowContainer" style={OrderRequeststyle.selectedItemRowContainer}>
                 <View testID="nameWithFavoriteContainer" style={OrderRequeststyle.nameWithFavoriteContainer}>
@@ -292,7 +289,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   }}
                 >
                   <Text testID="priceText" style={OrderRequeststyle.priceText}>
-                   상품 총액 : {f.formatPrice(computedPrice)}원
+                    상품 총액 : {f.formatPrice(computedPrice)}원
                   </Text>
                   <View
                     testID="quantityControlContainer"
@@ -551,30 +548,34 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             >
               선택한 상품 확인
             </Text>
-            {selectedItems.map((item) => {
-              const itemTotal = item.quantity * parseFloat(item.입고단가);
-              return (
-                <View testID="confirmationItemRow" key={item.품목_id} style={OrderRequeststyle.confirmationItemRow}>
-                  <View testID="confirmItemLeft" style={{ flex: 2 }}>
-                    <Text testID="confirm_selectItemName" style={OrderRequeststyle.confirm_selectItemName}>
-                      {item.품목명}
-                    </Text>
-                    <Text testID="confirm_unitText" style={OrderRequeststyle.confirm_unitText}>
-                      수량: {item.quantity}개
-                      {/* {item.단위}  */}
-                    </Text>
+            {sortedProducts
+              .filter(product => selectedItems.some(item => item.품목_id === product.품목_id))
+              .map(product => {
+                const item = selectedItems.find(item => item.품목_id === product.품목_id);
+                if (!item) return null; // item이 undefined면 렌더링하지 않습니다.
+                const itemTotal = item.quantity * parseFloat(item.입고단가);
+                return (
+                  <View testID="confirmationItemRow" key={item.품목_id} style={OrderRequeststyle.confirmationItemRow}>
+                    <View testID="confirmItemLeft" style={{ flex: 2 }}>
+                      <Text testID="confirm_selectItemName" style={OrderRequeststyle.confirm_selectItemName}>
+                        {item.품목명}
+                      </Text>
+                      <Text testID="confirm_unitText" style={OrderRequeststyle.confirm_unitText}>
+                        수량: {item.quantity}개
+                      </Text>
+                    </View>
+                    <View testID="confirmItemRight" style={{ flex: 1, alignItems: 'flex-end' }}>
+                      <Text testID="confirm_priceText" style={OrderRequeststyle.confirm_priceText}>
+                        {f.formatPrice(itemTotal)}원
+                      </Text>
+                    </View>
                   </View>
-                  <View testID="confirmItemRight" style={{ flex: 1, alignItems: 'flex-end'}}>
-                    <Text testID="confirm_priceText" style={OrderRequeststyle.confirm_priceText}>
-                      {f.formatPrice(itemTotal)}원
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
+                );
+              })
+            }
             <View testID="totalRow" style={OrderRequeststyle.totalRow}>
               <Text testID="totalText" style={OrderRequeststyle.totalText}>
-               총 주문금액:
+                총 주문금액:
               </Text>
               <Text testID="totalText_2" style={OrderRequeststyle.totalText}>
                 {f.formatPrice(totalPrice)}원

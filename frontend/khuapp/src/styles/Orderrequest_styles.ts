@@ -43,11 +43,6 @@ export const OrderRequeststyle = StyleSheet.create({
     shadowRadius: 6,
     elevation: 4,
   },
-  favoriteItemCard: {
-    ...commonTextStyle,
-    borderLeftColor: '#f59e0b',
-    borderLeftWidth: 4,
-  },
   cardContent: {
     ...commonTextStyle,
     flexDirection: 'column',
@@ -510,12 +505,14 @@ export const OrderRequeststyle = StyleSheet.create({
   },
   cancelButton: {
     borderColor: '#ef4444',
-  
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cancelButtonText: {
     ...commonTextStyle,
     color: '#ef4444',
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: RFValue(13),
   },
   productCardContent: {
     ...commonTextStyle,

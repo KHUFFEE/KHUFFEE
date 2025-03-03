@@ -42,6 +42,13 @@ interface DateRangeModalProps {
 
 /* ===========================================================
    변경: 새 기간조회 모달 컴포넌트 (DateRangeModal)
+   - 프리셋 선택 시, 현재 날짜를 기준으로 기간을 계산합니다.
+     예를 들어, 현재 2025년 3월 2주차라면,
+       • "최근 1개월": 현재(2025년 3월 2주차) ~ 1개월 전 날짜의 주차
+       • "최근 3개월": 현재 ~ 3개월 전
+       • "최근 6개월": 현재 ~ 6개월 전
+       • "1년": 현재 ~ 1년 전
+       • "올해": 2025년 1월 1일부터 현재까지
 ========================================================== */
 const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onConfirm }) => {
   const [startYear, setStartYear] = useState('');
@@ -84,24 +91,31 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
     } else {
       setShowForm(false);
       const today = new Date();
-      let newStartDate = new Date();
+      let newStartDate: Date;
       if (preset === '최근 1개월') {
+        newStartDate = new Date(today);
         newStartDate.setMonth(today.getMonth() - 1);
       } else if (preset === '최근 3개월') {
+        newStartDate = new Date(today);
         newStartDate.setMonth(today.getMonth() - 3);
       } else if (preset === '최근 6개월') {
+        newStartDate = new Date(today);
         newStartDate.setMonth(today.getMonth() - 6);
       } else if (preset === '올해') {
         newStartDate = new Date(today.getFullYear(), 0, 1);
       } else if (preset === '1년') {
+        newStartDate = new Date(today);
         newStartDate.setFullYear(today.getFullYear() - 1);
+      } else {
+        newStartDate = today;
       }
+      const getWeek = (date: Date) => Math.ceil(date.getDate() / 7).toString();
       setStartYear(String(newStartDate.getFullYear()));
       setStartMonth(String(newStartDate.getMonth() + 1).padStart(2, '0'));
-      setStartWeek('1');
+      setStartWeek(getWeek(newStartDate));
       setEndYear(String(today.getFullYear()));
       setEndMonth(String(today.getMonth() + 1).padStart(2, '0'));
-      setEndWeek('1');
+      setEndWeek(getWeek(today));
     }
   };
 
@@ -292,13 +306,12 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     return order === 'desc' ? sorted.reverse() : sorted;
   };
 
-  // API 데이터 호출 및 결합 (CombinedOrderData 타입 적용)
-  const fetchOrders = async (startPage: number, order: 'asc' | 'desc', forceFetch: boolean = false) => {
+  // 단일 1년 기간만 API 요청하도록 수정 (페이지 번호에 따라 기간을 계산)
+  const fetchOrders = async (page: number, order: 'asc' | 'desc', forceFetch: boolean = false) => {
     if (!storeId) return;
     setLoading(true);
     if (forceFetch || !isPeriodSearch) {
       try {
-        let allOrders: CombinedOrderData[] = [];
         const now = new Date();
 
         // 헬퍼 함수: Date 객체를 "YYYY.MM.W" 포맷으로 변환 (주차는 해당 월의 일수를 7로 나눈 올림값)
@@ -309,27 +322,21 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           return `${year}.${month}.${week}`;
         };
 
-        // 페이지 1부터 5페이지까지 한 번에 가져옵니다.
-        // 페이지 1: 현재 날짜부터 1년 전까지,
-        // 페이지 2: 1년 전부터 2년 전까지,
-        // 페이지 3: 2년 전부터 3년 전까지, ... 등
-        for (let page = startPage; page < startPage + 5; page++) {
-          let startDate: Date, endDate: Date;
-          if (page === 1) {
-            endDate = now;
-            startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-          } else {
-            endDate = new Date(now.getFullYear() - (page - 1), now.getMonth(), now.getDate());
-            startDate = new Date(now.getFullYear() - page, now.getMonth(), now.getDate());
-          }
-          const periodParam = `${getPeriodString(startDate)}~${getPeriodString(endDate)}`;
-          const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${encodeURIComponent(periodParam)}&order=${order}`;
-          
-          const response = await fetch(url);
-          if (!response.ok) {
-            console.error('발주 내역 조회 실패, page:', page);
-            continue;
-          }
+        let startDate: Date, endDate: Date;
+        if (page === 1) {
+          endDate = now;
+          startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        } else {
+          endDate = new Date(now.getFullYear() - (page - 1), now.getMonth(), now.getDate());
+          startDate = new Date(now.getFullYear() - page, now.getMonth(), now.getDate());
+        }
+        const periodParam = `${getPeriodString(startDate)}~${getPeriodString(endDate)}`;
+        const url = `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&기간=${encodeURIComponent(periodParam)}&order=${order}`;
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+          console.error('발주 내역 조회 실패, page:', page);
+        } else {
           const result = await response.json();
           const orders: StoreOrderData[] = result.orders;
           const combined = orders.map((o) => {
@@ -348,11 +355,10 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
             } as CombinedOrderData;
           });
           const sortedCombined = sortOrders(combined, order);
-          allOrders = [...allOrders, ...sortedCombined];
-        }
-        setStoreOrders((prev) => [...prev, ...allOrders]);
-        if (allOrders.length === 0) {
-          setHasMore(false);
+          setStoreOrders((prev) => [...prev, ...sortedCombined]);
+          if (sortedCombined.length === 0) {
+            setHasMore(false);
+          }
         }
       } catch (error) {
         console.error('발주 내역 조회 중 오류:', error);
@@ -415,7 +421,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     setHasMore(true);
     setLoading(true);
     await fetchOrders(1, 'desc', true);
-    setCurrentPage(6);
+    setCurrentPage(2);
     setLoading(false);
   };
 
@@ -427,7 +433,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     } else {
       setStoreOrders([]);
       setHasMore(true);
-      setCurrentPage(6);
+      setCurrentPage(1);
       fetchOrders(1, newOrder);
     }
   };
@@ -459,7 +465,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
 
   useEffect(() => {
     if (storeId) {
-      // 화면 진입 시 기본 정렬을 최신순('desc')으로 초기화
+      // 초기 로드시 최신순(페이지 1, 현재 ~ 1년전)만 요청
       setSortOrder('desc');
       setStoreOrders([]);
       setHasMore(true);
@@ -467,7 +473,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
       setIsPeriodSearch(false);
       (async () => {
         await fetchOrders(1, 'desc');
-        setCurrentPage(6);
+        setCurrentPage(2);
         setLoading(false);
       })();
     }
@@ -612,7 +618,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
               <TouchableOpacity testID="loadMoreButton" style={orderStatusStyles.loadMoreButton} onPress={async () => {
                 const currentOffset = scrollOffset.current;
                 await fetchOrders(currentPage, sortOrder);
-                setCurrentPage((prev) => prev + 5);
+                setCurrentPage((prev) => prev + 1);
                 setTimeout(() => {
                   flatListRef.current?.scrollToOffset({
                     offset: currentOffset,

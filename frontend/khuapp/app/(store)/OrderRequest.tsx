@@ -19,6 +19,8 @@ import { styles, modalStyles } from '../../src/components/ui/common/commonstyler
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { OrderRequeststyle } from '../../src/styles/Orderrequest_styles';
+// RN_API_URL 환경 변수 (재고 API 호출에 사용)
+import { RN_API_URL } from '@env';
 
 const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   storeName,
@@ -26,19 +28,29 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   onOrderComplete,
   onNewOrder,
 }) => {
-  // 상태 변수 선언
+  // API로부터 받아온 품목 데이터 상태
   const [apiItems, setApiItems] = useState<APIProduct[]>([]);
+  // 협력사 데이터 상태
   const [suppliers, setSuppliers] = useState<any[]>([]);
+  // 로딩 상태
   const [loading, setLoading] = useState<boolean>(true);
+  // API 호출 오류 메시지 상태
   const [fetchError, setFetchError] = useState<string | null>(null);
+  // 선택된 카테고리 상태
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  // 선택된 품목 목록 상태
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+  // 발주 확인 여부 상태
   const [isConfirmation, setIsConfirmation] = useState<boolean>(false);
+  // 모달 표시 여부 상태
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [orderCompleteModalVisible, setOrderCompleteModalVisible] = useState<boolean>(false);
   const [orderFailureModalVisible, setOrderFailureModalVisible] = useState<boolean>(false);
+  // 발주 실패 메시지 상태
   const [orderFailureMessages, setOrderFailureMessages] = useState<string[]>([]);
+  // 발주 오류 메시지 상태
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
+  // 발주 요청 중복 제출 방지 상태
   const [orderSubmitted, setOrderSubmitted] = useState(false);
 
   // 즐겨찾기 상태 (매장별)
@@ -79,7 +91,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     }
   };
 
-  // API 데이터 불러오기
+  // 품목 데이터를 API로부터 불러오기
   useEffect(() => {
     f.fetchApiItems()
       .then((data) => {
@@ -92,11 +104,31 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       });
   }, []);
 
+  // 협력사 데이터를 API로부터 불러오기
   useEffect(() => {
     f.fetchSuppliers()
       .then((data) => setSuppliers(data))
       .catch((err) => console.error('협력사 데이터 불러오기 오류:', err));
   }, []);
+
+  // 매장 재고 데이터를 위한 상태 변수 추가
+  const [inventory, setInventory] = useState<any[]>([]);
+
+  // 매장 재고 데이터를 불러오는 useEffect
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        if (!storeId) return;
+        const response = await fetch(`${RN_API_URL}/api/inventory/store/?매장_id=${storeId}`);
+        if (!response.ok) throw new Error('재고 데이터를 불러오는 중 오류 발생');
+        const data = await response.json();
+        setInventory(data);
+      } catch (error) {
+        console.error('재고 데이터 불러오기 오류:', error);
+      }
+    };
+    fetchInventory();
+  }, [storeId]);
 
   // 제품 목록 관련 상수
   const uniqueCategories = f.getUniqueCategories(apiItems);
@@ -114,29 +146,34 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     return f.sortProductsBySupplierAndName([a, b], suppliers)[0] === a ? -1 : 1;
   });
   
+  // 선택한 품목들의 총 가격 계산
   const totalPrice = f.calculateTotalPrice(selectedItems);
 
-  // 이벤트 핸들러
+  // 이벤트 핸들러: 품목 추가
   const addItem = (product: APIProduct) => {
     const updatedItems = f.addItemToSelectedItems(selectedItems, product);
     setSelectedItems(updatedItems);
   };
 
+  // 이벤트 핸들러: 수량 업데이트 (증가/감소)
   const updateQuantity = (productId: string, increment: number) => {
     const updatedItems = f.updateQuantity(selectedItems, productId, increment);
     setSelectedItems(updatedItems);
   };
 
+  // 이벤트 핸들러: 텍스트 입력에 따른 수량 업데이트
   const updateCustomQuantity = (productId: string, text: string) => {
     const updatedItems = f.updateCustomQuantityUtil(selectedItems, productId, text);
     setSelectedItems(updatedItems);
   };
 
+  // 이벤트 핸들러: 품목 제거
   const removeItem = (productId: string) => {
     const updatedItems = f.removeItemUtil(selectedItems, productId);
     setSelectedItems(updatedItems);
   };
 
+  // 발주 확인 처리 함수
   const handleConfirmOrder = () => {
     const errors = f.handleConfirmOrderUtil(selectedItems);
     if (errors.length > 0) {
@@ -147,6 +184,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     setIsConfirmation(true);
   };
 
+  // 발주 요청 제출 처리 함수
   const handleOrderSubmit = async () => {
     if (orderSubmitted) return;
     setOrderSubmitted(true);
@@ -165,17 +203,43 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     setOrderSubmitted(false);
   };
 
-  // 선택된 상품 카드 렌더링 함수
+  // 매장 재고 정보를 렌더링하는 헬퍼 함수
+  const renderInventoryText = (product: APIProduct) => {
+    // 재고 배열에서 해당 품목의 재고 정보를 찾음
+    const inv = inventory.find(item => item.품목_id === product.품목_id);
+    if (inv) {
+      const stock = inv.매장_재고량;
+      let formattedStock;
+      // 소수점이 없는 경우 그대로 표시
+      if (stock % 1 === 0) {
+        formattedStock = stock;
+      } else {
+        // 소수점 이하 숫자를 문자열로 변환한 후, 첫 번째 숫자 확인
+        const fractionalPart = stock.toString().split('.')[1];
+        if (fractionalPart && fractionalPart.charAt(0) === '0') {
+          // 첫 번째 소수 자리가 0이면 정수 부분만 표시
+          formattedStock = Math.floor(stock);
+        } else {
+          // 그렇지 않으면 소수점 첫째 자리까지 표시
+          formattedStock = stock.toFixed(1);
+        }
+      }
+      return <Text testID= "현재고"style={{ color: '#FF4500' }}>현재고: {formattedStock}개</Text>;
+    }
+    return null;
+  };
+
+  // 선택된 품목 카드 렌더링 함수
   const renderProductCard = (product: APIProduct) => {
     const selected = selectedItems.find((item) => item.품목_id === product.품목_id);
     const cardStyle = selected
       ? [OrderRequeststyle.selectItemCard, OrderRequeststyle.selectedItemCard]
       : OrderRequeststyle.selectItemCard;
 
-    // 즐겨찾기 여부에 따라 추가 스타일 적용
+    // 즐겨찾기 여부에 따른 스타일 적용
     const isFavorite = favorites.includes(product.품목_id);
 
-    // 즐겨찾기 버튼 UI - 스타일 개선
+    // 즐겨찾기 버튼 UI
     const favoriteButton = (
       <TouchableOpacity
         testID="favoriteButton"
@@ -198,8 +262,10 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               <View testID="selectedItemRowContainer" style={OrderRequeststyle.selectedItemRowContainer}>
                 <View testID="nameWithFavoriteContainer" style={OrderRequeststyle.nameWithFavoriteContainer}>
                   {favoriteButton}
+                  {/* 상품명과 재고 정보를 줄바꿈하여 표시 */}
                   <Text testID="selectItemName" style={OrderRequeststyle.selectItemName}>
-                    {product.품목명}
+                    {product.품목명}{'\n'}
+                    {renderInventoryText(product)}
                   </Text>
                 </View>
                 <Text testID="price_unit_Text" style={OrderRequeststyle.price_unit_Text}>
@@ -217,7 +283,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               </View>
             </View>
 
-            {/* 추가 영역: 선택 시 확장되어 아래쪽으로 추가 (상품 정보에는 영향 없음) */}
+            {/* 선택된 품목일 경우 추가 영역 */}
             {selected && (
               <View testID="additionalRowContainer" style={OrderRequeststyle.additionalRowContainer}>
                 {/* Row1: 합계 금액과 출고 단위 */}
@@ -293,8 +359,10 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             <View testID="productCardRow" style={OrderRequeststyle.productCardRow}>
               <View testID="nameWithFavoriteContainer" style={OrderRequeststyle.nameWithFavoriteContainer}>
                 {favoriteButton}
+                {/* 상품명과 재고 정보를 줄바꿈하여 표시 */}
                 <Text testID="productName" style={OrderRequeststyle.productName}>
-                  {product.품목명}
+                  {product.품목명}{'\n'}
+                  {renderInventoryText(product)}
                 </Text>
               </View>
               <Text testID="productPrice" style={OrderRequeststyle.productPrice}>
@@ -316,6 +384,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     }
   };
 
+  // 로딩 상태일 때 렌더링
   if (loading) {
     return (
       <View testID="loading_Container" style={styles.loading_Container}>
@@ -327,6 +396,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     );
   }
 
+  // 데이터 불러오기 오류일 때 렌더링
   if (fetchError) {
     return (
       <View testID="container" style={OrderRequeststyle.container}>
@@ -513,7 +583,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
         </ScrollView>
       )}
 
-      {/* 모달 영역 */}
+      {/* 발주 오류 모달 */}
       <Modal
         testID="modal"
         visible={modalVisible}
@@ -544,6 +614,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
         </View>
       </Modal>
 
+      {/* 발주 완료 모달 */}
       <Modal
         testID="orderCompleteModal"
         visible={orderCompleteModalVisible}
@@ -575,6 +646,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
         </View>
       </Modal>
 
+      {/* 발주 실패 모달 */}
       <Modal
         testID="orderFailureModal"
         visible={orderFailureModalVisible}

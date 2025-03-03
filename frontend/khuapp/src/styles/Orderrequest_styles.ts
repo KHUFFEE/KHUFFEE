@@ -363,7 +363,7 @@ export const OrderRequeststyle = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: moderateScale(16),
     paddingVertical: moderateScale(12),
-    height: hp(10),
+    height: hp(6.5),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -532,7 +532,7 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(15),
     color: '#1e293b',
     letterSpacing: -0.3,
-    marginLeft: moderateScale(4),
+    // marginLeft: moderateScale(4),
   },
   productPrice: {
     ...commonTextStyle,

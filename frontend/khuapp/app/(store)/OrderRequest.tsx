@@ -8,13 +8,14 @@ import {
   Modal,
   ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Plus, Minus, X as LucideX } from 'lucide-react-native';
 import {
   StoreOrderRequestProps,
   APIProduct,
   SelectedItem,
 } from '../../src/components/ui/common/types';
-import { styles,modalStyles,  } from '../../src/components/ui/common/commonstyler';
+import { styles, modalStyles } from '../../src/components/ui/common/commonstyler';
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { OrderRequeststyle } from '../../src/styles/Orderrequest_styles';
@@ -40,6 +41,44 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
 
+  // 즐겨찾기 상태 (매장별)
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  // 즐겨찾기 데이터 저장 key (storeId 별)
+  const getFavoritesKey = (storeId: string) => `favorites_${storeId}`;
+
+  // 매장 별 즐겨찾기 데이터 로딩
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        if (!storeId) return;
+        const jsonValue = await AsyncStorage.getItem(getFavoritesKey(storeId));
+        const favs = jsonValue ? JSON.parse(jsonValue) : [];
+        setFavorites(favs);
+      } catch (e) {
+        console.error('즐겨찾기 불러오기 실패:', e);
+      }
+    };
+    loadFavorites();
+  }, [storeId]);
+
+  // 즐겨찾기 토글 함수
+  const toggleFavorite = async (productId: string) => {
+    let newFavorites: string[];
+    if (favorites.includes(productId)) {
+      newFavorites = favorites.filter((id) => id !== productId);
+    } else {
+      newFavorites = [...favorites, productId];
+    }
+    try {
+      if (!storeId) return;
+      await AsyncStorage.setItem(getFavoritesKey(storeId), JSON.stringify(newFavorites));
+      setFavorites(newFavorites);
+    } catch (e) {
+      console.error('즐겨찾기 업데이트 실패:', e);
+    }
+  };
+
   // API 데이터 불러오기
   useEffect(() => {
     f.fetchApiItems()
@@ -62,7 +101,19 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   // 제품 목록 관련 상수
   const uniqueCategories = f.getUniqueCategories(apiItems);
   const filteredProducts = f.getFilteredProducts(apiItems, selectedCategory);
-  const sortedProducts = f.sortProductsBySupplierAndName(filteredProducts, suppliers);
+  
+  // 즐겨찾기 상품을 상단에 표시하도록 정렬
+  const sortedProducts = filteredProducts.sort((a, b) => {
+    const aIsFavorite = favorites.includes(a.품목_id);
+    const bIsFavorite = favorites.includes(b.품목_id);
+    
+    if (aIsFavorite && !bIsFavorite) return -1;
+    if (!aIsFavorite && bIsFavorite) return 1;
+    
+    // 즐겨찾기 상태가 같으면 기존 정렬 방식 적용
+    return f.sortProductsBySupplierAndName([a, b], suppliers)[0] === a ? -1 : 1;
+  });
+  
   const totalPrice = f.calculateTotalPrice(selectedItems);
 
   // 이벤트 핸들러
@@ -116,40 +167,59 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
 
   // 선택된 상품 카드 렌더링 함수
   const renderProductCard = (product: APIProduct) => {
-    const selected = selectedItems.find(item => item.품목_id === product.품목_id);
+    const selected = selectedItems.find((item) => item.품목_id === product.품목_id);
     const cardStyle = selected
       ? [OrderRequeststyle.selectItemCard, OrderRequeststyle.selectedItemCard]
       : OrderRequeststyle.selectItemCard;
+
+    // 즐겨찾기 여부에 따라 추가 스타일 적용
+    const isFavorite = favorites.includes(product.품목_id);
+
+    // 즐겨찾기 버튼 UI - 스타일 개선
+    const favoriteButton = (
+      <TouchableOpacity
+        testID="favoriteButton"
+        onPress={() => toggleFavorite(product.품목_id)}
+        style={OrderRequeststyle.favoriteButton}
+      >
+        <Text testID="favoriteButtonText" style={OrderRequeststyle.favoriteButtonText}>
+          {isFavorite ? '★' : '☆'}
+        </Text>
+      </TouchableOpacity>
+    );
 
     if (selected) {
       const computedPrice = selected.quantity * parseFloat(selected.입고단가);
       return (
         <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
-          <View testID="cardContent" style={[OrderRequeststyle.cardContent, { position: 'relative' }]}>
+          <View testID="cardContent" style={[OrderRequeststyle.cardContent]}>
             {/* 상품 정보 고정 영역 */}
             <View testID="productInfoContainer" style={OrderRequeststyle.productInfoContainer}>
               <View testID="selectedItemRowContainer" style={OrderRequeststyle.selectedItemRowContainer}>
-                <Text testID="selectItemName" style={OrderRequeststyle.selectItemName}>
-                  {product.품목명}
-                </Text>
+                <View testID="nameWithFavoriteContainer" style={OrderRequeststyle.nameWithFavoriteContainer}>
+                  {favoriteButton}
+                  <Text testID="selectItemName" style={OrderRequeststyle.selectItemName}>
+                    {product.품목명}
+                  </Text>
+                </View>
                 <Text testID="price_unit_Text" style={OrderRequeststyle.price_unit_Text}>
                   {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
                 </Text>
                 <TouchableOpacity
-                  testID="orderButton"
-                  style={[OrderRequeststyle.orderButton, { borderColor: '#ef4444' }]}
+                  testID="cancelButton"
+                  style={[OrderRequeststyle.orderButton, OrderRequeststyle.cancelButton]}
                   onPress={() => removeItem(product.품목_id)}
                 >
-                  <Text testID="orderButtonText" style={[OrderRequeststyle.orderButtonText, { color: '#ef4444' }]}>
+                  <Text testID="cancelButtonText" style={OrderRequeststyle.cancelButtonText}>
                     취소
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
-      
+
             {/* 추가 영역: 선택 시 확장되어 아래쪽으로 추가 (상품 정보에는 영향 없음) */}
             {selected && (
-              <View testID="additionalRow" style={OrderRequeststyle.additionalRowContainer}>
+              <View testID="additionalRowContainer" style={OrderRequeststyle.additionalRowContainer}>
                 {/* Row1: 합계 금액과 출고 단위 */}
                 <View
                   testID="Row1"
@@ -165,17 +235,12 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                     합계 금액: {f.formatPrice(computedPrice)}원
                   </Text>
                   <Text testID="unitText" style={OrderRequeststyle.unitText}>
-                    출고단위: {f.formatPrice(product.출고단위)}{product.단위}
+                    출고단위: {f.formatPrice(product.출고단위)}
+                    {product.단위}
                   </Text>
                 </View>
                 {/* Row2: 수량 조절 컨트롤 (오른쪽 정렬) */}
-                <View
-                  testID="Row2"
-                  style={{
-                    marginTop: moderateScale(8),
-                    alignItems: 'flex-end',
-                  }}
-                >
+                <View testID="Row2" style={{ marginTop: moderateScale(8), alignItems: 'flex-end' }}>
                   <View testID="quantityControlContainer" style={OrderRequeststyle.quantityControlContainer}>
                     <TouchableOpacity
                       testID="decrementButton"
@@ -193,7 +258,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       style={OrderRequeststyle.quantityText}
                       value={selected.customQuantity}
                       keyboardType="numeric"
-                      onChangeText={text => updateCustomQuantity(product.품목_id, text)}
+                      onChangeText={(text) => updateCustomQuantity(product.품목_id, text)}
                     />
                     <TouchableOpacity
                       testID="incrementButton"
@@ -218,17 +283,25 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       );
     } else {
       return (
-        <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
-          <View testID="cardContent" style={OrderRequeststyle.cardContent}>
-            <View testID="selectItemRowContainer" style={OrderRequeststyle.selectItemRowContainer}>
-              <Text testID="selectItemName" style={OrderRequeststyle.selectItemName}>
-                {product.품목명}
-              </Text>
-              <Text testID="price_unit_Text" style={OrderRequeststyle.price_unit_Text}>
+        <TouchableOpacity
+          testID="productCard"
+          key={product.품목_id}
+          style={cardStyle}
+          onPress={() => addItem(product)}
+        >
+          <View testID="productCardContent" style={OrderRequeststyle.productCardContent}>
+            <View testID="productCardRow" style={OrderRequeststyle.productCardRow}>
+              <View testID="nameWithFavoriteContainer" style={OrderRequeststyle.nameWithFavoriteContainer}>
+                {favoriteButton}
+                <Text testID="productName" style={OrderRequeststyle.productName}>
+                  {product.품목명}
+                </Text>
+              </View>
+              <Text testID="productPrice" style={OrderRequeststyle.productPrice}>
                 {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
               </Text>
               <TouchableOpacity
-                testID="orderButton"
+                testID="addButton"
                 style={OrderRequeststyle.orderButton}
                 onPress={() => addItem(product)}
               >
@@ -238,7 +311,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       );
     }
   };
@@ -278,7 +351,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   상품 유형 선택
                 </Text>
                 <ScrollView
-                  testID="categoryListScroll"
+                  testID="categoryList"
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={OrderRequeststyle.categoryList}
@@ -289,7 +362,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   }}
                 >
                   <TouchableOpacity
-                    testID="categoryButton_All"
+                    testID="categoryButton"
                     style={[
                       OrderRequeststyle.categoryButton,
                       selectedCategory === null && OrderRequeststyle.categoryButtonActive,
@@ -297,7 +370,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                     onPress={() => setSelectedCategory(null)}
                   >
                     <Text
-                      testID="categoryButtonText_All"
+                      testID="categoryButtonText"
                       style={[
                         OrderRequeststyle.categoryButtonText,
                         selectedCategory === null && OrderRequeststyle.categoryButtonTextActive,
@@ -309,7 +382,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   {uniqueCategories.map((cat, idx) => (
                     <TouchableOpacity
                       key={idx}
-                      testID={`categoryButton_${idx}`}
+                      testID="categoryButton"
                       style={[
                         OrderRequeststyle.categoryButton,
                         selectedCategory === cat && OrderRequeststyle.categoryButtonActive,
@@ -317,7 +390,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       onPress={() => setSelectedCategory(cat)}
                     >
                       <Text
-                        testID={`categoryButtonText_${idx}`}
+                        testID="categoryButtonText"
                         style={[
                           OrderRequeststyle.categoryButtonText,
                           selectedCategory === cat && OrderRequeststyle.categoryButtonTextActive,
@@ -422,7 +495,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              testID="order_request_Button_Back"
+              testID="order_request_Button"
               style={[
                 OrderRequeststyle.order_request_Button,
                 { backgroundColor: 'white' },
@@ -432,7 +505,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               ]}
               onPress={() => setIsConfirmation(false)}
             >
-              <Text testID="order_request_ButtonText_Back" style={[OrderRequeststyle.order_request_ButtonText, { color: '#0D326F' }]}>
+              <Text testID="order_request_ButtonText" style={[OrderRequeststyle.order_request_ButtonText, { color: '#0D326F' }]}>
                 뒤로가기
               </Text>
             </TouchableOpacity>

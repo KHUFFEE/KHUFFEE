@@ -221,7 +221,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           formattedStock = stock.toFixed(1);
         }
       }
-      return <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(14) }}>현재고: {formattedStock}개</Text>;
+      return <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(12) }}>현재고: {formattedStock}개</Text>;
     }
     return null;
   };

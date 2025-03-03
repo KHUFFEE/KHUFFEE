@@ -546,29 +546,38 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
               testID="confirm_sectionTitle"
               style={[OrderRequeststyle.confirm_sectionTitle, { textAlign: 'center' }]}
             >
-              선택한 상품 확인
+              최종 발주 확인
             </Text>
             {sortedProducts
               .filter(product => selectedItems.some(item => item.품목_id === product.품목_id))
               .map(product => {
                 const item = selectedItems.find(item => item.품목_id === product.품목_id);
-                if (!item) return null; // item이 undefined면 렌더링하지 않습니다.
+                if (!item) return null;
                 const itemTotal = item.quantity * parseFloat(item.입고단가);
                 return (
-                  <View testID="confirmationItemRow" key={item.품목_id} style={OrderRequeststyle.confirmationItemRow}>
-                    <View testID="confirmItemLeft" style={{ flex: 2 }}>
-                      <Text testID="confirm_selectItemName" style={OrderRequeststyle.confirm_selectItemName}>
-                        {item.품목명}
-                      </Text>
-                      <Text testID="confirm_unitText" style={OrderRequeststyle.confirm_unitText}>
-                        수량: {item.quantity}개
-                      </Text>
-                    </View>
-                    <View testID="confirmItemRight" style={{ flex: 1, alignItems: 'flex-end' }}>
-                      <Text testID="confirm_priceText" style={OrderRequeststyle.confirm_priceText}>
-                        {f.formatPrice(itemTotal)}원
-                      </Text>
-                    </View>
+                  <View
+                    testID="confirmationItemRow"
+                    key={item.품목_id}
+                    style={[OrderRequeststyle.confirmationItemRow, { flexDirection: 'row', alignItems: 'center', paddingVertical: moderateScale(5) }]}
+                  >
+                    <Text
+                      testID="confirm_selectItemName"
+                      style={[OrderRequeststyle.confirm_selectItemName, { flex: 2 }]}
+                    >
+                      {item.품목명}
+                    </Text>
+                    <Text
+                      testID="confirm_unitText"
+                      style={[OrderRequeststyle.confirm_unitText, { flex: 1 , textAlign: 'center' }]}
+                    >
+                      {item.quantity}개
+                    </Text>
+                    <Text
+                      testID="confirm_priceText"
+                      style={[OrderRequeststyle.confirm_priceText, { flex: 1, textAlign: 'right' }]}
+                    >
+                      {f.formatPrice(itemTotal)}원
+                    </Text>
                   </View>
                 );
               })
@@ -650,12 +659,12 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             <Text testID="modalTitle_2" style={modalStyles.modalTitle}>
               발주 완료
             </Text>
-            <Text testID="modalText_Complete" style={modalStyles.modalText}>
-              모든 발주 요청이 성공적으로 전송되었습니다.
+            <Text testID="modalText_Complete" style={[modalStyles.modalText, { marginBottom: moderateScale(-3) }]}>
+              모든 발주 요청이 {'\n'}성공적으로 전송되었습니다.
             </Text>
             <TouchableOpacity
               testID="closeButton_Complete"
-              style={modalStyles.closeButton}
+              style={[modalStyles.closeButton,{marginTop: moderateScale(10)}]}
               onPress={() => {
                 setOrderCompleteModalVisible(false);
                 onOrderComplete();

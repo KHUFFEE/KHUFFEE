@@ -9,7 +9,7 @@ import AppLoading from 'expo-app-loading';
 if ((Text as any).defaultProps == null) {
   (Text as any).defaultProps = {};
 }
-(Text as any).defaultProps.style = { fontFamily: 'Pretendard-Regular' };
+(Text as any).defaultProps.style = { fontFamily: 'PretendardVariable' };
 
 export type RootStackParamList = {
   Login: undefined;
@@ -20,7 +20,11 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    'Pretendard-Regular': require('../../assets/fonts/Pretendard-Regular.ttf'),
+    'Pretendard-Variable': require('../../assets/fonts/PretendardVariable.ttf'),
+
+
+
+
   });
 
   if (!fontsLoaded) {

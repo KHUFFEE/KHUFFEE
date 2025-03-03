@@ -17,7 +17,9 @@ export const OrderRequeststyle = StyleSheet.create({
     borderColor: '#e2e8f0',
     borderRadius: 12,
     marginBottom: moderateScale(10),
-    padding: moderateScale(15),
+    // padding: moderateScale(15),
+    paddingRight: moderateScale(8),
+    paddingVertical: moderateScale(10),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -72,7 +74,6 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     flex: 1,
     fontSize: RFValue(15),
-    fontWeight: '600',
     color: '#1e293b',
     letterSpacing: -0.3,
     marginLeft: moderateScale(4),
@@ -115,7 +116,6 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     color: '#0D326F',
     fontSize: RFValue(13),
-    fontWeight: '700',
   },
   additionalRowContainer: {
     // 추가 스타일이 필요하면 여기에 작성
@@ -511,7 +511,6 @@ export const OrderRequeststyle = StyleSheet.create({
   cancelButtonText: {
     ...commonTextStyle,
     color: '#ef4444',
-    fontWeight: '700',
     fontSize: RFValue(13),
   },
   productCardContent: {
@@ -531,7 +530,6 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     flex: 1,
     fontSize: RFValue(15),
-    fontWeight: '600',
     color: '#1e293b',
     letterSpacing: -0.3,
     marginLeft: moderateScale(4),
@@ -540,7 +538,6 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     width: '25%',
     fontSize: RFValue(14),
-    fontWeight: '500',
     color: '#64748b',
     textAlign: 'right',
   },

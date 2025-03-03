@@ -1,13 +1,15 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions,TextStyle  } from 'react-native';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const { height: screenHeight } = Dimensions.get('window');
 
-const commonTextStyle = {
-  fontFamily: 'Pretendard-Regular',
-};
+const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
+  fontFamily: 'PretendardVariable',
+  fontWeight: customStyle.fontWeight ? customStyle.fontWeight : '400',
+  ...customStyle,
+});
 
 export const OrderRequeststyle = StyleSheet.create({
   selectItemCard: {
@@ -16,10 +18,11 @@ export const OrderRequeststyle = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 12,
-    marginBottom: moderateScale(10),
+    marginBottom: moderateScale(3),
+    marginHorizontal: moderateScale(2),
     // padding: moderateScale(15),
-    paddingRight: moderateScale(8),
-    paddingVertical: moderateScale(10),
+    paddingRight: moderateScale(15),
+    // paddingVertical: moderateScale(10),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -76,7 +79,7 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(15),
     color: '#1e293b',
     letterSpacing: -0.3,
-    marginLeft: moderateScale(4),
+    // marginLeft: moderateScale(4),
   },
   favoriteButton: {
     padding: moderateScale(2),
@@ -89,9 +92,8 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     width: '25%',
     fontSize: RFValue(14),
-    fontWeight: '500',
     color: '#64748b',
-    textAlign: 'right',
+    textAlign: 'left',
   },
   orderButton: {
     ...commonTextStyle,
@@ -123,16 +125,16 @@ export const OrderRequeststyle = StyleSheet.create({
   priceText: {
     ...commonTextStyle,
     fontSize: RFValue(14),
-    fontWeight: '600',
     color: '#0D326F',
-    position: 'relative',
-    left: wp(0.5),
+    position: 'absolute',
+    width: wp(50),
+    left: wp(1.2),
+    textAlign: 'left',
   },
   unitText: {
     ...commonTextStyle,
     fontSize: RFValue(12),
     color: '#555555',
-    fontWeight: '500',
     textAlign: 'left',
     position: 'relative',
     width: wp(30),
@@ -174,17 +176,19 @@ export const OrderRequeststyle = StyleSheet.create({
   },
   errorContainer: {
     ...commonTextStyle,
-    marginTop: hp(1),
+    marginTop: moderateScale(2),
     backgroundColor: '#fee2e2',
     borderRadius: moderateScale(8),
     padding: moderateScale(8),
+    marginLeft: moderateScale(8),
+    marginBottom: moderateScale(2),
     width: '100%',
   },
   errorText: {
     ...commonTextStyle,
     color: '#dc2626',
     fontSize: RFValue(12),
-    fontWeight: '500',
+    textAlign: 'center',
   },
   loading_Container: {
     ...commonTextStyle,
@@ -220,9 +224,10 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     backgroundColor: '#fff',
     paddingTop: moderateScale(10),
-    paddingBottom: moderateScale(5),
+    // paddingBottom: moderateScale(5),
     zIndex: 10,
     shadowColor: '#000',
+    width: '100%'
   },
   categorySection: {
     ...commonTextStyle,
@@ -303,9 +308,9 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(18),
     fontWeight: '700',
     color: '#0D326F',
-    marginBottom: moderateScale(6),
+    marginBottom: moderateScale(5),
     paddingHorizontal: moderateScale(16),
-    width: '100%',
+    width: '70%',
     borderLeftWidth: 4,
     borderLeftColor: '#0D326F',
     paddingLeft: moderateScale(10),
@@ -321,6 +326,7 @@ export const OrderRequeststyle = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: moderateScale(16),
     paddingVertical: moderateScale(12),
+    marginTop: moderateScale(8),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -345,7 +351,7 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(15),
     fontWeight: '700',
     color: '#0D326F',
-    textAlign: 'right',
+    textAlign: 'left',
     paddingRight: moderateScale(10),
   },
   listContainer: {
@@ -362,8 +368,8 @@ export const OrderRequeststyle = StyleSheet.create({
     borderTopColor: '#e2e8f0',
     backgroundColor: '#fff',
     paddingHorizontal: moderateScale(16),
-    paddingVertical: moderateScale(12),
-    height: hp(10),
+    // paddingVertical: moderateScale(12),
+    height: '9%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -376,7 +382,7 @@ export const OrderRequeststyle = StyleSheet.create({
   footerPriceText: {
     ...commonTextStyle,
     color: '#0D326F',
-    fontSize: RFValue(18),
+    fontSize: RFValue(17),
     fontWeight: '700',
   },
   footerButton: {
@@ -401,8 +407,7 @@ export const OrderRequeststyle = StyleSheet.create({
   footerButtonText: {
     ...commonTextStyle,
     color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: '700',
+    fontSize: RFValue(13),
   },
   confirm_selectedItemsSection: {
     ...commonTextStyle,
@@ -415,62 +420,59 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(22),
     fontWeight: '700',
     color: '#0D326F',
-    marginBottom: moderateScale(20),
+    // marginBottom: moderateScale(5),
     width: '100%',
     textAlign: 'center',
     borderBottomWidth: 2,
     borderBottomColor: '#e2e8f0',
-    paddingBottom: moderateScale(15),
+    paddingBottom: moderateScale(5),
   },
   confirmationItemRow: {
     ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: moderateScale(12),
+    paddingVertical: moderateScale(6),
     paddingHorizontal: moderateScale(10),
     borderBottomWidth: 1,
     borderColor: '#e2e8f0',
     width: '100%',
+    height: '20%',
     backgroundColor: '#ffffff',
-    borderRadius: moderateScale(8),
-    marginBottom: moderateScale(8),
+    // borderRadius: moderateScale(8),
+    // marginBottom: moderateScale(8),
   },
   confirm_selectItemName: {
     ...commonTextStyle,
     flex: 3,
     fontSize: RFValue(16),
-    fontWeight: '600',
+    // fontWeight: '600',
     color: '#1e293b',
-    marginBottom: moderateScale(4),
+    // marginBottom: moderateScale(4),
     width: '100%',
   },
   confirm_unitText: {
     ...commonTextStyle,
     flex: 0.7,
-    fontSize: RFValue(14),
-    color: '#64748b',
-    fontWeight: '500',
+    fontSize: RFValue(15),
+    color: '#0D326F',
   },
   confirm_priceText: {
     ...commonTextStyle,
-    fontSize: RFValue(15),
-    fontWeight: '700',
-    color: '#0D326F',
+    fontSize: RFValue(16),
   },
   totalRow: {
     ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 15,
+    paddingVertical: moderateScale(15),
     borderTopWidth: 1,
-    borderColor: '#aaa',
-    marginTop: 10,
+    borderColor: '#e2e8f0',
   },
   totalText: {
     ...commonTextStyle,
     color: '#0D326F',
-    fontSize: RFValue(18),
+    fontSize: RFValue(17),
     fontWeight: '700',
   },
   order_request_Button: {
@@ -532,15 +534,15 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(15),
     color: '#1e293b',
     letterSpacing: -0.3,
-    marginLeft: moderateScale(4),
+    // marginLeft: moderateScale(4),
   },
   productPrice: {
     ...commonTextStyle,
     width: '25%',
     fontSize: RFValue(14),
-    color: '#64748b',
-    textAlign: 'right',
+    textAlign: 'left',
   },
+  
   addButton: {
     ...commonTextStyle,
     backgroundColor: '#0D326F',
@@ -554,6 +556,43 @@ export const OrderRequeststyle = StyleSheet.create({
     ...commonTextStyle,
     color: '#fff',
     fontSize: RFValue(12),
-    fontWeight: '600',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // marginBottom: moderateScale(5),
+    // marginHorizontal: moderateScale(16),
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: moderateScale(8),
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    overflow: 'hidden',
+  },
+  searchInput: {
+    ...commonTextStyle,
+    flex: 1,
+    paddingVertical: moderateScale(10),
+    paddingHorizontal: moderateScale(12),
+    fontSize: RFValue(14),
+    color: '#1e293b',
+  },
+  searchIcon: {
+    padding: moderateScale(10),
+  },
+  searchIconSize: {
+    width: RFValue(20),
+    height: RFValue(20),
+  },
+  searchIconContainer: {
+    marginRight: moderateScale(8),
+    borderRadius: moderateScale(20),
   },
 });

@@ -326,7 +326,7 @@ export const OrderRequeststyle = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: moderateScale(16),
     paddingVertical: moderateScale(12),
-    marginTop: moderateScale(5),
+    marginTop: moderateScale(8),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -437,6 +437,7 @@ export const OrderRequeststyle = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#e2e8f0',
     width: '100%',
+    height: '20%',
     backgroundColor: '#ffffff',
     // borderRadius: moderateScale(8),
     // marginBottom: moderateScale(8),
@@ -447,18 +448,18 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(16),
     // fontWeight: '600',
     color: '#1e293b',
-    marginBottom: moderateScale(4),
+    // marginBottom: moderateScale(4),
     width: '100%',
   },
   confirm_unitText: {
     ...commonTextStyle,
     flex: 0.7,
-    fontSize: RFValue(14),
+    fontSize: RFValue(15),
     color: '#0D326F',
   },
   confirm_priceText: {
     ...commonTextStyle,
-    fontSize: RFValue(15),
+    fontSize: RFValue(16),
   },
   totalRow: {
     ...commonTextStyle,

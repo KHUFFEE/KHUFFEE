@@ -23,6 +23,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 
 // RN_API_URL 환경 변수 (재고 API 호출에 사용)
 import { RN_API_URL } from '@env';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   storeName,
@@ -222,7 +223,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           formattedStock = stock.toFixed(1);
         }
       }
-      return <Text testID="현재고" style={{ color: '#FF4500' }}>현재고: {formattedStock}개</Text>;
+      return <Text testID="현재고" style={{ color: '#3A9D23', fontSize:RFValue(14) }}>현재고: {formattedStock}개</Text>;
     }
     return null;
   };
@@ -253,7 +254,8 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       return (
         <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
           <View testID="cardContent" style={[OrderRequeststyle.cardContent]}>
-            <View testID="productInfoContainer" style={OrderRequeststyle.productInfoContainer}>
+            {/* selected 상태일 때, 컨테이너 높이를 auto로 설정 */}
+            <View testID="productInfoContainer" style={[OrderRequeststyle.productInfoContainer, { height: 'auto' }]}>
               <View testID="selectedItemRowContainer" style={OrderRequeststyle.selectedItemRowContainer}>
                 <View testID="nameWithFavoriteContainer" style={OrderRequeststyle.nameWithFavoriteContainer}>
                   {favoriteButton}
@@ -286,11 +288,11 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                     alignItems: 'center',
                     width: '100%',
                     marginTop: moderateScale(8),
-                    marginLeft: moderateScale(8),
+                    marginLeft: moderateScale(20)
                   }}
                 >
                   <Text testID="priceText" style={OrderRequeststyle.priceText}>
-                    합계 금액: {f.formatPrice(computedPrice)}원
+                   상품 총액 : {f.formatPrice(computedPrice)}원
                   </Text>
                   <View
                     testID="quantityControlContainer"
@@ -457,7 +459,6 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 </ScrollView>
               </View>
               <View testID="sectionContainer" style={OrderRequeststyle.sectionContainer}>
-                {/* 섹션 타이틀과 돋보기 아이콘을 한 줄에 배치 */}
                 <View testID="sectionTitleRow" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Text testID="sectionTitle_2" style={OrderRequeststyle.sectionTitle_2}>
                     상품 선택하기
@@ -523,8 +524,8 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           <View testID="footerContainer" style={OrderRequeststyle.footerContainer}>
             <Text testID="footerPriceText" style={OrderRequeststyle.footerPriceText}>
               {selectedItems.length > 0
-                ? `총 가격  ${f.formatPrice(totalPrice)}원`
-                : '총 가격 0원'}
+                ? `총 주문금액:  ${f.formatPrice(totalPrice)}원`
+                : '총 주문금액 0원'}
             </Text>
             <TouchableOpacity
               testID="footerButton"
@@ -559,11 +560,11 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       {item.품목명}
                     </Text>
                     <Text testID="confirm_unitText" style={OrderRequeststyle.confirm_unitText}>
-                      수량: {item.quantity}
-                      {item.단위} (출고단위: {item.출고단위})
+                      수량: {item.quantity}개
+                      {/* {item.단위}  */}
                     </Text>
                   </View>
-                  <View testID="confirmItemRight" style={{ flex: 1, alignItems: 'flex-end' }}>
+                  <View testID="confirmItemRight" style={{ flex: 1, alignItems: 'flex-end'}}>
                     <Text testID="confirm_priceText" style={OrderRequeststyle.confirm_priceText}>
                       {f.formatPrice(itemTotal)}원
                     </Text>
@@ -573,7 +574,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             })}
             <View testID="totalRow" style={OrderRequeststyle.totalRow}>
               <Text testID="totalText" style={OrderRequeststyle.totalText}>
-                총합계:
+               총 주문금액:
               </Text>
               <Text testID="totalText_2" style={OrderRequeststyle.totalText}>
                 {f.formatPrice(totalPrice)}원
@@ -596,7 +597,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                 { backgroundColor: 'white' },
                 { borderColor: '#0D326F' },
                 { borderWidth: 1 },
-                { marginTop: 10 },
+                { marginTop: moderateScale(5) },
               ]}
               onPress={() => setIsConfirmation(false)}
             >

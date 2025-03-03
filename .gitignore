@@ -17,3 +17,10 @@ __pycache__/
 *.pyc
 db.sqlite3
 node_modules/
+
+# Ignore .env files
+.env
+*.env
+
+# Ignore preprocessing/data directory
+preprocessing/data/

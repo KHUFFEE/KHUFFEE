@@ -123,7 +123,7 @@ export const OrderRequeststyle = StyleSheet.create({
   },
   priceText: {
     ...commonTextStyle,
-    fontSize: RFValue(14),
+    fontSize: RFValue(12),
     color: '#0D326F',
     position: 'relative',
     width: wp(35),

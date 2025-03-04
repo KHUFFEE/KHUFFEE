@@ -327,15 +327,8 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     if (forceFetch || !isPeriodSearch) {
       try {
         const now = new Date();
-
-        // Date 객체를 "YYYY.MM.W" 포맷으로 변환하는 헬퍼 함수
-        const getPeriodString = (date: Date): string => {
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const week = Math.ceil(date.getDate() / 7);
-          return `${year}.${month}.${week}`;
-        };
-
+  
+        // 기존에는 로컬 getPeriodString을 사용했지만 이제 f.getCustomPeriodString을 사용합니다.
         let startDate: Date, endDate: Date;
         if (page === 1) {
           endDate = now;
@@ -344,7 +337,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
           endDate = new Date(now.getFullYear() - (page - 1), now.getMonth(), now.getDate());
           startDate = new Date(now.getFullYear() - page, now.getMonth(), now.getDate());
         }
-        const periodParam = `${getPeriodString(startDate)}~${getPeriodString(endDate)}`;
+  
+        // getCustomPeriodString을 이용하여 날짜 문자열을 생성
+        const periodParam = `${f.getCustomPeriodString(startDate)}~${f.getCustomPeriodString(endDate)}`;
         const params = new URLSearchParams({
           store_id: storeId,
           기간: periodParam,
@@ -352,7 +347,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
           all: "true"
         });
         const url = `${RN_API_URL}/api/orders/store_order_list/?${params.toString()}`;
-
+  
         const response = await fetch(url);
         if (!response.ok) {
           console.error('발주 내역 조회 실패, page:', page);

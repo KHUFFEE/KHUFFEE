@@ -258,12 +258,8 @@ export const handleOrderSubmitUtil = async (
   const failures: string[] = [];
 
   // 기본 회차와 기간 계산: 현재 날짜를 기준으로 (예시)
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth() + 1;
-  const week = Math.ceil(currentDate.getDate() / 7);
+  let currentPeriod = getCustomPeriodString(new Date());;
   let currentRound = 1;
-  let currentPeriod = `${year}.${month}.${week}`;
 
   // 먼저 store_order_list에서 기간 정보를 가져오기 (회차는 여기서 사용하지 않음)
   try {
@@ -339,3 +335,44 @@ export const calculateTotalPrice = (selectedItems: SelectedItem[]): number => {
 };
 
 
+export function getCustomPeriodString(date: Date): string {
+  // 해당 날짜의 월요일(주 시작)을 구함 (일요일은 0이므로 0일 경우 7로 처리)
+  const d = new Date(date);
+  
+  // 1. 해당 날짜의 주의 월요일 구하기 (일요일은 0이므로 7로 처리)
+  let dayOfWeek = d.getDay();
+  if (dayOfWeek === 0) dayOfWeek = 7;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - (dayOfWeek - 1));
+  
+  // 2. 해당 주의 일요일 구하기
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  // 3. 주 할당: 만약 월요일과 일요일이 다른 달이면 일요일의 달로 할당
+  let targetMonth, targetYear;
+  if (monday.getMonth() === sunday.getMonth()) {
+    targetMonth = monday.getMonth();
+    targetYear = monday.getFullYear();
+  } else {
+    targetMonth = sunday.getMonth();
+    targetYear = sunday.getFullYear();
+  }
+
+  // 4. 타겟 달의 1일이 포함된 주의 월요일 구하기
+  const firstOfMonth = new Date(targetYear, targetMonth, 1);
+  let firstDayOfWeek = firstOfMonth.getDay();
+  if (firstDayOfWeek === 0) firstDayOfWeek = 7;
+  const firstMonday = new Date(firstOfMonth);
+  firstMonday.setDate(firstOfMonth.getDate() - (firstDayOfWeek - 1));
+
+  // 5. 현재 주와 타겟 달 첫 주의 차이로 주차 계산
+  const diffTime = monday.getTime() - firstMonday.getTime();
+  const weekNum = 1 + Math.floor(diffTime / (7 * 24 * 60 * 60 * 1000));
+
+  return `${targetYear}.${String(targetMonth + 1).padStart(2, '0')}.${weekNum}`;
+}
+
+
+
+ 

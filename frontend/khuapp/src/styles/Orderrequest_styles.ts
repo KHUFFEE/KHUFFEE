@@ -65,7 +65,7 @@ export const OrderRequeststyle = StyleSheet.create({
     gap: moderateScale(2),
     paddingRight: moderateScale(6),
     paddingLeft: moderateScale(2),
-    marginTop: moderateScale(0),
+    marginTop: moderateScale(5),
   },
   nameWithFavoriteContainer: {
     ...commonTextStyle,
@@ -119,6 +119,7 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(13),
   },
   additionalRowContainer: {
+    height: hp(7)
     // 추가 스타일이 필요하면 여기에 작성
   },
   priceText: {
@@ -176,12 +177,12 @@ export const OrderRequeststyle = StyleSheet.create({
   },
   errorContainer: {
     ...commonTextStyle,
-    marginTop: moderateScale(2),
+    // marginTop: moderateScale(2),
     backgroundColor: '#fee2e2',
     borderRadius: moderateScale(8),
     padding: moderateScale(8),
     marginLeft: moderateScale(8),
-    marginBottom: moderateScale(2),
+    marginBottom: moderateScale(4),
     width: '100%',
   },
   errorText: {
@@ -249,7 +250,7 @@ export const OrderRequeststyle = StyleSheet.create({
   sectionTitle: {
     ...commonTextStyle,
     fontSize: RFValue(18),
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#0D326F',
     marginBottom: moderateScale(3),
     paddingHorizontal: moderateScale(16),
@@ -306,7 +307,7 @@ export const OrderRequeststyle = StyleSheet.create({
   sectionTitle_2: {
     ...commonTextStyle,
     fontSize: RFValue(18),
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#0D326F',
     marginBottom: moderateScale(5),
     paddingHorizontal: moderateScale(16),
@@ -527,6 +528,7 @@ export const OrderRequeststyle = StyleSheet.create({
     gap: moderateScale(2),
     paddingRight: moderateScale(6),
     paddingLeft: moderateScale(2),
+    marginTop: moderateScale(5),
   },
   productName: {
     ...commonTextStyle,

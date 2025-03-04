@@ -21,11 +21,12 @@ export const orderStatusStyles = StyleSheet.create({
   // 헤더 스타일
   headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: verticalScale(8),
+    marginBottom: verticalScale(4),
     backgroundColor: '#fff',
     padding: moderateScale(12),
+    paddingLeft: moderateScale(10),
     borderRadius: moderateScale(12),
     shadowColor: '#000',
     shadowOffset: {
@@ -39,27 +40,39 @@ export const orderStatusStyles = StyleSheet.create({
   
   sectionTitle: {
     flex: 1,
+    alignItems: 'center',
   },
   
   title: {
     ...commonTextStyle,
-    fontSize: RFValue(18),
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#0D326F',
+    textAlign: 'center',
+  },
+  
+  // 버튼 컨테이너 추가
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginBottom: verticalScale(8),
+    marginTop: verticalScale(4),
+    paddingRight: moderateScale(10),
   },
   
   rightButtonGroup: {
     flexDirection: 'row',
-    gap: moderateScale(6),
+    gap: moderateScale(3)
   },
   
   headerButton: {
-    paddingHorizontal: moderateScale(12),
-    paddingVertical: verticalScale(6),
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: verticalScale(5),
     backgroundColor: '#f8fafc',
     borderWidth: 1,
     borderColor: '#0D326F',
-    borderRadius: moderateScale(20),
+    borderRadius: moderateScale(16),
     elevation: 1,
     shadowColor: '#0D326F',
     shadowOffset: {
@@ -73,7 +86,7 @@ export const orderStatusStyles = StyleSheet.create({
   headerButtonText: {
     ...commonTextStyle,
     color: '#0D326F',
-    fontSize: RFValue(12),
+    fontSize: RFValue(11),
     fontWeight: '500',
   },
   
@@ -111,8 +124,8 @@ export const orderStatusStyles = StyleSheet.create({
 
   yearHeader: {
     ...commonTextStyle,
-    fontSize: RFValue(20),
-    fontWeight: '700',
+    fontSize: RFValue(16),
+    fontWeight: '500',
     color: '#0D326F',
     marginBottom: verticalScale(8),
     marginTop: verticalScale(10),
@@ -123,32 +136,42 @@ export const orderStatusStyles = StyleSheet.create({
 
   monthContainer: {
     backgroundColor: '#f8f9fa',
-    marginBottom: verticalScale(10),
+    marginBottom: verticalScale(16),
+    borderRadius: moderateScale(10),
+    padding: moderateScale(8),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
 
   monthHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: verticalScale(8),
+    paddingVertical: verticalScale(10),
     paddingHorizontal: moderateScale(16),
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#0D326F',
     borderRadius: moderateScale(8),
-    marginBottom: verticalScale(8),
+    marginBottom: verticalScale(10),
   },
 
   monthTitle: {
     ...commonTextStyle,
-    fontSize: RFValue(16),
+    fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#0D326F',
+    color: '#FFFFFF',
   },
 
   monthTotal: {
     ...commonTextStyle,
-    fontSize: RFValue(14),
-    fontWeight: '600',
-    color: '#0D326F',
+    fontSize: RFValue(15),
+    fontWeight: '500',
+    color: '#FFFFFF',
     marginRight: moderateScale(8),
   },
 
@@ -177,18 +200,22 @@ export const orderStatusStyles = StyleSheet.create({
     paddingBottom: verticalScale(8),
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: moderateScale(8),
+    paddingTop: verticalScale(8),
+    borderRadius: moderateScale(6),
   },
 
   weekTitle: {
     ...commonTextStyle,
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontSize: RFValue(15),
+    fontWeight: '500',
+    color: '#0D326F',
   },
 
   weekTotal: {
     ...commonTextStyle,
-    fontSize: RFValue(16),
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#0D326F',
   },
@@ -205,15 +232,14 @@ export const orderStatusStyles = StyleSheet.create({
 
   productName: {
     ...commonTextStyle,
-    fontSize: RFValue(15),
-    fontWeight: '600',
+    fontSize: RFValue(14),
     color: '#1A1A1A',
     marginBottom: verticalScale(4),
   },
 
   extraCount: {
     ...commonTextStyle,
-    fontSize: RFValue(14),
+    fontSize: RFValue(12),
     color: '#666666',
     marginBottom: verticalScale(4),
   },
@@ -305,7 +331,7 @@ export const orderStatusStyles = StyleSheet.create({
   
   modalTitle: {
     ...commonTextStyle,
-    fontSize: RFValue(20),
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#0D326F',
     textAlign: 'center',
@@ -348,14 +374,15 @@ export const orderStatusStyles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#ffffff',
     marginBottom: moderateScale(8),
+    borderRadius: moderateScale(8),
   },
   
   modalOrderName: {
     ...commonTextStyle,
     flex: 3,
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: RFValue(15),
     color: '#1e293b',
+    fontWeight: '500',
   },
   
   modalOrderDate: {
@@ -379,22 +406,23 @@ export const orderStatusStyles = StyleSheet.create({
     flex: 1,
     fontSize: RFValue(15),
     color: '#0D326F',
+    fontWeight: '600',
     textAlign: 'right',
   },
   
   modalFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: moderateScale(15),
-    paddingHorizontal: moderateScale(16),
+    alignItems: 'center',
+    padding: moderateScale(16),
     borderTopWidth: 1,
-    borderTopColor: '#aaa',
-    backgroundColor: '#fff',
+    borderTopColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
   },
   
   modalTotalCost: {
     ...commonTextStyle,
-    fontSize: RFValue(18),
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#0D326F',
   },
@@ -681,23 +709,33 @@ export const orderStatusStyles = StyleSheet.create({
 
   // 월별 상세보기 표 스타일
   monthlyTableContainer: {
-    marginBottom: moderateScale(16),
+    marginBottom: verticalScale(16),
     borderRadius: moderateScale(8),
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   
   monthlyTableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#0D326F',
-    paddingVertical: moderateScale(10),
+    paddingVertical: moderateScale(12),
     paddingHorizontal: moderateScale(8),
+    backgroundColor: '#0D326F',
+    borderTopLeftRadius: moderateScale(8),
+    borderTopRightRadius: moderateScale(8),
   },
   
   monthlyTableHeaderText: {
     ...commonTextStyle,
-    fontSize: RFValue(14),
+    fontSize: RFValue(13),
     fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -754,6 +792,14 @@ export const orderStatusStyles = StyleSheet.create({
     padding: moderateScale(16),
     borderWidth: 1,
     borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   
   summaryTitle: {
@@ -761,14 +807,17 @@ export const orderStatusStyles = StyleSheet.create({
     fontSize: RFValue(16),
     fontWeight: '600',
     color: '#0D326F',
-    marginBottom: moderateScale(10),
+    marginBottom: moderateScale(12),
     textAlign: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    paddingBottom: moderateScale(8),
   },
   
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: moderateScale(6),
+    paddingVertical: moderateScale(8),
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
@@ -777,6 +826,7 @@ export const orderStatusStyles = StyleSheet.create({
     ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#64748b',
+    fontWeight: '500',
   },
   
   summaryValue: {
@@ -789,8 +839,11 @@ export const orderStatusStyles = StyleSheet.create({
   summaryTotal: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: moderateScale(10),
+    paddingVertical: moderateScale(12),
     marginTop: moderateScale(4),
+    backgroundColor: '#EFF6FF',
+    borderRadius: moderateScale(6),
+    paddingHorizontal: moderateScale(10),
   },
   
   summaryTotalLabel: {

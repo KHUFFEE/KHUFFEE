@@ -250,7 +250,7 @@ export const OrderRequeststyle = StyleSheet.create({
   sectionTitle: {
     ...commonTextStyle,
     fontSize: RFValue(18),
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#0D326F',
     marginBottom: moderateScale(3),
     paddingHorizontal: moderateScale(16),
@@ -307,7 +307,7 @@ export const OrderRequeststyle = StyleSheet.create({
   sectionTitle_2: {
     ...commonTextStyle,
     fontSize: RFValue(18),
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#0D326F',
     marginBottom: moderateScale(5),
     paddingHorizontal: moderateScale(16),

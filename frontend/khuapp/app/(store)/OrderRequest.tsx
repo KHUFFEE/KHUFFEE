@@ -528,8 +528,8 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           <View testID="footerContainer" style={OrderRequeststyle.footerContainer}>
             <Text testID="footerPriceText" style={OrderRequeststyle.footerPriceText}>
               {selectedItems.length > 0
-                ? `총 주문금액:  ${f.formatPrice(totalPrice)}원`
-                : '총 주문금액 0원'}
+                ? `총 발주금액:  ${f.formatPrice(totalPrice)}원`
+                : '총 발주금액 0원'}
             </Text>
             <TouchableOpacity
               testID="footerButton"
@@ -591,7 +591,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             }
             <View testID="totalRow" style={OrderRequeststyle.totalRow}>
               <Text testID="totalText" style={OrderRequeststyle.totalText}>
-                총 주문금액:
+                총 발주금액:
               </Text>
               <Text testID="totalText_2" style={OrderRequeststyle.totalText}>
                 {f.formatPrice(totalPrice)}원

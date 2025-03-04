@@ -477,82 +477,80 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     setDetailModalVisible(true);
   };
   
-  // 월별 상세보기 모달 열기 함수 추가
+  // 월별 상세보기 함수
   const openMonthlyDetailModal = (year: string, month: string, monthlyOrders: CombinedOrderData[]) => {
-    setMonthlyDetailDate(`${year}.${month}`);
+    if (monthlyOrders.length === 0) return;
     
-    // 주차별로 데이터 그룹화
+    // 주차별로 주문 그룹화
     const weeklyData: { [week: string]: CombinedOrderData[] } = {};
-    const productSummaryMap: { [productId: string]: { 
-      품목명: string, 
-      총수량: number, 
-      총금액: number,
-      주차별: { [week: string]: { 수량: number, 금액: number } }
-    } } = {};
-    
-    // 주차별 합계 금액
     const weeklyTotals: { [week: string]: number } = {};
+    const productSummaryMap: {
+      [productName: string]: {
+        총수량: number;
+        총금액: number;
+        주차별: { [week: string]: { 수량: number; 금액: number } };
+      };
+    } = {};
     
-    // 모든 주차 목록 (정렬용)
-    const allWeeks: string[] = [];
-    
-    // 데이터 그룹화 및 통계 계산
+    // 주차별 데이터 구성
     monthlyOrders.forEach(order => {
-      const [, , week] = order.기간.split('.');
+      const orderDate = new Date(order.기간);
+      const week = Math.ceil(orderDate.getDate() / 7).toString();
       
-      // 주차별 데이터 그룹화
+      // 주차별 주문 그룹화
       if (!weeklyData[week]) {
         weeklyData[week] = [];
-        weeklyTotals[week] = 0;
-        allWeeks.push(week);
       }
       weeklyData[week].push(order);
       
-      // 주차별 합계 금액 계산
-      const orderCost = order.totalCost || 0;
-      weeklyTotals[week] += orderCost;
+      // 주차별 합계 계산
+      if (!weeklyTotals[week]) {
+        weeklyTotals[week] = 0;
+      }
+      weeklyTotals[week] += (order.totalCost || 0);
       
-      // 상품별 통계 계산
-      if (!productSummaryMap[order.품목_id]) {
-        productSummaryMap[order.품목_id] = {
-          품목명: order.품목명 || '',
+      // 상품별 통계 구성
+      const productName = order.품목명 || '이름 없음';
+      if (!productSummaryMap[productName]) {
+        productSummaryMap[productName] = {
           총수량: 0,
           총금액: 0,
           주차별: {}
         };
       }
       
-      // 상품별 주차별 데이터 추가
-      if (!productSummaryMap[order.품목_id].주차별[week]) {
-        productSummaryMap[order.품목_id].주차별[week] = { 수량: 0, 금액: 0 };
-      }
+      // 상품의 총 수량과 금액 업데이트
+      productSummaryMap[productName].총수량 += (order.매장_발주량 || 0);
+      productSummaryMap[productName].총금액 += (order.totalCost || 0);
       
-      const orderQuantity = order.매장_발주량 || 0;
-      productSummaryMap[order.품목_id].총수량 += orderQuantity;
-      productSummaryMap[order.품목_id].총금액 += orderCost;
-      productSummaryMap[order.품목_id].주차별[week].수량 += orderQuantity;
-      productSummaryMap[order.품목_id].주차별[week].금액 += orderCost;
+      // 상품의 주차별 데이터 업데이트
+      if (!productSummaryMap[productName].주차별[week]) {
+        productSummaryMap[productName].주차별[week] = { 수량: 0, 금액: 0 };
+      }
+      productSummaryMap[productName].주차별[week].수량 += (order.매장_발주량 || 0);
+      productSummaryMap[productName].주차별[week].금액 += (order.totalCost || 0);
     });
     
-    // 주차 정렬 (1주차, 2주차, ... 순서로)
-    const sortedWeeks = allWeeks.sort((a, b) => parseInt(a) - parseInt(b));
+    // 주차 정렬
+    const sortedWeeks = Object.keys(weeklyData).sort((a, b) => parseInt(a) - parseInt(b));
     
-    // 상품 정렬 (총금액 내림차순)
-    const sortedProducts = Object.values(productSummaryMap).sort((a, b) => b.총금액 - a.총금액);
+    // 상품 정렬 (가나다순)
+    const productSummary = Object.entries(productSummaryMap)
+      .map(([품목명, data]) => ({ 품목명, ...data }))
+      .sort((a, b) => a.품목명.localeCompare(b.품목명));
     
-    // 월 총 합계 금액
+    // 월 총합계 계산
     const monthlyTotal = Object.values(weeklyTotals).reduce((sum, total) => sum + total, 0);
     
-    // 정렬된 데이터 저장
-    setMonthlyDetailOrders(monthlyOrders);
-    
-    // 추가 데이터 저장
+    // 상태 업데이트
     setWeeklyData(weeklyData);
     setWeeklyTotals(weeklyTotals);
     setSortedWeeks(sortedWeeks);
-    setProductSummary(sortedProducts);
+    setProductSummary(productSummary);
     setMonthlyTotal(monthlyTotal);
     
+    setMonthlyDetailOrders(monthlyOrders);
+    setMonthlyDetailDate(`${year}.${month}`);
     setMonthlyDetailModalVisible(true);
   };
 
@@ -601,49 +599,52 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   return (
     <View testID="status_container" style={orderStatusStyles.status_container}>
       {!loading && sortedYears.length > 0 && (
-        <View testID="headerRow" style={orderStatusStyles.headerRow}>
-          <View testID="sectionTitle" style={orderStatusStyles.sectionTitle}>
+        <>
+          <View testID="headerRow" style={orderStatusStyles.headerRow}>
             <Text testID="title" style={orderStatusStyles.title}>발주 내역</Text>
           </View>
-          <View testID="rightButtonGroup" style={orderStatusStyles.rightButtonGroup}>
-            <TouchableOpacity 
-              testID="headerButton" 
-              style={[
-                orderStatusStyles.headerButton,
-                sortOrder === 'asc' && orderStatusStyles.headerButtonActive
-              ]}
-              onPress={toggleSortOrder}
-            >
-              <Text 
-                testID="headerButtonText" 
+          
+          <View testID="buttonContainer" style={orderStatusStyles.buttonContainer}>
+            <View testID="rightButtonGroup" style={orderStatusStyles.rightButtonGroup}>
+              <TouchableOpacity 
+                testID="headerButton" 
                 style={[
-                  orderStatusStyles.headerButtonText,
-                  sortOrder === 'asc' && orderStatusStyles.headerButtonTextActive
+                  orderStatusStyles.headerButton,
+                  sortOrder === 'asc' && orderStatusStyles.headerButtonActive
                 ]}
+                onPress={toggleSortOrder}
               >
-                {sortOrder === 'desc' ? '오래된순' : '최신순'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              testID="headerButton"
-              style={[
-                orderStatusStyles.headerButton,
-                isPeriodSearch && orderStatusStyles.headerButtonActive
-              ]}
-              onPress={() => setShowPeriodModal(true)}
-            >
-              <Text 
-                testID="headerButtonText" 
+                <Text 
+                  testID="headerButtonText" 
+                  style={[
+                    orderStatusStyles.headerButtonText,
+                    sortOrder === 'asc' && orderStatusStyles.headerButtonTextActive
+                  ]}
+                >
+                  {sortOrder === 'desc' ? '오래된순' : '최신순'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                testID="headerButton"
                 style={[
-                  orderStatusStyles.headerButtonText,
-                  isPeriodSearch && orderStatusStyles.headerButtonTextActive
+                  orderStatusStyles.headerButton,
+                  isPeriodSearch && orderStatusStyles.headerButtonActive
                 ]}
+                onPress={() => setShowPeriodModal(true)}
               >
-                기간조회
-              </Text>
-            </TouchableOpacity>
+                <Text 
+                  testID="headerButtonText" 
+                  style={[
+                    orderStatusStyles.headerButtonText,
+                    isPeriodSearch && orderStatusStyles.headerButtonTextActive
+                  ]}
+                >
+                  기간조회
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </>
       )}
 
       {loading ? (
@@ -671,7 +672,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
             return (
               <>
                 <Text testID="yearHeader" style={orderStatusStyles.yearHeader}>
-                  {year}년 주문내역
+                  {year}년 발주내역
                 </Text>
                 {sortedMonths.map((month) => {
                   const weeksObj = monthsObj[month];
@@ -740,9 +741,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                     외 {extraCount}개
                                   </Text>
                                 )}
-                                <Text testID="quantity" style={orderStatusStyles.quantity}>
-                                  발주수량: {f.formatPrice(firstOrder.매장_발주량)}
-                                </Text>
+
                               </View>
                               <TouchableOpacity testID="detailButton" style={orderStatusStyles.detailButton} onPress={() => openDetailModal(`${year}.${month}.${week}`, weeksObj[week])}>
                                 <Text testID="detailButtonText" style={orderStatusStyles.detailButtonText}>
@@ -791,7 +790,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         </View>
       )}
 
-      {/* 주차별 상세보기 모달 */}
+      {/* 상세보기 모달 */}
       <Modal
         testID="detailModal"
         visible={detailModalVisible}
@@ -803,7 +802,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           <View testID="modalView" style={orderStatusStyles.modalView}>
             <View testID="modalHeader" style={orderStatusStyles.modalHeader}>
               <Text testID="modalTitle" style={orderStatusStyles.modalTitle}>
-                {detailGroupDate} 주차 발주 내역
+                {detailGroupDate} 발주 내역
               </Text>
               <TouchableOpacity
                 testID="closeButton"
@@ -838,7 +837,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
             
             <View testID="modalFooter" style={orderStatusStyles.modalFooter}>
               <Text testID="modalTotalCost" style={orderStatusStyles.modalTotalCost}>
-                총 주문금액:
+                총 발주금액:
               </Text>
               <Text testID="modalTotalCost" style={orderStatusStyles.modalTotalCost}>
                 {f.formatPrice(detailTotalCost)}원
@@ -919,7 +918,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                 ))}
                 
                 {/* 주차별 합계 행 */}
-                <View style={[orderStatusStyles.monthlyTableRow, { backgroundColor: '#f8fafc' }]}>
+                <View style={[orderStatusStyles.monthlyTableRow, { backgroundColor: '#f8fafc', borderBottomWidth: 0 }]}>
                   <View style={orderStatusStyles.productColumn}>
                     <Text style={orderStatusStyles.monthlyTableCellHighlight}>주차별 합계</Text>
                   </View>
@@ -951,7 +950,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                   </View>
                 ))}
                 
-                {/* 총 합계 */}
+                {/* 월 총합계 */}
                 <View style={orderStatusStyles.summaryTotal}>
                   <Text style={orderStatusStyles.summaryTotalLabel}>월 총 발주금액</Text>
                   <Text style={orderStatusStyles.summaryTotalValue}>{f.formatPrice(monthlyTotal)}원</Text>

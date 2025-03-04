@@ -59,9 +59,9 @@ export const fetchApiItems = async (): Promise<any[]> => {
 };
 
 /** 모든 품목 리스트 API 호출 함수 */
-export const fetchApiAllItems = async (): Promise<any[]> => {
+export const fetchApiALLItems = async (): Promise<any[]> => {
   try {
-    const response = await fetch(`${RN_API_URL}/api/suppliers/items/?all=true`);
+    const response = await fetch(`${RN_API_URL}/api/suppliers/items/?all=True`);
     if (!response.ok) throw new Error('서버 응답 오류');
     return await response.json();
   } catch (error) {

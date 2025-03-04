@@ -66,6 +66,10 @@
   text-align: right;
 }
 
+.so-warehouse-col {
+  text-align: right;
+}
+
 .store-orders-table thead {
   position: sticky;
   top: -20px;
@@ -220,7 +224,8 @@
 }
 
 /* 매장 헤더 칼럼 전용 스타일 */
-.store-orders-table thead th.so-order-col {
+.store-orders-table thead th.so-order-col,
+.store-orders-table thead th.so-warehouse-col{
   vertical-align: middle;
   font-size: 14px;
   line-height: 1.2;
@@ -229,7 +234,8 @@
 .store-orders-table th.so-sum-col,
 .store-orders-table td.so-sum-col,
 .store-orders-table th.so-order-col,
-.store-orders-table td.so-order-col {
+.store-orders-table td.so-order-col,
+.store-orders-table td.so-warehouse-col {
   width: 50px;
 }
 

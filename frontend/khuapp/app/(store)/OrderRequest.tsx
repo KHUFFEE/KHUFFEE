@@ -285,6 +285,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                     alignItems: 'flex-start',
                     width: '100%',
                     marginTop: moderateScale(8),
+                  
                     marginLeft: moderateScale(20)
                   }}
                 >

@@ -189,41 +189,27 @@ class StoreInventoryUpdateView(APIView):
         # 기존 재고 조회 (id 필드 참조 없이 filter 사용)
         qs = StoreInventory.objects.filter(매장_id=store_obj, 품목_id=item_obj, 기간=period)
         if qs.exists():
-            if new_value == Decimal("0.00"):
-                qs.delete()
-                return Response({
-                    "매장_id": store_obj.pk,
-                    "품목_id": item_obj.pk,
-                    "기간": period,
-                    "매장_재고량": "0.00"
-                }, status=status.HTTP_200_OK)
-            else:
-                qs.update(매장_재고량=new_value)
-                updated_record = qs.order_by("매장_id", "품목_id", "기간") \
-                                   .values("매장_id", "품목_id", "기간", "매장_재고량") \
-                                   .first()
-                return Response(updated_record, status=status.HTTP_200_OK)
+            # 기존 레코드가 있으면 삭제 대신 0으로 업데이트
+            qs.update(매장_재고량=new_value)
+            updated_record = qs.order_by("매장_id", "품목_id", "기간") \
+                               .values("매장_id", "품목_id", "기간", "매장_재고량") \
+                               .first()
+            return Response(updated_record, status=status.HTTP_200_OK)
         else:
-            if new_value == Decimal("0.00"):
-                return Response({
-                    "매장_id": store_obj.pk,
-                    "품목_id": item_obj.pk,
-                    "기간": period,
-                    "매장_재고량": "0.00"
-                }, status=status.HTTP_200_OK)
-            else:
-                StoreInventory.objects.create(
-                    매장_id=store_obj,
-                    품목_id=item_obj,
-                    기간=period,
-                    매장_재고량=new_value
-                )
-                return Response({
-                    "매장_id": store_obj.pk,
-                    "품목_id": item_obj.pk,
-                    "기간": period,
-                    "매장_재고량": new_value
-                }, status=status.HTTP_201_CREATED)
+            # 기존 레코드가 없으면 새로운 레코드 생성 (0 값도 저장)
+            StoreInventory.objects.create(
+                매장_id=store_obj,
+                품목_id=item_obj,
+                기간=period,
+                매장_재고량=new_value
+            )
+            return Response({
+                "매장_id": store_obj.pk,
+                "품목_id": item_obj.pk,
+                "기간": period,
+                "매장_재고량": new_value
+            }, status=status.HTTP_201_CREATED)
+
                 
 class StoreMonthEndInventoryUpdateView(APIView):
     def post(self, request):

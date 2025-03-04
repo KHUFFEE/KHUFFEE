@@ -550,6 +550,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     setMonthlyTotal(monthlyTotal);
     
     setMonthlyDetailOrders(monthlyOrders);
+    // monthlyDetailDate는 "year.month" 형식으로 저장되어 있음
     setMonthlyDetailDate(`${year}.${month}`);
     setMonthlyDetailModalVisible(true);
   };
@@ -570,6 +571,12 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   };
 
   const sortedYears = sortKeys(Object.keys(groupedByYearMonthWeek));
+
+  // 월별 상세보기 모달 제목을 "YYYY년 M월"로 변환 (monthlyDetailDate는 "YYYY.MM" 형식)
+  const formattedMonthlyDetailDate =
+    monthlyDetailDate && monthlyDetailDate.split('.').length === 2
+      ? `${parseInt(monthlyDetailDate.split('.')[0], 10)}년 ${parseInt(monthlyDetailDate.split('.')[1], 10)}월`
+      : monthlyDetailDate;
 
   useEffect(() => {
     if (storeId) {
@@ -696,14 +703,16 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                   return (
                     <View key={month} testID="monthContainer" style={orderStatusStyles.monthContainer}>
                       <View testID="monthHeader" style={orderStatusStyles.monthHeader}>
-                        <Text testID="monthTitle" style={orderStatusStyles.monthTitle}>{month}월</Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text testID="monthTitle" style={orderStatusStyles.monthTitle}>
+                          {parseInt(month)}월
+                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: verticalScale(10)}}>
                           <Text testID="monthTotal" style={orderStatusStyles.monthTotal}>
                             총 {f.formatPrice(monthTotalCost)}원
                           </Text>
                           <TouchableOpacity 
                             testID="monthDetailButton" 
-                            style={orderStatusStyles.detailButton}
+                            style={[orderStatusStyles.detailButton, {marginRight: verticalScale(2)}]}
                             onPress={() => openMonthlyDetailModal(year, month, allMonthOrders)}
                           >
                             <Text testID="monthDetailButtonText" style={orderStatusStyles.detailButtonText}>
@@ -741,10 +750,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                                     외 {extraCount}개
                                   </Text>
                                 )}
-
                               </View>
-                              <TouchableOpacity testID="detailButton" style={orderStatusStyles.detailButton} onPress={() => openDetailModal(`${year}.${month}.${week}`, weeksObj[week])}>
-                                <Text testID="detailButtonText" style={orderStatusStyles.detailButtonText}>
+                              <TouchableOpacity testID="detailButton" style={[orderStatusStyles.detailButton, {marginRight: verticalScale(5)}]} onPress={() => openDetailModal(`${year}.${month}.${week}`, weeksObj[week])}>
+                                <Text testID="detailButtonText" style={[orderStatusStyles.detailButtonText, {marginTop: verticalScale(1)}]}>
                                   상세보기
                                 </Text>
                               </TouchableOpacity>
@@ -801,8 +809,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         <View testID="modalCenteredView" style={orderStatusStyles.modalCenteredView}>
           <View testID="modalView" style={orderStatusStyles.modalView}>
             <View testID="modalHeader" style={orderStatusStyles.modalHeader}>
+              {/* formatWeekString을 사용하여 "YYYY년 M월 W주차" 형식으로 변경 */}
               <Text testID="modalTitle" style={orderStatusStyles.modalTitle}>
-                {detailGroupDate} 발주 내역
+                {f.formatWeekString(detailGroupDate)} 발주 내역
               </Text>
               <TouchableOpacity
                 testID="closeButton"
@@ -820,9 +829,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                   <View style={{ flex: 3 }}>
                     <Text testID="modalOrderName" style={orderStatusStyles.modalOrderName}>
                       {order.품목명}
-                    </Text>
-                    <Text style={orderStatusStyles.modalOrderDate}>
-                      {order.기간 || '날짜 정보 없음'}
                     </Text>
                   </View>
                   <Text testID="modalOrderQuantity" style={orderStatusStyles.modalOrderQuantity}>
@@ -858,8 +864,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         <View testID="modalCenteredView" style={orderStatusStyles.modalCenteredView}>
           <View testID="modalView" style={orderStatusStyles.modalView}>
             <View testID="modalHeader" style={orderStatusStyles.modalHeader}>
+              {/* monthlyDetailDate를 "YYYY년 M월" 형식으로 변환하여 표시 */}
               <Text testID="modalTitle" style={orderStatusStyles.modalTitle}>
-                {monthlyDetailDate} 월 발주 내역
+                {formattedMonthlyDetailDate} 발주 내역
               </Text>
               <TouchableOpacity
                 testID="closeButton"

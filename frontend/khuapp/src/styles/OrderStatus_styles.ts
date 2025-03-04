@@ -15,7 +15,8 @@ export const orderStatusStyles = StyleSheet.create({
   status_container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: moderateScale(16),
+    padding: moderateScale(10),
+    paddingTop: verticalScale(0),
   },
   
   // 헤더 스타일
@@ -26,16 +27,11 @@ export const orderStatusStyles = StyleSheet.create({
     marginBottom: verticalScale(4),
     backgroundColor: '#fff',
     padding: moderateScale(12),
+    paddingBottom: verticalScale(2),
     paddingLeft: moderateScale(10),
-    borderRadius: moderateScale(12),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-    elevation: 1,
   },
   
   sectionTitle: {
@@ -45,7 +41,7 @@ export const orderStatusStyles = StyleSheet.create({
   
   title: {
     ...commonTextStyle,
-    fontSize: RFValue(20),
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#0D326F',
     textAlign: 'center',
@@ -56,14 +52,16 @@ export const orderStatusStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginBottom: verticalScale(8),
-    marginTop: verticalScale(4),
-    paddingRight: moderateScale(10),
+    // marginBottom: verticalScale(8),
+    marginTop: verticalScale(0),
+    // paddingRight: moderateScale(10),
+    // paddingBottom: verticalScale(2),
   },
   
   rightButtonGroup: {
     flexDirection: 'row',
-    gap: moderateScale(3)
+    gap: moderateScale(3),
+    marginRight: moderateScale(9),
   },
   
   headerButton: {
@@ -127,26 +125,30 @@ export const orderStatusStyles = StyleSheet.create({
     fontSize: RFValue(16),
     fontWeight: '500',
     color: '#0D326F',
-    marginBottom: verticalScale(8),
-    marginTop: verticalScale(10),
+    // marginBottom: verticalScale(8),
+    // marginTop: verticalScale(10),
+    marginLeft: moderateScale(10),
     paddingLeft: moderateScale(10),
     borderLeftWidth: 4,
     borderLeftColor: '#0D326F',
   },
 
   monthContainer: {
-    backgroundColor: '#f8f9fa',
-    marginBottom: verticalScale(16),
+    // backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
+    marginBottom: verticalScale(8),
     borderRadius: moderateScale(10),
     padding: moderateScale(8),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    paddingBottom: verticalScale(3),
+    // paddingBottom: verticalScale(3),
+    // shadowColor: '#000',
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 2,
+    // },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 3,
+    // elevation: 2,
   },
 
   monthHeader: {
@@ -155,9 +157,10 @@ export const orderStatusStyles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: verticalScale(10),
     paddingHorizontal: moderateScale(16),
+    paddingRight: moderateScale(2),
     backgroundColor: '#0D326F',
     borderRadius: moderateScale(8),
-    marginBottom: verticalScale(10),
+    marginBottom: verticalScale(0),
   },
 
   monthTitle: {
@@ -165,6 +168,7 @@ export const orderStatusStyles = StyleSheet.create({
     fontSize: RFValue(15),
     fontWeight: '600',
     color: '#FFFFFF',
+    marginRight: moderateScale(0),
   },
 
   monthTotal: {
@@ -178,8 +182,11 @@ export const orderStatusStyles = StyleSheet.create({
   weekContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: moderateScale(12),
-    padding: moderateScale(16),
-    marginBottom: verticalScale(8),
+    // padding: moderateScale(16),
+    paddingBottom: verticalScale(4),
+    paddingTop: verticalScale(3),
+    paddingHorizontal: moderateScale(4),
+    marginTop: verticalScale(3),
     borderWidth: 1,
     borderColor: '#e2e8f0',
     shadowColor: '#000',
@@ -196,7 +203,7 @@ export const orderStatusStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: verticalScale(12),
+    marginBottom: verticalScale(3),
     paddingBottom: verticalScale(8),
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
@@ -234,7 +241,8 @@ export const orderStatusStyles = StyleSheet.create({
     ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#1A1A1A',
-    marginBottom: verticalScale(4),
+    paddingLeft: moderateScale(5),
+    // marginBottom: verticalScale(4),
   },
 
   extraCount: {
@@ -242,6 +250,7 @@ export const orderStatusStyles = StyleSheet.create({
     fontSize: RFValue(12),
     color: '#666666',
     marginBottom: verticalScale(4),
+    paddingLeft: moderateScale(5),
   },
 
   quantity: {
@@ -259,6 +268,7 @@ export const orderStatusStyles = StyleSheet.create({
     borderRadius: moderateScale(16),
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: moderateScale(10),
   },
 
   detailButtonText: {

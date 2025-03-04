@@ -177,12 +177,12 @@ export const OrderRequeststyle = StyleSheet.create({
   },
   errorContainer: {
     ...commonTextStyle,
-    marginTop: moderateScale(2),
+    // marginTop: moderateScale(2),
     backgroundColor: '#fee2e2',
     borderRadius: moderateScale(8),
     padding: moderateScale(8),
     marginLeft: moderateScale(8),
-    marginBottom: moderateScale(2),
+    marginBottom: moderateScale(4),
     width: '100%',
   },
   errorText: {

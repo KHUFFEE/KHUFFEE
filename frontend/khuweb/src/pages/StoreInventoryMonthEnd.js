@@ -20,7 +20,7 @@ const StoreInventoryMonthEnd = () => {
   // 초기 로드시에는 로딩 스피너가 뜨지 않도록 false로 설정
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [tableStatus, setTableStatus] = useState(null); // New state for table status
+  const [tableStatus, setTableStatus] = useState(null); // 테이블 상태
 
   // 기간 선택: 매장은 월말재고이므로 "년"과 "월"만 사용 (주차 제거)
   const [selectedYear, setSelectedYear] = useState("");
@@ -60,8 +60,9 @@ const StoreInventoryMonthEnd = () => {
     try {
       if (manual) setLoading(true);
       const inventoryResponse = await fetchStoreMonthEndInventory(params);
+      // 모든 품목(활성/비활성 구분 없이)을 조회하여, 매장_월말재고 API의 품목_id와 매칭
       const [itemsData, suppliersData, storesData] = await Promise.all([
-        fetchItems(),
+        fetchItems(true),
         fetchSuppliers(),
         fetchStores(),
       ]);
@@ -91,7 +92,7 @@ const StoreInventoryMonthEnd = () => {
     }
   }, [inventoryData]);
 
-  // Fetch table status for 최신(현재) 기간 only
+  // 최신(현재) 기간의 테이블 상태 조회
   const fetchTableStatus = async () => {
     try {
       const statusList = await getTableStatusList();
@@ -248,7 +249,9 @@ const StoreInventoryMonthEnd = () => {
     }
   };
 
-  // 요청사항: 오픈하기 버튼 클릭 시에만 manual=true → 로딩 스피너 발생
+  // ───────── 요청사항 반영 ─────────
+  // 오픈하기 버튼 클릭 시 0을 post할 때,
+  // **품목 테이블에서 활성화가 1인 모든 제품**을 대상으로 업데이트하도록 변경함.
   const handleOpenButtonClick = async () => {
     if (tableStatus === 0) {
       setLoading(true);
@@ -263,11 +266,13 @@ const StoreInventoryMonthEnd = () => {
       const newPeriod = `${year}.${month.toString().padStart(2, "0")}`;
       try {
         const updatePromises = [];
-        sortedTableRows.forEach((row) => {
+        // activeItems: 품목 테이블에서 활성화가 1인 제품만 대상으로 함.
+        const activeItems = items.filter((item) => item.활성화);
+        activeItems.forEach((item) => {
           orderedStores.forEach((store) => {
             const payload = {
               매장_id: store.매장_id,
-              품목_id: row.itemId,
+              품목_id: item.품목_id,
               기간: newPeriod,
               월말_재고량: 0,
             };
@@ -285,8 +290,9 @@ const StoreInventoryMonthEnd = () => {
     }
     handleStatusToggle();
   };
+  // ─────────────────────────────────────────
 
-  // 그룹화: API에서 받은 재고 데이터(inventories)의 각 품목별로, 매장별 월말 재고량을 분류
+  // 그룹화: inventoryData.inventories의 각 품목별로, 매장별 월말 재고량을 분류
   const groupedInventory = () => {
     const grouping = {};
     if (inventoryData && inventoryData.inventories) {
@@ -302,16 +308,19 @@ const StoreInventoryMonthEnd = () => {
   };
 
   const inventoriesByItem = groupedInventory();
-
-  const tableRows = items.map((item) => {
-    const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
+  // tableRows를 생성할 때, items 테이블에서 조회한 전체 품목(활성/비활성 모두) 중
+  // inventoryData에서 가져온 품목_id와 매칭하여 품목명을 표시하도록 함.
+  const tableRows = Object.keys(inventoriesByItem).map((itemId) => {
+    const matchedItem = items.find((i) => i.품목_id === itemId);
+    const supplier = matchedItem
+      ? suppliers.find((s) => s.협력사_id === matchedItem.협력사_id)
+      : {};
     return {
-      itemId: item.품목_id,
-      supplierName: supplier.협력사명 || "N/A",
-      itemName: item.품목명 || "N/A",
-      type: item.종류 || "",
-      // 각 매장의 월말 재고량
-      inventory: inventoriesByItem[item.품목_id] || {},
+      itemId,
+      supplierName: supplier ? supplier.협력사명 : "N/A",
+      itemName: matchedItem ? matchedItem.품목명 : "N/A",
+      type: matchedItem ? matchedItem.종류 : "",
+      inventory: inventoriesByItem[itemId] || {},
     };
   });
 
@@ -368,7 +377,11 @@ const StoreInventoryMonthEnd = () => {
 
   // 편집 모드 관련 헬퍼 함수
   const getCellValue = (row, storeId) => {
-    if (isEditMode && editedInventories[row.itemId] && editedInventories[row.itemId][storeId] !== undefined) {
+    if (
+      isEditMode &&
+      editedInventories[row.itemId] &&
+      editedInventories[row.itemId][storeId] !== undefined
+    ) {
       return editedInventories[row.itemId][storeId];
     }
     return row.inventory[storeId];
@@ -472,7 +485,6 @@ const StoreInventoryMonthEnd = () => {
       ? `${nextMonthNumber}월 오픈하기`
       : `${currentMonthNumber}월 마감하기`;
     
-
   // 요청사항 2: 최신 기간일 때, 상태 메시지 표시 (3월 마감 상태와 4월 오픈 상태에 따른 메시지)
   let statusMessage = "";
   if (

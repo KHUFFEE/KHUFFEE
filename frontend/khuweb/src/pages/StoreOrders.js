@@ -10,7 +10,7 @@ import {
 } from "../api/api";
 import "../styles/StoreOrders.css";
 import { storeOrdersDownloadExcel } from "../utils/StoreOrdersDownloadExcel";
-import LoadingSpinner from "../components/LoadingSpinner"; 
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const StoreOrders = () => {
   // 기본 상태
@@ -77,8 +77,10 @@ const StoreOrders = () => {
         throw new Error("Failed to fetch orders");
       }
       const ordersResponse = await response.json();
+      // 여기서는 품목 테이블 대신, 주문 데이터(매장_발주 API) 기준으로 품목 ID를 받아옴
+      // 그리고 품목 API는 활성/비활성 상관없이 모든 품목을 조회하기 위해 true를 인자로 넘김
       const [itemsData, suppliersData, storesData] = await Promise.all([
-        fetchItems(),
+        fetchItems(true),
         fetchSuppliers(),
         fetchStores(),
       ]);
@@ -181,6 +183,41 @@ const StoreOrders = () => {
     }
   };
 
+  const formatStoreName = (name) => {
+    switch (name) {
+      case "중앙도서관":
+        return (
+          <>
+            중앙
+            <br />도서관
+          </>
+        );
+      case "예술디자인대":
+        return (
+          <>
+            예술
+            <br />디자인대
+          </>
+        );
+      case "멀티미디어관":
+        return (
+          <>
+            멀티
+            <br />미디어관
+          </>
+        );
+      case "제2기숙사":
+        return (
+          <>
+            제2
+            <br />기숙사
+          </>
+        );
+      default:
+        return name;
+    }
+  };
+
   // 최초 로드 시 handleReset 실행 (로딩 동작 없음)
   useEffect(() => {
     handleReset();
@@ -203,9 +240,8 @@ const StoreOrders = () => {
     fetchManagerRound();
   }, []);
 
-
   // displayPeriod 계산 (선택된 값 우선)
-  const getDisplayPeriod = () => {
+  const getDisplayPeriodText = () => {
     if (isFreeInput) {
       return freePeriod && freePeriod.split(".").length === 4
         ? `${freePeriod.split(".")[0]}년 ${freePeriod.split(".")[1].padStart(2, "0")}월 ${freePeriod.split(".")[2]}주차 ${freePeriod.split(".")[3]}회차`
@@ -216,9 +252,9 @@ const StoreOrders = () => {
     return "";
   };
 
-  const displayPeriod = getDisplayPeriod();
+  const displayPeriod = getDisplayPeriodText();
 
-  // 그룹핑: 품목별 주문 데이터를 매장별로 정리
+  // 그룹핑: 주문 데이터(ordersData.orders)를 품목별로 매장별 발주량으로 정리
   const groupedOrders = () => {
     const grouping = {};
     if (ordersData && ordersData.orders) {
@@ -235,16 +271,36 @@ const StoreOrders = () => {
 
   const ordersByItem = groupedOrders();
 
-  const tableRows = items.map((item) => {
+  // ★ 요청사항 반영 ★  
+  // 기본 행은 매장_발주 API에서 받아온 주문 데이터의 품목_id(ordersByItem의 key)를 기준으로 구성하고,
+  // 그 후 품목 API에서 활성화 되어 있는 품목 중 매칭되지 않은 항목들도 추가한다.
+  const orderItemIds = Object.keys(ordersByItem);
+  const tableRowsFromOrders = orderItemIds.map((itemId) => {
+    const matchedItem = items.find((item) => item.품목_id === itemId);
+    const supplier = matchedItem ? suppliers.find((s) => s.협력사_id === matchedItem.협력사_id) : {};
+    return {
+      itemId,
+      supplierName: supplier ? supplier.협력사명 : "N/A",
+      itemName: matchedItem ? matchedItem.품목명 : "N/A",
+      type: matchedItem ? matchedItem.종류 : "",
+      orders: ordersByItem[itemId] || {},
+    };
+  });
+  // 추가: 활성화 되어 있는 품목 중 주문 데이터에 포함되지 않은 항목들을 추가 (화면에 표시되지 않은 행들)
+  const activeItemsNotInOrders = items.filter(
+    (item) => item.활성화 && !orderItemIds.includes(item.품목_id)
+  );
+  const tableRowsFromActive = activeItemsNotInOrders.map((item) => {
     const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
     return {
       itemId: item.품목_id,
       supplierName: supplier.협력사명 || "N/A",
       itemName: item.품목명 || "N/A",
       type: item.종류 || "",
-      orders: ordersByItem[item.품목_id] || {},
+      orders: {},
     };
   });
+  const tableRows = [...tableRowsFromOrders, ...tableRowsFromActive];
 
   const sortedTableRows = tableRows.sort((a, b) => {
     const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
@@ -345,9 +401,7 @@ const StoreOrders = () => {
       for (const itemId in editedOrders) {
         for (const storeId in editedOrders[itemId]) {
           const newValue = editedOrders[itemId][storeId];
-          const originalVal = tableRows.find(
-            (row) => row.itemId === itemId
-          )?.orders[storeId];
+          const originalVal = tableRows.find((row) => row.itemId === itemId)?.orders[storeId];
           if (newValue === "" || Number(newValue) === 0) {
             if (originalVal === 0 || originalVal === "") continue;
           } else if (newValue === originalVal) continue;
@@ -371,41 +425,6 @@ const StoreOrders = () => {
     }
   };
 
-  const formatStoreName = (name) => {
-    switch (name) {
-      case "중앙도서관":
-        return (
-          <>
-            중앙
-            <br />도서관
-          </>
-        );
-      case "예술디자인대":
-        return (
-          <>
-            예술
-            <br />디자인대
-          </>
-        );
-      case "멀티미디어관":
-        return (
-          <>
-            멀티
-            <br />미디어관
-          </>
-        );
-      case "제2기숙사":
-        return (
-          <>
-            제2
-            <br />기숙사
-          </>
-        );
-      default:
-        return name;
-    }
-  };
-
   const handleExcelDownload = () => {
     storeOrdersDownloadExcel({
       selectedYear,
@@ -426,9 +445,7 @@ const StoreOrders = () => {
     try {
       const statusList = await getTableStatusList();
       // "매장_발주" 칼럼의 상태 값을 찾음 (없으면 기본 1)
-      const storeOrderStatus = statusList.find(
-        (s) => s.테이블 === "매장_발주"
-      );
+      const storeOrderStatus = statusList.find((s) => s.테이블 === "매장_발주");
       const currentStatus = storeOrderStatus ? storeOrderStatus.상태 : 1;
       setManagerOrderRound(currentStatus);
     } catch (err) {
@@ -468,7 +485,6 @@ const StoreOrders = () => {
       if (weekA !== weekB) return weekB - weekA;
       return roundB - roundA;
     });
-    // 현재 선택된 회차를 숫자로 비교 (문자열 포맷 문제를 피하기 위해)
     const currentPeriod = [
       Number(selectedYear),
       Number(selectedMonth),
@@ -566,7 +582,8 @@ const StoreOrders = () => {
             최신 조회
           </button>
           <span className="control-description">
-            현재 매니저의 발주는 {managerOrderRound}회차로 저장됩니다.<br />
+            현재 매니저의 발주는 {managerOrderRound}회차로 저장됩니다.
+            <br />
             {managerOrderRound + 1}회차로 변경하려면 회차 관리 버튼을 클릭해주세요.
           </span>
         </div>

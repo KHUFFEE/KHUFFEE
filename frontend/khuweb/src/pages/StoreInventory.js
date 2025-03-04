@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   fetchItems,
   fetchSuppliers,
   fetchStores,
   fetchStoreInventory,
-  // fetchStoreInventory는 사용되지 않고 fetchStoreInventory 대신 API 호출 로직 사용 중
   fetchStoreMonthEndInventory,
   updateStoreMonthEndInventory,
   getTableStatusList,
@@ -19,16 +18,13 @@ const StoreInventory = () => {
   const [items, setItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [stores, setStores] = useState([]);
-  // 초기 로드시에는 로딩 스피너가 뜨지 않도록 false로 설정
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 기간 선택 관련 상태
+  // 기간, 일, 매장 선택 관련 상태
   const [yearMonthOptions, setYearMonthOptions] = useState([]);
   const [selectedYearMonth, setSelectedYearMonth] = useState("");
   const [selectedDay, setSelectedDay] = useState("");
-
-  // 매장 선택 상태 (기본 매장은 "ST_103")
   const [selectedStore, setSelectedStore] = useState("");
 
   // 드롭다운 토글 상태
@@ -36,8 +32,8 @@ const StoreInventory = () => {
   const [isDayOpen, setIsDayOpen] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState(false);
 
-  // API 호출: 기간(YYYY.MM.DD)와 매장_id에 해당하는 매장 재고, 품목, 협력사 데이터를 가져옴
-  // manual 인자가 true일 때만 로딩 스피너가 발생
+  // API 호출: 매장_일별 테이블에서 재고 데이터를 가져오고,
+  // fetchItems(true)를 호출하여 활성/비활성 상관없이 모든 품목 조회 후 매칭 처리
   const fetchData = async (params = {}, manual = false) => {
     try {
       if (manual) setLoading(true);
@@ -45,7 +41,7 @@ const StoreInventory = () => {
       const storeId = params.매장_id;
       const [inventoryRes, itemsRes, suppliersRes] = await Promise.all([
         fetchStoreInventory({ 기간: period, 매장_id: storeId }),
-        fetchItems(),
+        fetchItems(true), // all=true로 호출하여 모든 품목 조회
         fetchSuppliers(),
       ]);
       setInventoryData(inventoryRes);
@@ -59,7 +55,7 @@ const StoreInventory = () => {
     }
   };
 
-  // 기간 옵션 재갱신 함수 (페이지 로드시와 최신 조회 버튼에서 사용)
+  // 기간 옵션 재갱신 함수 (최초 로드 및 최신 조회)
   const refreshPeriods = async () => {
     try {
       const response = await fetch(
@@ -106,12 +102,11 @@ const StoreInventory = () => {
     }
   };
 
-  // 페이지 로드시 기간 옵션 설정
   useEffect(() => {
     refreshPeriods();
   }, []);
 
-  // 매장 목록을 fetchStores API로 불러와 기본 선택 설정 (ST_101, ST_102 제외)
+  // 매장 목록을 불러오고 기본 매장 선택 (ST_101, ST_102 제외)
   useEffect(() => {
     const fetchAllStores = async () => {
       try {
@@ -142,7 +137,7 @@ const StoreInventory = () => {
     setSelectedDay(defaultDay);
   }, []);
 
-  // 사용자가 기간(년월, 일) 또는 매장을 변경하면 바로 API 호출 (manual=false)
+  // 사용자가 기간, 일 또는 매장을 변경하면 데이터 재조회
   useEffect(() => {
     if (selectedYearMonth && selectedDay && selectedStore) {
       const [year, month] = selectedYearMonth.split(".");
@@ -160,19 +155,16 @@ const StoreInventory = () => {
     dayOptions.push(d.toString().padStart(2, "0"));
   }
 
-  // "최신 조회" 버튼: 매장은 유지하고 기간을 최신으로 갱신하여 데이터 조회 (manual=true)
+  // 최신 조회 버튼 클릭 시 기간 옵션 갱신 후 데이터 조회
   const handleReset = async (manual = false) => {
     await refreshPeriods();
-    // 매장은 유지하고 최신 조회 시 최신 기간 옵션과 선택된 일, 매장 정보를 사용합니다.
     if (yearMonthOptions.length > 0) {
-      // 최신 기간은 yearMonthOptions의 첫번째 (내림차순 정렬되어 있다고 가정)
       const latest = [...yearMonthOptions].sort((a, b) => {
         const [yA, mA] = a.split(".").map(Number);
         const [yB, mB] = b.split(".").map(Number);
         if (yA !== yB) return yB - yA;
         return mB - mA;
       })[0];
-      // 선택된 일(selectedDay)을 추가하여 완전한 기간(YYYY.MM.DD) 형태로 생성
       const period = `${latest}.${selectedDay}`;
       fetchData({ 기간: period, 매장_id: selectedStore }, manual);
     } else {
@@ -180,34 +172,33 @@ const StoreInventory = () => {
     }
   };
 
-
-  // ===== 수정된 부분: LoadingSpinner를 사용하여 최신 조회 버튼 클릭 시만 로딩 동작 발생 =====
-  // 최신 조회 버튼 onClick에서는 handleReset(true)를 호출합니다.
-  // 나머지 fetchData 호출에서는 manual=false를 전달하여 로딩 스피너를 표시하지 않습니다.
-  // ==========================================================================================
-
-  // ===== 이하 품목 기반 테이블 생성 로직 =====
-  // 재고 데이터를 품목_id별로 그룹화 (매장_재고량 합산)
+  // --- 품목명 열 표시를 위한 로직 ---
+  // 1. 매장_일별 테이블 API로 불러온 inventoryData에서 품목_id별로 재고량을 그룹화
   const groupedInventory = {};
   inventoryData.forEach((record) => {
     const itemId = record.품목_id;
-    groupedInventory[itemId] = (groupedInventory[itemId] || 0) + Number(record.매장_재고량);
+    groupedInventory[itemId] =
+      (groupedInventory[itemId] || 0) + Number(record.매장_재고량);
   });
 
-  // 품목 데이터를 기준으로 테이블 행 생성
-  const tableRows = items.map((item) => {
-    const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
+  // 2. 그룹화된 품목_id를 순회하면서, fetchItems(true)로 불러온 모든 품목(활성/비활성 무관)에서 매칭하여 품목명 등 정보를 채움
+  const tableRows = Object.keys(groupedInventory).map((itemId) => {
+    const matchedItem = items.find((i) => i.품목_id === itemId);
+    const itemName = matchedItem ? matchedItem.품목명 : "N/A";
+    const supplier = matchedItem
+      ? suppliers.find((s) => s.협력사_id === matchedItem.협력사_id) || {}
+      : {};
     return {
-      itemId: item.품목_id,
+      itemId,
       supplierName: supplier.협력사명 || "N/A",
-      itemName: item.품목명 || "N/A",
-      type: item.종류 || "",
-      inventory: groupedInventory[item.품목_id] || 0,
-      unitPrice: item ? Number(item.입고단가) : 0,
+      itemName,
+      type: matchedItem ? matchedItem.종류 : "",
+      inventory: groupedInventory[itemId] || 0,
+      unitPrice: matchedItem ? Number(matchedItem.입고단가) : 0,
     };
   });
 
-  // 협력사 → 종류 → 품목명 오름차순 정렬
+  // 오름차순 정렬: 협력사 → 종류 → 품목명
   tableRows.sort((a, b) => {
     const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
     if (cmpSupplier !== 0) return cmpSupplier;
@@ -215,7 +206,7 @@ const StoreInventory = () => {
     if (cmpType !== 0) return cmpType;
     return a.itemName.localeCompare(b.itemName);
   });
-  // ====================================================================
+  // --------------------------------
 
   const formatNumber = (num) => {
     if (num === "" || num === undefined || num === null || Number(num) === 0)
@@ -223,13 +214,13 @@ const StoreInventory = () => {
     return Number(num).toLocaleString();
   };
 
-  // 헬퍼: "YYYY.MM" → "YYYY년 MM월" 변환
+  // 헬퍼: "YYYY.MM" → "YYYY년 MM월" 형식 변환
   const formatYMLabel = (ymStr) => {
     const [y, m] = ymStr.split(".");
     return `${y}년 ${m}월`;
   };
 
-  // 엑셀 다운로드 함수 (동작은 그대로 유지)
+  // 엑셀 다운로드 함수 (기존 동작 그대로 유지)
   const handleExcelDownload = () => {
     const [year, month] = selectedYearMonth.split(".");
     const day = selectedDay;
@@ -482,7 +473,7 @@ const StoreInventory = () => {
               </svg>
             </span>
           </div>
-          {/* 최신 조회 버튼: onClick에서 handleReset(true) 호출 */}
+          {/* 최신 조회 버튼 */}
           <button className="reset-button" onClick={() => handleReset(true)}>
             최신 조회
           </button>

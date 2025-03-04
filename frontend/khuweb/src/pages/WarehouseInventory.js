@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   fetchWarehouseInventory,
   fetchItems,
@@ -43,7 +43,8 @@ const WarehouseInventory = () => {
       const period = params.기간; // 예: "2023.04.05"
       const [inventoryRes, itemsRes, suppliersRes] = await Promise.all([
         fetchWarehouseInventory({ 기간: period, 매장_id: selectedStore }),
-        fetchItems(),
+        // 모든 품목(활성/비활성 상관없이)을 조회하여 이후 품목명 매칭에 사용
+        fetchItems(true),
         fetchSuppliers(),
       ]);
       setInventoryData(inventoryRes);
@@ -65,7 +66,11 @@ const WarehouseInventory = () => {
       if (allPeriods.length === 0) return;
       const dateObjs = allPeriods.map(period => {
         const parts = period.split(".");
-        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        return new Date(
+          parseInt(parts[0], 10),
+          parseInt(parts[1], 10) - 1,
+          parseInt(parts[2], 10)
+        );
       });
       const minDate = new Date(Math.min(...dateObjs));
       const maxDate = new Date(Math.max(...dateObjs));
@@ -170,25 +175,37 @@ const WarehouseInventory = () => {
     }
   };
 
-
   // ===== 이하 품목 기반 테이블 생성 로직 =====
-  // 창고 재고 데이터를 품목별로 그룹화 (품목_id 기준)
+  // 창고 재고 데이터를 품목_id 기준으로 그룹화 (창고_재고량 합산)
   const groupedInventory = {};
   inventoryData.forEach((record) => {
     const itemId = record.품목_id;
-    groupedInventory[itemId] = (groupedInventory[itemId] || 0) + Number(record.창고_재고량);
+    groupedInventory[itemId] =
+      (groupedInventory[itemId] || 0) + Number(record.창고_재고량);
   });
 
-  // 품목 데이터를 기준으로 테이블 행 생성
-  const tableRows = items.map((item) => {
-    const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
+  // 창고 재고 테이블 API를 기준으로 불러온 품목_id들을 순회하여,
+  // fetchItems(true)로 조회한 모든 품목 데이터와 매칭하여 품목명 등 정보를 채움
+  const tableRows = Object.keys(groupedInventory).map((itemId) => {
+    const matchedItem = items.find((i) => i.품목_id === itemId);
+    let supplierName = "N/A";
+    let itemName = "N/A";
+    let type = "";
+    let unitPrice = 0;
+    if (matchedItem) {
+      itemName = matchedItem.품목명;
+      type = matchedItem.종류 || "";
+      unitPrice = Number(matchedItem.입고단가);
+      const supplier = suppliers.find((s) => s.협력사_id === matchedItem.협력사_id);
+      supplierName = supplier ? supplier.협력사명 : "N/A";
+    }
     return {
-      itemId: item.품목_id,
-      supplierName: supplier.협력사명 || "N/A",
-      itemName: item.품목명 || "N/A",
-      type: item.종류 || "",
-      inventory: groupedInventory[item.품목_id] || 0,
-      unitPrice: item ? Number(item.입고단가) : 0,
+      itemId,
+      supplierName,
+      itemName,
+      type,
+      inventory: groupedInventory[itemId] || 0,
+      unitPrice,
     };
   });
 
@@ -426,7 +443,7 @@ const WarehouseInventory = () => {
               </svg>
             </span>
           </div>
-          {/* 최신 조회 버튼 클릭 시 handleReset(true) 호출하여 로딩 스피너 발생 */}
+          {/* 최신 조회 버튼 클릭 시 handleReset(true) 호출 */}
           <button className="reset-button" onClick={() => handleReset(true)}>
             최신 조회
           </button>

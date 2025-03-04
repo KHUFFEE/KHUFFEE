@@ -101,7 +101,6 @@ const Suppliers = () => {
     for (let cell in ws) {
       if (cell[0] === "!") continue;
       ws[cell].s = ws[cell].s || {};
-      // 기존 폰트 속성이 있으면 병합, 없으면 Arial 만 적용
       ws[cell].s.font = { name: "Arial", ...(ws[cell].s.font || {}) };
     }
 
@@ -189,21 +188,23 @@ const Suppliers = () => {
           </tr>
         </thead>
         <tbody>
-          {suppliers.map((supplier, index) => (
-            <tr key={index}>
-              {isDeleteMode && (
-                <td className="suppliers-narrow-col">
-                  <input
-                    type="checkbox"
-                    checked={selectedSuppliers.includes(supplier.협력사명)}
-                    onChange={() => toggleSelect(supplier.협력사명)}
-                  />
-                </td>
-              )}
-              <td className="suppliers-number-col">{index + 1}</td>
-              <td>{supplier.협력사명}</td>
-            </tr>
-          ))}
+          {[...suppliers]
+            .sort((a, b) => a.협력사명.localeCompare(b.협력사명))
+            .map((supplier, index) => (
+              <tr key={index}>
+                {isDeleteMode && (
+                  <td className="suppliers-narrow-col">
+                    <input
+                      type="checkbox"
+                      checked={selectedSuppliers.includes(supplier.협력사명)}
+                      onChange={() => toggleSelect(supplier.협력사명)}
+                    />
+                  </td>
+                )}
+                <td className="suppliers-number-col">{index + 1}</td>
+                <td>{supplier.협력사명}</td>
+              </tr>
+            ))}
         </tbody>
       </table>
       {isDeleteMode && (

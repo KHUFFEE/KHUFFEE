@@ -5,6 +5,7 @@ export const storeOrdersDownloadExcel = ({
   selectedYear,
   selectedMonth,
   selectedWeek,
+  selectedRound,
   isFreeInput,
   freePeriod,
   ordersData,
@@ -40,10 +41,10 @@ export const storeOrdersDownloadExcel = ({
   const yyyymmdd = `${now.getFullYear()}${(now.getMonth() + 1)
     .toString()
     .padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}`;
-  const filename = `카페쿠피_${year}년_${month}월_${week}주차_발주서_발주서용_(${yyyymmdd}).xlsx`;
+  const filename = `카페쿠피_${year}년_${month}월_${week}주차_${selectedRound}회차_발주서_발주서용_(${yyyymmdd}).xlsx`;
 
   // 3. 상단 제목 (병합된 셀; 제목은 맑은 고딕)
-  const headerTitle = `카페 쿠피 ${month}월 ${week}주차 발주 취합`;
+  const headerTitle = `카페 쿠피 ${month}월 ${week}주차 ${selectedRound}회차 발주 취합`;
 
   // 4. 시트에 들어갈 데이터 배열 구성
   // 행0~1: 상단 제목, 행2: 빈행, 행3: 헤더 (번호열 없이 "협력사", "품목명", [매장들], "합계", "확인")
@@ -333,7 +334,7 @@ export const storeOrdersDownloadExcel = ({
   }
 
   const wb = XLSX.utils.book_new();
-  const sheetName = `${month}월 ${week}주차 발주`;
+  const sheetName = `${month}월 ${week}주차 ${selectedRound}회차 발주`;
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, filename);
 

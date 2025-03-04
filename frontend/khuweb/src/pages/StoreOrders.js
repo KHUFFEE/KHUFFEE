@@ -11,6 +11,7 @@ import {
 } from "../api/api";
 import "../styles/StoreOrders.css";
 import { storeOrdersDownloadExcel } from "../utils/StoreOrdersDownloadExcel";
+import { storeOrdersCombinedDownloadExcel } from "../utils/StoreOrdersCombinedDownloadExcel";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const StoreOrders = () => {
@@ -473,12 +474,19 @@ const StoreOrders = () => {
       : 0;
   };
   
-
   // Compute total warehouse value for footer
   const warehouseTotal = sortedTableRows.reduce(
     (sum, row) => sum + getWarehouseValue(row.itemId),
     0
   );  
+
+  // ★ 요청사항 반영 ★
+  // 해당 행의 창고 - 합계 값이 음수인지 판단하는 헬퍼 함수
+  const isNegativeDifference = (row) => {
+    const warehouseVal = Number(getWarehouseValue(row.itemId)) || 0;
+    const rowSum = Number(getRowSum(row)) || 0;
+    return warehouseVal - rowSum < 0;
+  };
 
   // 수정 모드 토글 및 관련 이벤트 핸들러
   const handleEditToggle = () => {
@@ -546,6 +554,16 @@ const StoreOrders = () => {
     });
   };
 
+  // ★ 요청사항 반영 ★: 최신 기간일 때만 보이는 통합 다운로드 버튼
+  const handleCombinedExcelDownload = async () => {
+    try {
+      await storeOrdersCombinedDownloadExcel({ distinctPeriods });
+    } catch (err) {
+      console.error("통합 다운로드 실패:", err);
+      alert("통합 다운로드에 실패하였습니다.");
+    }
+  };
+
   // 회차 관리 버튼 클릭 시: getTableStatusList API 호출 후 팝업 표시
   const handleSessionButtonClick = async () => {
     try {
@@ -571,8 +589,6 @@ const StoreOrders = () => {
       alert("회차 관리 업데이트에 실패하였습니다.");
     }
   };
-
-
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
@@ -671,6 +687,12 @@ const StoreOrders = () => {
           <button onClick={handleExcelDownload} className="download-button" disabled={isEditMode}>
             Excel 다운로드
           </button>
+          {/* ★ 요청사항 반영: 최신 기간일 때만 보이는 통합 다운로드 버튼 (클래스는 download-button 동일) */}
+          {isLatestPeriodFlag && (
+            <button className="download-button" onClick={handleCombinedExcelDownload} disabled={isEditMode}>
+              통합 다운로드
+            </button>
+          )}
           <button className="edit-button" onClick={handleEditToggle}>
             {isEditMode ? "취소" : "수정"}
           </button>
@@ -729,11 +751,11 @@ const StoreOrders = () => {
                   )}
                 </td>
               ))}
-              {/* New "창고" column cell: display the aggregated warehouse inventory value for the product */}
-              <td className="so-warehouse-col">
+              {/* New "창고" column cell with red border condition */}
+              <td className={`so-warehouse-col ${isNegativeDifference(row) ? "negative-difference" : ""}`}>
                 {formatNumber(getWarehouseValue(row.itemId))}
               </td>
-              <td className="so-sum-col">
+              <td className={`so-sum-col ${isNegativeDifference(row) ? "negative-difference" : ""}`}>
                 {getRowSum(row) === 0 ? "-" : formatNumber(getRowSum(row))}
               </td>
             </tr>

@@ -356,6 +356,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           store_id: storeId,
           기간: periodParam,
           order: order,
+          all: "true"
         });
         const url = `${RN_API_URL}/api/orders/store_order_list/?${params.toString()}`;
 
@@ -410,6 +411,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         store_id: storeId,
         기간: `${startDate}~${endDate}`,
         order: sortOrder,
+        all: "true"
       });
       const url = `${RN_API_URL}/api/orders/store_order_list/?${params.toString()}`;
       const response = await fetch(url);

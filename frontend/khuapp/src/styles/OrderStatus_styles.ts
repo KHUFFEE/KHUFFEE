@@ -42,7 +42,7 @@ export const orderStatusStyles = StyleSheet.create({
   title: {
     ...commonTextStyle,
     fontSize: RFValue(18),
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#0D326F',
     textAlign: 'center',
   },
@@ -123,7 +123,7 @@ export const orderStatusStyles = StyleSheet.create({
   yearHeader: {
     ...commonTextStyle,
     fontSize: RFValue(16),
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#0D326F',
     // marginBottom: verticalScale(8),
     // marginTop: verticalScale(10),

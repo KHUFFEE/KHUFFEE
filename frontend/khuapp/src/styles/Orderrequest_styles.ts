@@ -65,7 +65,7 @@ export const OrderRequeststyle = StyleSheet.create({
     gap: moderateScale(2),
     paddingRight: moderateScale(6),
     paddingLeft: moderateScale(2),
-    marginTop: moderateScale(0),
+    marginTop: moderateScale(5),
   },
   nameWithFavoriteContainer: {
     ...commonTextStyle,
@@ -528,6 +528,7 @@ export const OrderRequeststyle = StyleSheet.create({
     gap: moderateScale(2),
     paddingRight: moderateScale(6),
     paddingLeft: moderateScale(2),
+    marginTop: moderateScale(5),
   },
   productName: {
     ...commonTextStyle,

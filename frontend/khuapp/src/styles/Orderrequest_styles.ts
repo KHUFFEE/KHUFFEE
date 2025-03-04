@@ -119,6 +119,7 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(13),
   },
   additionalRowContainer: {
+    height: hp(7)
     // 추가 스타일이 필요하면 여기에 작성
   },
   priceText: {

@@ -290,7 +290,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   }}
                 >
                   {/* 변경된 부분: 텍스트 두 개를 세로로 배치하는 컬럼 뷰 추가 */}
-                  <View testID="row1"style={{ flexDirection: 'column',position: 'relative',bottom: moderateScale(7),left:wp(1.2) }}>
+                  <View testID="row1"style={{ flexDirection: 'column',position: 'relative',bottom: moderateScale(10),left:wp(1) }}>
                     <Text testID="unitText" style={OrderRequeststyle.unitText}>
                       출고단위: {f.formatPrice(product.출고단위)}{product.단위}
                     </Text>
@@ -300,7 +300,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   </View>
                   <View
                     testID="quantityControlContainer"
-                    style={[OrderRequeststyle.quantityControlContainer, { marginLeft: 0 }]}
+                    style={[OrderRequeststyle.quantityControlContainer, { marginLeft: 0 ,position: 'relative',bottom: moderateScale(5)}]}
                   >
                     <TouchableOpacity
                       testID="decrementButton"

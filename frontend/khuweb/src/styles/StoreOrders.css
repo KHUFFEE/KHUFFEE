@@ -74,7 +74,7 @@
   position: sticky;
   top: -20px;
   z-index: 2;
-  background-color: #cf8888
+  background-color: #cf8888;
 }
 
 .store-orders-table tbody tr {
@@ -305,3 +305,7 @@
   font-size: 20px !important; 
 }
 
+/* ★ 요청사항 반영 ★: 창고 - 합계가 음수인 경우 빨간 테두리 */
+.negative-difference {
+  border: 2px solid red !important;
+}

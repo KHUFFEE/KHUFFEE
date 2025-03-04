@@ -302,6 +302,18 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   const [monthlyDetailModalVisible, setMonthlyDetailModalVisible] = useState<boolean>(false);
   const [monthlyDetailOrders, setMonthlyDetailOrders] = useState<CombinedOrderData[]>([]);
   const [monthlyDetailDate, setMonthlyDetailDate] = useState<string>('');
+  
+  // 월별 상세보기 관련 추가 상태
+  const [weeklyData, setWeeklyData] = useState<{ [week: string]: CombinedOrderData[] }>({});
+  const [weeklyTotals, setWeeklyTotals] = useState<{ [week: string]: number }>({});
+  const [sortedWeeks, setSortedWeeks] = useState<string[]>([]);
+  const [productSummary, setProductSummary] = useState<Array<{
+    품목명: string;
+    총수량: number;
+    총금액: number;
+    주차별: { [week: string]: { 수량: number; 금액: number } };
+  }>>([]);
+  const [monthlyTotal, setMonthlyTotal] = useState<number>(0);
 
   const detailTotalCost = detailGroupOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
   const monthlyDetailTotalCost = monthlyDetailOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
@@ -468,8 +480,79 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   // 월별 상세보기 모달 열기 함수 추가
   const openMonthlyDetailModal = (year: string, month: string, monthlyOrders: CombinedOrderData[]) => {
     setMonthlyDetailDate(`${year}.${month}`);
-    const sortedMonthlyOrders = sortOrders(monthlyOrders, 'asc');
-    setMonthlyDetailOrders(sortedMonthlyOrders);
+    
+    // 주차별로 데이터 그룹화
+    const weeklyData: { [week: string]: CombinedOrderData[] } = {};
+    const productSummaryMap: { [productId: string]: { 
+      품목명: string, 
+      총수량: number, 
+      총금액: number,
+      주차별: { [week: string]: { 수량: number, 금액: number } }
+    } } = {};
+    
+    // 주차별 합계 금액
+    const weeklyTotals: { [week: string]: number } = {};
+    
+    // 모든 주차 목록 (정렬용)
+    const allWeeks: string[] = [];
+    
+    // 데이터 그룹화 및 통계 계산
+    monthlyOrders.forEach(order => {
+      const [, , week] = order.기간.split('.');
+      
+      // 주차별 데이터 그룹화
+      if (!weeklyData[week]) {
+        weeklyData[week] = [];
+        weeklyTotals[week] = 0;
+        allWeeks.push(week);
+      }
+      weeklyData[week].push(order);
+      
+      // 주차별 합계 금액 계산
+      const orderCost = order.totalCost || 0;
+      weeklyTotals[week] += orderCost;
+      
+      // 상품별 통계 계산
+      if (!productSummaryMap[order.품목_id]) {
+        productSummaryMap[order.품목_id] = {
+          품목명: order.품목명 || '',
+          총수량: 0,
+          총금액: 0,
+          주차별: {}
+        };
+      }
+      
+      // 상품별 주차별 데이터 추가
+      if (!productSummaryMap[order.품목_id].주차별[week]) {
+        productSummaryMap[order.품목_id].주차별[week] = { 수량: 0, 금액: 0 };
+      }
+      
+      const orderQuantity = order.매장_발주량 || 0;
+      productSummaryMap[order.품목_id].총수량 += orderQuantity;
+      productSummaryMap[order.품목_id].총금액 += orderCost;
+      productSummaryMap[order.품목_id].주차별[week].수량 += orderQuantity;
+      productSummaryMap[order.품목_id].주차별[week].금액 += orderCost;
+    });
+    
+    // 주차 정렬 (1주차, 2주차, ... 순서로)
+    const sortedWeeks = allWeeks.sort((a, b) => parseInt(a) - parseInt(b));
+    
+    // 상품 정렬 (총금액 내림차순)
+    const sortedProducts = Object.values(productSummaryMap).sort((a, b) => b.총금액 - a.총금액);
+    
+    // 월 총 합계 금액
+    const monthlyTotal = Object.values(weeklyTotals).reduce((sum, total) => sum + total, 0);
+    
+    // 정렬된 데이터 저장
+    setMonthlyDetailOrders(monthlyOrders);
+    
+    // 추가 데이터 저장
+    setWeeklyData(weeklyData);
+    setWeeklyTotals(weeklyTotals);
+    setSortedWeeks(sortedWeeks);
+    setProductSummary(sortedProducts);
+    setMonthlyTotal(monthlyTotal);
+    
     setMonthlyDetailModalVisible(true);
   };
 
@@ -790,34 +873,91 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
             
             {/* 모달 내용 */}
             <ScrollView testID="modalScrollView" style={orderStatusStyles.modalScrollView}>
-              {monthlyDetailOrders.map((order, index) => (
-                <View key={index} testID="modalOrderItem" style={orderStatusStyles.modalOrderItem}>
-                  <View style={{ flex: 3 }}>
-                    <Text testID="modalOrderName" style={orderStatusStyles.modalOrderName}>
-                      {order.품목명}
-                    </Text>
-                    <Text style={orderStatusStyles.modalOrderDate}>
-                      {order.기간 || '날짜 정보 없음'}
-                    </Text>
+              {/* 주차별 상품 통계 테이블 */}
+              <View style={orderStatusStyles.monthlyTableContainer}>
+                {/* 테이블 헤더 */}
+                <View style={orderStatusStyles.monthlyTableHeader}>
+                  <View style={orderStatusStyles.productColumn}>
+                    <Text style={orderStatusStyles.monthlyTableHeaderText}>상품명</Text>
                   </View>
-                  <Text testID="modalOrderQuantity" style={orderStatusStyles.modalOrderQuantity}>
-                    {order.매장_발주량}개
-                  </Text>
-                  <Text testID="modalOrderPrice" style={orderStatusStyles.modalOrderPrice}>
-                    {f.formatPrice(order.totalCost || 0)}원
-                  </Text>
+                  {sortedWeeks.map(week => (
+                    <View key={week} style={orderStatusStyles.weekColumn}>
+                      <Text style={orderStatusStyles.monthlyTableHeaderText}>{week}주차</Text>
+                    </View>
+                  ))}
+                  <View style={orderStatusStyles.quantityColumn}>
+                    <Text style={orderStatusStyles.monthlyTableHeaderText}>총수량</Text>
+                  </View>
+                  <View style={orderStatusStyles.priceColumn}>
+                    <Text style={orderStatusStyles.monthlyTableHeaderText}>총금액</Text>
+                  </View>
                 </View>
-              ))}
+                
+                {/* 테이블 내용 */}
+                {productSummary.map((product, index) => (
+                  <View key={index} style={orderStatusStyles.monthlyTableRow}>
+                    <View style={orderStatusStyles.productColumn}>
+                      <Text style={orderStatusStyles.monthlyTableCell}>{product.품목명}</Text>
+                    </View>
+                    {sortedWeeks.map(week => {
+                      const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
+                      return (
+                        <View key={week} style={orderStatusStyles.weekColumn}>
+                          <Text style={orderStatusStyles.monthlyTableCell}>
+                            {weekData.수량 > 0 ? `${weekData.수량}개` : '-'}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                    <View style={orderStatusStyles.quantityColumn}>
+                      <Text style={orderStatusStyles.monthlyTableCellHighlight}>{product.총수량}개</Text>
+                    </View>
+                    <View style={orderStatusStyles.priceColumn}>
+                      <Text style={orderStatusStyles.monthlyTableCellHighlight}>{f.formatPrice(product.총금액)}원</Text>
+                    </View>
+                  </View>
+                ))}
+                
+                {/* 주차별 합계 행 */}
+                <View style={[orderStatusStyles.monthlyTableRow, { backgroundColor: '#f8fafc' }]}>
+                  <View style={orderStatusStyles.productColumn}>
+                    <Text style={orderStatusStyles.monthlyTableCellHighlight}>주차별 합계</Text>
+                  </View>
+                  {sortedWeeks.map(week => (
+                    <View key={week} style={orderStatusStyles.weekColumn}>
+                      <Text style={orderStatusStyles.monthlyTableCellHighlight}>
+                        {f.formatPrice(weeklyTotals[week])}원
+                      </Text>
+                    </View>
+                  ))}
+                  <View style={orderStatusStyles.quantityColumn}>
+                    <Text style={orderStatusStyles.monthlyTableCellHighlight}>-</Text>
+                  </View>
+                  <View style={orderStatusStyles.priceColumn}>
+                    <Text style={orderStatusStyles.monthlyTableCellHighlight}>{f.formatPrice(monthlyTotal)}원</Text>
+                  </View>
+                </View>
+              </View>
+              
+              {/* 월별 요약 섹션 */}
+              <View style={orderStatusStyles.summarySection}>
+                <Text style={orderStatusStyles.summaryTitle}>월별 발주 요약</Text>
+                
+                {/* 주차별 합계 */}
+                {sortedWeeks.map(week => (
+                  <View key={week} style={orderStatusStyles.summaryRow}>
+                    <Text style={orderStatusStyles.summaryLabel}>{week}주차 발주금액</Text>
+                    <Text style={orderStatusStyles.summaryValue}>{f.formatPrice(weeklyTotals[week])}원</Text>
+                  </View>
+                ))}
+                
+                {/* 총 합계 */}
+                <View style={orderStatusStyles.summaryTotal}>
+                  <Text style={orderStatusStyles.summaryTotalLabel}>월 총 발주금액</Text>
+                  <Text style={orderStatusStyles.summaryTotalValue}>{f.formatPrice(monthlyTotal)}원</Text>
+                </View>
+              </View>
             </ScrollView>
-            
-            <View testID="modalFooter" style={orderStatusStyles.modalFooter}>
-              <Text testID="modalTotalCost" style={orderStatusStyles.modalTotalCost}>
-                총 주문금액:
-              </Text>
-              <Text testID="modalTotalCost" style={orderStatusStyles.modalTotalCost}>
-                {f.formatPrice(monthlyDetailTotalCost)}원
-              </Text>
-            </View>
           </View>
         </View>
       </Modal>

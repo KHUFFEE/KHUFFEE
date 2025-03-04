@@ -7,10 +7,11 @@ import {
   updateStoreOrder,
   getTableStatusList,
   updateTableStatus,
+  fetchWarehouseInventory,
 } from "../api/api";
 import "../styles/StoreOrders.css";
 import { storeOrdersDownloadExcel } from "../utils/StoreOrdersDownloadExcel";
-import LoadingSpinner from "../components/LoadingSpinner"; 
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const StoreOrders = () => {
   // 기본 상태
@@ -18,11 +19,10 @@ const StoreOrders = () => {
   const [items, setItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [stores, setStores] = useState([]);
-  // 초기 로드 시에는 스피너가 뜨지 않도록 false로 설정
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // 초기 로드 시 스피너 없음
   const [error, setError] = useState(null);
 
-  // 수정 모드 관련 상태는 다른 상태들보다 먼저 선언 (getCellValue 등에서 참조)
+  // 수정 모드 관련 상태
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedOrders, setEditedOrders] = useState({});
 
@@ -38,9 +38,7 @@ const StoreOrders = () => {
 
   // distinctPeriods 배열: "YYYY.MM.W.R" 형식
   const [distinctPeriods, setDistinctPeriods] = useState([]);
-  // refreshDistinct 상태: distinctPeriods 재조회 필요 시 사용
   const [refreshDistinct, setRefreshDistinct] = useState(false);
-  // 플래그: 최신 기간 조회가 완료되었는지 여부
   const [hasFetchedHighestRound, setHasFetchedHighestRound] = useState(false);
 
   // 드롭다운 open 상태
@@ -49,11 +47,109 @@ const StoreOrders = () => {
 
   // 팝업 관련 상태 (회차 관리)
   const [showPopup, setShowPopup] = useState(false);
-  // 현재 매니저의 발주 회차 상태, 기본 1로 가정
   const [managerOrderRound, setManagerOrderRound] = useState(1);
 
-  // API GET: 기간 및 회차가 있는 경우 해당 파라미터로 요청, 없으면 페이지번호로 요청
-  // 두 번째 인자인 manual이 true일 때만 로딩 상태를 변경하도록 함
+  // New state for warehouse data from 창고_재고 API
+  const [warehouseData, setWarehouseData] = useState([]);
+
+  // ----------------------- Helper functions -----------------------
+  // Format a Date object as "YYYY.MM.DD"
+  const formatDate = (date) => {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yyyy}.${mm}.${dd}`;
+  };
+
+  // Compute the Sunday date for a given year, month, week (for past weeks)
+  // (If week*7 exceeds the month length, use the last day)
+  const getWeekSunday = (year, month, week) => {
+    const lastDay = new Date(year, month, 0).getDate();
+    let day = week * 7;
+    if (day > lastDay) day = lastDay;
+    return new Date(year, month - 1, day);
+  };
+
+  // ----------------------- Determine if Latest Period -----------------------
+  let isLatestPeriod = false;
+  if (
+    distinctPeriods.length > 0 &&
+    selectedYear &&
+    selectedMonth &&
+    selectedWeek &&
+    selectedRound
+  ) {
+    const sortedDistinct = [...distinctPeriods].sort((a, b) => {
+      const [yearA, monthA, weekA, roundA] = a.split(".").map(Number);
+      const [yearB, monthB, weekB, roundB] = b.split(".").map(Number);
+      if (yearA !== yearB) return yearB - yearA;
+      if (monthA !== monthB) return monthB - monthA;
+      if (weekA !== weekB) return weekB - weekA;
+      return roundB - roundA;
+    });
+    const currentPeriod = [
+      Number(selectedYear),
+      Number(selectedMonth),
+      Number(selectedWeek),
+      Number(selectedRound),
+    ].join(".");
+    const latestPeriod = sortedDistinct[0]
+      .split(".")
+      .map(Number)
+      .join(".");
+    isLatestPeriod = currentPeriod === latestPeriod;
+  }
+
+  // Determine if the current period is the latest period
+  let isLatestPeriodFlag = false;
+  if (
+    distinctPeriods.length > 0 &&
+    selectedYear &&
+    selectedMonth &&
+    selectedWeek &&
+    selectedRound
+  ) {
+    const sortedDistinct = [...distinctPeriods].sort((a, b) => {
+      const [yearA, monthA, weekA, roundA] = a.split(".").map(Number);
+      const [yearB, monthB, weekB, roundB] = b.split(".").map(Number);
+      if (yearA !== yearB) return yearB - yearA;
+      if (monthA !== monthB) return monthB - monthA;
+      if (weekA !== weekB) return weekB - weekA;
+      return roundB - roundA;
+    });
+    const currentPeriod = [
+      Number(selectedYear),
+      Number(selectedMonth),
+      Number(selectedWeek),
+      Number(selectedRound),
+    ].join(".");
+    const latestPeriod = sortedDistinct[0].split(".").map(Number).join(".");
+    isLatestPeriodFlag = currentPeriod === latestPeriod;
+  }
+  
+  // ----------------------- Fetch Warehouse Data -----------------------
+  // When the selected period (year, month, week) or latest flag changes, compute a date
+  // and fetch warehouse inventory from 창고_재고 API.
+  useEffect(() => {
+    if (selectedYear && selectedMonth && selectedWeek) {
+      let computedWarehouseDate = "";
+      if (isLatestPeriodFlag) {
+        // 최신 주차: 현재 날짜 사용
+        computedWarehouseDate = formatDate(new Date());
+      } else {
+        // 과거 주차: 해당 주의 일요일 사용
+        const sunday = getWeekSunday(Number(selectedYear), Number(selectedMonth), Number(selectedWeek));
+        computedWarehouseDate = formatDate(sunday);
+      }
+      // computedWarehouseDate를 이용하여 창고 재고 API 호출
+      fetchWarehouseInventory({ 기간: computedWarehouseDate })
+        .then((data) => setWarehouseData(data))
+        .catch((err) => console.error("창고 재고 불러오기 실패:", err));
+    }
+  }, [selectedYear, selectedMonth, selectedWeek, isLatestPeriodFlag]);
+  
+
+  // ----------------------- Existing API Data Fetch -----------------------
   const fetchData = async (params = { page: 1 }, manual = false) => {
     try {
       if (manual) setLoading(true);
@@ -77,8 +173,9 @@ const StoreOrders = () => {
         throw new Error("Failed to fetch orders");
       }
       const ordersResponse = await response.json();
+      // 품목 API: 활성/비활성 상관없이 모든 품목 조회
       const [itemsData, suppliersData, storesData] = await Promise.all([
-        fetchItems(),
+        fetchItems(true),
         fetchSuppliers(),
         fetchStores(),
       ]);
@@ -96,9 +193,8 @@ const StoreOrders = () => {
     }
   };
 
-  // handleReset: 최초 로드 및 "최신 조회" 버튼 클릭 시 전체 distinct 기간을 조회한 후
-  // 내림차순 정렬하여 최신 기간(예: "2025년 02월 4주차 2회차")을 선택, 해당 기간과 회차로 API 요청
-  // manual 인자가 true일 때만 로딩 동작을 적용함
+
+  // handleReset: on initial load and "최신 조회" button click
   const handleReset = async (manual = false) => {
     setSelectedYear("");
     setSelectedMonth("");
@@ -108,7 +204,6 @@ const StoreOrders = () => {
     setHasFetchedHighestRound(false);
     if (manual) setLoading(true);
     try {
-      // 우선 page=1로 초기 데이터 조회 후 전체 페이지 수 확인
       const initialOrders = await fetchOrders({ page: 1 });
       const totalPages =
         initialOrders && initialOrders.total_pages ? initialOrders.total_pages : 1;
@@ -131,7 +226,6 @@ const StoreOrders = () => {
       const unique = Array.from(new Set(allPeriods));
       setDistinctPeriods(unique);
 
-      // 최신 기간(내림차순 정렬 시 첫번째)을 선택
       if (unique.length > 0) {
         const sortedPeriods = unique.sort((a, b) => {
           const [yearA, monthA, weekA, roundA] = a.split(".").map(Number);
@@ -147,13 +241,11 @@ const StoreOrders = () => {
         setSelectedMonth(parts[1]);
         setSelectedWeek(parts[2]);
         setSelectedRound(parts[3]);
-        // 기간은 "YYYY.MM.W" 형식으로 구성하여 API에 요청
         const formattedMonth = parts[1].padStart(2, "0");
         const period = `${parts[0]}.${formattedMonth}.${parts[2]}`;
         await fetchData({ 기간: period, 회차: parts[3] }, manual);
         setHasFetchedHighestRound(true);
       } else {
-        // 기간이 없으면 기본적으로 page=1 데이터 표시
         await fetchData({ page: 1 }, manual);
       }
     } catch (err) {
@@ -162,7 +254,7 @@ const StoreOrders = () => {
     if (manual) setLoading(false);
   };
 
-  // handleSearch: 사용자가 드롭다운 등으로 기간 선택 시 해당 기간과 회차로 API 요청
+  // handleSearch: when user selects a period via dropdown
   const handleSearch = (periodValue, roundValue) => {
     if (isFreeInput) {
       if (!freePeriod) {
@@ -181,12 +273,48 @@ const StoreOrders = () => {
     }
   };
 
+  // Helper to format the store name in header
+  const formatStoreName = (name) => {
+    switch (name) {
+      case "중앙도서관":
+        return (
+          <>
+            중앙
+            <br />도서관
+          </>
+        );
+      case "예술디자인대":
+        return (
+          <>
+            예술
+            <br />디자인대
+          </>
+        );
+      case "멀티미디어관":
+        return (
+          <>
+            멀티
+            <br />미디어관
+          </>
+        );
+      case "제2기숙사":
+        return (
+          <>
+            제2
+            <br />기숙사
+          </>
+        );
+      default:
+        return name;
+    }
+  };
+
   // 최초 로드 시 handleReset 실행 (로딩 동작 없음)
   useEffect(() => {
     handleReset();
   }, []);
 
-  // 추가된 useEffect: 첫 로드시 managerOrderRound를 업데이트
+  // Update managerOrderRound on first load
   useEffect(() => {
     const fetchManagerRound = async () => {
       try {
@@ -199,13 +327,11 @@ const StoreOrders = () => {
         setManagerOrderRound(1);
       }
     };
-
     fetchManagerRound();
   }, []);
 
-
   // displayPeriod 계산 (선택된 값 우선)
-  const getDisplayPeriod = () => {
+  const getDisplayPeriodText = () => {
     if (isFreeInput) {
       return freePeriod && freePeriod.split(".").length === 4
         ? `${freePeriod.split(".")[0]}년 ${freePeriod.split(".")[1].padStart(2, "0")}월 ${freePeriod.split(".")[2]}주차 ${freePeriod.split(".")[3]}회차`
@@ -216,9 +342,9 @@ const StoreOrders = () => {
     return "";
   };
 
-  const displayPeriod = getDisplayPeriod();
+  const displayPeriod = getDisplayPeriodText();
 
-  // 그룹핑: 품목별 주문 데이터를 매장별로 정리
+  // Group orders data by item
   const groupedOrders = () => {
     const grouping = {};
     if (ordersData && ordersData.orders) {
@@ -235,16 +361,35 @@ const StoreOrders = () => {
 
   const ordersByItem = groupedOrders();
 
-  const tableRows = items.map((item) => {
+  // ★ 요청사항 반영 ★  
+  // 기본 행: 주문 데이터의 품목_id를 기준으로 구성
+  const orderItemIds = Object.keys(ordersByItem);
+  const tableRowsFromOrders = orderItemIds.map((itemId) => {
+    const matchedItem = items.find((item) => item.품목_id === itemId);
+    const supplier = matchedItem ? suppliers.find((s) => s.협력사_id === matchedItem.협력사_id) : {};
+    return {
+      itemId,
+      supplierName: supplier ? supplier.협력사명 : "N/A",
+      itemName: matchedItem ? matchedItem.품목명 : "N/A",
+      type: matchedItem ? matchedItem.종류 : "",
+      orders: ordersByItem[itemId] || {},
+    };
+  });
+  // 추가 행: 활성화되어 있는 품목 중 주문 데이터에 포함되지 않은 항목들
+  const activeItemsNotInOrders = items.filter(
+    (item) => item.활성화 && !orderItemIds.includes(item.품목_id)
+  );
+  const tableRowsFromActive = activeItemsNotInOrders.map((item) => {
     const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
     return {
       itemId: item.품목_id,
       supplierName: supplier.협력사명 || "N/A",
       itemName: item.품목명 || "N/A",
       type: item.종류 || "",
-      orders: ordersByItem[item.품목_id] || {},
+      orders: {},
     };
   });
+  const tableRows = [...tableRowsFromOrders, ...tableRowsFromActive];
 
   const sortedTableRows = tableRows.sort((a, b) => {
     const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
@@ -266,7 +411,6 @@ const StoreOrders = () => {
     "멀티미디어관",
     "제2기숙사",
   ];
-
   const orderedStores = desiredStoreOrder
     .map((storeName) => stores.find((s) => s.매장명 === storeName))
     .filter(Boolean);
@@ -316,6 +460,26 @@ const StoreOrders = () => {
     return Number(num).toLocaleString();
   };
 
+  // New: Helper to get warehouse value for a given item (summing over ordered stores)
+  const getWarehouseValue = (itemId) => {
+    if (!warehouseData || warehouseData.length === 0) return 0;
+    // 현재 화면에 표시된 품목(itemId)에 해당하는 창고 재고 데이터를 필터링
+    const matchingRecords = warehouseData.filter(
+      (record) => record.품목_id === itemId
+    );
+    // 여러 매장의 값이 있을 경우, 첫 번째 레코드의 창고_재고량을 사용 (필요에 따라 합산 가능)
+    return matchingRecords.length > 0
+      ? Number(matchingRecords[0].창고_재고량 || 0)
+      : 0;
+  };
+  
+
+  // Compute total warehouse value for footer
+  const warehouseTotal = sortedTableRows.reduce(
+    (sum, row) => sum + getWarehouseValue(row.itemId),
+    0
+  );  
+
   // 수정 모드 토글 및 관련 이벤트 핸들러
   const handleEditToggle = () => {
     if (!isEditMode) {
@@ -338,16 +502,13 @@ const StoreOrders = () => {
     }));
   };
 
-  // 수정 제출 시, 현재 선택된 기간(ordersData.current_period)와 selectedRound를 payload에 담아 POST 요청
   const handleEditSubmit = async () => {
     try {
       const updates = [];
       for (const itemId in editedOrders) {
         for (const storeId in editedOrders[itemId]) {
           const newValue = editedOrders[itemId][storeId];
-          const originalVal = tableRows.find(
-            (row) => row.itemId === itemId
-          )?.orders[storeId];
+          const originalVal = tableRows.find((row) => row.itemId === itemId)?.orders[storeId];
           if (newValue === "" || Number(newValue) === 0) {
             if (originalVal === 0 || originalVal === "") continue;
           } else if (newValue === originalVal) continue;
@@ -362,47 +523,11 @@ const StoreOrders = () => {
         }
       }
       await Promise.all(updates);
-      // 수정 후 현재 선택된 기간과 회차로 다시 데이터 조회
       fetchData({ 기간: ordersData?.current_period || "", 회차: selectedRound });
       setIsEditMode(false);
     } catch (err) {
       console.error("주문 수정 실패:", err);
       alert("주문 수정에 실패하였습니다.");
-    }
-  };
-
-  const formatStoreName = (name) => {
-    switch (name) {
-      case "중앙도서관":
-        return (
-          <>
-            중앙
-            <br />도서관
-          </>
-        );
-      case "예술디자인대":
-        return (
-          <>
-            예술
-            <br />디자인대
-          </>
-        );
-      case "멀티미디어관":
-        return (
-          <>
-            멀티
-            <br />미디어관
-          </>
-        );
-      case "제2기숙사":
-        return (
-          <>
-            제2
-            <br />기숙사
-          </>
-        );
-      default:
-        return name;
     }
   };
 
@@ -425,10 +550,7 @@ const StoreOrders = () => {
   const handleSessionButtonClick = async () => {
     try {
       const statusList = await getTableStatusList();
-      // "매장_발주" 칼럼의 상태 값을 찾음 (없으면 기본 1)
-      const storeOrderStatus = statusList.find(
-        (s) => s.테이블 === "매장_발주"
-      );
+      const storeOrderStatus = statusList.find((s) => s.테이블 === "매장_발주");
       const currentStatus = storeOrderStatus ? storeOrderStatus.상태 : 1;
       setManagerOrderRound(currentStatus);
     } catch (err) {
@@ -438,7 +560,6 @@ const StoreOrders = () => {
     setShowPopup(true);
   };
 
-  // 팝업창 내 "변경" 버튼 클릭 시: updateTableStatus API 호출 (현재 값 +1)
   const handleUpdateSession = async () => {
     try {
       const newRound = managerOrderRound + 1;
@@ -451,36 +572,7 @@ const StoreOrders = () => {
     }
   };
 
-  // 현재 선택된 기간과 회차가 최신의 가장 높은 회차인지 확인 (Excel 다운로드 버튼 왼쪽에 회차 관리 버튼 노출)
-  let isLatestPeriod = false;
-  if (
-    distinctPeriods.length > 0 &&
-    selectedYear &&
-    selectedMonth &&
-    selectedWeek &&
-    selectedRound
-  ) {
-    const sortedDistinct = [...distinctPeriods].sort((a, b) => {
-      const [yearA, monthA, weekA, roundA] = a.split(".").map(Number);
-      const [yearB, monthB, weekB, roundB] = b.split(".").map(Number);
-      if (yearA !== yearB) return yearB - yearA;
-      if (monthA !== monthB) return monthB - monthA;
-      if (weekA !== weekB) return weekB - weekA;
-      return roundB - roundA;
-    });
-    // 현재 선택된 회차를 숫자로 비교 (문자열 포맷 문제를 피하기 위해)
-    const currentPeriod = [
-      Number(selectedYear),
-      Number(selectedMonth),
-      Number(selectedWeek),
-      Number(selectedRound),
-    ].join(".");
-    const latestPeriod = sortedDistinct[0]
-      .split(".")
-      .map(Number)
-      .join(".");
-    isLatestPeriod = currentPeriod === latestPeriod;
-  }
+
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
@@ -561,17 +653,17 @@ const StoreOrders = () => {
               </svg>
             </span>
           </div>
-          {/* 최신 조회 버튼 클릭 시 handleReset(true) 호출 */}
           <button className="reset-button" onClick={() => handleReset(true)} disabled={isEditMode}>
             최신 조회
           </button>
           <span className="control-description">
-            현재 매니저의 발주는 {managerOrderRound}회차로 저장됩니다.<br />
+            현재 매니저의 발주는 {managerOrderRound}회차로 저장됩니다.
+            <br />
             {managerOrderRound + 1}회차로 변경하려면 회차 관리 버튼을 클릭해주세요.
           </span>
         </div>
         <div className="store-action-buttons">
-          {isLatestPeriod && (
+          {isLatestPeriodFlag && (
             <button className="session-button" onClick={handleSessionButtonClick} disabled={isEditMode}>
               회차 관리
             </button>
@@ -596,6 +688,8 @@ const StoreOrders = () => {
                 {formatStoreName(store.매장명)}
               </th>
             ))}
+            {/* New "창고" header added before the "합계" column */}
+            <th className="so-warehouse-col">창고</th>
             <th className="so-sum-col">합계</th>
           </tr>
         </thead>
@@ -635,6 +729,10 @@ const StoreOrders = () => {
                   )}
                 </td>
               ))}
+              {/* New "창고" column cell: display the aggregated warehouse inventory value for the product */}
+              <td className="so-warehouse-col">
+                {formatNumber(getWarehouseValue(row.itemId))}
+              </td>
               <td className="so-sum-col">
                 {getRowSum(row) === 0 ? "-" : formatNumber(getRowSum(row))}
               </td>
@@ -652,6 +750,10 @@ const StoreOrders = () => {
                 {storeTotals[idx] === 0 ? "-" : formatNumber(storeTotals[idx])}
               </td>
             ))}
+            {/* New warehouse footer cell */}
+            <td className="so-warehouse-col">
+              {warehouseTotal === 0 ? "-" : formatNumber(warehouseTotal)}
+            </td>
             <td className="so-sum-col">
               {grandTotal === 0 ? "-" : formatNumber(grandTotal)}
             </td>

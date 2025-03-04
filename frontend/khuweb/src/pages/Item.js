@@ -689,6 +689,7 @@ const Item = () => {
                       <option value="소모품">소모품</option>
                       <option value="고체류">고체류</option>
                       <option value="액체류">액체류</option>
+                      <option value="상품">상품</option>
                     </select>
                   ) : (
                     item.종류
@@ -868,16 +869,17 @@ const Item = () => {
                         </select>
                       </td>
                       <td>
-                        <select
-                          name="종류"
-                          value={item.종류}
-                          onChange={(e) => handleInputChange(index, e)}
-                        >
-                          <option value="">-- 선택하세요 --</option>
-                          <option value="소모품">소모품</option>
-                          <option value="고체류">고체류</option>
-                          <option value="액체류">액체류</option>
-                        </select>
+                      <select
+                        name="종류"
+                        value={item.종류}
+                        onChange={(e) => handleInputChange(index, e)}
+                      >
+                        <option value="">-- 선택하세요 --</option>
+                        <option value="소모품">소모품</option>
+                        <option value="고체류">고체류</option>
+                        <option value="액체류">액체류</option>
+                        <option value="상품">상품</option>
+                      </select>
                       </td>
                       <td>
                         <input

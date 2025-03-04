@@ -258,12 +258,8 @@ export const handleOrderSubmitUtil = async (
   const failures: string[] = [];
 
   // 기본 회차와 기간 계산: 현재 날짜를 기준으로 (예시)
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth() + 1;
-  const week = Math.ceil(currentDate.getDate() / 7);
+  let currentPeriod = getCustomPeriodString(new Date());;
   let currentRound = 1;
-  let currentPeriod = `${year}.${month}.${week}`;
 
   // 먼저 store_order_list에서 기간 정보를 가져오기 (회차는 여기서 사용하지 않음)
   try {

@@ -678,6 +678,134 @@ export const orderStatusStyles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
   },
+
+  // 월별 상세보기 표 스타일
+  monthlyTableContainer: {
+    marginBottom: moderateScale(16),
+    borderRadius: moderateScale(8),
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  
+  monthlyTableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#0D326F',
+    paddingVertical: moderateScale(10),
+    paddingHorizontal: moderateScale(8),
+  },
+  
+  monthlyTableHeaderText: {
+    ...commonTextStyle,
+    fontSize: RFValue(14),
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  
+  monthlyTableRow: {
+    flexDirection: 'row',
+    paddingVertical: moderateScale(10),
+    paddingHorizontal: moderateScale(8),
+    borderBottomWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#FFFFFF',
+  },
+  
+  monthlyTableCell: {
+    ...commonTextStyle,
+    fontSize: RFValue(13),
+    color: '#1e293b',
+    textAlign: 'center',
+  },
+  
+  monthlyTableCellHighlight: {
+    ...commonTextStyle,
+    fontSize: RFValue(13),
+    fontWeight: '600',
+    color: '#0D326F',
+    textAlign: 'center',
+  },
+  
+  weekColumn: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  
+  productColumn: {
+    flex: 3,
+    alignItems: 'flex-start',
+  },
+  
+  quantityColumn: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  
+  priceColumn: {
+    flex: 1.5,
+    alignItems: 'flex-end',
+  },
+  
+  summarySection: {
+    marginTop: moderateScale(20),
+    backgroundColor: '#f8fafc',
+    borderRadius: moderateScale(8),
+    padding: moderateScale(16),
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  
+  summaryTitle: {
+    ...commonTextStyle,
+    fontSize: RFValue(16),
+    fontWeight: '600',
+    color: '#0D326F',
+    marginBottom: moderateScale(10),
+    textAlign: 'center',
+  },
+  
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: moderateScale(6),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  
+  summaryLabel: {
+    ...commonTextStyle,
+    fontSize: RFValue(14),
+    color: '#64748b',
+  },
+  
+  summaryValue: {
+    ...commonTextStyle,
+    fontSize: RFValue(14),
+    fontWeight: '600',
+    color: '#0D326F',
+  },
+  
+  summaryTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: moderateScale(10),
+    marginTop: moderateScale(4),
+  },
+  
+  summaryTotalLabel: {
+    ...commonTextStyle,
+    fontSize: RFValue(16),
+    fontWeight: '600',
+    color: '#0D326F',
+  },
+  
+  summaryTotalValue: {
+    ...commonTextStyle,
+    fontSize: RFValue(16),
+    fontWeight: '700',
+    color: '#0D326F',
+  },
 });
 
 export const dateRangeStyles = StyleSheet.create({

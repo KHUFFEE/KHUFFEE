@@ -15,64 +15,85 @@ export const orderStatusStyles = StyleSheet.create({
   status_container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: moderateScale(16),
+    padding: moderateScale(10),
+    paddingTop: verticalScale(0),
   },
   
   // 헤더 스타일
   headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: verticalScale(8),
+    marginBottom: verticalScale(4),
     backgroundColor: '#fff',
-    padding: moderateScale(16),
-    borderRadius: moderateScale(12),
+    padding: moderateScale(12),
+    paddingBottom: verticalScale(2),
+    paddingLeft: moderateScale(10),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
     shadowColor: '#000',
-    // shadowOffset: {
-    //   width: 0,
-    //   height: 2,
-    // },
-    // shadowOpacity: 0.05,
-    // shadowRadius: 3,
-    // elevation: 2,
   },
   
   sectionTitle: {
     flex: 1,
+    alignItems: 'center',
   },
   
   title: {
     ...commonTextStyle,
-    fontSize: RFValue(20),
-    fontWeight: '600',
+    fontSize: RFValue(18),
+    fontWeight: '700',
     color: '#0D326F',
+    textAlign: 'center',
+  },
+  
+  // 버튼 컨테이너 추가
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    // marginBottom: verticalScale(8),
+    marginTop: verticalScale(0),
+    // paddingRight: moderateScale(10),
+    // paddingBottom: verticalScale(2),
   },
   
   rightButtonGroup: {
     flexDirection: 'row',
-    gap: moderateScale(8),
+    gap: moderateScale(3),
+    marginRight: moderateScale(9),
   },
   
   headerButton: {
-    paddingHorizontal: moderateScale(16),
-    paddingVertical: verticalScale(10),
-    backgroundColor: '#0D326F',
-    borderRadius: moderateScale(25),
-    elevation: 2,
-    shadowColor: '#000',
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: verticalScale(5),
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#0D326F',
+    borderRadius: moderateScale(16),
+    elevation: 1,
+    shadowColor: '#0D326F',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 1,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   
   headerButtonText: {
     ...commonTextStyle,
+    color: '#0D326F',
+    fontSize: RFValue(11),
+    fontWeight: '500',
+  },
+  
+  headerButtonActive: {
+    backgroundColor: '#0D326F',
+  },
+  
+  headerButtonTextActive: {
     color: '#FFFFFF',
-    fontSize: RFValue(14),
-    fontWeight: '600',
   },
 
   // 로딩 & 빈 상태
@@ -101,47 +122,71 @@ export const orderStatusStyles = StyleSheet.create({
 
   yearHeader: {
     ...commonTextStyle,
-    fontSize: RFValue(20),
-    fontWeight: '700',
+    fontSize: RFValue(16),
+    fontWeight: '600',
     color: '#0D326F',
-    marginBottom: verticalScale(8),
-    marginTop: verticalScale(10),
+    // marginBottom: verticalScale(8),
+    // marginTop: verticalScale(10),
+    marginLeft: moderateScale(10),
     paddingLeft: moderateScale(10),
     borderLeftWidth: 4,
     borderLeftColor: '#0D326F',
   },
 
   monthContainer: {
-    backgroundColor: '#f8f9fa',
-    marginBottom: verticalScale(10),
+    // backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
+    marginBottom: verticalScale(8),
+    borderRadius: moderateScale(10),
+    padding: moderateScale(8),
+    paddingBottom: verticalScale(3),
+    // paddingBottom: verticalScale(3),
+    // shadowColor: '#000',
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 2,
+    // },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 3,
+    // elevation: 2,
   },
 
   monthHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingLeft: moderateScale(10),
-    gap: moderateScale(10),
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: moderateScale(16),
+    paddingRight: moderateScale(2),
+    backgroundColor: '#0D326F',
+    borderRadius: moderateScale(8),
+    marginBottom: verticalScale(0),
   },
 
   monthTitle: {
     ...commonTextStyle,
-    fontSize: RFValue(18),
+    fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#FFFFFF',
+    marginRight: moderateScale(0),
   },
 
   monthTotal: {
     ...commonTextStyle,
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#0D326F',
+    fontSize: RFValue(15),
+    fontWeight: '500',
+    color: '#FFFFFF',
+    marginRight: moderateScale(8),
   },
 
   weekContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: moderateScale(12),
-    padding: moderateScale(16),
-    marginBottom: verticalScale(8),
+    // padding: moderateScale(16),
+    paddingBottom: verticalScale(4),
+    paddingTop: verticalScale(3),
+    paddingHorizontal: moderateScale(4),
+    marginTop: verticalScale(3),
     borderWidth: 1,
     borderColor: '#e2e8f0',
     shadowColor: '#000',
@@ -158,22 +203,26 @@ export const orderStatusStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: verticalScale(12),
+    marginBottom: verticalScale(3),
     paddingBottom: verticalScale(8),
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: moderateScale(8),
+    paddingTop: verticalScale(8),
+    borderRadius: moderateScale(6),
   },
 
   weekTitle: {
     ...commonTextStyle,
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontSize: RFValue(15),
+    fontWeight: '500',
+    color: '#0D326F',
   },
 
   weekTotal: {
     ...commonTextStyle,
-    fontSize: RFValue(16),
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#0D326F',
   },
@@ -190,17 +239,18 @@ export const orderStatusStyles = StyleSheet.create({
 
   productName: {
     ...commonTextStyle,
-    fontSize: RFValue(15),
-    fontWeight: '600',
+    fontSize: RFValue(14),
     color: '#1A1A1A',
-    marginBottom: verticalScale(4),
+    paddingLeft: moderateScale(5),
+    // marginBottom: verticalScale(4),
   },
 
   extraCount: {
     ...commonTextStyle,
-    fontSize: RFValue(14),
+    fontSize: RFValue(12),
     color: '#666666',
     marginBottom: verticalScale(4),
+    paddingLeft: moderateScale(5),
   },
 
   quantity: {
@@ -210,28 +260,22 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   detailButton: {
-    backgroundColor: '#fff',
-    paddingHorizontal: moderateScale(16),
-    paddingVertical: verticalScale(8),
-    borderRadius: moderateScale(25),
-    marginLeft: moderateScale(12),
-    borderWidth: 1.5,
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: verticalScale(4),
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
     borderColor: '#0D326F',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    borderRadius: moderateScale(16),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: moderateScale(10),
   },
 
   detailButtonText: {
     ...commonTextStyle,
+    fontSize: RFValue(11),
+    fontWeight: '500',
     color: '#0D326F',
-    fontSize: RFValue(14),
-    fontWeight: '600',
   },
 
   loadMoreButton: {
@@ -262,21 +306,20 @@ export const orderStatusStyles = StyleSheet.create({
   },
 
   // 모달 스타일
-  centeredView: {
+  modalCenteredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: moderateScale(16),
   },
-
+  
   modalView: {
-
-    flex: 1,
+    width: '100%',
+    maxHeight: '80%',
     backgroundColor: '#fff',
-
-    borderRadius: moderateScale(16),
-    padding: moderateScale(20),
-    width: wp('90%'),
-    maxHeight: hp('80%'),
+    borderRadius: moderateScale(12),
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -286,112 +329,112 @@ export const orderStatusStyles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-
-  receiptContainer: {
-    flex: 1,
-  },
-
-  header: {
-    marginBottom: verticalScale(16),
-  },
-
-  headerTitle: {
-    ...commonTextStyle,
-    fontSize: RFValue(20),
-    fontWeight: '700',
-    color: '#0D326F',
-    marginBottom: verticalScale(4),
-    textAlign: 'center',
+  
+  modalHeader: {
+    padding: moderateScale(16),
+    alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: '#e2e8f0',
-    paddingBottom: moderateScale(10),
+    backgroundColor: '#fff',
+    position: 'relative',
   },
-
-  headerSubtitle: {
-    ...commonTextStyle,
-    fontSize: RFValue(16),
-    color: '#666666',
-    textAlign: 'center',
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: '#E5E5E5',
-    marginVertical: verticalScale(16),
-  },
-
-  itemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: verticalScale(12),
-    paddingVertical: verticalScale(8),
-    paddingHorizontal: moderateScale(12),
-    backgroundColor: '#f8f9fa',
-    borderRadius: moderateScale(8),
-  },
-
-  itemRowLeft: {
-    flex: 1,
-  },
-
-  itemName: {
-    ...commonTextStyle,
-    fontSize: RFValue(15),
-    fontWeight: '600',
-    color: '#1A1A1A',
-  },
-
-  itemQty: {
-    ...commonTextStyle,
-    fontSize: RFValue(14),
-    color: '#666666',
-    marginTop: verticalScale(4),
-  },
-
-  itemPrice: {
-    ...commonTextStyle,
-    fontSize: RFValue(15),
-    fontWeight: '600',
-    color: '#0D326F',
-  },
-
-  footer: {
-    marginTop: verticalScale(16),
-    alignItems: 'flex-end',
-    backgroundColor: '#f8f9fa',
-    padding: moderateScale(16),
-    borderRadius: moderateScale(8),
-  },
-
-  footerText: {
+  
+  modalTitle: {
     ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: '700',
     color: '#0D326F',
+    textAlign: 'center',
+    paddingBottom: moderateScale(10),
+    width: '100%',
   },
-
+  
   closeButton: {
-    backgroundColor: '#0D326F',
-    borderRadius: moderateScale(25),
-    padding: moderateScale(12),
-    elevation: 2,
+    position: 'absolute',
+    right: moderateScale(16),
+    top: moderateScale(16),
+    width: moderateScale(28),
+    height: moderateScale(28),
+    borderRadius: moderateScale(14),
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: verticalScale(16),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
   },
-
-  textStyle: {
+  
+  closeButtonText: {
     ...commonTextStyle,
-    color: '#FFFFFF',
+    fontSize: RFValue(12),
     fontWeight: '600',
+    color: '#64748b',
+  },
+  
+  modalScrollView: {
+    padding: moderateScale(16),
+    maxHeight: '70%',
+  },
+  
+  modalOrderItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(10),
+    borderBottomWidth: 1,
+    borderColor: '#e2e8f0',
+    width: '100%',
+    backgroundColor: '#ffffff',
+    marginBottom: moderateScale(8),
+    borderRadius: moderateScale(8),
+  },
+  
+  modalOrderName: {
+    ...commonTextStyle,
+    flex: 3,
+    fontSize: RFValue(15),
+    color: '#1e293b',
+    fontWeight: '500',
+  },
+  
+  modalOrderDate: {
+    ...commonTextStyle,
+    fontSize: RFValue(12),
+    color: '#64748b',
+    marginTop: moderateScale(2),
+  },
+  
+  modalOrderQuantity: {
+    ...commonTextStyle,
+    flex: 1,
+    fontSize: RFValue(14),
+    color: '#64748b',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  
+  modalOrderPrice: {
+    ...commonTextStyle,
+    flex: 1,
+    fontSize: RFValue(15),
+    color: '#0D326F',
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+  
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: moderateScale(16),
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+  },
+  
+  modalTotalCost: {
+    ...commonTextStyle,
     fontSize: RFValue(16),
+    fontWeight: '700',
+    color: '#0D326F',
   },
 
   // 기간 선택 모달 스타일
@@ -672,6 +715,159 @@ export const orderStatusStyles = StyleSheet.create({
   itemRowRight: {
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
+  },
+
+  // 월별 상세보기 표 스타일
+  monthlyTableContainer: {
+    marginBottom: verticalScale(16),
+    borderRadius: moderateScale(8),
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  
+  monthlyTableHeader: {
+    flexDirection: 'row',
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(8),
+    backgroundColor: '#0D326F',
+    borderTopLeftRadius: moderateScale(8),
+    borderTopRightRadius: moderateScale(8),
+  },
+  
+  monthlyTableHeaderText: {
+    ...commonTextStyle,
+    fontSize: RFValue(13),
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  
+  monthlyTableRow: {
+    flexDirection: 'row',
+    paddingVertical: moderateScale(10),
+    paddingHorizontal: moderateScale(8),
+    borderBottomWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#FFFFFF',
+  },
+  
+  monthlyTableCell: {
+    ...commonTextStyle,
+    fontSize: RFValue(13),
+    color: '#1e293b',
+    textAlign: 'center',
+  },
+  
+  monthlyTableCellHighlight: {
+    ...commonTextStyle,
+    fontSize: RFValue(13),
+    fontWeight: '600',
+    color: '#0D326F',
+    textAlign: 'center',
+  },
+  
+  weekColumn: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  
+  productColumn: {
+    flex: 3,
+    alignItems: 'flex-start',
+  },
+  
+  quantityColumn: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  
+  priceColumn: {
+    flex: 1.5,
+    alignItems: 'flex-end',
+  },
+  
+  summarySection: {
+    marginTop: moderateScale(20),
+    backgroundColor: '#f8fafc',
+    borderRadius: moderateScale(8),
+    padding: moderateScale(16),
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  
+  summaryTitle: {
+    ...commonTextStyle,
+    fontSize: RFValue(16),
+    fontWeight: '600',
+    color: '#0D326F',
+    marginBottom: moderateScale(12),
+    textAlign: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    paddingBottom: moderateScale(8),
+  },
+  
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: moderateScale(8),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  
+  summaryLabel: {
+    ...commonTextStyle,
+    fontSize: RFValue(14),
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  
+  summaryValue: {
+    ...commonTextStyle,
+    fontSize: RFValue(14),
+    fontWeight: '600',
+    color: '#0D326F',
+  },
+  
+  summaryTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: moderateScale(12),
+    marginTop: moderateScale(4),
+    backgroundColor: '#EFF6FF',
+    borderRadius: moderateScale(6),
+    paddingHorizontal: moderateScale(10),
+  },
+  
+  summaryTotalLabel: {
+    ...commonTextStyle,
+    fontSize: RFValue(16),
+    fontWeight: '600',
+    color: '#0D326F',
+  },
+  
+  summaryTotalValue: {
+    ...commonTextStyle,
+    fontSize: RFValue(16),
+    fontWeight: '700',
+    color: '#0D326F',
   },
 });
 

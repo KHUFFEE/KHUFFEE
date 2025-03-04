@@ -58,6 +58,17 @@ export const fetchApiItems = async (): Promise<any[]> => {
   }
 };
 
+/** 모든 품목 리스트 API 호출 함수 */
+export const fetchApiALLItems = async (): Promise<any[]> => {
+  try {
+    const response = await fetch(`${RN_API_URL}/api/suppliers/items/?all=True`);
+    if (!response.ok) throw new Error('서버 응답 오류');
+    return await response.json();
+  } catch (error) {
+    console.error('품목 데이터 불러오기 오류:', error);
+    return [];
+  }
+};
 
 /** 협력사 리스트 API 호출 함수 */
 export const fetchSuppliers = async (): Promise<any[]> => { // async는 비동기로 만듦

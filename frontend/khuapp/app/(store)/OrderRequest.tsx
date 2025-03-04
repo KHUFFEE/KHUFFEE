@@ -221,9 +221,17 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
           formattedStock = stock.toFixed(1);
         }
       }
-      return <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(12) }}>현재고: {formattedStock}개</Text>;
+      return (
+        <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(12) }}>
+          현재고: {formattedStock}개
+        </Text>
+      );
     }
-    return null;
+    return (
+      <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(12) }}>
+        현재고: 0개
+      </Text>
+    );
   };
 
   // 선택된 품목 카드 렌더링 함수

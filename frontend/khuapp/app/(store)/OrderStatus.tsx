@@ -297,8 +297,14 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
   const [detailModalVisible, setDetailModalVisible] = useState<boolean>(false);
   const [detailGroupOrders, setDetailGroupOrders] = useState<CombinedOrderData[]>([]);
   const [detailGroupDate, setDetailGroupDate] = useState<string>('');
+  
+  // 월별 상세보기 관련 상태 추가
+  const [monthlyDetailModalVisible, setMonthlyDetailModalVisible] = useState<boolean>(false);
+  const [monthlyDetailOrders, setMonthlyDetailOrders] = useState<CombinedOrderData[]>([]);
+  const [monthlyDetailDate, setMonthlyDetailDate] = useState<string>('');
 
   const detailTotalCost = detailGroupOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
+  const monthlyDetailTotalCost = monthlyDetailOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
 
   const flatListRef = useRef<FlatList<any>>(null);
   const scrollOffset = useRef(0);
@@ -458,6 +464,14 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
     setDetailGroupOrders(sortedDetailOrders);
     setDetailModalVisible(true);
   };
+  
+  // 월별 상세보기 모달 열기 함수 추가
+  const openMonthlyDetailModal = (year: string, month: string, monthlyOrders: CombinedOrderData[]) => {
+    setMonthlyDetailDate(`${year}.${month}`);
+    const sortedMonthlyOrders = sortOrders(monthlyOrders, 'asc');
+    setMonthlyDetailOrders(sortedMonthlyOrders);
+    setMonthlyDetailModalVisible(true);
+  };
 
   const groupedByYearMonthWeek = storeOrders.reduce((acc: any, order) => {
     const [year, month, week] = order.기간.split('.');
@@ -511,19 +525,37 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
           <View testID="rightButtonGroup" style={orderStatusStyles.rightButtonGroup}>
             <TouchableOpacity 
               testID="headerButton" 
-              style={orderStatusStyles.headerButton}
+              style={[
+                orderStatusStyles.headerButton,
+                sortOrder === 'asc' && orderStatusStyles.headerButtonActive
+              ]}
               onPress={toggleSortOrder}
             >
-              <Text testID="headerButtonText" style={orderStatusStyles.headerButtonText}>
+              <Text 
+                testID="headerButtonText" 
+                style={[
+                  orderStatusStyles.headerButtonText,
+                  sortOrder === 'asc' && orderStatusStyles.headerButtonTextActive
+                ]}
+              >
                 {sortOrder === 'desc' ? '오래된순' : '최신순'}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               testID="headerButton"
-              style={orderStatusStyles.headerButton}
+              style={[
+                orderStatusStyles.headerButton,
+                isPeriodSearch && orderStatusStyles.headerButtonActive
+              ]}
               onPress={() => setShowPeriodModal(true)}
             >
-              <Text testID="headerButtonText" style={orderStatusStyles.headerButtonText}>
+              <Text 
+                testID="headerButtonText" 
+                style={[
+                  orderStatusStyles.headerButtonText,
+                  isPeriodSearch && orderStatusStyles.headerButtonTextActive
+                ]}
+              >
                 기간조회
               </Text>
             </TouchableOpacity>
@@ -571,13 +603,30 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
                       )
                     );
                   }, 0);
+                  
+                  // 월별 모든 주문 데이터를 모음
+                  const allMonthOrders = sortedWeeks.reduce((allOrders: CombinedOrderData[], week) => {
+                    return [...allOrders, ...weeksObj[week]];
+                  }, []);
+                  
                   return (
                     <View key={month} testID="monthContainer" style={orderStatusStyles.monthContainer}>
                       <View testID="monthHeader" style={orderStatusStyles.monthHeader}>
                         <Text testID="monthTitle" style={orderStatusStyles.monthTitle}>{month}월</Text>
-                        <Text testID="monthTotal" style={orderStatusStyles.monthTotal}>
-                          총 {f.formatPrice(monthTotalCost)}원
-                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Text testID="monthTotal" style={orderStatusStyles.monthTotal}>
+                            총 {f.formatPrice(monthTotalCost)}원
+                          </Text>
+                          <TouchableOpacity 
+                            testID="monthDetailButton" 
+                            style={orderStatusStyles.detailButton}
+                            onPress={() => openMonthlyDetailModal(year, month, allMonthOrders)}
+                          >
+                            <Text testID="monthDetailButtonText" style={orderStatusStyles.detailButtonText}>
+                              월별 상세보기
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                       {sortedWeeks.map((week) => {
                         const ordersSorted = sortOrders(weeksObj[week], sortOrder);
@@ -659,43 +708,116 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId, items }) => {
         </View>
       )}
 
+      {/* 주차별 상세보기 모달 */}
       <Modal
+        testID="detailModal"
         visible={detailModalVisible}
         transparent
         animationType="slide"
         onRequestClose={() => setDetailModalVisible(false)}
       >
-        <View testID="centeredView" style={orderStatusStyles.centeredView}>
-          <View testID="modalView" style={[orderStatusStyles.modalView, { maxHeight: '80%' }]}>
-            <ScrollView testID="receiptContainer" style={orderStatusStyles.receiptContainer}>
-              <View testID="header" style={orderStatusStyles.header}>
-                <Text testID="headerTitle" style={orderStatusStyles.headerTitle}>주문 상세 내역</Text>
-                <Text testID="headerSubtitle" style={orderStatusStyles.headerSubtitle}>{f.formatWeekString(detailGroupDate)}</Text>
-              </View>
-              <View testID="divider" style={orderStatusStyles.divider} />
-              {detailGroupOrders.map((order, idx) => (
-                <View key={idx} testID="itemRow" style={orderStatusStyles.itemRow}>
-                  <View testID="itemRowLeft" style={orderStatusStyles.itemRowLeft}>
-                    <Text testID="itemName" style={orderStatusStyles.itemName}>{order.품목명}</Text>
-                    <Text testID="itemQty" style={orderStatusStyles.itemQty}>
-                      x {f.formatPrice(order.매장_발주량)}개
+        <View testID="modalCenteredView" style={orderStatusStyles.modalCenteredView}>
+          <View testID="modalView" style={orderStatusStyles.modalView}>
+            <View testID="modalHeader" style={orderStatusStyles.modalHeader}>
+              <Text testID="modalTitle" style={orderStatusStyles.modalTitle}>
+                {detailGroupDate} 주차 발주 내역
+              </Text>
+              <TouchableOpacity
+                testID="closeButton"
+                style={orderStatusStyles.closeButton}
+                onPress={() => setDetailModalVisible(false)}
+              >
+                <Text testID="closeButtonText" style={orderStatusStyles.closeButtonText}>X</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {/* 모달 내용 */}
+            <ScrollView testID="modalScrollView" style={orderStatusStyles.modalScrollView}>
+              {detailGroupOrders.map((order, index) => (
+                <View key={index} testID="modalOrderItem" style={orderStatusStyles.modalOrderItem}>
+                  <View style={{ flex: 3 }}>
+                    <Text testID="modalOrderName" style={orderStatusStyles.modalOrderName}>
+                      {order.품목명}
+                    </Text>
+                    <Text style={orderStatusStyles.modalOrderDate}>
+                      {order.기간 || '날짜 정보 없음'}
                     </Text>
                   </View>
-                  <Text testID="itemPrice" style={orderStatusStyles.itemPrice}>
+                  <Text testID="modalOrderQuantity" style={orderStatusStyles.modalOrderQuantity}>
+                    {order.매장_발주량}개
+                  </Text>
+                  <Text testID="modalOrderPrice" style={orderStatusStyles.modalOrderPrice}>
                     {f.formatPrice(order.totalCost || 0)}원
                   </Text>
                 </View>
               ))}
-              <View testID="divider" style={orderStatusStyles.divider} />
-              <View testID="footer" style={orderStatusStyles.footer}>
-                <Text testID="footerText" style={orderStatusStyles.footerText}>
-                  총 합계: {f.formatPrice(detailTotalCost)}원
-                </Text>
-              </View>
             </ScrollView>
-            <TouchableOpacity testID="closeButton" style={orderStatusStyles.closeButton} onPress={() => setDetailModalVisible(false)}>
-              <Text testID="textStyle" style={orderStatusStyles.textStyle}>닫기</Text>
-            </TouchableOpacity>
+            
+            <View testID="modalFooter" style={orderStatusStyles.modalFooter}>
+              <Text testID="modalTotalCost" style={orderStatusStyles.modalTotalCost}>
+                총 주문금액:
+              </Text>
+              <Text testID="modalTotalCost" style={orderStatusStyles.modalTotalCost}>
+                {f.formatPrice(detailTotalCost)}원
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      
+      {/* 월별 상세보기 모달 추가 */}
+      <Modal
+        testID="monthlyDetailModal"
+        visible={monthlyDetailModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setMonthlyDetailModalVisible(false)}
+      >
+        <View testID="modalCenteredView" style={orderStatusStyles.modalCenteredView}>
+          <View testID="modalView" style={orderStatusStyles.modalView}>
+            <View testID="modalHeader" style={orderStatusStyles.modalHeader}>
+              <Text testID="modalTitle" style={orderStatusStyles.modalTitle}>
+                {monthlyDetailDate} 월 발주 내역
+              </Text>
+              <TouchableOpacity
+                testID="closeButton"
+                style={orderStatusStyles.closeButton}
+                onPress={() => setMonthlyDetailModalVisible(false)}
+              >
+                <Text testID="closeButtonText" style={orderStatusStyles.closeButtonText}>X</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {/* 모달 내용 */}
+            <ScrollView testID="modalScrollView" style={orderStatusStyles.modalScrollView}>
+              {monthlyDetailOrders.map((order, index) => (
+                <View key={index} testID="modalOrderItem" style={orderStatusStyles.modalOrderItem}>
+                  <View style={{ flex: 3 }}>
+                    <Text testID="modalOrderName" style={orderStatusStyles.modalOrderName}>
+                      {order.품목명}
+                    </Text>
+                    <Text style={orderStatusStyles.modalOrderDate}>
+                      {order.기간 || '날짜 정보 없음'}
+                    </Text>
+                  </View>
+                  <Text testID="modalOrderQuantity" style={orderStatusStyles.modalOrderQuantity}>
+                    {order.매장_발주량}개
+                  </Text>
+                  <Text testID="modalOrderPrice" style={orderStatusStyles.modalOrderPrice}>
+                    {f.formatPrice(order.totalCost || 0)}원
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+            
+            <View testID="modalFooter" style={orderStatusStyles.modalFooter}>
+              <Text testID="modalTotalCost" style={orderStatusStyles.modalTotalCost}>
+                총 주문금액:
+              </Text>
+              <Text testID="modalTotalCost" style={orderStatusStyles.modalTotalCost}>
+                {f.formatPrice(monthlyDetailTotalCost)}원
+              </Text>
+            </View>
           </View>
         </View>
       </Modal>

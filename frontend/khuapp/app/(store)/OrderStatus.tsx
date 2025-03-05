@@ -893,12 +893,19 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                   <View testID='quantityColumn' style={orderStatusStyles.quantityColumn}>
                     <Text testID='monthlyTableHeaderText' style={orderStatusStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">총수량</Text>
                   </View>
-                  <View testID='priceColumn' style={orderStatusStyles.priceColumn}>
+                  <View testID='priceColumn' style={[orderStatusStyles.priceColumn, { borderRightWidth: 0 }]}>
                     <Text testID='monthlyTableHeaderText' style={orderStatusStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">총금액</Text>
                   </View>
                 </View>
                 {productSummary.map((product, index) => (
-                  <View testID='monthlyTableRow' key={index} style={orderStatusStyles.monthlyTableRow}>
+                  <View 
+                    testID='monthlyTableRow' 
+                    key={index} 
+                    style={[
+                      orderStatusStyles.monthlyTableRow, 
+                      index % 2 === 1 ? { backgroundColor: '#f8fafc' } : {}
+                    ]}
+                  >
                     <View testID='productColumn' style={orderStatusStyles.productColumn}>
                       <Text testID='monthlyTableCell' style={orderStatusStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
                     </View>
@@ -915,7 +922,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                     <View testID='quantityColumn' style={orderStatusStyles.quantityColumn}>
                       <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">{product.총수량}</Text>
                     </View>
-                    <View testID='priceColumn' style={orderStatusStyles.priceColumn}>
+                    <View testID='priceColumn' style={[orderStatusStyles.priceColumn, { borderRightWidth: 0 }]}>
                       <Text testID='monthlyTableCellHighlight' style={[orderStatusStyles.monthlyTableCellHighlight, { flexShrink: 1 }]} numberOfLines={1} ellipsizeMode="tail">{f.formatPrice(product.총금액)}</Text>
                     </View>
                   </View>
@@ -934,7 +941,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                   <View testID='quantityColumn' style={orderStatusStyles.quantityColumn}>
                     <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">-</Text>
                   </View>
-                  <View testID='priceColumn' style={orderStatusStyles.priceColumn}>
+                  <View testID='priceColumn' style={[orderStatusStyles.priceColumn, { borderRightWidth: 0 }]}>
                     <Text testID='monthlyTableCellHighlight' style={[orderStatusStyles.monthlyTableCellHighlight, { flexShrink: 1 }]} numberOfLines={1} ellipsizeMode="tail">{f.formatPrice(monthlyTotal)}</Text>
                   </View>
                 </View>

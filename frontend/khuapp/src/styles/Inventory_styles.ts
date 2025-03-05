@@ -178,7 +178,7 @@ export const inventoryStyles = StyleSheet.create({
     container: {
       flexDirection: 'row',
       justifyContent: 'center',
-      marginBottom: moderateScale(10),
+      marginTop: moderateScale(10),
     },
     button: {
       paddingVertical: moderateScale(8),
@@ -210,9 +210,9 @@ export const inventoryStyles = StyleSheet.create({
     container: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: moderateScale(10),
-      paddingRight: moderateScale(8),
+      justifyContent: 'flex-end',
+      marginVertical: moderateScale(4),
+      // paddingRight: moderateScale(8),
     },
     rightContainer: {
       flexDirection: 'row',

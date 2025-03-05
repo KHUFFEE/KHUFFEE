@@ -81,8 +81,8 @@ export const inventoryStyles = StyleSheet.create({
       backgroundColor: '#fff',
       borderWidth: 1,
       borderColor: '#e2e8f0',
-      borderRadius: moderateScale(10),
-      marginBottom: moderateScale(8),
+      // borderRadius: moderateScale(10),
+      // marginBottom: moderateScale(8),
       padding: moderateScale(15),
       shadowColor: '#000',
       shadowOffset: {
@@ -223,22 +223,25 @@ export const inventoryStyles = StyleSheet.create({
       gap: moderateScale(10),
     },
     smallButton: {
-      backgroundColor: '#0A2A5E',
-      paddingVertical: moderateScale(6),
-      paddingHorizontal: moderateScale(12),
-      borderRadius: moderateScale(10),
+      backgroundColor: '#f8fafc',
+      paddingHorizontal: moderateScale(10),
+      paddingVertical: verticalScale(5),
+      borderRadius: moderateScale(8),
       borderWidth: 1,
-      borderColor: '#0A2A5E',
-      shadowColor: '#000',
+      borderColor: '#0D326F',
+      shadowColor: '#0D326F',
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.2,
       shadowRadius: 1.5,
       elevation: 2,
+      justifyContent: 'center', // 수직 중앙 정렬
+      alignItems: 'center',     // 수평 중앙 정렬
     },
     buttonText: {
-      color: '#fff',
-      fontSize: 12,
-      fontWeight: 'bold',
+      ...commonTextStyle,
+      color: '#0D326F',
+      fontSize: RFValue(11),
+      fontWeight: '500',
     },
   });
   

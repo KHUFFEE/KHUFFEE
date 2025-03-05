@@ -380,9 +380,11 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
           style={[
             toggleButtonStyles.button,
             inventoryType === 'daily' && toggleButtonStyles.buttonActive,
-            {borderBottomRightRadius: moderateScale(0),}, // 왼쪽 상단 둥글게}
-            {borderBottomLeftRadius: moderateScale(0),}  // 왼쪽 상단 둥글게}
-
+            { 
+              borderTopRightRadius: 0,
+              borderBottomRightRadius: 0,
+              marginRight: 1, // 버튼 사이 간격 추가
+            }
           ]}
           onPress={() => handleToggle('daily')}
         >
@@ -401,8 +403,11 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
           style={[
             toggleButtonStyles.button,
             inventoryType === 'monthly' && toggleButtonStyles.buttonActive,
-            {borderBottomRightRadius: moderateScale(0),}, // 왼쪽 상단 둥글게}
-            {borderBottomLeftRadius: moderateScale(0),}  // 왼쪽 상단 둥글게}
+            { 
+              borderTopLeftRadius: 0,
+              borderBottomLeftRadius: 0,
+              marginLeft: 1, // 버튼 사이 간격 추가
+            }
           ]}
           onPress={() => handleToggle('monthly')}
         >

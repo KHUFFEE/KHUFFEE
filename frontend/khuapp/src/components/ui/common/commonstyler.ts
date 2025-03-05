@@ -116,16 +116,19 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: moderateScale(10),
+    paddingHorizontal: moderateScale(15),
     backgroundColor: '#ffffff',
     borderBottomWidth: 2.5,
     borderBottomColor: '#8B0000',
+    width: '100%',
     ...commonTextStyle
-    
   },
   head_storeNameText: {
     fontSize: RFValue(18),
     fontWeight: 'bold',
     color: 'black',
+    flex: 1,
+    marginRight: moderateScale(10),
     ...commonTextStyle
   },
   bottom_navbar: {

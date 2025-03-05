@@ -177,14 +177,34 @@ export const inventoryStyles = StyleSheet.create({
   export const toggleButtonStyles = StyleSheet.create({
     container: {
       flexDirection: 'row',
-      justifyContent: 'center',
+      justifyContent: 'space-between',
       marginTop: moderateScale(10),
+      gap: moderateScale(1),
+    },
+    headerContainer: {
+      backgroundColor: '#f8fafc',
+      borderRadius: moderateScale(10),
+      padding: moderateScale(8),
+      marginHorizontal: moderateScale(10),
+      marginBottom: moderateScale(10),
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+    toggleContainer: {
+      flexDirection: 'row',
+      backgroundColor: '#f0f4f8',
+      borderRadius: moderateScale(8),
+      padding: moderateScale(4),
+      marginBottom: moderateScale(8),
     },
     button: {
+      flex: 1,
       paddingVertical: moderateScale(8),
       paddingHorizontal: moderateScale(16),
       borderRadius: moderateScale(6),
-      marginHorizontal: moderateScale(5),
       borderWidth: 1,
       borderColor: '#0D326F',
       shadowColor: '#000',
@@ -192,6 +212,7 @@ export const inventoryStyles = StyleSheet.create({
       shadowOpacity: 0.1,
       shadowRadius: 1,
       elevation: 1,
+      alignItems: 'center',
     },
     buttonActive: {
       backgroundColor: '#0A2A5E',
@@ -212,7 +233,6 @@ export const inventoryStyles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'flex-end',
       marginVertical: moderateScale(4),
-      // paddingRight: moderateScale(8),
     },
     rightContainer: {
       flexDirection: 'row',
@@ -313,7 +333,7 @@ export const inventoryStyles = StyleSheet.create({
     searchContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: moderateScale(10),
+      marginTop: moderateScale(5),
       borderWidth: 1,
       borderColor: '#e2e8f0',
       borderRadius: moderateScale(8),

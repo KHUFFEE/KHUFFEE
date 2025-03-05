@@ -418,6 +418,35 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
         </TouchableOpacity>
       </View>
       
+      {/* 검색 입력 필드 - 항상 표시 */}
+      <View testID="searchContainer" style={searchStyles.searchContainer}>
+        <Search
+          testID="searchIconInInput"
+          color="#0A2A5E"
+          style={searchStyles.searchIconSize}
+        />
+        <TextInput
+          testID="searchInput"
+          style={searchStyles.searchInput}
+          placeholder="제품명 검색..."
+          value={searchText}
+          onChangeText={(text) => setSearchText(text)}
+          placeholderTextColor="#94a3b8"
+        />
+        {searchText.length > 0 && (
+          <TouchableOpacity
+            testID="clearSearchButton"
+            style={searchStyles.searchIcon}
+            onPress={() => setSearchText('')}
+          >
+            <X
+              color="#0A2A5E"
+              style={searchStyles.searchIconSize}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+      
       {/* 헤더 영역 (제목 + 검색 + 버튼) */}
       <View testID="headerRowStyles_container" style={headerRowStyles.container}>
 
@@ -472,35 +501,6 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
             </View>
           )}
         </View>
-      </View>
-      
-      {/* 검색 입력 필드 - 항상 표시 */}
-      <View testID="searchContainer" style={searchStyles.searchContainer}>
-        <Search
-          testID="searchIconInInput"
-          color="#0A2A5E"
-          style={searchStyles.searchIconSize}
-        />
-        <TextInput
-          testID="searchInput"
-          style={searchStyles.searchInput}
-          placeholder="제품명 검색..."
-          value={searchText}
-          onChangeText={(text) => setSearchText(text)}
-          placeholderTextColor="#94a3b8"
-        />
-        {searchText.length > 0 && (
-          <TouchableOpacity
-            testID="clearSearchButton"
-            style={searchStyles.searchIcon}
-            onPress={() => setSearchText('')}
-          >
-            <X
-              color="#0A2A5E"
-              style={searchStyles.searchIconSize}
-            />
-          </TouchableOpacity>
-        )}
       </View>
       
       {/* 테이블 헤더 */}

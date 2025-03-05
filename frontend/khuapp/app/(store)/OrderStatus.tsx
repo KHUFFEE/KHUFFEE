@@ -738,7 +738,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                           </Text>
                           <TouchableOpacity 
                             testID="monthDetailButton" 
-                            style={[orderStatusStyles.detailButton, {marginRight: verticalScale(2)}]}
+                            style={[orderStatusStyles.detailButton, {marginRight: verticalScale(2),borderColor: '#fff'}]}
                             onPress={() => openMonthlyDetailModal(year, month, allMonthOrders)}
                           >
                             <Text testID="monthDetailButtonText" style={orderStatusStyles.detailButtonText}>

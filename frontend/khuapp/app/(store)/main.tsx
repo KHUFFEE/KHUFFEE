@@ -60,10 +60,20 @@ export default function StoreDashboardScreen() {
   return (
     <SafeAreaView testID='dashboardContainer' style={styles.dashboardContainer}>
       {/* 상단 헤더 */}
-      <View testID="head_Container"style={styles.head_Container}>
-        <Text testID="head_storeNameText" style={styles.head_storeNameText}>{storeName} </Text>
-        <TouchableOpacity onPress={openSettingsModal}>
-          <Settings size={24} color="  #0D326F" />
+      <View testID="head_Container" style={styles.head_Container}>
+        <Text 
+          testID="head_storeNameText" 
+          style={styles.head_storeNameText}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {storeName}
+        </Text>
+        <TouchableOpacity 
+          onPress={openSettingsModal}
+          style={{ padding: 5 }}
+        > 
+          <Settings size={24} color="#0D326F" />
         </TouchableOpacity>
       </View>
 

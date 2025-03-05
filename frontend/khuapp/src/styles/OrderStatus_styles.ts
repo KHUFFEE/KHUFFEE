@@ -331,8 +331,10 @@ export const orderStatusStyles = StyleSheet.create({
   },
   
   modalHeader: {
-    padding: moderateScale(16),
+    padding: moderateScale(10),
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center', // 추가된 부분
     borderBottomWidth: 2,
     borderBottomColor: '#e2e8f0',
     backgroundColor: '#fff',
@@ -345,14 +347,15 @@ export const orderStatusStyles = StyleSheet.create({
     fontWeight: '700',
     color: '#0D326F',
     textAlign: 'center',
-    paddingBottom: moderateScale(10),
+    // paddingBottom: moderateScale(10),
     width: '100%',
+    textAlignVertical: 'center',
   },
   
   closeButton: {
-    position: 'absolute',
-    right: moderateScale(16),
-    top: moderateScale(16),
+    position: 'relative',
+    left: moderateScale(5),
+    // top: moderateScale(14),
     width: moderateScale(28),
     height: moderateScale(28),
     borderRadius: moderateScale(14),

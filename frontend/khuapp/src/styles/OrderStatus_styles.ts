@@ -776,8 +776,8 @@ export const orderStatusStyles = StyleSheet.create({
     minHeight: verticalScale(45),
     width: '100%',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#e2e8f0',
   },
   
   monthlyTableHeaderText: {

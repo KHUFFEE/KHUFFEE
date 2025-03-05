@@ -328,40 +328,41 @@ export const orderStatusStyles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    paddingBottom: 0,
   },
   
   modalHeader: {
     padding: moderateScale(10),
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center', // 추가된 부분
+    justifyContent: 'center',
     borderBottomWidth: 2,
     borderBottomColor: '#e2e8f0',
     backgroundColor: '#fff',
     position: 'relative',
+    paddingVertical: moderateScale(15),
   },
   
   modalTitle: {
     ...commonTextStyle,
-    fontSize: RFValue(18),
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#0D326F',
     textAlign: 'center',
-    // paddingBottom: moderateScale(10),
-    width: '100%',
-    textAlignVertical: 'center',
+    width: '80%',
   },
   
   closeButton: {
-    position: 'relative',
-    left: moderateScale(5),
-    // top: moderateScale(14),
+    position: 'absolute',
+    right: moderateScale(10),
+    top: '50%',
     width: moderateScale(28),
     height: moderateScale(28),
     borderRadius: moderateScale(14),
     backgroundColor: '#f1f5f9',
     justifyContent: 'center',
     alignItems: 'center',
+    transform: [{ translateY: -moderateScale(14) }],
   },
   
   closeButtonText: {
@@ -373,7 +374,7 @@ export const orderStatusStyles = StyleSheet.create({
   
   modalScrollView: {
     padding: moderateScale(16),
-    maxHeight: '70%',
+    paddingBottom: moderateScale(0),
   },
   
   modalOrderItem: {
@@ -387,13 +388,12 @@ export const orderStatusStyles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#ffffff',
     marginBottom: moderateScale(8),
-    borderRadius: moderateScale(8),
   },
   
   modalOrderName: {
     ...commonTextStyle,
     flex: 3,
-    fontSize: RFValue(15),
+    fontSize: RFValue(14),
     color: '#1e293b',
     fontWeight: '500',
   },
@@ -417,7 +417,7 @@ export const orderStatusStyles = StyleSheet.create({
   modalOrderPrice: {
     ...commonTextStyle,
     flex: 1,
-    fontSize: RFValue(15),
+    fontSize: RFValue(14),
     color: '#0D326F',
     fontWeight: '600',
     textAlign: 'right',
@@ -428,9 +428,11 @@ export const orderStatusStyles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: moderateScale(16),
+    paddingBottom: moderateScale(20),
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     backgroundColor: '#f8fafc',
+    marginTop: moderateScale(10),
   },
   
   modalTotalCost: {
@@ -813,6 +815,7 @@ export const orderStatusStyles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
+    marginBottom: moderateScale(10),
   },
   
   summaryTitle: {
@@ -857,6 +860,7 @@ export const orderStatusStyles = StyleSheet.create({
     backgroundColor: '#EFF6FF',
     borderRadius: moderateScale(6),
     paddingHorizontal: moderateScale(10),
+    marginBottom: moderateScale(5),
   },
   
   summaryTotalLabel: {

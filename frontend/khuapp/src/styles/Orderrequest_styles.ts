@@ -438,7 +438,7 @@ export const OrderRequeststyle = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#e2e8f0',
     width: '100%',
-    height: '20%',
+    height: hp(5),
     backgroundColor: '#ffffff',
     // borderRadius: moderateScale(8),
     // marginBottom: moderateScale(8),

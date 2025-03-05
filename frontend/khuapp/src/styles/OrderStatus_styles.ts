@@ -70,7 +70,9 @@ export const orderStatusStyles = StyleSheet.create({
     backgroundColor: '#f8fafc',
     borderWidth: 1,
     borderColor: '#0D326F',
-    borderRadius: moderateScale(16),
+    borderRadius: moderateScale(8),
+    justifyContent: 'center', // 수직 중앙 정렬
+    alignItems: 'center',     // 수평 중앙 정렬
     elevation: 1,
     shadowColor: '#0D326F',
     shadowOffset: {
@@ -311,12 +313,12 @@ export const orderStatusStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    padding: moderateScale(16),
+    padding: moderateScale(4),
   },
   
   modalView: {
     width: '100%',
-    maxHeight: '80%',
+    maxHeight: '85%',
     backgroundColor: '#fff',
     borderRadius: moderateScale(12),
     overflow: 'hidden',
@@ -328,15 +330,23 @@ export const orderStatusStyles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    paddingBottom: 0,
   },
   
   modalHeader: {
-    padding: moderateScale(16),
+    // padding: moderateScale(10),
+    // paddingBottom: verticalScale(0),
+    // // paddingTop: verticalScale(0),
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     borderBottomWidth: 2,
     borderBottomColor: '#e2e8f0',
     backgroundColor: '#fff',
     position: 'relative',
+    // paddingVertical: moderateScale(15),
+    zIndex: 5,
+    minHeight: verticalScale(60),
   },
   
   modalTitle: {
@@ -345,20 +355,27 @@ export const orderStatusStyles = StyleSheet.create({
     fontWeight: '700',
     color: '#0D326F',
     textAlign: 'center',
-    paddingBottom: moderateScale(10),
-    width: '100%',
+    width: '80%',
+    // marginBottom: moderateScale(5),
+    // paddingVertical: verticalScale(10),
+    paddingTop: verticalScale(10),
   },
   
   closeButton: {
     position: 'absolute',
-    right: moderateScale(16),
-    top: moderateScale(16),
-    width: moderateScale(28),
-    height: moderateScale(28),
-    borderRadius: moderateScale(14),
+    right: moderateScale(10),
+    bottom: moderateScale(15),
+    width: wp('7%'),
+    height: wp('7%'),
+    maxWidth: moderateScale(30),
+    maxHeight: moderateScale(30),
+    minWidth: moderateScale(24),
+    minHeight: moderateScale(24),
+    borderRadius: wp('3.5%'),
     backgroundColor: '#f1f5f9',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 10,
   },
   
   closeButtonText: {
@@ -369,30 +386,37 @@ export const orderStatusStyles = StyleSheet.create({
   },
   
   modalScrollView: {
-    padding: moderateScale(16),
-    maxHeight: '70%',
+    padding: moderateScale(5),
+    paddingBottom: moderateScale(0),
+    paddingTop: moderateScale(2),
+    marginVertical: verticalScale(1),
   },
   
   modalOrderItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: moderateScale(12),
+    paddingVertical: moderateScale(8),
     paddingHorizontal: moderateScale(10),
     borderBottomWidth: 1,
     borderColor: '#e2e8f0',
     width: '100%',
     backgroundColor: '#ffffff',
-    marginBottom: moderateScale(8),
-    borderRadius: moderateScale(8),
+    marginBottom: moderateScale(6),
+    // borderRadius: moderateScale(6),
+    minHeight: verticalScale(40),
   },
   
   modalOrderName: {
     ...commonTextStyle,
     flex: 3,
-    fontSize: RFValue(15),
+    fontSize: RFValue(14),
+    paddingTop: verticalScale(4),
     color: '#1e293b',
-    fontWeight: '500',
+    // fontWeight: '500',
+    paddingRight: moderateScale(5),
+    flexShrink: 1,
+    letterSpacing: -0.3,
   },
   
   modalOrderDate: {
@@ -404,20 +428,24 @@ export const orderStatusStyles = StyleSheet.create({
   
   modalOrderQuantity: {
     ...commonTextStyle,
-    flex: 1,
     fontSize: RFValue(14),
-    color: '#64748b',
-    fontWeight: '500',
+    // color: '#64748b',
+    // fontWeight: '500',
     textAlign: 'center',
+    paddingHorizontal: moderateScale(2),
+    minWidth: wp('15%'),
+    flexShrink: 0,
   },
   
   modalOrderPrice: {
     ...commonTextStyle,
-    flex: 1,
-    fontSize: RFValue(15),
+    fontSize: RFValue(14),
     color: '#0D326F',
-    fontWeight: '600',
+    // fontWeight: '600',
     textAlign: 'right',
+    minWidth: wp('20%'),
+    paddingLeft: moderateScale(5),
+    flexShrink: 0,
   },
   
   modalFooter: {
@@ -425,15 +453,17 @@ export const orderStatusStyles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: moderateScale(16),
+    paddingBottom: moderateScale(20),
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     backgroundColor: '#f8fafc',
+    marginTop: moderateScale(5),
   },
   
   modalTotalCost: {
     ...commonTextStyle,
     fontSize: RFValue(16),
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#0D326F',
   },
 
@@ -719,7 +749,7 @@ export const orderStatusStyles = StyleSheet.create({
 
   // 월별 상세보기 표 스타일
   monthlyTableContainer: {
-    marginBottom: verticalScale(16),
+    marginBottom: verticalScale(12),
     borderRadius: moderateScale(8),
     overflow: 'hidden',
     borderWidth: 1,
@@ -732,71 +762,113 @@ export const orderStatusStyles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
+    width: '100%',
   },
   
   monthlyTableHeader: {
     flexDirection: 'row',
-    paddingVertical: moderateScale(12),
-    paddingHorizontal: moderateScale(8),
+    // paddingVertical: moderateScale(10),
+    // paddingHorizontal: moderateScale(4),
     backgroundColor: '#0D326F',
     borderTopLeftRadius: moderateScale(8),
     borderTopRightRadius: moderateScale(8),
+    alignItems: 'center',
+    minHeight: verticalScale(45),
+    width: '100%',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
   },
   
   monthlyTableHeaderText: {
     ...commonTextStyle,
-    fontSize: RFValue(13),
+    fontSize: RFValue(12),
     fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
+    flexShrink: 0,
+    flexWrap: 'nowrap',
+    // paddingHorizontal: moderateScale(2),
+    minWidth: wp('10%'),
+    letterSpacing: -0.8,
   },
   
   monthlyTableRow: {
     flexDirection: 'row',
-    paddingVertical: moderateScale(10),
-    paddingHorizontal: moderateScale(8),
+    // paddingVertical: moderateScale(8),
+    // paddingHorizontal: moderateScale(4),
     borderBottomWidth: 1,
     borderColor: '#e2e8f0',
     backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    minHeight: verticalScale(40),
+    width: '100%',
+    justifyContent: 'space-between',
   },
   
   monthlyTableCell: {
     ...commonTextStyle,
-    fontSize: RFValue(13),
+    fontSize: RFValue(12),
     color: '#1e293b',
     textAlign: 'center',
+    letterSpacing: -0.8,
+    flexShrink: 0,
+    minWidth: wp('10%'),
+    // paddingHorizontal: moderateScale(2),
+    flexWrap: 'nowrap',
   },
   
   monthlyTableCellHighlight: {
     ...commonTextStyle,
-    fontSize: RFValue(13),
+    fontSize: RFValue(12),
     fontWeight: '600',
     color: '#0D326F',
     textAlign: 'center',
+    flexShrink: 0,
+    minWidth: wp('10%'),
+    paddingHorizontal: moderateScale(2),
+    flexWrap: 'nowrap',
+    letterSpacing: -0.8,
   },
   
   weekColumn: {
-    flex: 1,
+    flex: 0.8,
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: wp('8%'),
+    borderRightWidth: 1,
+    borderRightColor: '#e2e8f0',
   },
   
   productColumn: {
-    flex: 3,
-    alignItems: 'flex-start',
+    flex: 2.5,
+    paddingLeft: moderateScale(8),
+    justifyContent: 'center',
+    minWidth: wp('30%'),
+    borderRightWidth: 1,
+    borderRightColor: '#e2e8f0',
   },
   
   quantityColumn: {
-    flex: 1,
+    flex: 0.8,
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: wp('10%'),
+    borderRightWidth: 0,
+    borderRightColor: '#e2e8f0',
   },
   
   priceColumn: {
-    flex: 1.5,
-    alignItems: 'flex-end',
+    flex: 1,
+    alignItems: 'center',
+    paddingRight: moderateScale(4),
+    minWidth: wp('12%'),
+    borderRightWidth: 1,
+    borderRightColor: '#e2e8f0',
   },
   
   summarySection: {
-    marginTop: moderateScale(20),
+    marginTop: moderateScale(0),
     backgroundColor: '#f8fafc',
     borderRadius: moderateScale(8),
     padding: moderateScale(16),
@@ -810,6 +882,7 @@ export const orderStatusStyles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
+    marginBottom: moderateScale(10),
   },
   
   summaryTitle: {
@@ -854,6 +927,7 @@ export const orderStatusStyles = StyleSheet.create({
     backgroundColor: '#EFF6FF',
     borderRadius: moderateScale(6),
     paddingHorizontal: moderateScale(10),
+    marginBottom: moderateScale(5),
   },
   
   summaryTotalLabel: {
@@ -900,7 +974,7 @@ export const dateRangeStyles = StyleSheet.create({
     paddingBottom: moderateScale(16),
     borderBottomWidth: moderateScale(1),
     borderBottomColor: '#eaeaea',
-    marginBottom: moderateScale(20),
+    marginBottom: moderateScale(10),
   },
   modalTitle: {
     ...commonTextStyle,

@@ -3,9 +3,10 @@ import { View, Text, FlatList, ActivityIndicator, TextInput, TouchableOpacity, S
 import { RN_API_URL } from '@env';
 import * as f from '../../src/components/ui/common/function';
 import { styles } from '../../src/components/ui/common/commonstyler';
-import { inventoryStyles } from '../../src/styles/Inventory_styles';
+import { inventoryStyles, toggleButtonStyles, editModeStyles, searchStyles, modalStyles, headerRowStyles } from '../../src/styles/Inventory_styles';
 import { APIProduct } from '../../src/components/ui/common/types';
 import { moderateScale } from 'react-native-size-matters';
+import { Search, Minus, Plus, Trash2, X } from 'lucide-react-native';
 
 // 일간 재고 타입
 export interface MergedInventoryItem extends APIProduct {
@@ -37,49 +38,63 @@ interface InventoryItemRowProps {
   inventoryType: 'daily' | 'monthly';
   editMode: boolean;
   onValueChange: (품목_id: string, newValue: string) => void;
+  onIncrement: (품목_id: string) => void;
+  onDecrement: (품목_id: string) => void;
+  onDelete: (품목_id: string) => void;
 }
 
-const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ item, inventoryType, editMode, onValueChange }) => {
-  const dailyValue = (item as MergedInventoryItem).매장_재고량 ?? 0;
-  const monthlyValue = (item as MergedMonthInventoryItem).월말_재고량 ?? 0;
+const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ 
+  item, 
+  inventoryType, 
+  editMode, 
+  onValueChange,
+  onIncrement,
+  onDecrement,
+  onDelete
+}) => {
+  // 재고량 값 (daily: 매장_재고량, monthly: 월말_재고량)
+  const inventoryValue = inventoryType === 'daily' 
+    ? (item as MergedInventoryItem).매장_재고량 
+    : (item as MergedMonthInventoryItem).월말_재고량;
 
   return (
     <View testID="itemContainer" style={inventoryStyles.itemContainer}>
-      <View testID="cardContent" style={styles.cardContent}>
-        <View testID="inventory_selectItemRowContainer" style={inventoryStyles.inventory_selectItemRowContainer}>
-          <Text testID="name_itemText" style={inventoryStyles.name_itemText}>
-            {item.품목명}
+      <View testID="inventory_selectItemRowContainer" style={inventoryStyles.inventory_selectItemRowContainer}>
+        <Text testID="name_itemText" style={inventoryStyles.name_itemText}>
+          {item.품목명}
+        </Text>
+        
+        {editMode ? (
+          <View testID="controlContainer" style={editModeStyles.controlContainer}>
+            <TouchableOpacity 
+              testID="decrementButton" 
+              style={[editModeStyles.controlButton, editModeStyles.leftButton]}
+              onPress={() => onDecrement(item.품목_id)}
+            >
+              <Minus color="#0A2A5E" size={16} />
+            </TouchableOpacity>
+            
+            <TextInput
+              testID="quantityInput"
+              style={editModeStyles.quantityInput}
+              value={inventoryValue?.toString() || '0'}
+              onChangeText={(text) => onValueChange(item.품목_id, text)}
+              keyboardType="numeric"
+            />
+            
+            <TouchableOpacity 
+              testID="incrementButton" 
+              style={[editModeStyles.controlButton, editModeStyles.rightButton]}
+              onPress={() => onIncrement(item.품목_id)}
+            >
+              <Plus color="#0A2A5E" size={16} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Text testID="unit_itemText" style={inventoryStyles.unit_itemText}>
+            {formatPrice(inventoryValue)}
           </Text>
-          {inventoryType === 'daily' ? (
-            editMode ? (
-              <TextInput
-                testID="unit_itemText"
-                style={inventoryStyles.unit_itemText}
-                value={dailyValue.toString()}
-                keyboardType="numeric"
-                onChangeText={(text) => onValueChange(item.품목_id, text)}
-              />
-            ) : (
-              <Text testID="unit_itemText" style={inventoryStyles.unit_itemText}>
-                {f.formatPrice(dailyValue)}
-              </Text>
-            )
-          ) : (
-            editMode ? (
-              <TextInput
-                testID="unit_itemText"
-                style={inventoryStyles.unit_itemText}
-                value={monthlyValue.toString()}
-                keyboardType="numeric"
-                onChangeText={(text) => onValueChange(item.품목_id, text)}
-              />
-            ) : (
-              <Text testID="unit_itemText" style={inventoryStyles.unit_itemText}>
-                {f.formatPrice(monthlyValue)}
-              </Text>
-            )
-          )}
-        </View>
+        )}
       </View>
     </View>
   );
@@ -87,6 +102,7 @@ const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ item, inventoryType
 
 const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
+  const [filteredData, setFilteredData] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -96,6 +112,9 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
   const [isMonthlyEditable, setIsMonthlyEditable] = useState<boolean>(true);
   // 모달 관련 상태 (수정 불가 안내)
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  // 검색 관련 상태
+  const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
+  const [searchText, setSearchText] = useState<string>('');
 
   // inventoryData 업데이트 (daily: 매장_재고량, monthly: 월말_재고량)
   const handleValueChange = (품목_id: string, newValue: string) => {
@@ -109,6 +128,61 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
       )
     );
   };
+
+  // 수량 증가 처리
+  const handleIncrement = (품목_id: string) => {
+    setInventoryData(prev =>
+      prev.map(item =>
+        item.품목_id === 품목_id
+          ? inventoryType === 'daily'
+            ? { ...item, 매장_재고량: ((item as MergedInventoryItem).매장_재고량 || 0) + 1 }
+            : { ...item, 월말_재고량: ((item as MergedMonthInventoryItem).월말_재고량 || 0) + 1 }
+          : item
+      )
+    );
+  };
+
+  // 수량 감소 처리
+  const handleDecrement = (품목_id: string) => {
+    setInventoryData(prev =>
+      prev.map(item => {
+        if (item.품목_id !== 품목_id) return item;
+        
+        if (inventoryType === 'daily') {
+          const currentValue = (item as MergedInventoryItem).매장_재고량 || 0;
+          return { ...item, 매장_재고량: Math.max(0, currentValue - 1) };
+        } else {
+          const currentValue = (item as MergedMonthInventoryItem).월말_재고량 || 0;
+          return { ...item, 월말_재고량: Math.max(0, currentValue - 1) };
+        }
+      })
+    );
+  };
+
+  // 항목 삭제 처리 (재고량을 0으로 설정)
+  const handleDelete = (품목_id: string) => {
+    setInventoryData(prev =>
+      prev.map(item =>
+        item.품목_id === 품목_id
+          ? inventoryType === 'daily'
+            ? { ...item, 매장_재고량: 0 }
+            : { ...item, 월말_재고량: 0 }
+          : item
+      )
+    );
+  };
+
+  // 검색 필터링 적용
+  useEffect(() => {
+    if (searchText.trim() === '') {
+      setFilteredData(inventoryData);
+    } else {
+      const filtered = inventoryData.filter(item => 
+        item.품목명.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setFilteredData(filtered);
+    }
+  }, [searchText, inventoryData]);
 
   // getCurrentDateString: 일간 데이터의 기간 (예: "2025.03.02")
   const getCurrentDateString = (): string => {
@@ -183,77 +257,6 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
     }
   };
 
-  // 월말 재고 반영 (일간에서 월간 반영)
-  // 1. 일간 업데이트 진행
-  // 2. GET으로 월간 데이터를 받아,
-  // 3. 각 항목에 대해, 일간 재고와 일치하도록 월말_재고량을 업데이트하는 POST 요청 진행
-  // 단, 관리 API 상태가 0이면 모달로 안내하고 POST 요청 중단.
-  const handleReflectMonthly = async () => {
-    setSaving(true);
-    try {
-      // 관리 API를 통해 월간 수정 가능 여부 재확인
-      const statusRes = await fetch(`${RN_API_URL}/api/management/table_status_list/`);
-      const statusData = await statusRes.json();
-      const monthlyTable = statusData.find((item: any) => item.테이블 === '매장_월말재고');
-      if (!(monthlyTable && monthlyTable.상태 === 1)) {
-        setModalVisible(true);
-        setSaving(false);
-        return;
-      }
-      // Step 1: 일간 재고 업데이트
-      await Promise.all(
-        (inventoryData as MergedInventoryItem[]).map(item => {
-          const payload = {
-            매장_id: storeId,
-            품목_id: item.품목_id,
-            기간: getCurrentDateString(),
-            매장_재고량: item.매장_재고량,
-          };
-          return fetch(`${RN_API_URL}/api/inventory/store_inventory_update/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          }).then(response => {
-            if (!response.ok) {
-              throw new Error(`품목 ${item.품목명} 일간 업데이트 실패`);
-            }
-          });
-        })
-      );
-      // Step 2: GET 기존 월간 재고 데이터
-      const monthlyResponse = await fetch(`${RN_API_URL}/api/inventory/store_monthend/?매장_id=${storeId}`);
-      const monthlyData = await monthlyResponse.json();
-      const monthlyArray = monthlyData.inventories;
-      // Step 3: 각 월간 항목 업데이트: 일간 재고와 일치하도록
-      await Promise.all(
-        monthlyArray.map((monthlyRecord: any) => {
-          const matchingDaily = inventoryData.find((dailyItem) => dailyItem.품목_id === monthlyRecord.품목_id);
-          const newMonthlyQty = matchingDaily ? (matchingDaily as MergedInventoryItem).매장_재고량 : monthlyRecord.월말_재고량;
-          const payload = {
-            매장_id: storeId,
-            품목_id: monthlyRecord.품목_id,
-            기간: monthlyRecord.기간,
-            월말_재고량: newMonthlyQty,
-          };
-          return fetch(`${RN_API_URL}/api/inventory/store_monthend_inventory_update/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          }).then(response => {
-            if (!response.ok) {
-              throw new Error(`품목 ${monthlyRecord.품목명} 월말 업데이트 실패`);
-            }
-          });
-        })
-      );
-      setEditMode(false);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   // inventoryType 변경 시 데이터 새로 불러오기 및 월간 수정 가능 여부 체크
   useEffect(() => {
     if (!storeId) return;
@@ -312,6 +315,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
         });
         const sortedData = f.sortProductsBySupplierAndName(mergedData, suppliersData) as InventoryItem[];
         setInventoryData(sortedData);
+        setFilteredData(sortedData);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -368,12 +372,17 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
           </View>
         </View>
       </Modal>
+      
+      {/* 일일/월말 재고 토글 버튼 */}
       <View testID="container" style={toggleButtonStyles.container}>
         <TouchableOpacity
           testID="button"
           style={[
             toggleButtonStyles.button,
             inventoryType === 'daily' && toggleButtonStyles.buttonActive,
+            {borderBottomRightRadius: moderateScale(0),}, // 왼쪽 상단 둥글게}
+            {borderBottomLeftRadius: moderateScale(0),}  // 왼쪽 상단 둥글게}
+
           ]}
           onPress={() => handleToggle('daily')}
         >
@@ -392,6 +401,8 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
           style={[
             toggleButtonStyles.button,
             inventoryType === 'monthly' && toggleButtonStyles.buttonActive,
+            {borderBottomRightRadius: moderateScale(0),}, // 왼쪽 상단 둥글게}
+            {borderBottomLeftRadius: moderateScale(0),}  // 왼쪽 상단 둥글게}
           ]}
           onPress={() => handleToggle('monthly')}
         >
@@ -402,56 +413,97 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
               inventoryType === 'monthly' && toggleButtonStyles.buttonTextActive,
             ]}
           >
-            월간 재고
+            월말 재고
           </Text>
         </TouchableOpacity>
       </View>
-      <View testID="headerRowStyles_container" style={headerRowStyles.container}>
-        <Text testID="title" style={inventoryStyles.title}>
-          {inventoryType === 'daily' ? '일일 현재고' : '월간 재고'}
-        </Text>
-        {inventoryType === 'daily' && (
-          <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
-            {editMode ? (
-              <>
-                <TouchableOpacity testID="smallButton" style={headerRowStyles.smallButton} onPress={handleGlobalSave} disabled={saving}>
-                  <Text testID="buttonText" style={headerRowStyles.buttonText}>{saving ? '저장 중...' : '수정완료'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity testID="smallButton" style={headerRowStyles.smallButton} onPress={handleReflectMonthly} disabled={saving}>
-                  <Text testID="buttonText" style={headerRowStyles.buttonText}>월말 재고 반영</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <TouchableOpacity testID="smallButton" style={headerRowStyles.smallButton} onPress={() => setEditMode(true)}>
-                <Text testID="buttonText" style={headerRowStyles.buttonText}>수정</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-        {inventoryType === 'monthly' && (
-          <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
-            {editMode ? (
-              <TouchableOpacity
-                testID="smallButton"
-                style={headerRowStyles.smallButton}
-                onPress={handleMonthlySave}
-                disabled={saving || !isMonthlyEditable}
-              >
-                <Text testID="buttonText" style={headerRowStyles.buttonText}>{saving ? '저장 중...' : '월간 수정 완료'}</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                testID="smallButton"
-                style={[headerRowStyles.smallButton,!isMonthlyEditable && { opacity: 0.5 }]}
-                onPress={() => setEditMode(true)}
-                disabled={!isMonthlyEditable}
-              >
-                <Text testID="buttonText" style={headerRowStyles.buttonText}>월간 재고 수정</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+      
+      {/* 검색 입력 필드 - 항상 표시 */}
+      <View testID="searchContainer" style={searchStyles.searchContainer}>
+        <Search
+          testID="searchIconInInput"
+          color="#0A2A5E"
+          style={searchStyles.searchIconSize}
+        />
+        <TextInput
+          testID="searchInput"
+          style={searchStyles.searchInput}
+          placeholder="제품명 검색..."
+          value={searchText}
+          onChangeText={(text) => setSearchText(text)}
+          placeholderTextColor="#94a3b8"
+        />
+        {searchText.length > 0 && (
+          <TouchableOpacity
+            testID="clearSearchButton"
+            style={searchStyles.searchIcon}
+            onPress={() => setSearchText('')}
+          >
+            <X
+              color="#0A2A5E"
+              style={searchStyles.searchIconSize}
+            />
+          </TouchableOpacity>
         )}
       </View>
+      
+      {/* 헤더 영역 (제목 + 검색 + 버튼) */}
+      <View testID="headerRowStyles_container" style={headerRowStyles.container}>
+
+        <View style={headerRowStyles.rightContainer}>
+          {/* 수정 버튼 */}
+          {inventoryType === 'daily' ? (
+            <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
+              {editMode ? (
+                <TouchableOpacity 
+                  testID="smallButton" 
+                  style={saving ? headerRowStyles.disabledButton : headerRowStyles.activeButton} 
+                  onPress={handleGlobalSave}
+                  disabled={saving}
+                >
+                  <Text testID="buttonText" style={saving ? headerRowStyles.disabledButtonText : headerRowStyles.activeButtonText}>
+                    {saving ? '저장 중...' : '조정완료'}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity 
+                  testID="smallButton" 
+                  style={headerRowStyles.smallButton} 
+                  onPress={() => setEditMode(true)}
+                >
+                  <Text testID="buttonText" style={headerRowStyles.buttonText}>재고조정</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
+              {editMode ? (
+                <TouchableOpacity
+                  testID="smallButton"
+                  style={(saving || !isMonthlyEditable) ? headerRowStyles.disabledButton : headerRowStyles.activeButton}
+                  onPress={handleMonthlySave}
+                  disabled={saving || !isMonthlyEditable}
+                >
+                  <Text testID="buttonText" style={(saving || !isMonthlyEditable) ? headerRowStyles.disabledButtonText : headerRowStyles.activeButtonText}>
+                    {saving ? '저장 중...' : '실사완료'}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  testID="smallButton"
+                  style={!isMonthlyEditable ? headerRowStyles.disabledButton : headerRowStyles.smallButton}
+                  onPress={() => setEditMode(true)}
+                  disabled={!isMonthlyEditable}
+                >
+                  <Text testID="buttonText" style={!isMonthlyEditable ? headerRowStyles.disabledButtonText : headerRowStyles.buttonText}>재고실사</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </View>
+      </View>
+      
+      {/* 테이블 헤더 */}
       <View testID="inventory_HeaderContainer" style={inventoryStyles.inventory_HeaderContainer}>
         <Text testID="name_headerText" style={inventoryStyles.inventory_item_headerText}>
           상품명
@@ -460,9 +512,11 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
           재고량
         </Text>
       </View>
+      
+      {/* 재고 목록 */}
       <FlatList
         testID="flat_inventory"
-        data={inventoryData}
+        data={filteredData}
         keyExtractor={(item) => item.품목_id}
         style={inventoryStyles.flat_inventory}
         renderItem={({ item }) => (
@@ -471,6 +525,9 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
             inventoryType={inventoryType}
             editMode={editMode}
             onValueChange={handleValueChange}
+            onIncrement={handleIncrement}
+            onDecrement={handleDecrement}
+            onDelete={handleDelete}
           />
         )}
       />
@@ -478,77 +535,6 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
   );
 };
 
-const toggleButtonStyles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: moderateScale(10),
-  },
-  button: {
-    paddingVertical: moderateScale(8),
-    paddingHorizontal: moderateScale(16),
-    borderRadius: moderateScale(20),
-    marginHorizontal: moderateScale(5),
-    borderWidth: 1,
-    borderColor: '#0D326F',
-  },
-  buttonActive: {
-    backgroundColor: '#0D326F',
-  },
-  buttonText: {
-    fontSize: 14,
-    color: '#0D326F',
-    fontWeight: 'bold',
-  },
-  buttonTextActive: {
-    color: '#fff',
-  },
-});
 
-const headerRowStyles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between', // 변경된 부분',
-    marginBottom: moderateScale(10),
-    paddingRight: moderateScale(8),
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: moderateScale(10),
-  },
-  smallButton: {
-    backgroundColor: '#0D326F',
-    paddingVertical: moderateScale(6),
-    paddingHorizontal: moderateScale(12),
-    borderRadius: moderateScale(10),
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-});
-
-const modalStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    width: '80%',
-    backgroundColor: '#fff',
-    padding: moderateScale(20),
-    borderRadius: moderateScale(10),
-    alignItems: 'center',
-  },
-  modalText: {
-    marginBottom: moderateScale(20),
-    fontSize: 16,
-    textAlign: 'center',
-  },
-});
 
 export default Inventory;

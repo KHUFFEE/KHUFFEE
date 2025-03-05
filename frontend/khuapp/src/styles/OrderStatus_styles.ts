@@ -332,7 +332,9 @@ export const orderStatusStyles = StyleSheet.create({
   },
   
   modalHeader: {
-    padding: moderateScale(10),
+    // padding: moderateScale(10),
+    // paddingBottom: verticalScale(0),
+    // // paddingTop: verticalScale(0),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -340,29 +342,38 @@ export const orderStatusStyles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
     backgroundColor: '#fff',
     position: 'relative',
-    paddingVertical: moderateScale(15),
+    // paddingVertical: moderateScale(15),
+    zIndex: 5,
+    minHeight: verticalScale(60),
   },
   
   modalTitle: {
     ...commonTextStyle,
-    fontSize: RFValue(16),
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#0D326F',
     textAlign: 'center',
     width: '80%',
+    // marginBottom: moderateScale(5),
+    // paddingVertical: verticalScale(10),
+    paddingTop: verticalScale(10),
   },
   
   closeButton: {
     position: 'absolute',
     right: moderateScale(10),
-    top: '50%',
-    width: moderateScale(28),
-    height: moderateScale(28),
-    borderRadius: moderateScale(14),
+    bottom: moderateScale(15),
+    width: wp('7%'),
+    height: wp('7%'),
+    maxWidth: moderateScale(30),
+    maxHeight: moderateScale(30),
+    minWidth: moderateScale(24),
+    minHeight: moderateScale(24),
+    borderRadius: wp('3.5%'),
     backgroundColor: '#f1f5f9',
     justifyContent: 'center',
     alignItems: 'center',
-    transform: [{ translateY: -moderateScale(14) }],
+    zIndex: 10,
   },
   
   closeButtonText: {
@@ -375,27 +386,34 @@ export const orderStatusStyles = StyleSheet.create({
   modalScrollView: {
     padding: moderateScale(16),
     paddingBottom: moderateScale(0),
+    paddingTop: moderateScale(0),
   },
   
   modalOrderItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: moderateScale(12),
+    paddingVertical: moderateScale(8),
     paddingHorizontal: moderateScale(10),
     borderBottomWidth: 1,
     borderColor: '#e2e8f0',
     width: '100%',
     backgroundColor: '#ffffff',
-    marginBottom: moderateScale(8),
+    marginBottom: moderateScale(6),
+    // borderRadius: moderateScale(6),
+    minHeight: verticalScale(40),
   },
   
   modalOrderName: {
     ...commonTextStyle,
     flex: 3,
     fontSize: RFValue(14),
+    paddingTop: verticalScale(4),
     color: '#1e293b',
-    fontWeight: '500',
+    // fontWeight: '500',
+    paddingRight: moderateScale(5),
+    flexShrink: 1,
+    letterSpacing: -0.3,
   },
   
   modalOrderDate: {
@@ -407,20 +425,24 @@ export const orderStatusStyles = StyleSheet.create({
   
   modalOrderQuantity: {
     ...commonTextStyle,
-    flex: 1,
     fontSize: RFValue(14),
-    color: '#64748b',
-    fontWeight: '500',
+    // color: '#64748b',
+    // fontWeight: '500',
     textAlign: 'center',
+    paddingHorizontal: moderateScale(2),
+    minWidth: wp('15%'),
+    flexShrink: 0,
   },
   
   modalOrderPrice: {
     ...commonTextStyle,
-    flex: 1,
     fontSize: RFValue(14),
     color: '#0D326F',
-    fontWeight: '600',
+    // fontWeight: '600',
     textAlign: 'right',
+    minWidth: wp('20%'),
+    paddingLeft: moderateScale(5),
+    flexShrink: 0,
   },
   
   modalFooter: {
@@ -432,13 +454,13 @@ export const orderStatusStyles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     backgroundColor: '#f8fafc',
-    marginTop: moderateScale(10),
+    marginTop: moderateScale(5),
   },
   
   modalTotalCost: {
     ...commonTextStyle,
     fontSize: RFValue(16),
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#0D326F',
   },
 
@@ -769,7 +791,8 @@ export const orderStatusStyles = StyleSheet.create({
     ...commonTextStyle,
     fontSize: RFValue(13),
     color: '#1e293b',
-    textAlign: 'center',
+    textAlign: 'left',
+    letterSpacing: -0.3,
   },
   
   monthlyTableCellHighlight: {
@@ -907,7 +930,7 @@ export const dateRangeStyles = StyleSheet.create({
     paddingBottom: moderateScale(16),
     borderBottomWidth: moderateScale(1),
     borderBottomColor: '#eaeaea',
-    marginBottom: moderateScale(20),
+    marginBottom: moderateScale(10),
   },
   modalTitle: {
     ...commonTextStyle,

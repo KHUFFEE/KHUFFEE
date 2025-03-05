@@ -428,11 +428,11 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
               {editMode ? (
                 <TouchableOpacity 
                   testID="smallButton" 
-                  style={headerRowStyles.smallButton} 
-                  onPress={handleGlobalSave} 
+                  style={saving ? headerRowStyles.disabledButton : headerRowStyles.activeButton} 
+                  onPress={handleGlobalSave}
                   disabled={saving}
                 >
-                  <Text testID="buttonText" style={headerRowStyles.buttonText}>
+                  <Text testID="buttonText" style={saving ? headerRowStyles.disabledButtonText : headerRowStyles.activeButtonText}>
                     {saving ? '저장 중...' : '조정완료'}
                   </Text>
                 </TouchableOpacity>
@@ -451,22 +451,22 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
               {editMode ? (
                 <TouchableOpacity
                   testID="smallButton"
-                  style={headerRowStyles.smallButton}
+                  style={(saving || !isMonthlyEditable) ? headerRowStyles.disabledButton : headerRowStyles.activeButton}
                   onPress={handleMonthlySave}
                   disabled={saving || !isMonthlyEditable}
                 >
-                  <Text testID="buttonText" style={headerRowStyles.buttonText}>
+                  <Text testID="buttonText" style={(saving || !isMonthlyEditable) ? headerRowStyles.disabledButtonText : headerRowStyles.activeButtonText}>
                     {saving ? '저장 중...' : '실사완료'}
                   </Text>
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
                   testID="smallButton"
-                  style={[headerRowStyles.smallButton, !isMonthlyEditable && { opacity: 0.5 }]}
+                  style={!isMonthlyEditable ? headerRowStyles.disabledButton : headerRowStyles.smallButton}
                   onPress={() => setEditMode(true)}
                   disabled={!isMonthlyEditable}
                 >
-                  <Text testID="buttonText" style={headerRowStyles.buttonText}>재고실사</Text>
+                  <Text testID="buttonText" style={!isMonthlyEditable ? headerRowStyles.disabledButtonText : headerRowStyles.buttonText}>재고실사</Text>
                 </TouchableOpacity>
               )}
             </View>

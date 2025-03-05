@@ -70,7 +70,9 @@ export const orderStatusStyles = StyleSheet.create({
     backgroundColor: '#f8fafc',
     borderWidth: 1,
     borderColor: '#0D326F',
-    borderRadius: moderateScale(16),
+    borderRadius: moderateScale(8),
+    justifyContent: 'center', // 수직 중앙 정렬
+    alignItems: 'center',     // 수평 중앙 정렬
     elevation: 1,
     shadowColor: '#0D326F',
     shadowOffset: {

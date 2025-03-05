@@ -386,7 +386,7 @@ export const orderStatusStyles = StyleSheet.create({
   modalScrollView: {
     padding: moderateScale(5),
     paddingBottom: moderateScale(0),
-    paddingTop: moderateScale(0),
+    paddingTop: moderateScale(2),
     marginVertical: verticalScale(1),
   },
   
@@ -830,20 +830,19 @@ export const orderStatusStyles = StyleSheet.create({
   },
   
   weekColumn: {
-    flex: 0.2,
+    flex: 0.8,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: moderateScale(1),
-    minWidth: wp('10%'),
+    minWidth: wp('8%'),
     borderRightWidth: 1,
     borderRightColor: '#e2e8f0',
   },
   
   productColumn: {
-    flex: 2,
-    alignItems: 'flex-start',
-    paddingLeft: moderateScale(4),
-    minWidth: wp('18%'),
+    flex: 2.5,
+    paddingLeft: moderateScale(8),
+    justifyContent: 'center',
+    minWidth: wp('30%'),
     borderRightWidth: 1,
     borderRightColor: '#e2e8f0',
   },
@@ -853,13 +852,13 @@ export const orderStatusStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: wp('10%'),
-    borderRightWidth: 1,
+    borderRightWidth: 0,
     borderRightColor: '#e2e8f0',
   },
   
   priceColumn: {
     flex: 1,
-    alignItems: 'flex-start',
+    alignItems: 'center',
     paddingRight: moderateScale(4),
     minWidth: wp('12%'),
     borderRightWidth: 1,
@@ -867,7 +866,7 @@ export const orderStatusStyles = StyleSheet.create({
   },
   
   summarySection: {
-    marginTop: moderateScale(20),
+    marginTop: moderateScale(0),
     backgroundColor: '#f8fafc',
     borderRadius: moderateScale(8),
     padding: moderateScale(16),

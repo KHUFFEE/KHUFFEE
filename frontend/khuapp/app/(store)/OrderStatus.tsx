@@ -658,6 +658,26 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                   기간조회
                 </Text>
               </TouchableOpacity>
+              {isPeriodSearch && (
+                <TouchableOpacity 
+                  testID="resetButton" 
+                  style={[
+                    orderStatusStyles.headerButton,
+                    { backgroundColor: '#f1f5f9', borderColor: '#0D326F' }
+                  ]} 
+                  onPress={handleResetSearch}
+                >
+                  <Text 
+                    testID="resetButtonText" 
+                    style={[
+                      orderStatusStyles.headerButtonText,
+                      { fontWeight: '600' }
+                    ]}
+                  >
+                    전체보기
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </>
@@ -795,13 +815,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
             ) : null }
         />
       )}
-      {isPeriodSearch && (
-        <View style={{ position: 'absolute', top: 10, right: 10 }}>
-          <TouchableOpacity testID="resetButton" style={orderStatusStyles.resetButton} onPress={handleResetSearch}>
-            <Text testID="resetButtonText" style={orderStatusStyles.resetButtonText}>초기화</Text>
-          </TouchableOpacity>
-        </View>
-      )}
       {/* 상세보기 모달 */}
       <Modal
         testID="detailModal"
@@ -883,7 +896,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
               <View testID='monthlyTableContainer' style={orderStatusStyles.monthlyTableContainer}>
                 <View testID='monthlyTableHeader' style={orderStatusStyles.monthlyTableHeader}>
                   <View testID='productColumn' style={orderStatusStyles.productColumn}>
-                    <Text testID='monthlyTableHeaderText' style={orderStatusStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">상품명</Text>
+                    <Text testID='monthlyTableHeaderText' style={[orderStatusStyles.monthlyTableHeaderText, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">상품명</Text>
                   </View>
                   {sortedWeeks.map(week => (
                     <View testID='weekColumn' key={week} style={orderStatusStyles.weekColumn}>
@@ -891,10 +904,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                     </View>
                   ))}
                   <View testID='quantityColumn' style={orderStatusStyles.quantityColumn}>
-                    <Text testID='monthlyTableHeaderText' style={orderStatusStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">총수량</Text>
-                  </View>
-                  <View testID='priceColumn' style={[orderStatusStyles.priceColumn, { borderRightWidth: 0 }]}>
-                    <Text testID='monthlyTableHeaderText' style={orderStatusStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">총금액</Text>
+                    <Text testID='monthlyTableHeaderText' style={orderStatusStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">합계</Text>
                   </View>
                 </View>
                 {productSummary.map((product, index) => (
@@ -907,7 +917,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                     ]}
                   >
                     <View testID='productColumn' style={orderStatusStyles.productColumn}>
-                      <Text testID='monthlyTableCell' style={orderStatusStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
+                      <Text testID='monthlyTableCell' style={[orderStatusStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
                     </View>
                     {sortedWeeks.map(week => {
                       const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
@@ -922,33 +932,12 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                     <View testID='quantityColumn' style={orderStatusStyles.quantityColumn}>
                       <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">{product.총수량}</Text>
                     </View>
-                    <View testID='priceColumn' style={[orderStatusStyles.priceColumn, { borderRightWidth: 0 }]}>
-                      <Text testID='monthlyTableCellHighlight' style={[orderStatusStyles.monthlyTableCellHighlight, { flexShrink: 1 }]} numberOfLines={1} ellipsizeMode="tail">{f.formatPrice(product.총금액)}</Text>
-                    </View>
                   </View>
                 ))}
-                <View testID='monthlyTableRow' style={[orderStatusStyles.monthlyTableRow, { backgroundColor: '#f8fafc', borderBottomWidth: 0 }]}>
-                  <View testID='productColumn' style={orderStatusStyles.productColumn}>
-                    <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">주차별 합계</Text>
-                  </View>
-                  {sortedWeeks.map(week => (
-                    <View testID='weekColumn' key={week} style={orderStatusStyles.weekColumn}>
-                      <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">
-                        {f.formatPrice(weeklyTotals[week])}
-                      </Text>
-                    </View>
-                  ))}
-                  <View testID='quantityColumn' style={orderStatusStyles.quantityColumn}>
-                    <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">-</Text>
-                  </View>
-                  <View testID='priceColumn' style={[orderStatusStyles.priceColumn, { borderRightWidth: 0 }]}>
-                    <Text testID='monthlyTableCellHighlight' style={[orderStatusStyles.monthlyTableCellHighlight, { flexShrink: 1 }]} numberOfLines={1} ellipsizeMode="tail">{f.formatPrice(monthlyTotal)}</Text>
-                  </View>
-                </View>
               </View>
               {/* 월별 요약 섹션 */}
               <View testID='summarySection' style={orderStatusStyles.summarySection}>
-                <Text testID='summaryTitle' style={orderStatusStyles.summaryTitle}>월별 발주 요약</Text>
+                <Text testID='summaryTitle' style={orderStatusStyles.summaryTitle}>월 발주 금액 요약</Text>
                 {sortedWeeks.map(week => (
                   <View testID='summaryRow' key={week} style={orderStatusStyles.summaryRow}>
                     <Text testID='summaryLabel' style={orderStatusStyles.summaryLabel}>{week}주차 발주금액</Text>
@@ -971,14 +960,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
           handlePeriodSearch(start, end);
         }}
       />
-      <Modal
-        visible={false}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => {}}
-      >
-        {/* 기존 날짜 선택 모달 코드 */}
-      </Modal>
     </View>
   );
 };

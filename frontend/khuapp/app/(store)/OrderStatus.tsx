@@ -827,17 +827,21 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
             <ScrollView testID="modalScrollView" style={[orderStatusStyles.modalScrollView, { flexGrow: 1 }]}>
               {detailGroupOrders.map((order, index) => (
                 <View key={index} testID="modalOrderItem" style={orderStatusStyles.modalOrderItem}>
-                  <View style={{ flex: 3 }}>
-                    <Text testID="modalOrderName" style={orderStatusStyles.modalOrderName}>
-                      {order.품목명}
-                    </Text>
+                  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text testID="modalOrderName" style={orderStatusStyles.modalOrderName} numberOfLines={1} ellipsizeMode="tail">
+                        {order.품목명}
+                      </Text>
+                    </View>
+                    <View style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center' }}>
+                      <Text testID="modalOrderQuantity" style={orderStatusStyles.modalOrderQuantity}>
+                        {order.매장_발주량}개
+                      </Text>
+                      <Text testID="modalOrderPrice" style={orderStatusStyles.modalOrderPrice}>
+                        {f.formatPrice(order.totalCost || 0)}원
+                      </Text>
+                    </View>
                   </View>
-                  <Text testID="modalOrderQuantity" style={orderStatusStyles.modalOrderQuantity}>
-                    {order.매장_발주량}개
-                  </Text>
-                  <Text testID="modalOrderPrice" style={orderStatusStyles.modalOrderPrice}>
-                    {f.formatPrice(order.totalCost || 0)}원
-                  </Text>
                 </View>
               ))}
             </ScrollView>
@@ -882,56 +886,56 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                     <Text style={orderStatusStyles.monthlyTableHeaderText}>상품명</Text>
                   </View>
                   {sortedWeeks.map(week => (
-                    <View key={week} style={orderStatusStyles.weekColumn}>
-                      <Text style={orderStatusStyles.monthlyTableHeaderText}>{week}주차</Text>
+                    <View testID='weekColumn'key={week} style={orderStatusStyles.weekColumn}>
+                      <Text testID='monthlyTableHeaderText'style={orderStatusStyles.monthlyTableHeaderText}>{week}주차</Text>
                     </View>
                   ))}
-                  <View style={orderStatusStyles.quantityColumn}>
-                    <Text style={orderStatusStyles.monthlyTableHeaderText}>총수량</Text>
+                  <View testID='quantityColumn'style={orderStatusStyles.quantityColumn}>
+                    <Text testID='monthlyTableHeaderText'style={orderStatusStyles.monthlyTableHeaderText}>총수량</Text>
                   </View>
-                  <View style={orderStatusStyles.priceColumn}>
-                    <Text style={orderStatusStyles.monthlyTableHeaderText}>총금액</Text>
+                  <View testID='priceColumn'style={orderStatusStyles.priceColumn}>
+                    <Text testID='monthlyTableHeaderText'style={orderStatusStyles.monthlyTableHeaderText}>총금액</Text>
                   </View>
                 </View>
                 {productSummary.map((product, index) => (
-                  <View key={index} style={orderStatusStyles.monthlyTableRow}>
-                    <View style={orderStatusStyles.productColumn}>
-                      <Text style={orderStatusStyles.monthlyTableCell}>{product.품목명}</Text>
+                  <View testID='monthlyTableRow'key={index} style={orderStatusStyles.monthlyTableRow}>
+                    <View testID='productColumn'style={orderStatusStyles.productColumn}>
+                      <Text testID='monthlyTableCell'style={orderStatusStyles.monthlyTableCell}>{product.품목명}</Text>
                     </View>
                     {sortedWeeks.map(week => {
                       const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
                       return (
-                        <View key={week} style={orderStatusStyles.weekColumn}>
-                          <Text style={orderStatusStyles.monthlyTableCell}>
-                            {weekData.수량 > 0 ? `${weekData.수량}개` : '-'}
+                        <View testID='weekColumn'key={week} style={orderStatusStyles.weekColumn}>
+                          <Text testID='monthlyTableCell'style={orderStatusStyles.monthlyTableCell}>
+                            {weekData.수량 > 0 ? `${weekData.수량}` : '-'}
                           </Text>
                         </View>
                       );
                     })}
-                    <View style={orderStatusStyles.quantityColumn}>
-                      <Text style={orderStatusStyles.monthlyTableCellHighlight}>{product.총수량}개</Text>
+                    <View testID='quantityColumn'style={orderStatusStyles.quantityColumn}>
+                      <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>{product.총수량}</Text>
                     </View>
-                    <View style={orderStatusStyles.priceColumn}>
-                      <Text style={orderStatusStyles.monthlyTableCellHighlight}>{f.formatPrice(product.총금액)}원</Text>
+                    <View testID='priceColumn'style={orderStatusStyles.priceColumn}>
+                      <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>{f.formatPrice(product.총금액)}원</Text>
                     </View>
                   </View>
                 ))}
-                <View style={[orderStatusStyles.monthlyTableRow, { backgroundColor: '#f8fafc', borderBottomWidth: 0 }]}>
-                  <View style={orderStatusStyles.productColumn}>
-                    <Text style={orderStatusStyles.monthlyTableCellHighlight}>주차별 합계</Text>
+                <View testID='monthlyTableRow'style={[orderStatusStyles.monthlyTableRow, { backgroundColor: '#f8fafc', borderBottomWidth: 0 }]}>
+                  <View testID='productColumn'style={orderStatusStyles.productColumn}>
+                    <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>주차별 합계</Text>
                   </View>
                   {sortedWeeks.map(week => (
-                    <View key={week} style={orderStatusStyles.weekColumn}>
-                      <Text style={orderStatusStyles.monthlyTableCellHighlight}>
+                    <View testID='weekColumn'key={week} style={orderStatusStyles.weekColumn}>
+                      <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>
                         {f.formatPrice(weeklyTotals[week])}원
                       </Text>
                     </View>
                   ))}
-                  <View style={orderStatusStyles.quantityColumn}>
-                    <Text style={orderStatusStyles.monthlyTableCellHighlight}>-</Text>
+                  <View testID='quantityColumn'style={orderStatusStyles.quantityColumn}>
+                    <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>-</Text>
                   </View>
-                  <View style={orderStatusStyles.priceColumn}>
-                    <Text style={orderStatusStyles.monthlyTableCellHighlight}>{f.formatPrice(monthlyTotal)}원</Text>
+                  <View testID='priceColumn'style={orderStatusStyles.priceColumn}>
+                    <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>{f.formatPrice(monthlyTotal)}원</Text>
                   </View>
                 </View>
               </View>
@@ -939,14 +943,14 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
               <View testID='summarySection' style={orderStatusStyles.summarySection}>
                 <Text testID='summaryTitle'style={orderStatusStyles.summaryTitle}>월별 발주 요약</Text>
                 {sortedWeeks.map(week => (
-                  <View key={week} style={orderStatusStyles.summaryRow}>
-                    <Text style={orderStatusStyles.summaryLabel}>{week}주차 발주금액</Text>
-                    <Text style={orderStatusStyles.summaryValue}>{f.formatPrice(weeklyTotals[week])}원</Text>
+                  <View testID='summaryRow'key={week} style={orderStatusStyles.summaryRow}>
+                    <Text testID='summaryLabel'style={orderStatusStyles.summaryLabel}>{week}주차 발주금액</Text>
+                    <Text testID='summaryValue'style={orderStatusStyles.summaryValue}>{f.formatPrice(weeklyTotals[week])}원</Text>
                   </View>
                 ))}
-                <View style={orderStatusStyles.summaryTotal}>
-                  <Text style={orderStatusStyles.summaryTotalLabel}>월 총 발주금액</Text>
-                  <Text style={orderStatusStyles.summaryTotalValue}>{f.formatPrice(monthlyTotal)}원</Text>
+                <View testID='summaryTotal'style={orderStatusStyles.summaryTotal}>
+                  <Text testID='summaryTotalLabel'style={orderStatusStyles.summaryTotalLabel}>월 총 발주금액</Text>
+                  <Text testID='summaryTotalValue'style={orderStatusStyles.summaryTotalValue}>{f.formatPrice(monthlyTotal)}원</Text>
                 </View>
               </View>
             </ScrollView>

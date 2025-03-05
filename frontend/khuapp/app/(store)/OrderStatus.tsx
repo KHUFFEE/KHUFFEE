@@ -880,77 +880,77 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
             </View>
             <ScrollView testID="modalScrollView" style={[orderStatusStyles.modalScrollView, { flexGrow: 1 }]}>
               {/* 주차별 상품 통계 테이블 */}
-              <View style={orderStatusStyles.monthlyTableContainer}>
-                <View style={orderStatusStyles.monthlyTableHeader}>
-                  <View style={orderStatusStyles.productColumn}>
-                    <Text style={orderStatusStyles.monthlyTableHeaderText}>상품명</Text>
+              <View testID='monthlyTableContainer' style={orderStatusStyles.monthlyTableContainer}>
+                <View testID='monthlyTableHeader' style={orderStatusStyles.monthlyTableHeader}>
+                  <View testID='productColumn' style={orderStatusStyles.productColumn}>
+                    <Text testID='monthlyTableHeaderText' style={orderStatusStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">상품명</Text>
                   </View>
                   {sortedWeeks.map(week => (
-                    <View testID='weekColumn'key={week} style={orderStatusStyles.weekColumn}>
-                      <Text testID='monthlyTableHeaderText'style={orderStatusStyles.monthlyTableHeaderText}>{week}주차</Text>
+                    <View testID='weekColumn' key={week} style={orderStatusStyles.weekColumn}>
+                      <Text testID='monthlyTableHeaderText' style={orderStatusStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">{week}주</Text>
                     </View>
                   ))}
-                  <View testID='quantityColumn'style={orderStatusStyles.quantityColumn}>
-                    <Text testID='monthlyTableHeaderText'style={orderStatusStyles.monthlyTableHeaderText}>총수량</Text>
+                  <View testID='quantityColumn' style={orderStatusStyles.quantityColumn}>
+                    <Text testID='monthlyTableHeaderText' style={orderStatusStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">총수량</Text>
                   </View>
-                  <View testID='priceColumn'style={orderStatusStyles.priceColumn}>
-                    <Text testID='monthlyTableHeaderText'style={orderStatusStyles.monthlyTableHeaderText}>총금액</Text>
+                  <View testID='priceColumn' style={orderStatusStyles.priceColumn}>
+                    <Text testID='monthlyTableHeaderText' style={orderStatusStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">총금액</Text>
                   </View>
                 </View>
                 {productSummary.map((product, index) => (
-                  <View testID='monthlyTableRow'key={index} style={orderStatusStyles.monthlyTableRow}>
-                    <View testID='productColumn'style={orderStatusStyles.productColumn}>
-                      <Text testID='monthlyTableCell'style={orderStatusStyles.monthlyTableCell}>{product.품목명}</Text>
+                  <View testID='monthlyTableRow' key={index} style={orderStatusStyles.monthlyTableRow}>
+                    <View testID='productColumn' style={orderStatusStyles.productColumn}>
+                      <Text testID='monthlyTableCell' style={orderStatusStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
                     </View>
                     {sortedWeeks.map(week => {
                       const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
                       return (
-                        <View testID='weekColumn'key={week} style={orderStatusStyles.weekColumn}>
-                          <Text testID='monthlyTableCell'style={orderStatusStyles.monthlyTableCell}>
+                        <View testID='weekColumn' key={week} style={orderStatusStyles.weekColumn}>
+                          <Text testID='monthlyTableCell' style={orderStatusStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">
                             {weekData.수량 > 0 ? `${weekData.수량}` : '-'}
                           </Text>
                         </View>
                       );
                     })}
-                    <View testID='quantityColumn'style={orderStatusStyles.quantityColumn}>
-                      <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>{product.총수량}</Text>
+                    <View testID='quantityColumn' style={orderStatusStyles.quantityColumn}>
+                      <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">{product.총수량}</Text>
                     </View>
-                    <View testID='priceColumn'style={orderStatusStyles.priceColumn}>
-                      <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>{f.formatPrice(product.총금액)}원</Text>
+                    <View testID='priceColumn' style={orderStatusStyles.priceColumn}>
+                      <Text testID='monthlyTableCellHighlight' style={[orderStatusStyles.monthlyTableCellHighlight, { flexShrink: 1 }]} numberOfLines={1} ellipsizeMode="tail">{f.formatPrice(product.총금액)}</Text>
                     </View>
                   </View>
                 ))}
-                <View testID='monthlyTableRow'style={[orderStatusStyles.monthlyTableRow, { backgroundColor: '#f8fafc', borderBottomWidth: 0 }]}>
-                  <View testID='productColumn'style={orderStatusStyles.productColumn}>
-                    <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>주차별 합계</Text>
+                <View testID='monthlyTableRow' style={[orderStatusStyles.monthlyTableRow, { backgroundColor: '#f8fafc', borderBottomWidth: 0 }]}>
+                  <View testID='productColumn' style={orderStatusStyles.productColumn}>
+                    <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">주차별 합계</Text>
                   </View>
                   {sortedWeeks.map(week => (
-                    <View testID='weekColumn'key={week} style={orderStatusStyles.weekColumn}>
-                      <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>
-                        {f.formatPrice(weeklyTotals[week])}원
+                    <View testID='weekColumn' key={week} style={orderStatusStyles.weekColumn}>
+                      <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">
+                        {f.formatPrice(weeklyTotals[week])}
                       </Text>
                     </View>
                   ))}
-                  <View testID='quantityColumn'style={orderStatusStyles.quantityColumn}>
-                    <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>-</Text>
+                  <View testID='quantityColumn' style={orderStatusStyles.quantityColumn}>
+                    <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">-</Text>
                   </View>
-                  <View testID='priceColumn'style={orderStatusStyles.priceColumn}>
-                    <Text testID='monthlyTableCellHighlight'style={orderStatusStyles.monthlyTableCellHighlight}>{f.formatPrice(monthlyTotal)}원</Text>
+                  <View testID='priceColumn' style={orderStatusStyles.priceColumn}>
+                    <Text testID='monthlyTableCellHighlight' style={[orderStatusStyles.monthlyTableCellHighlight, { flexShrink: 1 }]} numberOfLines={1} ellipsizeMode="tail">{f.formatPrice(monthlyTotal)}</Text>
                   </View>
                 </View>
               </View>
               {/* 월별 요약 섹션 */}
               <View testID='summarySection' style={orderStatusStyles.summarySection}>
-                <Text testID='summaryTitle'style={orderStatusStyles.summaryTitle}>월별 발주 요약</Text>
+                <Text testID='summaryTitle' style={orderStatusStyles.summaryTitle}>월별 발주 요약</Text>
                 {sortedWeeks.map(week => (
-                  <View testID='summaryRow'key={week} style={orderStatusStyles.summaryRow}>
-                    <Text testID='summaryLabel'style={orderStatusStyles.summaryLabel}>{week}주차 발주금액</Text>
-                    <Text testID='summaryValue'style={orderStatusStyles.summaryValue}>{f.formatPrice(weeklyTotals[week])}원</Text>
+                  <View testID='summaryRow' key={week} style={orderStatusStyles.summaryRow}>
+                    <Text testID='summaryLabel' style={orderStatusStyles.summaryLabel}>{week}주차 발주금액</Text>
+                    <Text testID='summaryValue' style={orderStatusStyles.summaryValue}>{f.formatPrice(weeklyTotals[week])}원</Text>
                   </View>
                 ))}
-                <View testID='summaryTotal'style={orderStatusStyles.summaryTotal}>
-                  <Text testID='summaryTotalLabel'style={orderStatusStyles.summaryTotalLabel}>월 총 발주금액</Text>
-                  <Text testID='summaryTotalValue'style={orderStatusStyles.summaryTotalValue}>{f.formatPrice(monthlyTotal)}원</Text>
+                <View testID='summaryTotal' style={orderStatusStyles.summaryTotal}>
+                  <Text testID='summaryTotalLabel' style={orderStatusStyles.summaryTotalLabel}>월 총 발주금액</Text>
+                  <Text testID='summaryTotalValue' style={orderStatusStyles.summaryTotalValue}>{f.formatPrice(monthlyTotal)}원</Text>
                 </View>
               </View>
             </ScrollView>

@@ -316,7 +316,7 @@ export const orderStatusStyles = StyleSheet.create({
   
   modalView: {
     width: '100%',
-    maxHeight: '80%',
+    maxHeight: '85%',
     backgroundColor: '#fff',
     borderRadius: moderateScale(12),
     overflow: 'hidden',
@@ -384,9 +384,10 @@ export const orderStatusStyles = StyleSheet.create({
   },
   
   modalScrollView: {
-    padding: moderateScale(16),
+    padding: moderateScale(5),
     paddingBottom: moderateScale(0),
     paddingTop: moderateScale(0),
+    marginVertical: verticalScale(1),
   },
   
   modalOrderItem: {
@@ -746,7 +747,7 @@ export const orderStatusStyles = StyleSheet.create({
 
   // 월별 상세보기 표 스타일
   monthlyTableContainer: {
-    marginBottom: verticalScale(16),
+    marginBottom: verticalScale(12),
     borderRadius: moderateScale(8),
     overflow: 'hidden',
     borderWidth: 1,
@@ -759,68 +760,100 @@ export const orderStatusStyles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
+    width: '100%',
   },
   
   monthlyTableHeader: {
     flexDirection: 'row',
-    paddingVertical: moderateScale(12),
-    paddingHorizontal: moderateScale(8),
+    paddingVertical: moderateScale(8),
+    paddingHorizontal: moderateScale(2),
     backgroundColor: '#0D326F',
     borderTopLeftRadius: moderateScale(8),
     borderTopRightRadius: moderateScale(8),
+    alignItems: 'center',
+    minHeight: verticalScale(40),
+    width: '100%',
+    justifyContent: 'space-between',
   },
   
   monthlyTableHeaderText: {
     ...commonTextStyle,
-    fontSize: RFValue(13),
+    fontSize: RFValue(9),
     fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
+    flexShrink: 0,
+    flexWrap: 'nowrap',
+    paddingHorizontal: moderateScale(1),
+    minWidth: wp('8%'),
+    letterSpacing: -0.5,
   },
   
   monthlyTableRow: {
     flexDirection: 'row',
-    paddingVertical: moderateScale(10),
-    paddingHorizontal: moderateScale(8),
+    paddingVertical: moderateScale(6),
+    paddingHorizontal: moderateScale(2),
     borderBottomWidth: 1,
     borderColor: '#e2e8f0',
     backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    minHeight: verticalScale(36),
+    width: '100%',
+    justifyContent: 'space-between',
   },
   
   monthlyTableCell: {
     ...commonTextStyle,
-    fontSize: RFValue(13),
+    fontSize: RFValue(9),
     color: '#1e293b',
-    textAlign: 'left',
-    letterSpacing: -0.3,
+    textAlign: 'center',
+    letterSpacing: -0.5,
+    flexShrink: 0,
+    minWidth: wp('8%'),
+    paddingHorizontal: moderateScale(1),
+    flexWrap: 'nowrap',
   },
   
   monthlyTableCellHighlight: {
     ...commonTextStyle,
-    fontSize: RFValue(13),
+    fontSize: RFValue(9),
     fontWeight: '600',
     color: '#0D326F',
     textAlign: 'center',
+    flexShrink: 0,
+    minWidth: wp('8%'),
+    paddingHorizontal: moderateScale(1),
+    flexWrap: 'nowrap',
+    letterSpacing: -0.5,
   },
   
   weekColumn: {
-    flex: 1,
+    flex: 0.8,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: moderateScale(2),
+    minWidth: wp('10%'),
   },
   
   productColumn: {
-    flex: 3,
+    flex: 1.8,
     alignItems: 'flex-start',
+    paddingLeft: moderateScale(4),
+    minWidth: wp('18%'),
   },
   
   quantityColumn: {
-    flex: 1,
+    flex: 0.8,
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: wp('10%'),
   },
   
   priceColumn: {
-    flex: 1.5,
-    alignItems: 'flex-end',
+    flex: 0.8,
+    alignItems: 'flex-start',
+    paddingRight: moderateScale(4),
+    minWidth: wp('10%'),
   },
   
   summarySection: {

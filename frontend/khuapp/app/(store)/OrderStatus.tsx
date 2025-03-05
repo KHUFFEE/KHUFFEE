@@ -824,7 +824,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                 <Text testID="closeButtonText" style={orderStatusStyles.closeButtonText}>X</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView testID="modalScrollView" style={orderStatusStyles.modalScrollView}>
+            <ScrollView testID="modalScrollView" style={[orderStatusStyles.modalScrollView, { flexGrow: 1 }]}>
               {detailGroupOrders.map((order, index) => (
                 <View key={index} testID="modalOrderItem" style={orderStatusStyles.modalOrderItem}>
                   <View style={{ flex: 3 }}>
@@ -874,7 +874,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                 <Text testID="closeButtonText" style={orderStatusStyles.closeButtonText}>X</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView testID="modalScrollView" style={orderStatusStyles.modalScrollView}>
+            <ScrollView testID="modalScrollView" style={[orderStatusStyles.modalScrollView, { flexGrow: 1 }]}>
               {/* 주차별 상품 통계 테이블 */}
               <View style={orderStatusStyles.monthlyTableContainer}>
                 <View style={orderStatusStyles.monthlyTableHeader}>
@@ -936,8 +936,8 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                 </View>
               </View>
               {/* 월별 요약 섹션 */}
-              <View style={orderStatusStyles.summarySection}>
-                <Text style={orderStatusStyles.summaryTitle}>월별 발주 요약</Text>
+              <View testID='summarySection' style={orderStatusStyles.summarySection}>
+                <Text testID='summaryTitle'style={orderStatusStyles.summaryTitle}>월별 발주 요약</Text>
                 {sortedWeeks.map(week => (
                   <View key={week} style={orderStatusStyles.summaryRow}>
                     <Text style={orderStatusStyles.summaryLabel}>{week}주차 발주금액</Text>

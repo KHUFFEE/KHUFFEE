@@ -223,13 +223,13 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       }
       return (
         <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(12) }}>
-          현재고: {formattedStock}개
+          현재고:{formattedStock}개
         </Text>
       );
     }
     return (
       <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(12) }}>
-        현재고: 0개
+        현재고:0개
       </Text>
     );
   };
@@ -300,10 +300,10 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                   {/* 변경된 부분: 텍스트 두 개를 세로로 배치하는 컬럼 뷰 추가 */}
                   <View testID="row1"style={{ flexDirection: 'column',position: 'relative',bottom: moderateScale(10),left:wp(1) }}>
                     <Text testID="unitText" style={OrderRequeststyle.unitText}>
-                      출고단위: {f.formatPrice(product.출고단위)}{product.단위}
+                      출고단위:{f.formatPrice(product.출고단위)}{product.단위}
                     </Text>
                     <Text testID="priceText" style={OrderRequeststyle.priceText}>
-                      상품 총액 : {f.formatPrice(computedPrice)}원
+                      상품총액:{f.formatPrice(computedPrice)}원
                     </Text>
                   </View>
                   <View

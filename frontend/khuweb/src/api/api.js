@@ -229,3 +229,52 @@ export const getTableStatusList = async () => {
 
   return await response.json();
 };
+
+// WarehouseOrder 관련 API 추가
+export const createWarehouseOrder = async (orderData) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/warehouse_order_create/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(orderData),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to create warehouse order");
+  }
+  return await response.json();
+};
+
+export const fetchWarehouseOrders = async (params) => {
+  let url = `${process.env.REACT_APP_API_URL}/api/orders/warehouse_order_list/?`;
+  if (params.기간) {
+    url += `기간=${params.기간}`;
+  } else {
+    url += `page=${params.page || 1}`;
+  }
+  if (params.order) {
+    url += `&order=${params.order}`;
+  }
+  if (params.회차) {
+    url += `&회차=${params.회차}`;
+  }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch warehouse orders");
+  }
+  return await response.json();
+};
+
+export const updateWarehouseOrder = async (orderData) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/warehouse_order_update/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(orderData),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to update warehouse order");
+  }
+  return await response.json();
+};

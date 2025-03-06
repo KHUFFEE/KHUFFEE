@@ -55,7 +55,7 @@ export const orderStatusStyles = StyleSheet.create({
     // marginBottom: verticalScale(8),
     marginTop: verticalScale(0),
     // paddingRight: moderateScale(10),
-    // paddingBottom: verticalScale(2),
+    paddingBottom: verticalScale(1),
   },
   
   rightButtonGroup: {

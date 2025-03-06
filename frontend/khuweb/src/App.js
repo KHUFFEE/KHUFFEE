@@ -135,7 +135,7 @@ function App() {
                           isActive ? "active" : ""
                         }
                       >
-                        제품
+                        제품 관리
                       </NavLink>
                       <NavLink
                         to="/integration/suppliers"
@@ -144,7 +144,7 @@ function App() {
                           isActive ? "active" : ""
                         }
                       >
-                        협력사
+                        협력사 관리
                       </NavLink>
                       <NavLink
                         to="/integration/inventorylog"

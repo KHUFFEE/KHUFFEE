@@ -274,6 +274,8 @@ interface OrderStatusProps {
 }
 
 const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
+  // item 로딩 
+  const [itemsLoaded, setItemsLoaded] = useState<boolean>(false);
   // 모든 품목(활성화 여부와 상관없이)을 가져오기 위한 상태
   const [allItems, setAllItems] = useState<APIProduct[]>([]);
   const [storeOrders, setStoreOrders] = useState<CombinedOrderData[]>([]);
@@ -583,13 +585,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         }
       } catch (error) {
         console.error("Error fetching all items:", error);
+      } finally {
+        setItemsLoaded(true);
       }
     };
     fetchAllItems();
   }, []);
 
   useEffect(() => {
-    if (storeId) {
+    if (storeId && itemsLoaded) {
       // 초기 로드시 최신순(페이지 1, 현재 ~ 1년전)만 요청
       setSortOrder('desc');
       setStoreOrders([]);
@@ -602,9 +606,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         setLoading(false);
       })();
     }
-  }, [storeId, allItems]);
+  }, [storeId, itemsLoaded]);
 
-  if (loading) {
+  if (loading || !itemsLoaded) {
     return (
       <View testID="loadingContainer" style={orderStatusStyles.loadingContainer}>
         <ActivityIndicator size="large" color="#0D326F80" />
@@ -685,10 +689,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
       {loading ? (
         <View testID="loadingContainer" style={orderStatusStyles.loadingContainer}>
           <ActivityIndicator size="large" color="#0D326F" />
-        </View>
-      ) : sortedYears.length === 0 ? (
-        <View testID="emptyContainer" style={orderStatusStyles.emptyContainer}>
-          <Text testID="emptyText" style={orderStatusStyles.emptyText}>아직 발주 내역이 없습니다.</Text>
         </View>
       ) : (
         <FlatList

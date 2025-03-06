@@ -29,7 +29,7 @@ import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Picker } from '@react-native-picker/picker';
-
+import { styles } from '../../src/components/ui/common/commonstyler';
 // 결합된 주문 데이터 타입 (StoreOrderData와 APIProduct의 속성을 모두 포함)
 type CombinedOrderData = StoreOrderData & Partial<APIProduct>;
 
@@ -610,9 +610,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
 
   if (loading || !itemsLoaded) {
     return (
-      <View testID="loadingContainer" style={orderStatusStyles.loadingContainer}>
+      <View testID="loading_Container" style={styles.loading_Container}>
         <ActivityIndicator size="large" color="#0D326F80" />
-        <Text testID="emptyText" style={orderStatusStyles.emptyText}>로딩 중...</Text>
+        <Text testID="loading_Text" style={styles.loading_Text}>
+          로딩 중...
+        </Text>
       </View>
     );
   }

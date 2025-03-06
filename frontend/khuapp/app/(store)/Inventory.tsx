@@ -400,7 +400,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
               inventoryType === 'daily' && toggleButtonStyles.buttonTextActive,
             ]}
           >
-            일일 재고
+            일별 재고
           </Text>
         </TouchableOpacity>
         <TouchableOpacity

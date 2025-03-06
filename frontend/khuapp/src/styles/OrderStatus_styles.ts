@@ -55,7 +55,7 @@ export const orderStatusStyles = StyleSheet.create({
     // marginBottom: verticalScale(8),
     marginTop: verticalScale(0),
     // paddingRight: moderateScale(10),
-    // paddingBottom: verticalScale(2),
+    paddingBottom: verticalScale(1),
   },
   
   rightButtonGroup: {
@@ -776,8 +776,8 @@ export const orderStatusStyles = StyleSheet.create({
     minHeight: verticalScale(45),
     width: '100%',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#e2e8f0',
   },
   
   monthlyTableHeaderText: {

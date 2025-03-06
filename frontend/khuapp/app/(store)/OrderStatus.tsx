@@ -29,7 +29,7 @@ import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Picker } from '@react-native-picker/picker';
-
+import { styles } from '../../src/components/ui/common/commonstyler';
 // 결합된 주문 데이터 타입 (StoreOrderData와 APIProduct의 속성을 모두 포함)
 type CombinedOrderData = StoreOrderData & Partial<APIProduct>;
 
@@ -86,6 +86,7 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
       setShowForm(false);
       const today = new Date();
       let newStartDate: Date;
+      
       if (preset === '최근 1개월') {
         newStartDate = new Date(today);
         newStartDate.setMonth(today.getMonth() - 1);
@@ -96,15 +97,18 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
         newStartDate = new Date(today);
         newStartDate.setMonth(today.getMonth() - 6);
       } else if (preset === '올해') {
-        newStartDate = new Date(today.getFullYear(), 0, 1);
+        newStartDate = new Date(today.getFullYear(), 0, 1); // 올해 1월 1일
       } else if (preset === '1년') {
         newStartDate = new Date(today);
         newStartDate.setFullYear(today.getFullYear() - 1);
       } else {
         newStartDate = today;
       }
+      
       // 주차 계산: 월의 시작을 1주차로 가정
       const getWeek = (date: Date) => Math.ceil(date.getDate() / 7).toString();
+      
+      // 날짜 정보 설정 (UI 표시용)
       setStartYear(String(newStartDate.getFullYear()));
       setStartMonth(String(newStartDate.getMonth() + 1).padStart(2, '0'));
       setStartWeek(getWeek(newStartDate));
@@ -116,9 +120,40 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
 
   const handleSearch = () => {
     // 날짜 문자열은 "YYYY.MM.W" 형식
-    const startDateDisplay = `${startYear || '년도'}.${startMonth || '월'}.${startWeek || ''}`;
-    const endDateDisplay = `${endYear || '년도'}.${endMonth || '월'}.${endWeek || ''}`;
-    onConfirm(startDateDisplay, endDateDisplay);
+    if (activePreset === '직접입력') {
+      // 직접 입력 모드일 때는 기존 방식 유지
+      const startDateDisplay = `${startYear || '년도'}.${startMonth || '월'}.${startWeek || ''}`;
+      const endDateDisplay = `${endYear || '년도'}.${endMonth || '월'}.${endWeek || ''}`;
+      onConfirm(startDateDisplay, endDateDisplay);
+    } else {
+      // 프리셋 버튼 모드일 때는 getCustomPeriodString 사용
+      const today = new Date();
+      let startDate: Date;
+      
+      if (activePreset === '최근 1개월') {
+        startDate = new Date(today);
+        startDate.setMonth(today.getMonth() - 1);
+      } else if (activePreset === '최근 3개월') {
+        startDate = new Date(today);
+        startDate.setMonth(today.getMonth() - 3);
+      } else if (activePreset === '최근 6개월') {
+        startDate = new Date(today);
+        startDate.setMonth(today.getMonth() - 6);
+      } else if (activePreset === '올해') {
+        startDate = new Date(today.getFullYear(), 0, 1); // 올해 1월 1일
+      } else if (activePreset === '1년') {
+        startDate = new Date(today);
+        startDate.setFullYear(today.getFullYear() - 1);
+      } else {
+        startDate = today;
+      }
+      
+      // getCustomPeriodString을 이용하여 날짜 문자열을 생성
+      const startDateStr = f.getCustomPeriodString(startDate);
+      const endDateStr = f.getCustomPeriodString(today);
+      
+      onConfirm(startDateStr, endDateStr);
+    }
     onClose();
   };
 
@@ -274,6 +309,8 @@ interface OrderStatusProps {
 }
 
 const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
+  // item 로딩 
+  const [itemsLoaded, setItemsLoaded] = useState<boolean>(false);
   // 모든 품목(활성화 여부와 상관없이)을 가져오기 위한 상태
   const [allItems, setAllItems] = useState<APIProduct[]>([]);
   const [storeOrders, setStoreOrders] = useState<CombinedOrderData[]>([]);
@@ -395,9 +432,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     setHasMore(false);
     setLoading(true);
     try {
+      // 날짜 문자열을 그대로 사용
+      const periodParam = `${startDate}~${endDate}`;
       const params = new URLSearchParams({
         store_id: storeId,
-        기간: `${startDate}~${endDate}`,
+        기간: periodParam,
         order: sortOrder,
         all: "true"
       });
@@ -473,12 +512,14 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     
     // 주차별로 데이터 그룹화
     const weeklyData: { [week: string]: CombinedOrderData[] } = {};
-    const productSummaryMap: { [productId: string]: { 
-      품목명: string, 
-      총수량: number, 
-      총금액: number,
-      주차별: { [week: string]: { 수량: number, 금액: number } }
-    } } = {};
+    const productSummaryMap: { 
+      [productId: string]: { 
+        품목명: string; 
+        총수량: number; 
+        총금액: number;
+        주차별: { [week: string]: { 수량: number; 금액: number } };
+      } 
+    } = {};
     
     // 주차별 합계 금액
     const weeklyTotals: { [week: string]: number } = {};
@@ -527,8 +568,32 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     // 주차 정렬 (1주차, 2주차, ... 순서로)
     const sortedWeeks = allWeeks.sort((a, b) => parseInt(a) - parseInt(b));
     
-    // 상품 정렬 (총금액 내림차순)
-    const sortedProducts = Object.values(productSummaryMap).sort((a, b) => b.총금액 - a.총금액);
+    // 상품 정렬 - 주차별 상세보기와 동일한 정렬 방식 적용
+    // 기존: 총금액 내림차순 정렬
+    // const sortedProducts = Object.values(productSummaryMap).sort((a, b) => b.총금액 - a.총금액);
+    
+    // 새로운 정렬 방식: sortOrders 함수 사용 (협력사명, 종류, 품목명 기준)
+    // 먼저 productSummaryMap을 CombinedOrderData 형태로 변환
+    const productsForSorting: CombinedOrderData[] = Object.entries(productSummaryMap).map(([품목_id, data]) => {
+      // 원본 주문 데이터에서 해당 품목의 첫 번째 주문을 찾아 기본 정보 가져오기
+      const originalOrder = monthlyOrders.find(order => order.품목_id === 품목_id);
+      return {
+        품목_id,
+        품목명: data.품목명,
+        협력사_id: originalOrder?.협력사_id || '',
+        협력사명: originalOrder?.협력사명 || '',
+        종류: originalOrder?.종류 || '',
+        // 기타 필요한 속성들
+        매장_발주량: data.총수량,
+        totalCost: data.총금액,
+      } as CombinedOrderData;
+    });
+    
+    // sortOrders 함수로 정렬
+    const sortedProductsData = sortOrders(productsForSorting, 'asc');
+    
+    // 정렬된 결과를 다시 원래 형태로 변환
+    const sortedProducts = sortedProductsData.map(product => productSummaryMap[product.품목_id]);
     
     // 월 총 합계 금액
     const monthlyTotal = Object.values(weeklyTotals).reduce((sum, total) => sum + total, 0);
@@ -583,13 +648,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         }
       } catch (error) {
         console.error("Error fetching all items:", error);
+      } finally {
+        setItemsLoaded(true);
       }
     };
     fetchAllItems();
   }, []);
 
   useEffect(() => {
-    if (storeId) {
+    if (storeId && itemsLoaded) {
       // 초기 로드시 최신순(페이지 1, 현재 ~ 1년전)만 요청
       setSortOrder('desc');
       setStoreOrders([]);
@@ -602,13 +669,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         setLoading(false);
       })();
     }
-  }, [storeId, allItems]);
+  }, [storeId, itemsLoaded]);
 
-  if (loading) {
+  if (loading || !itemsLoaded) {
     return (
-      <View testID="loadingContainer" style={orderStatusStyles.loadingContainer}>
+      <View testID="loading_Container" style={styles.loading_Container}>
         <ActivityIndicator size="large" color="#0D326F80" />
-        <Text testID="emptyText" style={orderStatusStyles.emptyText}>로딩 중...</Text>
+        <Text testID="loading_Text" style={styles.loading_Text}>
+          로딩 중...
+        </Text>
       </View>
     );
   }
@@ -686,10 +755,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         <View testID="loadingContainer" style={orderStatusStyles.loadingContainer}>
           <ActivityIndicator size="large" color="#0D326F" />
         </View>
-      ) : sortedYears.length === 0 ? (
-        <View testID="emptyContainer" style={orderStatusStyles.emptyContainer}>
-          <Text testID="emptyText" style={orderStatusStyles.emptyText}>아직 발주 내역이 없습니다.</Text>
-        </View>
       ) : (
         <FlatList
           ref={flatListRef}
@@ -738,7 +803,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                           </Text>
                           <TouchableOpacity 
                             testID="monthDetailButton" 
-                            style={[orderStatusStyles.detailButton, {marginRight: verticalScale(2)}]}
+                            style={[orderStatusStyles.detailButton, {marginRight: verticalScale(2),borderColor: '#fff'}]}
                             onPress={() => openMonthlyDetailModal(year, month, allMonthOrders)}
                           >
                             <Text testID="monthDetailButtonText" style={orderStatusStyles.detailButtonText}>

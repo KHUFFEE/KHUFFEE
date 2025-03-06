@@ -87,13 +87,14 @@ const InventoryItemRow = forwardRef<
   // 부모의 inventoryData가 업데이트되면 localInput도 업데이트
   useEffect(() => {
     if (!isFocused) {
-      setLocalInput(inventoryValue === 0 ? '' : f.formatPrice(inventoryValue));
+      if (editMode) {
+        setLocalInput(inventoryValue === 0 ? "0" : f.formatPrice(inventoryValue));
+      } else {
+        setLocalInput(inventoryValue === 0 ? '' : f.formatPrice(inventoryValue));
+      }
     }
-  }, [inventoryValue, isFocused]);
+  }, [inventoryValue, isFocused, editMode]);
 
-  useEffect(() => {
-    setLocalInput(inventoryValue === 0 ? '' : f.formatPrice(inventoryValue));
-  }, [inventoryValue]);
 
   // 외부에서 commit() 호출 시 현재 입력값을 파싱하여 업데이트
   useImperativeHandle(
@@ -102,8 +103,7 @@ const InventoryItemRow = forwardRef<
       commit: () => {
         const parsed = parseFloat(localInput.replace(/,/g, ''));
         const numericValue = isNaN(parsed) ? 0 : parsed;
-        const formatted = numericValue === 0 ? '' : f.formatPrice(numericValue);
-        setLocalInput(formatted);
+        // 부모의 상태만 업데이트. 이후 useEffect가 inventoryValue 변경에 따라 localInput을 업데이트함
         onValueChange(item.품목_id, numericValue.toString());
       },
     }),
@@ -141,16 +141,22 @@ const InventoryItemRow = forwardRef<
                   setLocalInput(text);
                   const parsed = parseFloat(text.replace(/,/g, ''));
                   const numericValue = isNaN(parsed) ? 0 : parsed;
-                  // 입력하는 순간 바로 부모로 업데이트
                   onValueChange(item.품목_id, numericValue.toString());
                 }}
-                onFocus={() => setIsFocused(true)}
+                onFocus={() => {
+                  setIsFocused(true);
+                  if (localInput === "0") {
+                    setLocalInput('');
+                  }
+                }}
                 onBlur={() => {
                   setIsFocused(false);
                   const parsed = parseFloat(localInput.replace(/,/g, ''));
                   const numericValue = isNaN(parsed) ? 0 : parsed;
                   setLocalInput(
-                    numericValue === 0 ? '' : f.formatPrice(numericValue)
+                    numericValue === 0
+                      ? (editMode ? "0" : '')
+                      : f.formatPrice(numericValue)
                   );
                 }}
                 keyboardType="numeric"

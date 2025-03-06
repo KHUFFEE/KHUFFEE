@@ -66,29 +66,31 @@ const InventoryItemRow: React.FC<InventoryItemRowProps> = ({
         
         {editMode ? (
           <View testID="controlContainer" style={editModeStyles.controlContainer}>
-            <TouchableOpacity 
-              testID="decrementButton" 
-              style={[editModeStyles.controlButton, editModeStyles.leftButton]}
-              onPress={() => onDecrement(item.품목_id)}
-            >
-              <Minus color="#0A2A5E" size={16} />
-            </TouchableOpacity>
-            
-            <TextInput
-              testID="quantityInput"
-              style={editModeStyles.quantityInput}
-              value={inventoryValue?.toString() || '0'}
-              onChangeText={(text) => onValueChange(item.품목_id, text)}
-              keyboardType="numeric"
-            />
-            
-            <TouchableOpacity 
-              testID="incrementButton" 
-              style={[editModeStyles.controlButton, editModeStyles.rightButton]}
-              onPress={() => onIncrement(item.품목_id)}
-            >
-              <Plus color="#0A2A5E" size={16} />
-            </TouchableOpacity>
+            <View testID="inputContainer" style={editModeStyles.inputContainer}>
+              <TouchableOpacity 
+                testID="decrementButton" 
+                style={[editModeStyles.controlButton, editModeStyles.leftButton]}
+                onPress={() => onDecrement(item.품목_id)}
+              >
+                <Minus color="#0A2A5E" size={18} />
+              </TouchableOpacity>
+              
+              <TextInput
+                testID="quantityInput"
+                style={editModeStyles.quantityInput}
+                value={inventoryValue?.toString() || '0'}
+                onChangeText={(text) => onValueChange(item.품목_id, text)}
+                keyboardType="numeric"
+              />
+              
+              <TouchableOpacity 
+                testID="incrementButton" 
+                style={[editModeStyles.controlButton, editModeStyles.rightButton]}
+                onPress={() => onIncrement(item.품목_id)}
+              >
+                <Plus color="#0A2A5E" size={18} />
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <Text testID="unit_itemText" style={inventoryStyles.unit_itemText}>
@@ -535,7 +537,5 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
     </View>
   );
 };
-
-
 
 export default Inventory;

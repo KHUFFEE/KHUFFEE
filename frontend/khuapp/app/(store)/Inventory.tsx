@@ -138,10 +138,14 @@ const InventoryItemRow = forwardRef<
                 style={editModeStyles.quantityInput}
                 value={localInput}
                 onChangeText={(text) => {
-                  setLocalInput(text);
-                  const parsed = parseFloat(text.replace(/,/g, ''));
-                  const numericValue = isNaN(parsed) ? 0 : parsed;
-                  onValueChange(item.품목_id, numericValue.toString());
+                  // 현재 입력된 텍스트에서 콤마 제거
+                  const rawText = text.replace(/,/g, '');
+                  // 숫자로 파싱
+                  const parsed = parseFloat(rawText);
+                  // 숫자면 포맷 적용, 아니면 그대로 사용 (예: 빈 문자열)
+                  const formatted = isNaN(parsed) ? rawText : f.formatPrice(parsed);
+                  setLocalInput(formatted);
+                  onValueChange(item.품목_id, isNaN(parsed) ? "0" : parsed.toString());
                 }}
                 onFocus={() => {
                   setIsFocused(true);

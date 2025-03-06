@@ -46,11 +46,14 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
 const [suppliersLoaded, setSuppliersLoaded] = useState<boolean>(false);
 // 재고 데이터 로딩 상태 추가
 
-  const sortedCategories = useMemo(() => {
-    const categories = f.getUniqueCategories(apiItems);
-    // 필요 시 추가 정렬(ex. 알파벳순): categories.sort();
-    return categories;
-  }, [apiItems]);
+const sortedCategories = useMemo(() => {
+  let categories = f.getUniqueCategories(apiItems);
+  // "전체"를 제거합니다.
+  categories = categories.filter(category => category !== '전체');
+  // 한국어 로케일에 따라 알파벳 순으로 정렬합니다.
+  categories.sort((a, b) => a.localeCompare(b, 'ko'));
+  return categories;
+}, [apiItems]);
 
   // 즐겨찾기 상태 (매장별)
   const [favorites, setFavorites] = useState<string[]>([]);

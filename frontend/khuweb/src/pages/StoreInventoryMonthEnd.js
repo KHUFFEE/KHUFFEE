@@ -638,9 +638,9 @@ const StoreInventoryMonthEnd = () => {
                       }
                       onChange={(e) => {
                         let newValue = e.target.value.replace(/,/g, "");
-                        if (/^\\d*(\\.\\d{0,2})?$/.test(newValue)) {
+                        if (/^\d*(\.\d{0,2})?$/.test(newValue)) {
                           handleInventoryChange(row.itemId, store.매장_id, newValue);
-                        }
+                        }                        
                       }}
                       style={{ textAlign: "right" }}
                     />

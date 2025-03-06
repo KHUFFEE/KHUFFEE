@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo ,useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -42,6 +42,15 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   const [orderFailureMessages, setOrderFailureMessages] = useState<string[]>([]);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
+  // 협력사 데이터 로딩 상태 추가
+const [suppliersLoaded, setSuppliersLoaded] = useState<boolean>(false);
+// 재고 데이터 로딩 상태 추가
+
+  const sortedCategories = useMemo(() => {
+    const categories = f.getUniqueCategories(apiItems);
+    // 필요 시 추가 정렬(ex. 알파벳순): categories.sort();
+    return categories;
+  }, [apiItems]);
 
   // 즐겨찾기 상태 (매장별)
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -101,13 +110,19 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   // 협력사 데이터를 API로부터 불러오기
   useEffect(() => {
     f.fetchSuppliers()
-      .then((data) => setSuppliers(data))
-      .catch((err) => console.error('협력사 데이터 불러오기 오류:', err));
+      .then((data) => {
+        setSuppliers(data);
+        setSuppliersLoaded(true);
+      })
+      .catch((err) => {
+        console.error('협력사 데이터 불러오기 오류:', err);
+        setSuppliersLoaded(true); // 오류 발생 시에도 완료 상태로 처리
+      });
   }, []);
 
   // 매장 재고 데이터를 위한 상태 변수 추가
   const [inventory, setInventory] = useState<any[]>([]);
-
+  const [inventoryLoaded, setInventoryLoaded] = useState<boolean>(false);
   // 매장 재고 데이터를 불러오는 useEffect
   useEffect(() => {
     const fetchInventory = async () => {
@@ -117,8 +132,10 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
         if (!response.ok) throw new Error('재고 데이터를 불러오는 중 오류 발생');
         const data = await response.json();
         setInventory(data);
+        setInventoryLoaded(true);
       } catch (error) {
         console.error('재고 데이터 불러오기 오류:', error);
+        setInventoryLoaded(true);
       }
     };
     fetchInventory();
@@ -129,16 +146,25 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   const filteredProducts = f.getFilteredProducts(apiItems, selectedCategory);
 
   // 즐겨찾기 상품을 상단에 표시하도록 정렬
-  const sortedProducts = filteredProducts.sort((a, b) => {
-    const aIsFavorite = favorites.includes(a.품목_id);
-    const bIsFavorite = favorites.includes(b.품목_id);
-    
-    if (aIsFavorite && !bIsFavorite) return -1;
-    if (!aIsFavorite && bIsFavorite) return 1;
-    
-    // 즐겨찾기 상태가 같으면 기존 정렬 방식 적용
-    return f.sortProductsBySupplierAndName([a, b], suppliers)[0] === a ? -1 : 1;
-  });
+  const sortedProducts = useMemo(() => {
+    let products = f.getFilteredProducts(apiItems, selectedCategory);
+    if (isSearchActive && searchText.trim().length > 0) {
+      products = products.filter(product =>
+        product.품목명.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+    // 즐겨찾기와 공급업체 기준 정렬
+    products.sort((a, b) => {
+      const aIsFavorite = favorites.includes(a.품목_id);
+      const bIsFavorite = favorites.includes(b.품목_id);
+      
+      if (aIsFavorite && !bIsFavorite) return -1;
+      if (!aIsFavorite && bIsFavorite) return 1;
+      
+      return f.sortProductsBySupplierAndName([a, b], suppliers)[0] === a ? -1 : 1;
+    });
+    return products;
+  }, [apiItems, selectedCategory, favorites, suppliers, isSearchActive, searchText]);
 
   // 검색 기능: 검색 바가 활성화되고 입력값이 있을 경우 필터링
   let displayProducts = sortedProducts;
@@ -207,6 +233,11 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
 
   // 매장 재고 정보를 렌더링하는 헬퍼 함수
   const renderInventoryText = (product: APIProduct) => {
+    // 재고 데이터가 아직 로딩 중이면 아무것도 렌더링하지 않음
+    if (!inventoryLoaded) {
+      return null;
+    }
+  
     const inv = inventory.find(item => item.품목_id === product.품목_id);
     if (inv) {
       const stock = inv.매장_재고량;
@@ -385,7 +416,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     }
   };
 
-  if (loading) {
+  if (loading || !inventoryLoaded || !suppliersLoaded) {
     return (
       <View testID="loading_Container" style={styles.loading_Container}>
         <ActivityIndicator testID="activityIndicator" size="large" color="#0D326F80" />
@@ -447,7 +478,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
                       전체
                     </Text>
                   </TouchableOpacity>
-                  {uniqueCategories.map((cat, idx) => (
+                  {sortedCategories.map((cat, idx) => (
                     <TouchableOpacity
                       key={idx}
                       testID="categoryButton"

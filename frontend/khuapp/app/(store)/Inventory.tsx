@@ -381,8 +381,6 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
             toggleButtonStyles.button,
             inventoryType === 'daily' && toggleButtonStyles.buttonActive,
             { 
-              borderTopRightRadius: 0,
-              borderBottomRightRadius: 0,
               marginRight: 1, // 버튼 사이 간격 추가
             }
           ]}
@@ -404,8 +402,6 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
             toggleButtonStyles.button,
             inventoryType === 'monthly' && toggleButtonStyles.buttonActive,
             { 
-              borderTopLeftRadius: 0,
-              borderBottomLeftRadius: 0,
               marginLeft: 1, // 버튼 사이 간격 추가
             }
           ]}

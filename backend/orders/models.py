@@ -37,13 +37,12 @@ class WarehouseOutgoing(models.Model):
 
 
 class WarehouseOrder(models.Model):
-    협력사_id = models.ForeignKey(Supplier, on_delete=models.PROTECT, db_column="협력사_id")
     품목_id = models.ForeignKey(Item, on_delete=models.PROTECT, db_column="품목_id")
-    기간 = models.CharField(max_length=7)  # YYYY.MM
-    회차 = models.PositiveSmallIntegerField(default=1)  # 새 필드: 1~9 사이의 값 (DB의 CHECK 제약조건 적용)
+    기간 = models.CharField(max_length=7)  # YYYY.MM 형식
+    회차 = models.PositiveSmallIntegerField(default=1)  # 1~9 사이의 값 (DB에서 CHECK 제약조건 적용)
     창고_발주량 = models.IntegerField()
 
     class Meta:
         db_table = "창고_발주"
-        unique_together = ("협력사_id", "품목_id", "기간", "회차")
+        unique_together = ("품목_id", "기간", "회차")
 

@@ -30,22 +30,24 @@ import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Picker } from '@react-native-picker/picker';
 import { styles } from '../../src/components/ui/common/commonstyler';
+
 // 결합된 주문 데이터 타입 (StoreOrderData와 APIProduct의 속성을 모두 포함)
 type CombinedOrderData = StoreOrderData & Partial<APIProduct>;
 
+// DateRangeModalProps에 years prop 추가 (동적 연도 배열)
 interface DateRangeModalProps {
   visible: boolean;
   onClose: () => void;
   onConfirm: (startDate: string, endDate: string) => void;
-  years: string[]; // 추가된 prop
+  years: string[];
 }
 
 /* ===========================================================
    새 기간조회 모달 컴포넌트 (DateRangeModal)
    - 프리셋 선택 시, 현재 날짜를 기준으로 기간을 계산합니다.
    - 생성되는 날짜 문자열은 "YYYY.MM.W" 형식(예: "2025.02.5")이어야 합니다.
-========================================================== */
-const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onConfirm }) => {
+=========================================================== */
+const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onConfirm, years }) => {
   const [startYear, setStartYear] = useState('');
   const [startMonth, setStartMonth] = useState('');
   const [startWeek, setStartWeek] = useState('');
@@ -56,10 +58,9 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
   const [showForm, setShowForm] = useState(false);
 
   const presets = ['직접입력', '최근 1개월', '최근 3개월', '최근 6개월', '올해', '1년'];
-  const years = ['2025', '2024', '2023'];
+  // 하드코딩된 연도 배열 대신 props로 전달받습니다.
   const months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
   const weeks = ['1', '2', '3', '4', '5'];
-  
 
   useEffect(() => {
     if (visible) {
@@ -222,17 +223,17 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
               <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
                 <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>시작날짜 선택</Text>
                 <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
-                    <Picker
-                      testID="pickerYear"
-                      selectedValue={startYear}
-                      style={dateRangeStyles.picker}
-                      onValueChange={(itemValue) => setStartYear(itemValue)}
-                    >
-                      <Picker.Item label="년도" value="" />
-                      {years.map((y) => (
-                        <Picker.Item key={y} label={`${y}년`} value={y} />
-                      ))}
-                    </Picker>
+                  <Picker
+                    testID="pickerYear"
+                    selectedValue={startYear}
+                    style={dateRangeStyles.picker}
+                    onValueChange={(itemValue) => setStartYear(itemValue)}
+                  >
+                    <Picker.Item label="년도" value="" />
+                    {years.map((y) => (
+                      <Picker.Item key={y} label={`${y}년`} value={y} />
+                    ))}
+                  </Picker>
                   <Picker
                     testID="pickerMonth"
                     selectedValue={startMonth}
@@ -313,7 +314,7 @@ interface OrderStatusProps {
 const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
   // item 로딩 
   const [itemsLoaded, setItemsLoaded] = useState<boolean>(false);
-  // 모든 품목(활성화 여부와 상관없이)을 가져오기 위한 상태
+  // 모든 품목(활성화 여부와 관계없이)을 가져오기 위한 상태
   const [allItems, setAllItems] = useState<APIProduct[]>([]);
   const [storeOrders, setStoreOrders] = useState<CombinedOrderData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -346,9 +347,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     주차별: { [week: string]: { 수량: number; 금액: number } };
   }>>([]);
   const [monthlyTotal, setMonthlyTotal] = useState<number>(0);
-  const availableYears = Array.from(
-    new Set(storeOrders.map(order => order.기간.split('.')[0]))
-  ).sort((a, b) => parseInt(b) - parseInt(a)); // 내림차순 정렬
 
   const detailTotalCost = detailGroupOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
   const monthlyDetailTotalCost = monthlyDetailOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
@@ -360,6 +358,17 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
   const sortOrders = (orders: CombinedOrderData[], order: 'asc' | 'desc') => {
     let sorted = f.sortProductsBySupplierAndName(orders as APIProduct[], allItems) as CombinedOrderData[];
     return order === 'desc' ? sorted.reverse() : sorted;
+  };
+
+  // 연도 범위 계산 함수: 2023년부터 최대 연도까지 오름차순 배열 생성
+  const getYearRange = (orders: CombinedOrderData[], minYear: number = 2023): string[] => {
+    const years = orders.map(order => parseInt(order.기간.split('.')[0]));
+    const maxYear = Math.max(...years, minYear);
+    const yearRange: string[] = [];
+    for (let y = minYear; y <= maxYear; y++) {
+      yearRange.push(y.toString());
+    }
+    return yearRange;
   };
 
   // 주문 데이터 API 호출 시 allItems를 사용해 제품명, 단가 등 매핑
@@ -510,17 +519,14 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     // 주문 데이터를 상품명 기준으로 그룹화 (동일 상품이면 합산)
     const groupedOrdersMap: { [productName: string]: CombinedOrderData } = {};
     orders.forEach((order) => {
-      const key = order.품목명 ?? '알 수 없는 품목'; // 그룹화 기준: 상품명 (기간은 detail 모달 호출 시 동일하다고 가정)
+      const key = order.품목명 ?? '알 수 없는 품목';
       if (groupedOrdersMap[key]) {
-        // 기존에 존재하는 경우, 매장_발주량과 totalCost 합산
         groupedOrdersMap[key].매장_발주량 = (groupedOrdersMap[key].매장_발주량 || 0) + (order.매장_발주량 || 0);
         groupedOrdersMap[key].totalCost = (groupedOrdersMap[key].totalCost || 0) + (order.totalCost || 0);
       } else {
-        // 처음 발견 시, 객체 복사
         groupedOrdersMap[key] = { ...order };
       }
     });
-    // 그룹화된 객체를 배열로 변환 후 정렬
     const groupedOrders = Object.values(groupedOrdersMap);
     const sortedDetailOrders = sortOrders(groupedOrders, 'asc');
     setDetailGroupOrders(sortedDetailOrders);
@@ -531,7 +537,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
   const openMonthlyDetailModal = (year: string, month: string, monthlyOrders: CombinedOrderData[]) => {
     setMonthlyDetailDate(`${year}.${month}`);
     
-    // 주차별로 데이터 그룹화
     const weeklyData: { [week: string]: CombinedOrderData[] } = {};
     const productSummaryMap: { 
       [productId: string]: { 
@@ -541,30 +546,20 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         주차별: { [week: string]: { 수량: number; 금액: number } };
       } 
     } = {};
-    
-    // 주차별 합계 금액
     const weeklyTotals: { [week: string]: number } = {};
-    
-    // 모든 주차 목록 (정렬용)
     const allWeeks: string[] = [];
     
-    // 데이터 그룹화 및 통계 계산
     monthlyOrders.forEach(order => {
       const [, , week] = order.기간.split('.');
-      
-      // 주차별 데이터 그룹화
       if (!weeklyData[week]) {
         weeklyData[week] = [];
         weeklyTotals[week] = 0;
         allWeeks.push(week);
       }
       weeklyData[week].push(order);
-      
-      // 주차별 합계 금액 계산
       const orderCost = order.totalCost || 0;
       weeklyTotals[week] += orderCost;
       
-      // 상품별 통계 계산
       if (!productSummaryMap[order.품목_id]) {
         productSummaryMap[order.품목_id] = {
           품목명: order.품목명 || '',
@@ -574,7 +569,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         };
       }
       
-      // 상품별 주차별 데이터 추가
       if (!productSummaryMap[order.품목_id].주차별[week]) {
         productSummaryMap[order.품목_id].주차별[week] = { 수량: 0, 금액: 0 };
       }
@@ -586,17 +580,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
       productSummaryMap[order.품목_id].주차별[week].금액 += orderCost;
     });
     
-    // 주차 정렬 (1주차, 2주차, ... 순서로)
     const sortedWeeks = allWeeks.sort((a, b) => parseInt(a) - parseInt(b));
     
-    // 상품 정렬 - 주차별 상세보기와 동일한 정렬 방식 적용
-    // 기존: 총금액 내림차순 정렬
-    // const sortedProducts = Object.values(productSummaryMap).sort((a, b) => b.총금액 - a.총금액);
-    
-    // 새로운 정렬 방식: sortOrders 함수 사용 (협력사명, 종류, 품목명 기준)
-    // 먼저 productSummaryMap을 CombinedOrderData 형태로 변환
     const productsForSorting: CombinedOrderData[] = Object.entries(productSummaryMap).map(([품목_id, data]) => {
-      // 원본 주문 데이터에서 해당 품목의 첫 번째 주문을 찾아 기본 정보 가져오기
       const originalOrder = monthlyOrders.find(order => order.품목_id === 품목_id);
       return {
         품목_id,
@@ -604,25 +590,16 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         협력사_id: originalOrder?.협력사_id || '',
         협력사명: originalOrder?.협력사명 || '',
         종류: originalOrder?.종류 || '',
-        // 기타 필요한 속성들
         매장_발주량: data.총수량,
         totalCost: data.총금액,
       } as CombinedOrderData;
     });
     
-    // sortOrders 함수로 정렬
     const sortedProductsData = sortOrders(productsForSorting, 'asc');
-    
-    // 정렬된 결과를 다시 원래 형태로 변환
     const sortedProducts = sortedProductsData.map(product => productSummaryMap[product.품목_id]);
-    
-    // 월 총 합계 금액
     const monthlyTotal = Object.values(weeklyTotals).reduce((sum, total) => sum + total, 0);
     
-    // 정렬된 데이터 저장
     setMonthlyDetailOrders(monthlyOrders);
-    
-    // 추가 데이터 저장
     setWeeklyData(weeklyData);
     setWeeklyTotals(weeklyTotals);
     setSortedWeeks(sortedWeeks);
@@ -632,7 +609,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     setMonthlyDetailModalVisible(true);
   };
   
-  // 주문 데이터를 연도, 월, 주차별로 그룹화
   const groupedByYearMonthWeek = storeOrders.reduce((acc: any, order) => {
     const [year, month, week] = order.기간.split('.');
     if (!acc[year]) acc[year] = {};
@@ -650,13 +626,11 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
 
   const sortedYears = sortKeys(Object.keys(groupedByYearMonthWeek));
 
-  // 월별 상세보기 모달 제목: "YYYY년 M월" 형식으로 변환
   const formattedMonthlyDetailDate =
     monthlyDetailDate && monthlyDetailDate.split('.').length === 2
       ? `${parseInt(monthlyDetailDate.split('.')[0], 10)}년 ${parseInt(monthlyDetailDate.split('.')[1], 10)}월`
       : monthlyDetailDate;
 
-  // allItems API 호출 (?all=True: 활성화 여부와 관계없이 모든 품목)
   useEffect(() => {
     const fetchAllItems = async () => {
       try {
@@ -678,7 +652,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
 
   useEffect(() => {
     if (storeId && itemsLoaded) {
-      // 초기 로드시 최신순(페이지 1, 현재 ~ 1년전)만 요청
       setSortOrder('desc');
       setStoreOrders([]);
       setHasMore(true);
@@ -691,6 +664,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
       })();
     }
   }, [storeId, itemsLoaded]);
+
+  // 2023년부터 최대 연도까지 오름차순 배열 생성
+  const availableYears = getYearRange(storeOrders, 2023);
 
   if (loading || !itemsLoaded) {
     return (
@@ -808,7 +784,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                       )
                     );
                   }, 0);
-                  // 월별 모든 주문 데이터 모음
                   const allMonthOrders = sortedWeeks.reduce((allOrders: CombinedOrderData[], week) => {
                     return [...allOrders, ...weeksObj[week]];
                   }, []);
@@ -1045,7 +1020,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         onConfirm={(start, end) => {
           handlePeriodSearch(start, end);
         }}
-        years={availableYears} // 동적으로 추출한 연도 배열 전달
+        years={availableYears}  // 2023년부터 최대 연도까지 동적 연도 배열 전달
       />
     </View>
   );

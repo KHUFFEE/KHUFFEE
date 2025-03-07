@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback  } from "react";
 import {
   fetchWarehouseInventory,
   fetchItems,
-  fetchSuppliers,
-  fetchStores,
-  updateStoreMonthEndInventory,
-  getTableStatusList,
-  updateTableStatus,
+  fetchSuppliers
 } from "../api/api";
 import "../styles/WarehouseInventory.css";
-import * as XLSX from "xlsx-js-style";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { warehouseInventoryDownloadExcel } from "../utils/WarehouseInventoryDownloadExcel";
 
@@ -27,25 +22,23 @@ const WarehouseInventory = () => {
   // 선택된 일 (예: "05")
   const [selectedDay, setSelectedDay] = useState("");
 
-  // 매장 선택 상태 (기본 매장은 "ST_103")
-  const [selectedStore, setSelectedStore] = useState("");
+  // 매장 선택 상태: 무조건 "ST_102"
+  const [selectedStore, setSelectedStore] = useState("ST_102");
 
   // 드롭다운 토글 상태
   const [isYMOpen, setIsYMOpen] = useState(false);
   const [isDayOpen, setIsDayOpen] = useState(false);
-  const [isStoreOpen, setIsStoreOpen] = useState(false);
 
   // API 호출: "YYYY.MM.DD" 형식의 기간과 매장_id에 해당하는 데이터를 가져옴
   // manual 인자가 true일 때만 로딩 스피너가 발생
-  const fetchData = async (params = {}, manual = false) => {
+  const fetchData = useCallback(async (params = {}, manual = false) => {
     try {
       if (manual) setLoading(true);
       const period = params.기간; // 예: "2023.04.05"
       const [inventoryRes, itemsRes, suppliersRes] = await Promise.all([
         fetchWarehouseInventory({ 기간: period, 매장_id: selectedStore }),
-        // 모든 품목(활성/비활성 상관없이)을 조회하여 이후 품목명 매칭에 사용
         fetchItems(true),
-        fetchSuppliers(),
+        fetchSuppliers()
       ]);
       setInventoryData(inventoryRes);
       setItems(itemsRes);
@@ -56,7 +49,7 @@ const WarehouseInventory = () => {
       setError("데이터를 불러오는데 실패하였습니다.");
       if (manual) setLoading(false);
     }
-  };
+  }, [selectedStore]);
 
   // 기간 옵션 재갱신 함수 (페이지 로드시와 최신 조회 버튼에서 사용)
   const refreshPeriods = async () => {
@@ -119,7 +112,7 @@ const WarehouseInventory = () => {
       const period = `${year}.${month}.${selectedDay}`;
       fetchData({ 기간: period, 매장_id: selectedStore }, false);
     }
-  }, [selectedYearMonth, selectedDay, selectedStore]);
+  }, [selectedYearMonth, selectedDay, selectedStore, fetchData]);
 
   // 선택된 년월에 따른 일(day) 옵션 생성 (해당 월의 총 일수)
   const [year, month] = selectedYearMonth.split(".");
@@ -130,28 +123,10 @@ const WarehouseInventory = () => {
     dayOptions.push(d.toString().padStart(2, "0"));
   }
 
-  // 매장 목록을 fetchStores API로 불러와 기본 선택 설정 (ST_101, ST_102 제외)
+  // 매장 관련 API 호출 제거 – 무조건 ST_102 사용
   useEffect(() => {
-    const fetchAllStores = async () => {
-      try {
-        const res = await fetchStores();
-        const filteredStores = res.filter(
-          (store) => store.매장_id !== "ST_101" && store.매장_id !== "ST_102"
-        );
-        setStores(filteredStores);
-        const defaultStore = filteredStores.find(
-          (store) => store.매장_id === "ST_103"
-        );
-        if (defaultStore) {
-          setSelectedStore("ST_103");
-        } else if (filteredStores.length > 0) {
-          setSelectedStore(filteredStores[0].매장_id);
-        }
-      } catch (err) {
-        console.error("매장 데이터를 불러오는데 실패했습니다:", err);
-      }
-    };
-    fetchAllStores();
+    setStores([{ 매장_id: "ST_102" }]);
+    setSelectedStore("ST_102");
   }, []);
 
   // "최신 조회" 버튼: 매장은 유지하고 최신 기간 옵션으로 API 호출 (manual=true)
@@ -238,7 +213,7 @@ const WarehouseInventory = () => {
       selectedDay,
       stores,
       selectedStore,
-      tableRows,
+      tableRows
     });
   };
 

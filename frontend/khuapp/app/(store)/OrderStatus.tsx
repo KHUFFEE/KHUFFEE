@@ -360,14 +360,20 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     return order === 'desc' ? sorted.reverse() : sorted;
   };
 
-  // 연도 범위 계산 함수: 2023년부터 최대 연도까지 오름차순 배열 생성
+  // 연도 범위 계산 함수: 최대 연도부터 내림차순으로 3개의 연도 추가
   const getYearRange = (orders: CombinedOrderData[], minYear: number = 2023): string[] => {
     const years = orders.map(order => parseInt(order.기간.split('.')[0]));
     const maxYear = Math.max(...years, minYear);
     const yearRange: string[] = [];
-    for (let y = minYear; y <= maxYear; y++) {
-      yearRange.push(y.toString());
+    
+    // 최대 연도부터 내림차순으로 3개의 연도 추가
+    for (let i = 0; i < 3; i++) {
+      const year = maxYear - i;
+      if (year >= minYear) {
+        yearRange.push(year.toString());
+      }
     }
+    
     return yearRange;
   };
 
@@ -1020,7 +1026,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         onConfirm={(start, end) => {
           handlePeriodSearch(start, end);
         }}
-        years={availableYears}  // 2023년부터 최대 연도까지 동적 연도 배열 전달
+        years={availableYears}  // 최대 연도부터 내림차순으로 최대 3개의 연도 배열 전달
       />
     </View>
   );

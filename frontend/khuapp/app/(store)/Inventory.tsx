@@ -391,7 +391,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
         const [invResponse, itemsData, suppliersData] = await Promise.all([
           fetch(
             inventoryType === 'daily'
-              ? `${RN_API_URL}/api/inventory/store/?store_id=${storeId}`
+              ? `${RN_API_URL}/api/inventory/store/?매장_id=${storeId}`   //요기 수정함
               : `${RN_API_URL}/api/inventory/store_monthend/?store_id=${storeId}`,
             { signal }
           ),

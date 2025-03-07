@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fetchItems, fetchSuppliers, addItem, deleteItems, updateItem } from "../api/api";
 import "../styles/Item.css";
-// xlsx-js-style 사용 (스타일 적용 가능)
-import * as XLSX from "xlsx-js-style";
 import { itemDownloadExcel } from "../utils/ItemDownloadExcel";
 
 const Item = () => {

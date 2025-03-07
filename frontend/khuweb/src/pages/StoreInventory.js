@@ -4,13 +4,8 @@ import {
   fetchSuppliers,
   fetchStores,
   fetchStoreInventory,
-  fetchStoreMonthEndInventory,
-  updateStoreMonthEndInventory,
-  getTableStatusList,
-  updateTableStatus,
 } from "../api/api";
 import "../styles/StoreInventory.css";
-import * as XLSX from "xlsx-js-style";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { storeInventoryDownloadExcel } from "../utils/StoreInventoryDownloadExcel";
 

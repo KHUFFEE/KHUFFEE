@@ -461,6 +461,7 @@ const sortedCategories = useMemo(() => {
                     flexGrow: 1,
                     justifyContent: 'flex-start',
                     alignItems: 'center',
+                    
                   }}
                 >
                   <TouchableOpacity

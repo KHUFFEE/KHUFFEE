@@ -37,6 +37,7 @@ interface DateRangeModalProps {
   visible: boolean;
   onClose: () => void;
   onConfirm: (startDate: string, endDate: string) => void;
+  years: string[]; // 추가된 prop
 }
 
 /* ===========================================================
@@ -55,9 +56,10 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
   const [showForm, setShowForm] = useState(false);
 
   const presets = ['직접입력', '최근 1개월', '최근 3개월', '최근 6개월', '올해', '1년'];
-  const years = ['2025', '2024', '2023', '2022', '2021', '2020'];
+  const years = ['2025', '2024', '2023'];
   const months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
   const weeks = ['1', '2', '3', '4', '5'];
+  
 
   useEffect(() => {
     if (visible) {
@@ -220,17 +222,17 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
               <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
                 <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>시작날짜 선택</Text>
                 <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
-                  <Picker
-                    testID="pickerYear"
-                    selectedValue={startYear}
-                    style={dateRangeStyles.picker}
-                    onValueChange={(itemValue) => setStartYear(itemValue)}
-                  >
-                    <Picker.Item label="년도" value="" />
-                    {years.map((y) => (
-                      <Picker.Item key={y} label={`${y}년`} value={y} />
-                    ))}
-                  </Picker>
+                    <Picker
+                      testID="pickerYear"
+                      selectedValue={startYear}
+                      style={dateRangeStyles.picker}
+                      onValueChange={(itemValue) => setStartYear(itemValue)}
+                    >
+                      <Picker.Item label="년도" value="" />
+                      {years.map((y) => (
+                        <Picker.Item key={y} label={`${y}년`} value={y} />
+                      ))}
+                    </Picker>
                   <Picker
                     testID="pickerMonth"
                     selectedValue={startMonth}
@@ -344,6 +346,9 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     주차별: { [week: string]: { 수량: number; 금액: number } };
   }>>([]);
   const [monthlyTotal, setMonthlyTotal] = useState<number>(0);
+  const availableYears = Array.from(
+    new Set(storeOrders.map(order => order.기간.split('.')[0]))
+  ).sort((a, b) => parseInt(b) - parseInt(a)); // 내림차순 정렬
 
   const detailTotalCost = detailGroupOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
   const monthlyDetailTotalCost = monthlyDetailOrders.reduce((sum, order) => sum + (order.totalCost || 0), 0);
@@ -1040,6 +1045,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         onConfirm={(start, end) => {
           handlePeriodSearch(start, end);
         }}
+        years={availableYears} // 동적으로 추출한 연도 배열 전달
       />
     </View>
   );

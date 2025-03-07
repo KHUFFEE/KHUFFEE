@@ -229,7 +229,6 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                     style={dateRangeStyles.picker}
                     onValueChange={(itemValue) => setStartYear(itemValue)}
                   >
-                    <Picker.Item label="년도" value="" />
                     {years.map((y) => (
                       <Picker.Item key={y} label={`${y}년`} value={y} />
                     ))}
@@ -240,7 +239,6 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                     style={dateRangeStyles.picker}
                     onValueChange={(itemValue) => setStartMonth(String(itemValue).padStart(2, '0'))}
                   >
-                    <Picker.Item label="월" value="" />
                     {months.map((m) => (
                       <Picker.Item key={m} label={`${m}월`} value={String(m).padStart(2, '0')} />
                     ))}
@@ -251,7 +249,6 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                     style={dateRangeStyles.picker}
                     onValueChange={(itemValue) => setStartWeek(itemValue)}
                   >
-                    <Picker.Item label="주차" value="" />
                     {weeks.map((w) => (
                       <Picker.Item key={w} label={`${w}주`} value={w} />
                     ))}
@@ -267,7 +264,6 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                     style={dateRangeStyles.picker}
                     onValueChange={(itemValue) => setEndYear(itemValue)}
                   >
-                    <Picker.Item label="년도" value="" />
                     {years.map((y) => (
                       <Picker.Item key={y} label={`${y}년`} value={y} />
                     ))}
@@ -278,7 +274,6 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                     style={dateRangeStyles.picker}
                     onValueChange={(itemValue) => setEndMonth(String(itemValue).padStart(2, '0'))}
                   >
-                    <Picker.Item label="월" value="" />
                     {months.map((m) => (
                       <Picker.Item key={m} label={`${m}월`} value={String(m).padStart(2, '0')} />
                     ))}
@@ -289,7 +284,6 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
                     style={dateRangeStyles.picker}
                     onValueChange={(itemValue) => setEndWeek(itemValue)}
                   >
-                    <Picker.Item label="주차" value="" />
                     {weeks.map((w) => (
                       <Picker.Item key={w} label={`${w}주`} value={w} />
                     ))}
@@ -360,14 +354,20 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     return order === 'desc' ? sorted.reverse() : sorted;
   };
 
-  // 연도 범위 계산 함수: 2023년부터 최대 연도까지 오름차순 배열 생성
+  // 연도 범위 계산 함수: 최대 연도부터 내림차순으로 최대 3개의 연도 배열 생성
   const getYearRange = (orders: CombinedOrderData[], minYear: number = 2023): string[] => {
     const years = orders.map(order => parseInt(order.기간.split('.')[0]));
     const maxYear = Math.max(...years, minYear);
     const yearRange: string[] = [];
-    for (let y = minYear; y <= maxYear; y++) {
-      yearRange.push(y.toString());
+    
+    // 최대 연도부터 내림차순으로 3개의 연도만 추가
+    for (let i = 0; i < 3; i++) {
+      const year = maxYear - i;
+      if (year >= minYear) {
+        yearRange.push(year.toString());
+      }
     }
+    
     return yearRange;
   };
 

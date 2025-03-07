@@ -499,9 +499,25 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
   };
 
   // 상세보기 모달 열기 (주문 데이터 오름차순 정렬)
+  // 동일 상품명(회차 무시, 기간 동일)인 주문은 매장_발주량과 totalCost를 합산합니다.
   const openDetailModal = (dateKey: string, orders: CombinedOrderData[]) => {
     setDetailGroupDate(dateKey);
-    const sortedDetailOrders = sortOrders(orders, 'asc');
+    // 주문 데이터를 상품명 기준으로 그룹화 (동일 상품이면 합산)
+    const groupedOrdersMap: { [productName: string]: CombinedOrderData } = {};
+    orders.forEach((order) => {
+      const key = order.품목명 ?? '알 수 없는 품목'; // 그룹화 기준: 상품명 (기간은 detail 모달 호출 시 동일하다고 가정)
+      if (groupedOrdersMap[key]) {
+        // 기존에 존재하는 경우, 매장_발주량과 totalCost 합산
+        groupedOrdersMap[key].매장_발주량 = (groupedOrdersMap[key].매장_발주량 || 0) + (order.매장_발주량 || 0);
+        groupedOrdersMap[key].totalCost = (groupedOrdersMap[key].totalCost || 0) + (order.totalCost || 0);
+      } else {
+        // 처음 발견 시, 객체 복사
+        groupedOrdersMap[key] = { ...order };
+      }
+    });
+    // 그룹화된 객체를 배열로 변환 후 정렬
+    const groupedOrders = Object.values(groupedOrdersMap);
+    const sortedDetailOrders = sortOrders(groupedOrders, 'asc');
     setDetailGroupOrders(sortedDetailOrders);
     setDetailModalVisible(true);
   };

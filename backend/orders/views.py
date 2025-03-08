@@ -166,21 +166,12 @@ class StoreOrderUpdateView(APIView):
         
         qs = StoreOrder.objects.filter(매장_id=store_obj, 품목_id=item_obj, 기간=period, 회차=round_val)
         if qs.exists():
-            if new_value == 0:
-                qs.delete()
-                return Response({
-                    "매장_id": store_obj.pk,
-                    "품목_id": item_obj.pk,
-                    "기간": period,
-                    "회차": round_val,
-                    "매장_발주량": 0
-                }, status=status.HTTP_200_OK)
-            else:
-                qs.update(매장_발주량=new_value)
-                updated_record = qs.order_by("매장_id", "품목_id", "기간", "회차")\
-                                   .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")\
-                                   .first()
-                return Response(updated_record, status=status.HTTP_200_OK)
+            qs.update(매장_발주량=new_value)
+            updated_record = qs.order_by("매장_id", "품목_id", "기간", "회차")\
+                            .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")\
+                            .first()
+            return Response(updated_record, status=status.HTTP_200_OK)
+
         else:
             if new_value == 0:
                 return Response({

@@ -37,7 +37,10 @@ class StoreOrderListView(APIView):
 
         # 정렬 옵션: 기본은 최신순(내림차순), order=asc 시 오름차순 적용
         order_param = request.GET.get('order', 'desc').lower()
-        ordering = '기간' if order_param == 'asc' else '-기간'
+        if order_param == 'asc':
+            ordering = ['기간', '회차']
+        else:
+            ordering = ['-기간', '-회차']
 
         orders_queryset = StoreOrder.objects.all()
         if store_id:
@@ -45,9 +48,6 @@ class StoreOrderListView(APIView):
         # 회차 파라미터가 있으면 필터링
         if round_param:
             orders_queryset = orders_queryset.filter(회차=round_param)
-        
-        # 매장_발주량 0인 주문 제외
-        # orders_queryset = orders_queryset.exclude(매장_발주량=0)
         
         # 매장_id만 조회하는 경우
         store_only = request.GET.get('store_only', '').lower()
@@ -62,7 +62,7 @@ class StoreOrderListView(APIView):
             start_period = start_period.strip()
             end_period = end_period.strip()
             qs = orders_queryset.filter(기간__gte=start_period, 기간__lte=end_period)
-            orders_for_range = qs.order_by(ordering)
+            orders_for_range = qs.order_by(*ordering)
             orders = list(orders_for_range.values(
                 '매장_id',
                 '품목_id',
@@ -72,7 +72,7 @@ class StoreOrderListView(APIView):
             ))
             result = {
                 "current_period": f"{start_period}",
-                "current_round": f"전체",  # 범위 조회에서는 회차 개념 없이 전체
+                "current_round": "전체",  # 범위 조회에서는 회차 개념 없이 전체
                 "current_page": 1,
                 "total_pages": 1,
                 "orders": orders,
@@ -82,7 +82,7 @@ class StoreOrderListView(APIView):
         # 특정 기간 조회 (정확한 기간 문자열)
         if period_param:
             qs = orders_queryset.filter(기간=period_param)
-            orders_for_period = qs.order_by(ordering)
+            orders_for_period = qs.order_by(*ordering)
             orders = list(orders_for_period.values(
                 '매장_id',
                 '품목_id',
@@ -100,7 +100,7 @@ class StoreOrderListView(APIView):
             return Response(result, status=status.HTTP_200_OK)
 
         # 페이지네이션: distinct (기간, 회차) 쌍으로 진행
-        all_pairs = list(orders_queryset.order_by(ordering).values_list('기간', '회차'))
+        all_pairs = list(orders_queryset.order_by(*ordering).values_list('기간', '회차'))
         distinct_pairs = list(OrderedDict.fromkeys(all_pairs))
         total_pages = len(distinct_pairs)
         if total_pages == 0:
@@ -118,7 +118,7 @@ class StoreOrderListView(APIView):
 
         selected_pair = distinct_pairs[page - 1]
         selected_period, selected_round = selected_pair
-        orders_for_period = orders_queryset.filter(기간=selected_period, 회차=selected_round).order_by(ordering)
+        orders_for_period = orders_queryset.filter(기간=selected_period, 회차=selected_round).order_by(*ordering)
         orders = list(orders_for_period.values(
             '매장_id',
             '품목_id',

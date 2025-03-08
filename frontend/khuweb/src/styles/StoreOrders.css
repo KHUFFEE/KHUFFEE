@@ -121,7 +121,7 @@
   gap: 10px;
   justify-content: space-between;
   margin-top: -5px;
-  height: 40px; /* 버튼 높이를 기존과 동일하게 유지 (예: 40px) */
+  height: 40px;
 }
 
 .period-search {
@@ -170,7 +170,7 @@
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #000000;
+  color: #000;
   border: 1.6px solid #8B0000;
   border-radius: 8px;
   font-size: 14px;
@@ -184,13 +184,11 @@
   background-color: #f7f7f7;
 }
 
-/* 선택값 표시 영역 (텍스트는 container내에 그대로 보임) */
 .period-select-box .select-display {
   z-index: 2;
   pointer-events: none;
 }
 
-/* custom select: native select를 투명하게 전체 영역 덮도록 */
 .period-select-box .custom-select {
   position: absolute;
   top: 0;
@@ -202,7 +200,6 @@
   cursor: pointer;
 }
 
-/* 토글 아이콘: inline-block으로 표시하며, select-display와 동일한 간격 (예: 주차 다음에 8px 간격) */
 .period-select-box .toggle {
   display: inline-block;
   margin-left: 8px;
@@ -211,21 +208,9 @@
   z-index: 2;
 }
 
-/* select-group 관련 스타일 */
-.select-group {
-  display: inline-flex;
-  align-items: center;
-}
-
-.select-group span {
-  font-size: 14px;
-  padding: 0;
-  margin: 0;
-}
-
 /* 매장 헤더 칼럼 전용 스타일 */
 .store-orders-table thead th.so-order-col,
-.store-orders-table thead th.so-warehouse-col{
+.store-orders-table thead th.so-warehouse-col {
   vertical-align: middle;
   font-size: 14px;
   line-height: 1.2;
@@ -255,7 +240,7 @@
 }
 
 .period-select-box .custom-select::-webkit-scrollbar-thumb {
-  background: #B22222; /* 변경된 빨강 계열 */
+  background: #B22222;
   border-radius: 5px;
   border: 2px solid #f1f1f1;
 }
@@ -309,3 +294,95 @@
 .negative-difference {
   border: 2px solid red !important;
 }
+
+/* ------------------ 새로 추가된 오픈하기 팝업 토글 그룹 스타일 ------------------ */
+/* 토글 그룹 컨테이너: 가로로 배치 및 간격 좁게 */
+.toggle-group-container {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 0px;
+}
+
+/* 개별 토글 그룹 */
+.toggle-group {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* toggle-label: 버튼 오른쪽에 표시, 검은색 글씨 */
+.toggle-label {
+  margin-left: 4px;
+  font-weight: bold;
+  color: #000;
+  font-size: 17px;
+}
+
+/* 오픈 팝업 내 토글 박스 (기간 선택) - 글자 크기 확대 및 세로 패딩 줄임 */
+.sime-popup .period-select-box {
+  font-size: 17px;
+  padding: 5px 12px;
+}
+
+/* 드롭다운 옵션 컨테이너 */
+.dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #8B0000;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  margin-top: 4px;
+}
+
+/* 드롭다운 옵션 */
+.dropdown-option {
+  padding: 8px 12px;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: left;
+  padding-left: 8px;
+}
+
+/* 선택된 옵션에 붉은 계열 배경 적용 */
+.selected-dropdown-option {
+  background-color: #8b000061;
+}
+
+
+.dropdown-option:hover {
+  background-color: #f7f7f7;
+}
+
+.download-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  border: 1.6px solid #2a2a2a;
+  border-radius: 8px;
+  z-index: 20;
+  background-color: #fff;
+  flex-direction: row;
+}
+
+.download-dropdown-option {
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #2a2a2a;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;     /* 텍스트 줄바꿈 방지 */
+}
+
+/* 첫번째 옵션 오른쪽에 검은 구분선 추가 */
+.download-dropdown-option:first-child {
+  border-bottom: 1.6px solid #2a2a2a;
+}
+
+
+

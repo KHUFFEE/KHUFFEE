@@ -1,3 +1,4 @@
+// frontend/khuweb/src/pages/StoreOrders.js
 import React, { useState, useEffect, useRef } from "react";
 import {
   fetchOrders,
@@ -8,6 +9,7 @@ import {
   getTableStatusList,
   updateTableStatus,
   fetchWarehouseInventory,
+  createStoreOrder, // 신규: 주문 생성 API 함수 (backend의 StoreOrderCreateView 대응)
 } from "../api/api";
 import "../styles/StoreOrders.css";
 import { storeOrdersDownloadExcel } from "../utils/StoreOrdersDownloadExcel";
@@ -46,9 +48,17 @@ const StoreOrders = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const selectRef = useRef(null);
 
-  // 팝업 관련 상태 (회차 관리)
-  const [showPopup, setShowPopup] = useState(false);
-  const [managerOrderRound, setManagerOrderRound] = useState(1);
+  // 신규: 매장_발주 테이블의 상태 (0이면 오픈, 1이면 마감)
+  const [orderTableStatus, setOrderTableStatus] = useState(null);
+
+  // 신규: 오픈 버튼 클릭 시 표시할 팝업 관련 상태
+  const [openModalVisible, setOpenModalVisible] = useState(false);
+  const [openModalData, setOpenModalData] = useState({
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1,
+    week: "1",
+    round: "1",
+  });
 
   // New state for warehouse data from 창고_재고 API
   const [warehouseData, setWarehouseData] = useState([]);
@@ -94,10 +104,7 @@ const StoreOrders = () => {
       Number(selectedWeek),
       Number(selectedRound),
     ].join(".");
-    const latestPeriod = sortedDistinct[0]
-      .split(".")
-      .map(Number)
-      .join(".");
+    const latestPeriod = sortedDistinct[0].split(".").map(Number).join(".");
     isLatestPeriod = currentPeriod === latestPeriod;
   }
 
@@ -127,10 +134,8 @@ const StoreOrders = () => {
     const latestPeriod = sortedDistinct[0].split(".").map(Number).join(".");
     isLatestPeriodFlag = currentPeriod === latestPeriod;
   }
-  
+
   // ----------------------- Fetch Warehouse Data -----------------------
-  // When the selected period (year, month, week) or latest flag changes, compute a date
-  // and fetch warehouse inventory from 창고_재고 API.
   useEffect(() => {
     if (selectedYear && selectedMonth && selectedWeek) {
       let computedWarehouseDate = "";
@@ -139,7 +144,11 @@ const StoreOrders = () => {
         computedWarehouseDate = formatDate(new Date());
       } else {
         // 과거 주차: 해당 주의 일요일 사용
-        const sunday = getWeekSunday(Number(selectedYear), Number(selectedMonth), Number(selectedWeek));
+        const sunday = getWeekSunday(
+          Number(selectedYear),
+          Number(selectedMonth),
+          Number(selectedWeek)
+        );
         computedWarehouseDate = formatDate(sunday);
       }
       // computedWarehouseDate를 이용하여 창고 재고 API 호출
@@ -148,7 +157,6 @@ const StoreOrders = () => {
         .catch((err) => console.error("창고 재고 불러오기 실패:", err));
     }
   }, [selectedYear, selectedMonth, selectedWeek, isLatestPeriodFlag]);
-  
 
   // ----------------------- Existing API Data Fetch -----------------------
   const fetchData = async (params = { page: 1 }, manual = false) => {
@@ -193,7 +201,6 @@ const StoreOrders = () => {
       return null;
     }
   };
-
 
   // handleReset: on initial load and "최신 조회" button click
   const handleReset = async (manual = false) => {
@@ -245,7 +252,6 @@ const StoreOrders = () => {
         const formattedMonth = parts[1].padStart(2, "0");
         const period = `${parts[0]}.${formattedMonth}.${parts[2]}`;
         await fetchData({ 기간: period, 회차: parts[3] }, manual);
-        setHasFetchedHighestRound(true);
       } else {
         await fetchData({ page: 1 }, manual);
       }
@@ -315,21 +321,26 @@ const StoreOrders = () => {
     handleReset();
   }, []);
 
-  // Update managerOrderRound on first load
-  useEffect(() => {
-    const fetchManagerRound = async () => {
-      try {
-        const statusList = await getTableStatusList();
-        const storeOrderStatus = statusList.find((s) => s.테이블 === "매장_발주");
-        const currentStatus = storeOrderStatus ? storeOrderStatus.상태 : 1;
-        setManagerOrderRound(currentStatus);
-      } catch (err) {
-        console.error("Failed to fetch manager order round:", err);
-        setManagerOrderRound(1);
+  // ----------------------- Fetch Order Table Status -----------------------
+  const fetchOrderTableStatus = async () => {
+    try {
+      const statusList = await getTableStatusList();
+      const targetStatus = statusList.find((s) => s.테이블 === "매장_발주");
+      if (targetStatus !== undefined) {
+        setOrderTableStatus(targetStatus.상태);
       }
-    };
-    fetchManagerRound();
-  }, []);
+    } catch (err) {
+      console.error("Failed to fetch order table status:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (isLatestPeriodFlag) {
+      fetchOrderTableStatus();
+    } else {
+      setOrderTableStatus(null);
+    }
+  }, [ordersData, selectedYear, selectedMonth, selectedWeek, selectedRound, isLatestPeriodFlag]);
 
   // displayPeriod 계산 (선택된 값 우선)
   const getDisplayPeriodText = () => {
@@ -461,34 +472,53 @@ const StoreOrders = () => {
     return Number(num).toLocaleString();
   };
 
-  // New: Helper to get warehouse value for a given item (summing over ordered stores)
-  const getWarehouseValue = (itemId) => {
-    if (!warehouseData || warehouseData.length === 0) return 0;
-    // 현재 화면에 표시된 품목(itemId)에 해당하는 창고 재고 데이터를 필터링
-    const matchingRecords = warehouseData.filter(
-      (record) => record.품목_id === itemId
-    );
-    // 여러 매장의 값이 있을 경우, 첫 번째 레코드의 창고_재고량을 사용 (필요에 따라 합산 가능)
-    return matchingRecords.length > 0
-      ? Number(matchingRecords[0].창고_재고량 || 0)
-      : 0;
+  // 신규: 오픈하기 처리 – 팝업에서 확인 버튼 클릭 시 실행
+  const handleOpenModalConfirm = async () => {
+    const { year, month, week, round } = openModalData;
+    const formattedMonth = month.toString().padStart(2, "0");
+    const period = `${year}.${formattedMonth}.${week}`;
+    try {
+      // 상태 관리 테이블의 매장_발주 상태를 1로 변경
+      await updateTableStatus({ 테이블: "매장_발주", 상태: 1 });
+      // 활성화된 품목에 대해 모든 매장에 매장_발주량 0으로 생성 (createStoreOrder API 사용)
+      const activeItems = items.filter((item) => item.활성화);
+      const createPromises = [];
+      orderedStores.forEach((store) => {
+        activeItems.forEach((item) => {
+          const payload = {
+            매장_id: store.매장_id,
+            품목_id: item.품목_id,
+            기간: period,
+            회차: Number(round),
+            매장_발주량: 0,
+          };
+          createPromises.push(createStoreOrder(payload));
+        });
+      });
+      await Promise.all(createPromises);
+      // 선택된 기간과 회차로 다시 데이터 조회
+      await handleReset(true);
+      fetchData({ 기간: period, 회차: round });
+      setOrderTableStatus(1);
+      setOpenModalVisible(false);
+    } catch (err) {
+      console.error("오픈 처리 실패:", err);
+      alert("오픈 처리에 실패하였습니다.");
+    }
   };
-  
-  // Compute total warehouse value for footer
-  const warehouseTotal = sortedTableRows.reduce(
-    (sum, row) => sum + getWarehouseValue(row.itemId),
-    0
-  );  
 
-  // ★ 요청사항 반영 ★
-  // 해당 행의 창고 - 합계 값이 음수인지 판단하는 헬퍼 함수
-  const isNegativeDifference = (row) => {
-    const warehouseVal = Number(getWarehouseValue(row.itemId)) || 0;
-    const rowSum = Number(getRowSum(row)) || 0;
-    return warehouseVal - rowSum < 0;
+  // 신규: 마감 버튼 클릭 시 상태를 0으로 변경
+  const handleCloseButtonClick = async () => {
+    try {
+      await updateTableStatus({ 테이블: "매장_발주", 상태: 0 });
+      setOrderTableStatus(0);
+    } catch (err) {
+      console.error("마감 처리 실패:", err);
+      alert("마감 처리에 실패하였습니다.");
+    }
   };
 
-  // 수정 모드 토글 및 관련 이벤트 핸들러
+  // 편집 모드 토글 및 관련 이벤트 핸들러
   const handleEditToggle = () => {
     if (!isEditMode) {
       const init = {};
@@ -554,39 +584,13 @@ const StoreOrders = () => {
     });
   };
 
-  // ★ 요청사항 반영 ★: 최신 기간일 때만 보이는 통합 다운로드 버튼
+  // ★ 요청사항 반영: 최신 기간일 때만 보이는 통합 다운로드 버튼
   const handleCombinedExcelDownload = async () => {
     try {
       await storeOrdersCombinedDownloadExcel({ distinctPeriods });
     } catch (err) {
       console.error("통합 다운로드 실패:", err);
       alert("통합 다운로드에 실패하였습니다.");
-    }
-  };
-
-  // 회차 관리 버튼 클릭 시: getTableStatusList API 호출 후 팝업 표시
-  const handleSessionButtonClick = async () => {
-    try {
-      const statusList = await getTableStatusList();
-      const storeOrderStatus = statusList.find((s) => s.테이블 === "매장_발주");
-      const currentStatus = storeOrderStatus ? storeOrderStatus.상태 : 1;
-      setManagerOrderRound(currentStatus);
-    } catch (err) {
-      console.error("테이블 상태 조회 실패:", err);
-      setManagerOrderRound(1);
-    }
-    setShowPopup(true);
-  };
-
-  const handleUpdateSession = async () => {
-    try {
-      const newRound = managerOrderRound + 1;
-      await updateTableStatus({ 테이블: "매장_발주", 상태: newRound });
-      setManagerOrderRound(newRound);
-      setShowPopup(false);
-    } catch (err) {
-      console.error("회차 관리 업데이트 실패:", err);
-      alert("회차 관리 업데이트에 실패하였습니다.");
     }
   };
 
@@ -672,22 +676,22 @@ const StoreOrders = () => {
           <button className="reset-button" onClick={() => handleReset(true)} disabled={isEditMode}>
             최신 조회
           </button>
-          <span className="control-description">
-            현재 매니저의 발주는 {managerOrderRound}회차로 저장됩니다.
-            <br />
-            {managerOrderRound + 1}회차로 변경하려면 회차 관리 버튼을 클릭해주세요.
-          </span>
         </div>
         <div className="store-action-buttons">
           {isLatestPeriodFlag && (
-            <button className="session-button" onClick={handleSessionButtonClick} disabled={isEditMode}>
-              회차 관리
-            </button>
+            orderTableStatus === 0 ? (
+              <button className="session-button" onClick={() => setOpenModalVisible(true)} disabled={isEditMode}>
+                오픈하기
+              </button>
+            ) : (
+              <button className="session-button" onClick={handleCloseButtonClick} disabled={isEditMode}>
+                마감하기
+              </button>
+            )
           )}
           <button onClick={handleExcelDownload} className="download-button" disabled={isEditMode}>
             Excel 다운로드
           </button>
-          {/* ★ 요청사항 반영: 최신 기간일 때만 보이는 통합 다운로드 버튼 (클래스는 download-button 동일) */}
           {isLatestPeriodFlag && (
             <button className="download-button" onClick={handleCombinedExcelDownload} disabled={isEditMode}>
               통합 다운로드
@@ -752,10 +756,14 @@ const StoreOrders = () => {
                 </td>
               ))}
               {/* New "창고" column cell with red border condition */}
-              <td className={`so-warehouse-col ${isNegativeDifference(row) ? "negative-difference" : ""}`}>
-                {formatNumber(getWarehouseValue(row.itemId))}
+              <td className="so-warehouse-col">
+                {formatNumber(
+                  warehouseData && warehouseData.length > 0
+                    ? warehouseData.filter((record) => record.품목_id === row.itemId)[0]?.창고_재고량 || 0
+                    : 0
+                )}
               </td>
-              <td className={`so-sum-col ${isNegativeDifference(row) ? "negative-difference" : ""}`}>
+              <td className="so-sum-col">
                 {getRowSum(row) === 0 ? "-" : formatNumber(getRowSum(row))}
               </td>
             </tr>
@@ -774,7 +782,20 @@ const StoreOrders = () => {
             ))}
             {/* New warehouse footer cell */}
             <td className="so-warehouse-col">
-              {warehouseTotal === 0 ? "-" : formatNumber(warehouseTotal)}
+              {warehouseData && warehouseData.length > 0
+                ? formatNumber(
+                    sortedTableRows.reduce((sum, row) => {
+                      const matchingRecords = warehouseData.filter(
+                        (record) => record.품목_id === row.itemId
+                      );
+                      const value =
+                        matchingRecords.length > 0
+                          ? Number(matchingRecords[0].창고_재고량 || 0)
+                          : 0;
+                      return sum + value;
+                    }, 0)
+                  )
+                : "-"}
             </td>
             <td className="so-sum-col">
               {grandTotal === 0 ? "-" : formatNumber(grandTotal)}
@@ -787,22 +808,66 @@ const StoreOrders = () => {
           수정완료
         </button>
       )}
-      {/* 회차 관리 팝업 */}
-      {showPopup && (
-        <div className="order-popup">
-          <div className="order-popup-content">
-            <h3>!! 주의 !!</h3>
-            <p>
-              현재 매니저의 발주는 {managerOrderRound}회차로 저장됩니다.
-              <br />
-              {managerOrderRound + 1}회차로 변경하려면 변경 버튼을 클릭해주세요.
-            </p>
-            <div className="order-popup-buttons">
-              <button className="popup-cancel" onClick={() => setShowPopup(false)}>
+
+      {/* 신규: 오픈하기 팝업 모달 */}
+      {openModalVisible && (
+        <div className="sime-popup">
+          <div className="sime-popup-content">
+            <h3>오픈하기 설정</h3>
+            <div>
+              <label>
+                년도:
+                <input
+                  type="number"
+                  value={openModalData.year}
+                  onChange={(e) =>
+                    setOpenModalData({ ...openModalData, year: e.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                월:
+                <input
+                  type="number"
+                  value={openModalData.month}
+                  onChange={(e) =>
+                    setOpenModalData({ ...openModalData, month: e.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                주차:
+                <input
+                  type="number"
+                  value={openModalData.week}
+                  onChange={(e) =>
+                    setOpenModalData({ ...openModalData, week: e.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                회차:
+                <input
+                  type="number"
+                  value={openModalData.round}
+                  onChange={(e) =>
+                    setOpenModalData({ ...openModalData, round: e.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div className="sime-popup-buttons">
+              <button className="popup-cancel" onClick={() => setOpenModalVisible(false)}>
                 취소
               </button>
-              <button className="popup-confirm" onClick={handleUpdateSession}>
-                변경
+              <button className="popup-confirm" onClick={handleOpenModalConfirm}>
+                확인
               </button>
             </div>
           </div>

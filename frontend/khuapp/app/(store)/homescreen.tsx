@@ -1,10 +1,12 @@
 // 홈 화면 정의 및 구현
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { homescreenStyles } from '../../src/styles/homescreen_styles';
 import { StoreOrderData, APIProduct } from '../../src/components/ui/common/types';
 import { RN_API_URL } from '@env';
 import * as f from '../../src/components/ui/common/function';
+import { BarChart } from 'react-native-chart-kit';
+import { Dimensions } from 'react-native';
 
 // 결합된 주문 데이터 타입 (StoreOrderData와 APIProduct의 속성을 모두 포함)
 type CombinedOrderData = StoreOrderData & Partial<APIProduct>;
@@ -18,28 +20,43 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
   // 상태 관리
   const [loading, setLoading] = useState<boolean>(true);
   const [allItems, setAllItems] = useState<APIProduct[]>([]);
-  const [storeOrders, setStoreOrders] = useState<CombinedOrderData[]>([]);
+  const [currentMonthOrders, setCurrentMonthOrders] = useState<CombinedOrderData[]>([]);
+  const [lastMonthOrders, setLastMonthOrders] = useState<CombinedOrderData[]>([]);
   
-  // 월별 상세보기 관련 상태
-  const [monthlyDetailModalVisible, setMonthlyDetailModalVisible] = useState<boolean>(false);
-  const [monthlyDetailOrders, setMonthlyDetailOrders] = useState<CombinedOrderData[]>([]);
-  const [monthlyDetailDate, setMonthlyDetailDate] = useState<string>('');
-  const [weeklyData, setWeeklyData] = useState<{ [week: string]: CombinedOrderData[] }>({});
-  const [weeklyTotals, setWeeklyTotals] = useState<{ [week: string]: number }>({});
-  const [sortedWeeks, setSortedWeeks] = useState<string[]>([]);
-  const [productSummary, setProductSummary] = useState<Array<{
+  // 데이터 처리 상태
+  const [currentMonthWeeklyData, setCurrentMonthWeeklyData] = useState<{ [week: string]: CombinedOrderData[] }>({});
+  const [currentMonthWeeklyTotals, setCurrentMonthWeeklyTotals] = useState<{ [week: string]: number }>({});
+  const [currentMonthSortedWeeks, setCurrentMonthSortedWeeks] = useState<string[]>([]);
+  const [currentMonthProductSummary, setCurrentMonthProductSummary] = useState<Array<{
     품목명: string;
     총수량: number;
     총금액: number;
     주차별: { [week: string]: { 수량: number; 금액: number } };
   }>>([]);
-  const [monthlyTotal, setMonthlyTotal] = useState<number>(0);
+  const [currentMonthTotal, setCurrentMonthTotal] = useState<number>(0);
+  
+  // 지난달 데이터 처리 상태
+  const [lastMonthWeeklyData, setLastMonthWeeklyData] = useState<{ [week: string]: CombinedOrderData[] }>({});
+  const [lastMonthWeeklyTotals, setLastMonthWeeklyTotals] = useState<{ [week: string]: number }>({});
+  const [lastMonthSortedWeeks, setLastMonthSortedWeeks] = useState<string[]>([]);
+  const [lastMonthProductSummary, setLastMonthProductSummary] = useState<Array<{
+    품목명: string;
+    총수량: number;
+    총금액: number;
+    주차별: { [week: string]: { 수량: number; 금액: number } };
+  }>>([]);
+  const [lastMonthTotal, setLastMonthTotal] = useState<number>(0);
   
   // 현재 월 계산
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth() + 1;
-  const formattedMonth = currentMonth < 10 ? `0${currentMonth}` : `${currentMonth}`;
+  const formattedCurrentMonth = currentMonth < 10 ? `0${currentMonth}` : `${currentMonth}`;
+  
+  // 지난 월 계산
+  const lastMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+  const lastMonthYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+  const formattedLastMonth = lastMonth < 10 ? `0${lastMonth}` : `${lastMonth}`;
   
   // 제품 정렬 함수
   const sortOrders = (orders: CombinedOrderData[], order: 'asc' | 'desc' = 'asc') => {
@@ -61,12 +78,6 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
     return order === 'desc' ? sorted.reverse() : sorted;
   };
   
-  // 월별 상세보기 모달 열기 함수
-  const openMonthlyDetailModal = () => {
-    // 이미 데이터가 처리되어 있으므로 모달만 열기
-    setMonthlyDetailModalVisible(true);
-  };
-  
   // 주문 데이터 가져오기
   const fetchOrders = async () => {
     if (!storeId) return;
@@ -80,26 +91,44 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
         setAllItems(itemsData);
         
         // 현재 월의 주문 데이터 가져오기
-        const startDate = `${currentYear}.${formattedMonth}.1`;
-        const endDate = `${currentYear}.${formattedMonth}.5`;  // 5주차까지 포함
-        const periodParam = `${startDate}~${endDate}`;
+        const currentMonthStartDate = `${currentYear}.${formattedCurrentMonth}.1`;
+        const currentMonthEndDate = `${currentYear}.${formattedCurrentMonth}.5`;  // 5주차까지 포함
+        const currentMonthPeriodParam = `${currentMonthStartDate}~${currentMonthEndDate}`;
         
-        const params = new URLSearchParams({
+        // 지난 월의 주문 데이터 가져오기
+        const lastMonthStartDate = `${lastMonthYear}.${formattedLastMonth}.1`;
+        const lastMonthEndDate = `${lastMonthYear}.${formattedLastMonth}.5`;  // 5주차까지 포함
+        const lastMonthPeriodParam = `${lastMonthStartDate}~${lastMonthEndDate}`;
+        
+        // 현재 월 데이터 가져오기
+        const currentMonthParams = new URLSearchParams({
           store_id: storeId,
-          기간: periodParam,
+          기간: currentMonthPeriodParam,
           order: 'asc',
           all: "true"
         });
         
-        const url = `${RN_API_URL}/api/orders/store_order_list/?${params.toString()}`;
-        const response = await fetch(url);
+        const currentMonthUrl = `${RN_API_URL}/api/orders/store_order_list/?${currentMonthParams.toString()}`;
+        const currentMonthResponse = await fetch(currentMonthUrl);
         
-        if (response.ok) {
-          const result = await response.json();
-          const orders: StoreOrderData[] = result.orders;
+        // 지난 월 데이터 가져오기
+        const lastMonthParams = new URLSearchParams({
+          store_id: storeId,
+          기간: lastMonthPeriodParam,
+          order: 'asc',
+          all: "true"
+        });
+        
+        const lastMonthUrl = `${RN_API_URL}/api/orders/store_order_list/?${lastMonthParams.toString()}`;
+        const lastMonthResponse = await fetch(lastMonthUrl);
+        
+        // 현재 월 데이터 처리
+        if (currentMonthResponse.ok) {
+          const currentMonthResult = await currentMonthResponse.json();
+          const currentMonthOrdersData: StoreOrderData[] = currentMonthResult.orders;
           
           // 주문 데이터와 품목 정보 결합
-          const combined = orders.map((o) => {
+          const currentMonthCombined = currentMonthOrdersData.map((o) => {
             const foundItem = itemsData.find((it: APIProduct) => it.품목_id === o.품목_id);
             const unitPrice = foundItem ? parseFloat(foundItem.입고단가) : 0;
             const qty = o.매장_발주량 || 0;
@@ -114,16 +143,63 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
             };
           });
           
-          setStoreOrders(combined);
+          setCurrentMonthOrders(currentMonthCombined);
           
-          // 자동으로 모달을 여는 부분 제거
-          // 데이터 처리만 진행하고 모달은 버튼 클릭 시에만 열리도록 함
-          if (combined.length > 0) {
-            // 월별 데이터 처리 (모달은 열지 않음)
-            processMonthlyData(currentYear.toString(), formattedMonth, combined);
+          // 현재 월 데이터 처리
+          if (currentMonthCombined.length > 0) {
+            processMonthlyData(
+              currentYear.toString(), 
+              formattedCurrentMonth, 
+              currentMonthCombined,
+              setCurrentMonthWeeklyData,
+              setCurrentMonthWeeklyTotals,
+              setCurrentMonthSortedWeeks,
+              setCurrentMonthProductSummary,
+              setCurrentMonthTotal
+            );
           }
         } else {
-          console.error('발주 내역 조회 실패');
+          console.error('현재 월 발주 내역 조회 실패');
+        }
+        
+        // 지난 월 데이터 처리
+        if (lastMonthResponse.ok) {
+          const lastMonthResult = await lastMonthResponse.json();
+          const lastMonthOrdersData: StoreOrderData[] = lastMonthResult.orders;
+          
+          // 주문 데이터와 품목 정보 결합
+          const lastMonthCombined = lastMonthOrdersData.map((o) => {
+            const foundItem = itemsData.find((it: APIProduct) => it.품목_id === o.품목_id);
+            const unitPrice = foundItem ? parseFloat(foundItem.입고단가) : 0;
+            const qty = o.매장_발주량 || 0;
+            return {
+              ...o,
+              품목명: foundItem?.품목명 ?? '알 수 없는 품목',
+              협력사명: foundItem?.협력사명 ?? '',
+              협력사_id: foundItem?.협력사_id ?? '',
+              종류: foundItem?.종류 ?? '',
+              입고단가: foundItem?.입고단가 ?? '0',
+              totalCost: unitPrice * qty,
+            };
+          });
+          
+          setLastMonthOrders(lastMonthCombined);
+          
+          // 지난 월 데이터 처리
+          if (lastMonthCombined.length > 0) {
+            processMonthlyData(
+              lastMonthYear.toString(), 
+              formattedLastMonth, 
+              lastMonthCombined,
+              setLastMonthWeeklyData,
+              setLastMonthWeeklyTotals,
+              setLastMonthSortedWeeks,
+              setLastMonthProductSummary,
+              setLastMonthTotal
+            );
+          }
+        } else {
+          console.error('지난 월 발주 내역 조회 실패');
         }
       } else {
         console.error('품목 정보 조회 실패');
@@ -135,10 +211,22 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
     }
   };
   
-  // 월별 데이터 처리 함수 (모달을 열지 않고 데이터만 처리)
-  const processMonthlyData = (year: string, month: string, monthlyOrders: CombinedOrderData[]) => {
-    setMonthlyDetailDate(`${year}.${month}`);
-    
+  // 월별 데이터 처리 함수
+  const processMonthlyData = (
+    year: string, 
+    month: string, 
+    monthlyOrders: CombinedOrderData[],
+    setWeeklyData: React.Dispatch<React.SetStateAction<{ [week: string]: CombinedOrderData[] }>>,
+    setWeeklyTotals: React.Dispatch<React.SetStateAction<{ [week: string]: number }>>,
+    setSortedWeeks: React.Dispatch<React.SetStateAction<string[]>>,
+    setProductSummary: React.Dispatch<React.SetStateAction<Array<{
+      품목명: string;
+      총수량: number;
+      총금액: number;
+      주차별: { [week: string]: { 수량: number; 금액: number } };
+    }>>>,
+    setMonthlyTotal: React.Dispatch<React.SetStateAction<number>>
+  ) => {
     const weeklyData: { [week: string]: CombinedOrderData[] } = {};
     const productSummaryMap: { 
       [productId: string]: { 
@@ -201,14 +289,11 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
     const sortedProducts = sortedProductsData.map(product => productSummaryMap[product.품목_id]);
     const monthlyTotal = Object.values(weeklyTotals).reduce((sum, total) => sum + total, 0);
     
-    setMonthlyDetailOrders(monthlyOrders);
     setWeeklyData(weeklyData);
     setWeeklyTotals(weeklyTotals);
     setSortedWeeks(sortedWeeks);
     setProductSummary(sortedProducts);
     setMonthlyTotal(monthlyTotal);
-    
-    // 모달은 열지 않음 (setMonthlyDetailModalVisible(true) 호출 제거)
   };
   
   // 컴포넌트 마운트 시 데이터 로드
@@ -216,179 +301,216 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
     fetchOrders();
   }, [storeId]);
   
-  const formattedMonthlyDetailDate =
-    monthlyDetailDate && monthlyDetailDate.split('.').length === 2
-      ? `${parseInt(monthlyDetailDate.split('.')[0], 10)}년 ${parseInt(monthlyDetailDate.split('.')[1], 10)}월`
-      : monthlyDetailDate;
+  // 차트 데이터 준비
+  const prepareChartData = (weeklyTotals: { [week: string]: number }, sortedWeeks: string[]) => {
+    return {
+      labels: sortedWeeks.map(week => `${week}주`),
+      datasets: [
+        {
+          data: sortedWeeks.map(week => weeklyTotals[week] / 10000), // 단위: 만원
+        }
+      ]
+    };
+  };
+  
+  // 차트 설정
+  const chartConfig = {
+    backgroundGradientFrom: '#ffffff',
+    backgroundGradientTo: '#ffffff',
+    color: (opacity = 1) => `rgba(13, 50, 111, ${opacity})`,
+    strokeWidth: 2,
+    barPercentage: 0.7,
+    decimalPlaces: 0,
+  };
+  
+  const screenWidth = Dimensions.get('window').width - 40;
   
   return (
     <View style={homescreenStyles.container}>
       <View style={homescreenStyles.header}>
         <Text style={homescreenStyles.title}>{storeName} 대시보드</Text>
         <Text style={homescreenStyles.subtitle}>
-          {currentYear}년 {currentMonth}월 발주 현황
+          발주 현황 요약
         </Text>
       </View>
       
       <ScrollView>
         {loading ? (
-          <Text>데이터를 불러오는 중입니다...</Text>
-        ) : storeOrders.length === 0 ? (
-          <Text>이번 달 발주 내역이 없습니다.</Text>
+          <Text style={homescreenStyles.loadingText}>데이터를 불러오는 중입니다...</Text>
         ) : (
           <>
-            <View 
-              style={homescreenStyles.monthlyTableContainer}
-            >
-              <View style={homescreenStyles.monthlyTableHeader}>
-                <View style={homescreenStyles.productColumn}>
-                  <Text style={[homescreenStyles.monthlyTableHeaderText, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">상품명</Text>
-                </View>
-                {sortedWeeks.map(week => (
-                  <View key={week} style={homescreenStyles.weekColumn}>
-                    <Text style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">{week}주</Text>
-                  </View>
-                ))}
-                <View style={homescreenStyles.quantityColumn}>
-                  <Text style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">합계</Text>
-                </View>
-              </View>
+            {/* 이번달 주차별 발주 금액 차트 */}
+            <View style={homescreenStyles.sectionContainer}>
+              <Text style={homescreenStyles.sectionTitle}>
+                {currentYear}년 {currentMonth}월 주차별 발주 금액
+              </Text>
               
-              {productSummary.slice(0, 5).map((product, index) => (
-                <View 
-                  key={index} 
-                  style={[
-                    homescreenStyles.monthlyTableRow, 
-                    index % 2 === 1 ? { backgroundColor: '#f8fafc' } : {}
-                  ]}
-                >
-                  <View style={homescreenStyles.productColumn}>
-                    <Text style={[homescreenStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
+              {currentMonthOrders.length === 0 ? (
+                <Text style={homescreenStyles.noDataText}>이번 달 발주 내역이 없습니다.</Text>
+              ) : (
+                <>
+                  <View style={homescreenStyles.chartContainer}>
+                    <BarChart
+                      data={prepareChartData(currentMonthWeeklyTotals, currentMonthSortedWeeks)}
+                      width={screenWidth}
+                      height={220}
+                      chartConfig={chartConfig}
+                      verticalLabelRotation={0}
+                      fromZero={true}
+                      showValuesOnTopOfBars={true}
+                      yAxisLabel=""
+                      yAxisSuffix="만원"
+                    />
                   </View>
-                  {sortedWeeks.map(week => {
-                    const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
-                    return (
-                      <View key={week} style={homescreenStyles.weekColumn}>
-                        <Text style={homescreenStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">
-                          {weekData.수량 > 0 ? `${weekData.수량}` : '-'}
-                        </Text>
+                  
+                  <View style={homescreenStyles.summarySection}>
+                    {currentMonthSortedWeeks.map(week => (
+                      <View key={week} style={homescreenStyles.summaryRow}>
+                        <Text style={homescreenStyles.summaryLabel}>{week}주차 발주금액</Text>
+                        <Text style={homescreenStyles.summaryValue}>{f.formatPrice(currentMonthWeeklyTotals[week])}원</Text>
                       </View>
-                    );
-                  })}
-                  <View style={homescreenStyles.quantityColumn}>
-                    <Text style={homescreenStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">{product.총수량}</Text>
+                    ))}
+                    <View style={homescreenStyles.summaryTotal}>
+                      <Text style={homescreenStyles.summaryTotalLabel}>월 총 발주금액</Text>
+                      <Text style={homescreenStyles.summaryTotalValue}>{f.formatPrice(currentMonthTotal)}원</Text>
+                    </View>
                   </View>
-                </View>
-              ))}
+                </>
+              )}
+            </View>
+            
+            {/* 이번달 상세 발주 내역 */}
+            <View style={homescreenStyles.sectionContainer}>
+              <Text style={homescreenStyles.sectionTitle}>
+                {currentYear}년 {currentMonth}월 상세 발주 내역
+              </Text>
               
-              {productSummary.length > 5 && (
-                <View style={[homescreenStyles.monthlyTableRow, { backgroundColor: '#f0f4f8' }]}>
-                  <TouchableOpacity 
-                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 10 }}
-                    onPress={openMonthlyDetailModal}
-                  >
-                    <Text style={{ color: '#64748b', fontWeight: '500' }}>더 많은 항목 보기...</Text>
-                  </TouchableOpacity>
+              {currentMonthOrders.length === 0 ? (
+                <Text style={homescreenStyles.noDataText}>이번 달 발주 내역이 없습니다.</Text>
+              ) : (
+                <View style={homescreenStyles.monthlyTableContainer}>
+                  <View style={homescreenStyles.monthlyTableHeader}>
+                    <View style={homescreenStyles.productColumn}>
+                      <Text style={[homescreenStyles.monthlyTableHeaderText, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">상품명</Text>
+                    </View>
+                    {currentMonthSortedWeeks.map(week => (
+                      <View key={week} style={homescreenStyles.weekColumn}>
+                        <Text style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">{week}주</Text>
+                      </View>
+                    ))}
+                    <View style={homescreenStyles.quantityColumn}>
+                      <Text style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">합계</Text>
+                    </View>
+                  </View>
+                  
+                  {currentMonthProductSummary.map((product, index) => (
+                    <View 
+                      key={index} 
+                      style={[
+                        homescreenStyles.monthlyTableRow, 
+                        index % 2 === 1 ? { backgroundColor: '#f8fafc' } : {}
+                      ]}
+                    >
+                      <View style={homescreenStyles.productColumn}>
+                        <Text style={[homescreenStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
+                      </View>
+                      {currentMonthSortedWeeks.map(week => {
+                        const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
+                        return (
+                          <View key={week} style={homescreenStyles.weekColumn}>
+                            <Text style={homescreenStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">
+                              {weekData.수량 > 0 ? `${weekData.수량}` : '-'}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                      <View style={homescreenStyles.quantityColumn}>
+                        <Text style={homescreenStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">{product.총수량}</Text>
+                      </View>
+                    </View>
+                  ))}
                 </View>
               )}
             </View>
             
-            <View style={homescreenStyles.summarySection}>
-              <Text style={homescreenStyles.summaryTitle}>월 발주 금액 요약</Text>
-              {sortedWeeks.map(week => (
-                <View key={week} style={homescreenStyles.summaryRow}>
-                  <Text style={homescreenStyles.summaryLabel}>{week}주차 발주금액</Text>
-                  <Text style={homescreenStyles.summaryValue}>{f.formatPrice(weeklyTotals[week])}원</Text>
-                </View>
-              ))}
-              <View style={homescreenStyles.summaryTotal}>
-                <Text style={homescreenStyles.summaryTotalLabel}>월 총 발주금액</Text>
-                <Text style={homescreenStyles.summaryTotalValue}>{f.formatPrice(monthlyTotal)}원</Text>
-              </View>
+            {/* 저번달 상세 발주 내역 */}
+            <View style={homescreenStyles.sectionContainer}>
+              <Text style={homescreenStyles.sectionTitle}>
+                {lastMonthYear}년 {lastMonth}월 상세 발주 내역
+              </Text>
+              
+              {lastMonthOrders.length === 0 ? (
+                <Text style={homescreenStyles.noDataText}>지난 달 발주 내역이 없습니다.</Text>
+              ) : (
+                <>
+                  <View style={homescreenStyles.comparisonContainer}>
+                    <View style={homescreenStyles.comparisonItem}>
+                      <Text style={homescreenStyles.comparisonLabel}>지난달 총 발주금액</Text>
+                      <Text style={homescreenStyles.comparisonValue}>{f.formatPrice(lastMonthTotal)}원</Text>
+                    </View>
+                    <View style={homescreenStyles.comparisonItem}>
+                      <Text style={homescreenStyles.comparisonLabel}>이번달 총 발주금액</Text>
+                      <Text style={homescreenStyles.comparisonValue}>{f.formatPrice(currentMonthTotal)}원</Text>
+                    </View>
+                    <View style={homescreenStyles.comparisonItem}>
+                      <Text style={homescreenStyles.comparisonLabel}>증감액</Text>
+                      <Text style={[
+                        homescreenStyles.comparisonValue, 
+                        { color: currentMonthTotal > lastMonthTotal ? '#e53e3e' : currentMonthTotal < lastMonthTotal ? '#38a169' : '#64748b' }
+                      ]}>
+                        {currentMonthTotal > lastMonthTotal ? '+' : ''}{f.formatPrice(currentMonthTotal - lastMonthTotal)}원
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  <View style={homescreenStyles.monthlyTableContainer}>
+                    <View style={homescreenStyles.monthlyTableHeader}>
+                      <View style={homescreenStyles.productColumn}>
+                        <Text style={[homescreenStyles.monthlyTableHeaderText, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">상품명</Text>
+                      </View>
+                      {lastMonthSortedWeeks.map(week => (
+                        <View key={week} style={homescreenStyles.weekColumn}>
+                          <Text style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">{week}주</Text>
+                        </View>
+                      ))}
+                      <View style={homescreenStyles.quantityColumn}>
+                        <Text style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">합계</Text>
+                      </View>
+                    </View>
+                    
+                    {lastMonthProductSummary.map((product, index) => (
+                      <View 
+                        key={index} 
+                        style={[
+                          homescreenStyles.monthlyTableRow, 
+                          index % 2 === 1 ? { backgroundColor: '#f8fafc' } : {}
+                        ]}
+                      >
+                        <View style={homescreenStyles.productColumn}>
+                          <Text style={[homescreenStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
+                        </View>
+                        {lastMonthSortedWeeks.map(week => {
+                          const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
+                          return (
+                            <View key={week} style={homescreenStyles.weekColumn}>
+                              <Text style={homescreenStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">
+                                {weekData.수량 > 0 ? `${weekData.수량}` : '-'}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                        <View style={homescreenStyles.quantityColumn}>
+                          <Text style={homescreenStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">{product.총수량}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                </>
+              )}
             </View>
           </>
         )}
       </ScrollView>
-      
-      {/* 월별 상세보기 모달 */}
-      <Modal
-        visible={monthlyDetailModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setMonthlyDetailModalVisible(false)}
-      >
-        <View style={homescreenStyles.modalCenteredView}>
-          <View style={homescreenStyles.modalView}>
-            <View style={homescreenStyles.modalHeader}>
-              <Text style={homescreenStyles.modalTitle}>
-                {formattedMonthlyDetailDate} 발주 내역
-              </Text>
-              <TouchableOpacity
-                style={homescreenStyles.closeButton}
-                onPress={() => setMonthlyDetailModalVisible(false)}
-              >
-                <Text style={homescreenStyles.closeButtonText}>X</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={{ flexGrow: 1 }}>
-              <View style={homescreenStyles.monthlyTableContainer}>
-                <View style={homescreenStyles.monthlyTableHeader}>
-                  <View style={homescreenStyles.productColumn}>
-                    <Text style={[homescreenStyles.monthlyTableHeaderText, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">상품명</Text>
-                  </View>
-                  {sortedWeeks.map(week => (
-                    <View key={week} style={homescreenStyles.weekColumn}>
-                      <Text style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">{week}주</Text>
-                    </View>
-                  ))}
-                  <View style={homescreenStyles.quantityColumn}>
-                    <Text style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">합계</Text>
-                  </View>
-                </View>
-                {productSummary.map((product, index) => (
-                  <View 
-                    key={index} 
-                    style={[
-                      homescreenStyles.monthlyTableRow, 
-                      index % 2 === 1 ? { backgroundColor: '#f8fafc' } : {}
-                    ]}
-                  >
-                    <View style={homescreenStyles.productColumn}>
-                      <Text style={[homescreenStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
-                    </View>
-                    {sortedWeeks.map(week => {
-                      const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
-                      return (
-                        <View key={week} style={homescreenStyles.weekColumn}>
-                          <Text style={homescreenStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">
-                            {weekData.수량 > 0 ? `${weekData.수량}` : '-'}
-                          </Text>
-                        </View>
-                      );
-                    })}
-                    <View style={homescreenStyles.quantityColumn}>
-                      <Text style={homescreenStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">{product.총수량}</Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
-              <View style={homescreenStyles.summarySection}>
-                <Text style={homescreenStyles.summaryTitle}>월 발주 금액 요약</Text>
-                {sortedWeeks.map(week => (
-                  <View key={week} style={homescreenStyles.summaryRow}>
-                    <Text style={homescreenStyles.summaryLabel}>{week}주차 발주금액</Text>
-                    <Text style={homescreenStyles.summaryValue}>{f.formatPrice(weeklyTotals[week])}원</Text>
-                  </View>
-                ))}
-                <View style={homescreenStyles.summaryTotal}>
-                  <Text style={homescreenStyles.summaryTotalLabel}>월 총 발주금액</Text>
-                  <Text style={homescreenStyles.summaryTotalValue}>{f.formatPrice(monthlyTotal)}원</Text>
-                </View>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };

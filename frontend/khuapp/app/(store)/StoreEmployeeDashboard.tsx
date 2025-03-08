@@ -51,7 +51,7 @@ const StoreEmployeeDashboard: React.FC<storename> = ({ storeName }) => {
   const renderView = () => {
     switch (activeView) {
       case 'home':
-        return <HomeScreen storeName={storeName} />;
+        return <HomeScreen storeName={storeName} storeId={storeId} />;
       case 'order-request':
         return (
           <OrderRequest
@@ -62,7 +62,7 @@ const StoreEmployeeDashboard: React.FC<storename> = ({ storeName }) => {
           />
         );
       case 'order-status':
-        return <OrderStatus storeId={storeId} items={items} />;
+        return <OrderStatus storeId={storeId} />;
       case 'inventory':
         return <Inventory storeId={storeId} />;
       default:

@@ -6,6 +6,7 @@ import {
   fetchSuppliers,
   getTableStatusList,
   updateTableStatus,
+  fetchWarehouseInventory, // 추가된 부분
 } from "../api/api";
 import "../styles/WarehouseOrder.css";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -32,8 +33,13 @@ const WarehouseOrder = () => {
   const [managerOrderRound, setManagerOrderRound] = useState(1);
   const [showPopup, setShowPopup] = useState(false);
 
+  // 추가: 창고 재고 데이터와 최신 기간 정보를 위한 상태
+  const [prevInvData, setPrevInvData] = useState([]);
+  const [currInvData, setCurrInvData] = useState([]);
+  const [latestPeriod, setLatestPeriod] = useState("");
+
   // ----------------------- 데이터 조회 함수 -----------------------
-  // WarehouseOrder 데이터와 품목, 협력사 정보를 가져옴.
+  // WarehouseOrder 데이터와 품목, 협력사, 그리고 창고 재고 데이터를 가져옴.
   // params: { 기간, 회차 } (기간: "YYYY.MM" 형식)
   const fetchData = async (params = { page: 1 }, manual = false) => {
     try {
@@ -59,6 +65,50 @@ const WarehouseOrder = () => {
       ]);
       setItems(itemsRes);
       setSuppliers(suppliersRes);
+
+      // ----------------- 창고 재고 데이터 불러오기 -----------------
+      if (params.기간) {
+        // params.기간은 "YYYY.MM" 형식이므로 분해
+        const [year, month] = params.기간.split(".");
+        const numericYear = parseInt(year, 10);
+        const numericMonth = parseInt(month, 10);
+
+        // 전월 재고: 선택된 기간의 전달 마지막 일자 계산
+        let prevYear, prevMonth;
+        if (numericMonth === 1) {
+          prevYear = numericYear - 1;
+          prevMonth = 12;
+        } else {
+          prevYear = numericYear;
+          prevMonth = numericMonth - 1;
+        }
+        const prevLastDay = new Date(prevYear, prevMonth, 0).getDate();
+        const prevDateStr = `${prevYear}.${String(prevMonth).padStart(2, "0")}.${String(prevLastDay).padStart(2, "0")}`;
+
+        // 현 재고: 최신 기간이면 현재 날짜, 그렇지 않으면 선택된 달의 마지막 일자 사용
+        const selectedLastDay = new Date(numericYear, numericMonth, 0).getDate();
+        const selectedLastDayStr = `${numericYear}.${String(numericMonth).padStart(2, "0")}.${String(selectedLastDay).padStart(2, "0")}`;
+        const selectedYM = `${numericYear}.${String(numericMonth).padStart(2, "0")}`;
+        let latestYM = "";
+        if (latestPeriod) {
+          const latestParts = latestPeriod.split('.');
+          latestYM = `${latestParts[0]}.${latestParts[1].padStart(2, "0")}`;
+        }
+        let currentInvDateStr = selectedLastDayStr;
+        if (selectedYM === latestYM) {
+          const now = new Date();
+          currentInvDateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
+        }
+
+        // 두 날짜에 대해 창고 재고 API 호출
+        const [prevInvRes, currInvRes] = await Promise.all([
+          fetchWarehouseInventory({ 기간: prevDateStr }),
+          fetchWarehouseInventory({ 기간: currentInvDateStr }),
+        ]);
+        setPrevInvData(prevInvRes);
+        setCurrInvData(currInvRes);
+      }
+      // -----------------------------------------------------------
       if (manual) setLoading(false);
       return data;
     } catch (err) {
@@ -106,6 +156,7 @@ const WarehouseOrder = () => {
           return roundB - roundA;
         });
         const latest = sortedPeriods[0];
+        setLatestPeriod(latest);
         const parts = latest.split(".");
         setSelectedYear(parts[0]);
         setSelectedMonth(parts[1]);
@@ -161,13 +212,16 @@ const WarehouseOrder = () => {
     });
   }
 
-  // 그룹화된 데이터를 바탕으로 각 행(품목) 정보 구성 (품목명, 협력사, 규격, 단위, 입고단가, 입고단위, 입고단위단가 포함)
+  // 그룹화된 데이터를 바탕으로 각 행(품목) 정보 구성 (품목명, 협력사, 규격, 단위, 입고단가, 입고단위, 입고단위단가, 전월 재고, 현 재고 포함)
   const tableRows = Object.keys(groupedOrders).map((itemId) => {
     const matchedItem = items.find((i) => i.품목_id === itemId);
     const itemName = matchedItem ? matchedItem.품목명 : "N/A";
     const supplier = matchedItem
       ? suppliers.find((s) => s.협력사_id === matchedItem.협력사_id) || {}
       : {};
+    // 전월/현 재고 데이터 조회
+    const prevRecord = prevInvData.find((r) => r.품목_id === itemId);
+    const currRecord = currInvData.find((r) => r.품목_id === itemId);
     return {
       itemId,
       supplierName: supplier.협력사명 || "N/A",
@@ -180,6 +234,8 @@ const WarehouseOrder = () => {
       입고단가: matchedItem ? matchedItem.입고단가 : "",
       입고단위: matchedItem ? matchedItem.입고단위 : "",
       입고단위단가: matchedItem ? matchedItem.입고단위단가 : "",
+      prevInv: prevRecord ? prevRecord.창고_재고량 : "-",
+      currInv: currRecord ? currRecord.창고_재고량 : "-",
     };
   });
 
@@ -337,6 +393,8 @@ const WarehouseOrder = () => {
             <th className="wo-price-col">입고단가</th>
             <th className="wo-inunit-col">입고단위</th>
             <th className="wo-inunitprice-col">입고단위단가</th>
+            <th className="wo-previnv-col">전월 재고</th>
+            <th className="wo-currinv-col">현 재고</th>
             <th className="wo-sum-col">발주량</th>
             <th className="wo-ordermoney-col">발주금액</th>
             <th className="wo-total-excl-col" rowSpan={tableRows.length > 0 ? tableRows.length : 1}>
@@ -365,6 +423,12 @@ const WarehouseOrder = () => {
               <td className="wo-inunit-col">{row.입고단위 || "-"}</td>
               <td className="wo-inunitprice-col">
                 {row.입고단위단가 ? formatNumber(row.입고단위단가) : "-"}
+              </td>
+              <td className="wo-previnv-col">
+                {row.prevInv !== "-" ? formatNumber(row.prevInv) : "-"}
+              </td>
+              <td className="wo-currinv-col">
+                {row.currInv !== "-" ? formatNumber(row.currInv) : "-"}
               </td>
               <td className="wo-sum-col">{formatNumber(row.orderAmount)}</td>
               <td className="wo-ordermoney-col">

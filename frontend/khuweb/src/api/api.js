@@ -109,6 +109,19 @@ export const fetchOrders = async (params) => {
   return await response.json();
 };
 
+export const createStoreOrder = async (orderData) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/store_order_create/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(orderData),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to create store order");
+  }
+  return await response.json();
+};
 
 /* 추가: 매장 목록 불러오기 (StoreListView 활용) */
 export const fetchStores = async () => {

@@ -327,10 +327,7 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
   return (
     <View testID="container" style={homescreenStyles.container}>
       <View testID="header" style={homescreenStyles.header}>
-        <Text testID="title" style={homescreenStyles.title}>{storeName} 대시보드</Text>
-        <Text testID="subtitle" style={homescreenStyles.subtitle}>
-          발주 현황 요약
-        </Text>
+        <Text testID="title" style={homescreenStyles.title}>발주 현황 요약</Text>
       </View>
       
       <ScrollView>
@@ -440,25 +437,7 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                 <Text testID="noDataText" style={homescreenStyles.noDataText}>지난 달 발주 내역이 없습니다.</Text>
               ) : (
                 <>
-                  <View testID="comparisonContainer" style={homescreenStyles.comparisonContainer}>
-                    <View testID="comparisonItem" style={homescreenStyles.comparisonItem}>
-                      <Text testID="comparisonLabel" style={homescreenStyles.comparisonLabel}>지난달 총 발주금액</Text>
-                      <Text testID="comparisonValue" style={homescreenStyles.comparisonValue}>{f.formatPrice(lastMonthTotal)}원</Text>
-                    </View>
-                    <View testID="comparisonItem" style={homescreenStyles.comparisonItem}>
-                      <Text testID="comparisonLabel" style={homescreenStyles.comparisonLabel}>이번달 총 발주금액</Text>
-                      <Text testID="comparisonValue" style={homescreenStyles.comparisonValue}>{f.formatPrice(currentMonthTotal)}원</Text>
-                    </View>
-                    <View testID="comparisonItem" style={homescreenStyles.comparisonItem}>
-                      <Text testID="comparisonLabel" style={homescreenStyles.comparisonLabel}>증감액</Text>
-                      <Text testID="comparisonValue" style={[
-                        homescreenStyles.comparisonValue, 
-                        { color: currentMonthTotal > lastMonthTotal ? '#e53e3e' : currentMonthTotal < lastMonthTotal ? '#38a169' : '#64748b' }
-                      ]}>
-                        {currentMonthTotal > lastMonthTotal ? '+' : ''}{f.formatPrice(currentMonthTotal - lastMonthTotal)}원
-                      </Text>
-                    </View>
-                  </View>
+
                   
                   <View testID="monthlyTableContainer" style={homescreenStyles.monthlyTableContainer}>
                     <View testID="monthlyTableHeader" style={homescreenStyles.monthlyTableHeader}>
@@ -499,6 +478,25 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                         </View>
                       </View>
                     ))}
+                  </View>
+                  <View testID="comparisonContainer" style={homescreenStyles.comparisonContainer}>
+                    <View testID="comparisonItem" style={homescreenStyles.comparisonItem}>
+                      <Text testID="comparisonLabel" style={homescreenStyles.comparisonLabel}>지난달 총 발주금액</Text>
+                      <Text testID="comparisonValue" style={homescreenStyles.comparisonValue}>{f.formatPrice(lastMonthTotal)}원</Text>
+                    </View>
+                    <View testID="comparisonItem" style={homescreenStyles.comparisonItem}>
+                      <Text testID="comparisonLabel" style={homescreenStyles.comparisonLabel}>이번달 총 발주금액</Text>
+                      <Text testID="comparisonValue" style={homescreenStyles.comparisonValue}>{f.formatPrice(currentMonthTotal)}원</Text>
+                    </View>
+                    <View testID="comparisonItem" style={homescreenStyles.comparisonItem}>
+                      <Text testID="comparisonLabel" style={homescreenStyles.comparisonLabel}>증감액</Text>
+                      <Text testID="comparisonValue" style={[
+                        homescreenStyles.comparisonValue, 
+                        { color: currentMonthTotal > lastMonthTotal ? '#e53e3e' : currentMonthTotal < lastMonthTotal ? '#38a169' : '#64748b' }
+                      ]}>
+                        {currentMonthTotal > lastMonthTotal ? '+' : ''}{f.formatPrice(currentMonthTotal - lastMonthTotal)}원
+                      </Text>
+                    </View>
                   </View>
                 </>
               )}

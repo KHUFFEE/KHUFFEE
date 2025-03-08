@@ -493,12 +493,14 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                         <Text testID="monthlyTableHeaderText" style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">{week}주</Text>
                       </View>
                     ))}
-                    <View testID="quantityColumn" style={homescreenStyles.quantityColumn}>
-                      <Text testID="monthlyTableHeaderText" style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">합계</Text>
-                    </View>
                   </View>
                   
-                  {currentMonthProductSummary.map((product, index) => (
+                  {currentMonthProductSummary
+                    .filter(product => {
+                      // 모든 주차의 수량이 0인지 확인
+                      return Object.values(product.주차별).some(weekData => weekData.수량 > 0);
+                    })
+                    .map((product, index) => (
                     <View 
                       key={index} 
                       testID="monthlyTableRow"
@@ -517,9 +519,6 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                           </View>
                         );
                       })}
-                      <View testID="quantityColumn" style={homescreenStyles.quantityColumn}>
-                        <Text testID="monthlyTableCellHighlight" style={homescreenStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">{product.총수량}</Text>
-                      </View>
                     </View>
                   ))}
                 </View>
@@ -546,9 +545,6 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                           <Text testID="monthlyTableHeaderText" style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">{week}주</Text>
                         </View>
                       ))}
-                      <View testID="quantityColumn" style={homescreenStyles.quantityColumn}>
-                        <Text testID="monthlyTableHeaderText" style={homescreenStyles.monthlyTableHeaderText} numberOfLines={1} ellipsizeMode="tail">합계</Text>
-                      </View>
                     </View>
                     
                     {lastMonthProductSummary.map((product, index) => (
@@ -570,9 +566,6 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                             </View>
                           );
                         })}
-                        <View testID="quantityColumn" style={homescreenStyles.quantityColumn}>
-                          <Text testID="monthlyTableCellHighlight" style={homescreenStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">{product.총수량}</Text>
-                        </View>
                       </View>
                     ))}
                   </View>

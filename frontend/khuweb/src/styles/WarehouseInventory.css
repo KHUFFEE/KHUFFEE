@@ -93,13 +93,6 @@
     text-align: right;
 }
 
-/* 스크롤되는 셀: 내용이 길면 오른쪽에 스크롤바가 나타남 (StoreOrders 참고) */
-.supplier-cell, .item-cell {
-    height: 20px;
-    overflow-y: auto;
-    display: block;
-}
-
 /* period-controls 및 드롭다운 스타일 (StoreOrders와 동일) */
 .period-controls {
     display: flex;

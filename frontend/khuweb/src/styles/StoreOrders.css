@@ -34,42 +34,6 @@
   padding: 12px;
 }
 
-.so-number-col {
-  width: 12px;
-  text-align: center;
-}
-
-.so-supplier-col,
-.so-item-col {
-  text-align: left;
-}
-
-.so-supplier-col {
-  width: 100px;
-}
-
-.so-item-col {
-  width: 200px;
-}
-
-.so-supplier-col .supplier-cell {
-  height: 20px;
-  overflow-y: auto;
-  display: block;
-}
-
-.so-order-col {
-  text-align: right;
-}
-
-.so-sum-col {
-  text-align: right;
-}
-
-.so-warehouse-col {
-  text-align: right;
-}
-
 .store-orders-table thead {
   position: sticky;
   top: -20px;
@@ -109,10 +73,54 @@
   text-align: right;
 }
 
-.item-cell {
-  height: 20px;
-  overflow-y: auto;
-  display: block;
+/* 매장 헤더 칼럼 전용 스타일 */
+.store-orders-table thead th.so-order-col,
+.store-orders-table thead th.so-warehouse-col {
+  vertical-align: middle;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.store-orders-table th.so-sum-col,
+.store-orders-table td.so-sum-col,
+.store-orders-table th.so-order-col,
+.store-orders-table td.so-order-col,
+.store-orders-table td.so-warehouse-col {
+  width: 50px;
+}
+
+.store-orders-table tbody tr:nth-child(even) {
+  background-color: #fff5f5 ; /* 옅은 붉은 회색 계열 */
+}
+
+.so-number-col {
+  width: 12px;
+  text-align: center;
+}
+
+.so-supplier-col,
+.so-item-col {
+  text-align: left;
+}
+
+.so-supplier-col {
+  width: 100px;
+}
+
+.so-item-col {
+  width: 200px;
+}
+
+.so-order-col {
+  text-align: right;
+}
+
+.so-sum-col {
+  text-align: right;
+}
+
+.so-warehouse-col {
+  text-align: right;
 }
 
 /* period-controls: 드롭다운과 수정 버튼을 같은 행에 배치 */
@@ -206,22 +214,6 @@
   vertical-align: middle;
   cursor: pointer;
   z-index: 2;
-}
-
-/* 매장 헤더 칼럼 전용 스타일 */
-.store-orders-table thead th.so-order-col,
-.store-orders-table thead th.so-warehouse-col {
-  vertical-align: middle;
-  font-size: 14px;
-  line-height: 1.2;
-}
-
-.store-orders-table th.so-sum-col,
-.store-orders-table td.so-sum-col,
-.store-orders-table th.so-order-col,
-.store-orders-table td.so-order-col,
-.store-orders-table td.so-warehouse-col {
-  width: 50px;
 }
 
 .store-action-buttons {
@@ -383,6 +375,3 @@
 .download-dropdown-option:first-child {
   border-bottom: 1.6px solid #2a2a2a;
 }
-
-
-

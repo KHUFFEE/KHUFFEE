@@ -1328,7 +1328,7 @@ const StoreOrders = () => {
           <div className="sime-popup-content">
             <h3>!! 주의 !!</h3>
             <p>
-              확인 버튼을 누르면 현재 회차 데이터가 삭제됩니다.
+              확인 버튼을 누르면 현재 회차 데이터가 영구히 삭제됩니다.
             </p>
             <div className="sime-popup-buttons">
               <button className="popup-cancel" onClick={() => setDeleteModalVisible(false)}>

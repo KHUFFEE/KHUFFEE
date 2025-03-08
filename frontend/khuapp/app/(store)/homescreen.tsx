@@ -406,6 +406,7 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                       showValuesOnTopOfBars={true}
                       yAxisLabel=""
                       yAxisSuffix="만원"
+                      withCustomBarColorFromData={true}  // <--- 추가된 부분
                     />
                     
                     {/* 차트 범례 추가 */}

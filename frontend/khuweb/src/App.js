@@ -93,7 +93,7 @@ function App() {
                 로그아웃
               </button>
             </div>
-            <div className="header-divider"></div>
+            {/* <div className="header-divider"></div> */}
           </header>
           <div className="app-container">
             <aside className="app-sidebar">

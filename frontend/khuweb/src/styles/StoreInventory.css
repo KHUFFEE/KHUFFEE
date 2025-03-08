@@ -94,14 +94,6 @@
     text-align: right;
   }
   
-  /* 스크롤되는 셀 */
-  .supplier-cell,
-  .item-cell {
-    height: 20px;
-    overflow-y: auto;
-    display: block;
-  }
-  
   .warehouse-action-buttons {
     display: flex;
     gap: 10px;

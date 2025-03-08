@@ -801,3 +801,18 @@ input[type="checkbox"] {
   .period-select-box .custom-select::-webkit-scrollbar-thumb:hover {
     background: #B22222;
   }
+
+  .sime-item-cell,
+  .supplier-cell,
+  .item-cell {
+    height: 20px;
+    overflow-y: auto;
+    display: block;
+    scrollbar-width: none; /* Firefox에서 스크롤바 숨김 */
+    -ms-overflow-style: none; /* IE 10+에서 스크롤바 숨김 */
+  }
+
+  .supplier-cell::-webkit-scrollbar,
+  .item-cell::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera에서 스크롤바 숨김 */
+  }

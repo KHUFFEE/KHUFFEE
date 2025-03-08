@@ -342,3 +342,18 @@ export const updateWarehouseOutgoing = async (data) => {
   }
   return await response.json();
 };
+
+export const deleteStoreOrder = async (payload) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/store_order_delete/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to delete store order");
+  }
+  return await response.json();
+};
+

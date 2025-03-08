@@ -95,9 +95,9 @@ export const homescreenStyles = StyleSheet.create({
     paddingBottom: verticalScale(0),
     paddingTop: verticalScale(20),
     alignItems: 'center',
-
     backgroundColor: '#fff',
-  },
+    marginLeft: moderateScale(-15),
+  },  
   
   // 비교 컨테이너 스타일
   comparisonContainer: {
@@ -357,6 +357,22 @@ export const homescreenStyles = StyleSheet.create({
     }),
     fontSize: RFValue(15),
     color: '#0D326F',
+  },
+  
+  // 요약 헤더 스타일
+  summaryHeader: {
+    paddingVertical: verticalScale(8),
+    marginBottom: verticalScale(4),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  
+  summaryHeaderText: {
+    ...commonTextStyle({
+      fontWeight: '600',
+    }),
+    fontSize: RFValue(14),
+    color: '#334155',
   },
   
   // 모달 스타일 (제거)

@@ -99,6 +99,33 @@ export const homescreenStyles = StyleSheet.create({
     marginLeft: moderateScale(-15),
   },  
   
+  // 범례 관련 스타일
+  legendContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: verticalScale(10),
+    marginBottom: verticalScale(10),
+  },
+  
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: moderateScale(10),
+  },
+  
+  legendColor: {
+    width: moderateScale(12),
+    height: moderateScale(12),
+    borderRadius: moderateScale(6),
+    marginRight: moderateScale(5),
+  },
+  
+  legendText: {
+    ...commonTextStyle(),
+    fontSize: RFValue(12),
+    color: '#64748b',
+  },
+  
   // 비교 컨테이너 스타일
   comparisonContainer: {
     flexDirection: 'row',

@@ -333,23 +333,30 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
     lastMonthWeeklyTotals: { [week: string]: number }, 
     sortedWeeks: string[]
   ) => {
-    // 모든 주차 라벨 생성 (이번달 1~5주차, 저번달 1~5주차)
+    // 주차만 표시하는 라벨 생성
     const combinedLabels = [
-      ...sortedWeeks.map(week => `${lastMonth}월 ${week}주`),
-      ...sortedWeeks.map(week => `${currentMonth}월 ${week}주`)
+      ...sortedWeeks.map(week => `${week}주`),
+      ...sortedWeeks.map(week => `${week}주`)
     ];
     
     // 데이터 생성 (저번달 데이터, 이번달 데이터)
-    const combinedData = [
-      ...sortedWeeks.map(week => (lastMonthWeeklyTotals[week] || 0) / 10000),
-      ...sortedWeeks.map(week => (currentMonthWeeklyTotals[week] || 0) / 10000)
+    const lastMonthData = sortedWeeks.map(week => (lastMonthWeeklyTotals[week] || 0) / 10000);
+    const currentMonthData = sortedWeeks.map(week => (currentMonthWeeklyTotals[week] || 0) / 10000);
+    
+    // 색상 함수 배열 생성
+    const colorFunctions = [
+      // 지난달 색상 (파란색 계열 - 앱의 기본 색상)
+      ...lastMonthData.map(() => (opacity = 1) => `rgba(13, 50, 111, ${opacity})`),
+      // 이번달 색상 (녹색 계열)
+      ...currentMonthData.map(() => (opacity = 1) => `rgba(34, 139, 34, ${opacity})`)
     ];
     
     return {
       labels: combinedLabels,
       datasets: [
         {
-          data: combinedData,
+          data: [...lastMonthData, ...currentMonthData],
+          colors: colorFunctions
         }
       ]
     };
@@ -363,6 +370,7 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
     strokeWidth: 2,
     barPercentage: 0.7,
     decimalPlaces: 0,
+    useShadowColorFromDataset: false, // 데이터셋에서 색상 사용
   };
   
   const screenWidth = Dimensions.get('window').width - 40;
@@ -394,12 +402,23 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                       width={screenWidth}
                       height={280}
                       chartConfig={chartConfig}
-                      // verticalLabelRotation={30}
                       fromZero={true}
                       showValuesOnTopOfBars={true}
                       yAxisLabel=""
                       yAxisSuffix="만원"
                     />
+                    
+                    {/* 차트 범례 추가 */}
+                    <View style={homescreenStyles.legendContainer}>
+                      <View style={homescreenStyles.legendItem}>
+                        <View style={[homescreenStyles.legendColor, { backgroundColor: 'rgba(13, 50, 111, 1)' }]} />
+                        <Text style={homescreenStyles.legendText}>{lastMonth}월</Text>
+                      </View>
+                      <View style={homescreenStyles.legendItem}>
+                        <View style={[homescreenStyles.legendColor, { backgroundColor: 'rgba(34, 139, 34, 1)' }]} />
+                        <Text style={homescreenStyles.legendText}>{currentMonth}월</Text>
+                      </View>
+                    </View>
                   </View>
                   
                   <View testID="summarySection" style={homescreenStyles.summarySection}>

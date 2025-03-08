@@ -311,8 +311,10 @@ export const homescreenStyles = StyleSheet.create({
     // marginTop: moderateScale(8),
     backgroundColor: '#f8fafc',
     // borderRadius: moderateScale(10),
-    padding: moderateScale(18),
-    paddingLeft: moderateScale(15),
+    // padding: moderateScale(18),
+    paddingBottom: moderateScale(0),
+    paddingTop: moderateScale(5),
+    // paddingLeft: moderateScale(15),
     borderTopWidth: 1,
     borderColor: '#e2e8f0',
     shadowColor: '#000',
@@ -352,7 +354,8 @@ export const homescreenStyles = StyleSheet.create({
       // fontWeight: '500',
     }),
     fontSize: RFValue(14),
-    color: '#64748b',
+    // color: '#64748b',
+    textAlign: 'center',
   },
   
   summaryValue: {
@@ -361,6 +364,7 @@ export const homescreenStyles = StyleSheet.create({
     }),
     fontSize: RFValue(14),
     color: '#0D326F',
+    textAlign: 'right',
   },
   
   summaryTotal: {
@@ -375,10 +379,11 @@ export const homescreenStyles = StyleSheet.create({
   
   summaryTotalLabel: {
     ...commonTextStyle({
-      fontWeight: '700',
+      fontWeight: '600' ,
     }),
-    fontSize: RFValue(15),
+    fontSize: RFValue(14),
     color: '#0D326F',
+    textAlign: 'left',
   },
   
   summaryTotalValue: {
@@ -387,6 +392,7 @@ export const homescreenStyles = StyleSheet.create({
     }),
     fontSize: RFValue(15),
     color: '#0D326F',
+    textAlign: 'right',
   },
   
   // 요약 헤더 스타일
@@ -407,6 +413,68 @@ export const homescreenStyles = StyleSheet.create({
     textAlign: 'center',
   },
   
+  // 테이블 스타일
+  summaryTable: {
+    width: '100%',
+    overflow: 'hidden',
+    borderBottomWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+    backgroundColor: '#fff',
+  },
+  
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    minHeight: verticalScale(48),
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+  
+  tableCell: {
+    flex: 1,
+    padding: verticalScale(8),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  amountCell: {
+    flex: 1,
+    padding: verticalScale(8),
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
+  
+  weekCell: {
+    flex: 0.8,
+    backgroundColor: '#f8fafc',
+    alignItems: 'center',
+  },
+  
+  tableHeaderText: {
+    ...commonTextStyle({
+      fontWeight: '600',
+    }),
+    fontSize: RFValue(14),
+    color: '#0D326F',
+    textAlign: 'center',
+  },
+  
+  tableFooter: {
+    backgroundColor: '#f1f5f9',
+    // borderTopWidth: 1,
+    borderTopColor: '#94a3b8',
+  },
 });
 
 // DateRangeModal 스타일

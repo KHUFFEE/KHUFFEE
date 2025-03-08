@@ -52,12 +52,6 @@
     width: 200px;
   }
   
-  .sime-supplier-col .supplier-cell {
-    height: 20px;
-    overflow-y: auto;
-    display: block;
-  }
-  
   .sime-order-col {
     text-align: right;
   }
@@ -68,51 +62,7 @@
     width: 50px;
   }
   
-  /* 헤더, 바디, 푸터 관련 */
-  .store-orders-table thead {
-    position: sticky;
-    top: -20px;
-    z-index: 2;
-    background-color: #cf8888;
-  }
-  
-  .store-orders-table tbody tr {
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s ease;
-  }
-  
-  .store-orders-table tbody tr:hover {
-    transform: translateY(-4px);
-  }
-  
-  .store-orders-table tfoot tr {
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s ease;
-  }
-  
-  .store-orders-table tfoot tr:hover {
-    transform: translateY(-4px);
-  }
-  
-  .store-orders-table td input {
-    width: 100%;
-    box-sizing: border-box;
-    border: none;
-    padding: 0;
-    margin: 0;
-    background: transparent;
-    font-size: inherit;
-    line-height: inherit;
-    text-align: right;
-  }
-  
-  .item-cell {
-    height: 20px;
-    overflow-y: auto;
-    display: block;
-  }
+
   
   /* period-controls 및 드롭다운 스타일 (StoreOrders.css와 동일) */
   .period-controls {

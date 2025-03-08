@@ -212,7 +212,7 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
     setIsConfirmation(true);
   };
 
-  // 수정된 주문 요청 제출 함수
+  // 수정된 주문 요청 제출 함수 (추가 방식 적용)
   const handleOrderSubmit = async () => {
     if (orderSubmitted) return;
     setOrderSubmitted(true);
@@ -228,19 +228,21 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
       return;
     }
     try {
-      const ordersResponse = await fetch(`http://192.168.0.11:8000/api/orders/store_order_list/?store_id=${storeId}`);
+      const ordersResponse = await fetch(`${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}`);
       if (!ordersResponse.ok) throw new Error("주문 목록 불러오기 실패");
       const ordersData = await ordersResponse.json();
 
-      // 각 주문별로 개별 POST 요청 실행
+      // 각 주문별로 개별 POST 요청 실행 (추가 방식)
       const updatePromises = ordersData.orders.map(async (order: any) => {
         const selectedItem = selectedItems.find(item => item.품목_id === order.품목_id);
         if (selectedItem) {
           const payload = {
             ...order, // 기존 주문 데이터 유지 (매장_id, 품목_id, 기간, 회차 등)
-            매장_발주량: selectedItem.quantity, // 선택한 수량으로 업데이트
+            old_기간: order.기간, // 기존 기간 추가
+            old_회차: order.회차, // 기존 회차 추가
+            매장_발주량: selectedItem.quantity, // 선택한 수량을 추가
           };
-          const updateResponse = await fetch(`http://192.168.0.11:8000/api/orders/store_order_update/`, {
+          const updateResponse = await fetch(`${RN_API_URL}/api/orders/store_order_update/?app=true`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),

@@ -40,7 +40,7 @@ class StoreOrderListView(APIView):
             orders_queryset = orders_queryset.filter(회차=round_param)
         
         # 매장_발주량 0인 주문 제외
-        orders_queryset = orders_queryset.exclude(매장_발주량=0)
+        # orders_queryset = orders_queryset.exclude(매장_발주량=0)
         
         # 매장_id만 조회하는 경우
         store_only = request.GET.get('store_only', '').lower()

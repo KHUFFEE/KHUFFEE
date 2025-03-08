@@ -3,7 +3,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import date
-from .serializers import StoreOrderCreateSerializer, StoreOrderListSerializer, WarehouseOrderCreateSerializer, WarehouseOrderListSerializer, WarehouseOutgoingCreateSerializer, WarehouseOutgoingListSerializer
+from .serializers import (
+    StoreOrderCreateSerializer, 
+    StoreOrderListSerializer, 
+    WarehouseOrderCreateSerializer, 
+    WarehouseOrderListSerializer, 
+    WarehouseOutgoingCreateSerializer, 
+    WarehouseOutgoingListSerializer
+)
 from .models import StoreOrder, WarehouseOrder, WarehouseOutgoing
 from collections import OrderedDict
 
@@ -135,6 +142,9 @@ class StoreOrderUpdateView(APIView):
         item_id = request.data.get("품목_id")
         period = request.data.get("기간")
         order_amount = request.data.get("매장_발주량")
+        # 추가: 기간 수정 시 기존 기간/회차 정보를 받음
+        old_period = request.data.get("old_기간")
+        old_round = request.data.get("old_회차")
         
         if not (store_id and item_id and period):
             return Response({"error": "매장_id, 품목_id, 기간은 필수 입력입니다."},
@@ -158,44 +168,50 @@ class StoreOrderUpdateView(APIView):
             return Response({"error": "매장_발주량은 정수여야 합니다."},
                             status=status.HTTP_400_BAD_REQUEST)
         
-        # 요청 데이터의 "회차"를 받아서 사용 (기본값 1)
         try:
-            round_val = int(request.data.get("회차", 1))
+            new_round = int(request.data.get("회차", 1))
         except ValueError:
-            round_val = 1
+            new_round = 1
         
-        qs = StoreOrder.objects.filter(매장_id=store_obj, 품목_id=item_obj, 기간=period, 회차=round_val)
-        if qs.exists():
-            qs.update(매장_발주량=new_value)
-            updated_record = qs.order_by("매장_id", "품목_id", "기간", "회차")\
-                            .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")\
-                            .first()
-            return Response(updated_record, status=status.HTTP_200_OK)
-
-        else:
-            if new_value == 0:
-                return Response({
-                    "매장_id": store_obj.pk,
-                    "품목_id": item_obj.pk,
-                    "기간": period,
-                    "회차": round_val,
-                    "매장_발주량": 0
-                }, status=status.HTTP_200_OK)
+        # 만약 old_기간 및 old_회차가 제공되면, 해당 기존 주문을 찾아 업데이트함
+        if old_period is not None and old_round is not None:
+            qs = StoreOrder.objects.filter(
+                매장_id=store_obj, 
+                품목_id=item_obj, 
+                기간=old_period, 
+                회차=old_round
+            )
+            if qs.exists():
+                qs.update(기간=period, 회차=new_round, 매장_발주량=new_value)
+                updated_record = qs.order_by("매장_id", "품목_id", "기간", "회차")\
+                                     .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")\
+                                     .first()
+                return Response(updated_record, status=status.HTTP_200_OK)
             else:
-                StoreOrder.objects.create(
+                return Response({"error": "원래 주문이 존재하지 않습니다."},
+                                status=status.HTTP_404_NOT_FOUND)
+        else:
+            qs = StoreOrder.objects.filter(
+                매장_id=store_obj, 
+                품목_id=item_obj, 
+                기간=period, 
+                회차=new_round
+            )
+            if qs.exists():
+                qs.update(매장_발주량=new_value)
+                updated_record = qs.order_by("매장_id", "품목_id", "기간", "회차")\
+                                     .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")\
+                                     .first()
+                return Response(updated_record, status=status.HTTP_200_OK)
+            else:
+                new_order = StoreOrder.objects.create(
                     매장_id=store_obj,
                     품목_id=item_obj,
                     기간=period,
-                    회차=round_val,
+                    회차=new_round,
                     매장_발주량=new_value
                 )
-                return Response({
-                    "매장_id": store_obj.pk,
-                    "품목_id": item_obj.pk,
-                    "기간": period,
-                    "회차": round_val,
-                    "매장_발주량": new_value
-                }, status=status.HTTP_201_CREATED)
+                return Response(StoreOrderCreateSerializer(new_order).data, status=status.HTTP_201_CREATED)
                 
 class WarehouseOrderCreateView(APIView):
     def post(self, request):
@@ -204,7 +220,6 @@ class WarehouseOrderCreateView(APIView):
             warehouse_order = serializer.save()
             return Response(WarehouseOrderCreateSerializer(warehouse_order).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class WarehouseOrderListView(APIView):
     def get(self, request):
@@ -283,7 +298,6 @@ class WarehouseOrderListView(APIView):
             "orders": orders,
         }
         return Response(result, status=status.HTTP_200_OK)
-
 
 class WarehouseOrderUpdateView(APIView):
     def post(self, request):
@@ -503,3 +517,63 @@ class WarehouseOutgoingUpdateView(APIView):
                     "기간": period,
                     "창고_출고량": new_value
                 }, status=status.HTTP_201_CREATED)
+                
+class StoreOrderDeleteView(APIView):
+    def post(self, request):
+        # 필수 입력: 매장_id, 품목_id, 기간, (회차는 선택, 없으면 기본 1)
+        store_id = request.data.get("매장_id")
+        item_id = request.data.get("품목_id")
+        period = request.data.get("기간")
+        round_param = request.data.get("회차", 1)
+
+        if not (store_id and item_id and period):
+            return Response(
+                {"error": "매장_id, 품목_id, 기간은 필수 입력입니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            store_obj = Store.objects.get(pk=store_id)
+        except Store.DoesNotExist:
+            return Response(
+                {"error": "해당 매장을 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            item_obj = Item.objects.get(pk=item_id)
+        except Item.DoesNotExist:
+            return Response(
+                {"error": "해당 품목을 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            round_val = int(round_param)
+        except ValueError:
+            round_val = 1
+
+        qs = StoreOrder.objects.filter(
+            매장_id=store_obj,
+            품목_id=item_obj,
+            기간=period,
+            회차=round_val
+        )
+
+        if qs.exists():
+            qs.delete()
+            return Response(
+                {
+                    "message": "주문이 삭제되었습니다.",
+                    "매장_id": store_obj.pk,
+                    "품목_id": item_obj.pk,
+                    "기간": period,
+                    "회차": round_val
+                },
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"error": "해당 주문이 존재하지 않습니다."},
+                status=status.HTTP_404_NOT_FOUND
+            )

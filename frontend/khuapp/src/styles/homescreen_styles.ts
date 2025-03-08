@@ -39,6 +39,94 @@ export const homescreenStyles = StyleSheet.create({
     marginBottom: verticalScale(16),
   },
   
+  // 로딩 및 데이터 없음 텍스트
+  loadingText: {
+    ...commonTextStyle(),
+    fontSize: RFValue(14),
+    color: '#64748b',
+    textAlign: 'center',
+    marginTop: verticalScale(20),
+  },
+  
+  noDataText: {
+    ...commonTextStyle(),
+    fontSize: RFValue(14),
+    color: '#64748b',
+    textAlign: 'center',
+    marginVertical: verticalScale(20),
+    fontStyle: 'italic',
+  },
+  
+  // 섹션 컨테이너 스타일
+  sectionContainer: {
+    marginBottom: verticalScale(24),
+    backgroundColor: '#fff',
+    borderRadius: moderateScale(10),
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3.84,
+    elevation: 2,
+  },
+  
+  sectionTitle: {
+    ...commonTextStyle({
+      fontWeight: '600',
+    }),
+    fontSize: RFValue(16),
+    color: '#0D326F',
+    backgroundColor: '#f8fafc',
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: moderateScale(16),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  
+  // 차트 컨테이너 스타일
+  chartContainer: {
+    padding: moderateScale(16),
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  
+  // 비교 컨테이너 스타일
+  comparisonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: moderateScale(16),
+    backgroundColor: '#f8fafc',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  
+  comparisonItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  
+  comparisonLabel: {
+    ...commonTextStyle({
+      fontWeight: '500',
+    }),
+    fontSize: RFValue(12),
+    color: '#64748b',
+    marginBottom: verticalScale(4),
+  },
+  
+  comparisonValue: {
+    ...commonTextStyle({
+      fontWeight: '700',
+    }),
+    fontSize: RFValue(14),
+    color: '#0D326F',
+  },
+  
   // 버튼 컨테이너 스타일
   buttonContainer: {
     flexDirection: 'row',
@@ -267,357 +355,8 @@ export const homescreenStyles = StyleSheet.create({
     color: '#0D326F',
   },
   
-  // 모달 스타일
-  modalCenteredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    padding: moderateScale(16),
-  },
-  
-  modalView: {
-    width: '95%',
-    maxHeight: '90%',
-    backgroundColor: 'white',
-    borderRadius: moderateScale(12),
-    padding: moderateScale(16),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: moderateScale(16),
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    paddingBottom: moderateScale(12),
-  },
-  
-  modalTitle: {
-    ...commonTextStyle({
-      fontWeight: '700',
-    }),
-    fontSize: RFValue(18),
-    color: '#0D326F',
-  },
-  
-  closeButton: {
-    padding: moderateScale(8),
-  },
-  
-  closeButtonText: {
-    ...commonTextStyle({
-      fontWeight: '700',
-    }),
-    fontSize: RFValue(16),
-    color: '#64748b',
-  },
-
-  // 새로운 대시보드 스타일
-  dashboardContainer: {
-    marginBottom: verticalScale(16),
-  },
-
-  dashboardRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: verticalScale(16),
-  },
-
-  dashboardCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: moderateScale(10),
-    padding: moderateScale(16),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginHorizontal: moderateScale(4),
-  },
-
-  dashboardCardWide: {
-    flex: 2,
-  },
-
-  dashboardCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: verticalScale(12),
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    paddingBottom: moderateScale(8),
-  },
-
-  dashboardCardTitle: {
-    ...commonTextStyle({
-      fontWeight: '600',
-    }),
-    fontSize: RFValue(14),
-    color: '#0D326F',
-  },
-
-  dashboardCardValue: {
-    ...commonTextStyle({
-      fontWeight: '700',
-    }),
-    fontSize: RFValue(20),
-    color: '#0D326F',
-    textAlign: 'center',
-    marginVertical: verticalScale(8),
-  },
-
-  dashboardCardSubtitle: {
-    ...commonTextStyle(),
-    fontSize: RFValue(12),
-    color: '#64748b',
-    textAlign: 'center',
-  },
-
-  dashboardCardContent: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-
-  dashboardCardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: verticalScale(8),
-    paddingTop: moderateScale(8),
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-  },
-
-  dashboardCardFooterText: {
-    ...commonTextStyle(),
-    fontSize: RFValue(12),
-    color: '#64748b',
-  },
-
-  dashboardCardFooterValue: {
-    ...commonTextStyle({
-      fontWeight: '600',
-    }),
-    fontSize: RFValue(12),
-    color: '#0D326F',
-  },
-
-  dashboardCardFooterValuePositive: {
-    color: '#10b981',
-  },
-
-  dashboardCardFooterValueNegative: {
-    color: '#ef4444',
-  },
-
-  trendContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: verticalScale(4),
-  },
-
-  trendText: {
-    ...commonTextStyle(),
-    fontSize: RFValue(12),
-    marginLeft: moderateScale(4),
-  },
-
-  trendPositive: {
-    color: '#10b981',
-  },
-
-  trendNegative: {
-    color: '#ef4444',
-  },
-
-  trendNeutral: {
-    color: '#64748b',
-  },
-
-  miniChart: {
-    height: verticalScale(40),
-    marginVertical: verticalScale(8),
-  },
-
-  topProductsContainer: {
-    marginTop: verticalScale(8),
-  },
-
-  topProductRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: verticalScale(6),
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-
-  topProductName: {
-    ...commonTextStyle(),
-    fontSize: RFValue(12),
-    color: '#1e293b',
-    flex: 2,
-  },
-
-  topProductValue: {
-    ...commonTextStyle({
-      fontWeight: '500',
-    }),
-    fontSize: RFValue(12),
-    color: '#0D326F',
-    textAlign: 'right',
-    flex: 1,
-  },
-
-  periodSelectorContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: verticalScale(16),
-  },
-
-  periodButton: {
-    paddingHorizontal: moderateScale(12),
-    paddingVertical: verticalScale(6),
-    borderRadius: moderateScale(20),
-    backgroundColor: '#f1f5f9',
-    marginHorizontal: moderateScale(4),
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-
-  periodButtonActive: {
-    backgroundColor: '#0D326F',
-    borderColor: '#0D326F',
-  },
-
-  periodButtonText: {
-    ...commonTextStyle({
-      fontWeight: '500',
-    }),
-    fontSize: RFValue(12),
-    color: '#64748b',
-  },
-
-  periodButtonTextActive: {
-    color: '#FFFFFF',
-  },
-
-  inventoryAlertContainer: {
-    backgroundColor: '#fee2e2',
-    borderRadius: moderateScale(8),
-    padding: moderateScale(12),
-    marginBottom: verticalScale(16),
-    borderWidth: 1,
-    borderColor: '#fecaca',
-  },
-
-  inventoryAlertTitle: {
-    ...commonTextStyle({
-      fontWeight: '600',
-    }),
-    fontSize: RFValue(14),
-    color: '#b91c1c',
-    marginBottom: verticalScale(8),
-  },
-
-  inventoryAlertItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: verticalScale(4),
-  },
-
-  inventoryAlertName: {
-    ...commonTextStyle(),
-    fontSize: RFValue(12),
-    color: '#7f1d1d',
-    flex: 3,
-  },
-
-  inventoryAlertValue: {
-    ...commonTextStyle({
-      fontWeight: '500',
-    }),
-    fontSize: RFValue(12),
-    color: '#7f1d1d',
-    flex: 1,
-    textAlign: 'right',
-  },
-
-  actionButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: verticalScale(16),
-  },
-
-  actionButton: {
-    flex: 1,
-    backgroundColor: '#0D326F',
-    borderRadius: moderateScale(8),
-    padding: moderateScale(12),
-    alignItems: 'center',
-    marginHorizontal: moderateScale(4),
-  },
-
-  actionButtonText: {
-    ...commonTextStyle({
-      fontWeight: '600',
-    }),
-    fontSize: RFValue(14),
-    color: '#FFFFFF',
-  },
-
-  comparisonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: verticalScale(8),
-  },
-
-  comparisonLabel: {
-    ...commonTextStyle(),
-    fontSize: RFValue(12),
-    color: '#64748b',
-    flex: 2,
-  },
-
-  comparisonValue: {
-    ...commonTextStyle({
-      fontWeight: '500',
-    }),
-    fontSize: RFValue(12),
-    color: '#0D326F',
-    flex: 1,
-    textAlign: 'right',
-  },
-
-  comparisonBar: {
-    height: verticalScale(8),
-    backgroundColor: '#e2e8f0',
-    borderRadius: moderateScale(4),
-    marginTop: verticalScale(4),
-    overflow: 'hidden',
-  },
-
-  comparisonBarFill: {
-    height: '100%',
-    backgroundColor: '#0D326F',
-  },
+  // 모달 스타일 (제거)
+  // ... 기존 모달 스타일 코드 제거 ...
 });
 
 // DateRangeModal 스타일

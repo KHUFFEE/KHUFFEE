@@ -1,4 +1,4 @@
-import React, { useMemo ,useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -42,30 +42,30 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   const [orderFailureMessages, setOrderFailureMessages] = useState<string[]>([]);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
-  // 협력사 데이터 로딩 상태 추가
-const [suppliersLoaded, setSuppliersLoaded] = useState<boolean>(false);
-// 재고 데이터 로딩 상태 추가
 
-const sortedCategories = useMemo(() => {
-  let categories = f.getUniqueCategories(apiItems);
-  // "전체"를 제거합니다.
-  categories = categories.filter(category => category !== '전체');
-  // 한국어 로케일에 따라 알파벳 순으로 정렬합니다.
-  categories.sort((a, b) => a.localeCompare(b, 'ko'));
-  return categories;
-}, [apiItems]);
+  // 협력사 데이터 및 재고 데이터 상태
+  const [suppliersLoaded, setSuppliersLoaded] = useState<boolean>(false);
+  const [inventory, setInventory] = useState<any[]>([]);
+  const [inventoryLoaded, setInventoryLoaded] = useState<boolean>(false);
+
+  // 주문 가능 여부 (테이블 상태: 매장_발주)
+  const [orderEnabled, setOrderEnabled] = useState<boolean>(false);
+
+  // 제품 카테고리 정렬
+  const sortedCategories = useMemo(() => {
+    let categories = f.getUniqueCategories(apiItems);
+    categories = categories.filter(category => category !== '전체');
+    categories.sort((a, b) => a.localeCompare(b, 'ko'));
+    return categories;
+  }, [apiItems]);
 
   // 즐겨찾기 상태 (매장별)
   const [favorites, setFavorites] = useState<string[]>([]);
-  // 돋보기(검색) 활성화 상태
   const [isSearchActive, setIsSearchActive] = useState(false);
-  // 검색 텍스트 상태
   const [searchText, setSearchText] = useState('');
 
-  // 즐겨찾기 데이터 저장 key (storeId 별)
   const getFavoritesKey = (storeId: string) => `favorites_${storeId}`;
 
-  // 매장 별 즐겨찾기 데이터 로딩
   useEffect(() => {
     const loadFavorites = async () => {
       try {
@@ -80,7 +80,6 @@ const sortedCategories = useMemo(() => {
     loadFavorites();
   }, [storeId]);
 
-  // 즐겨찾기 토글 함수
   const toggleFavorite = async (productId: string) => {
     let newFavorites: string[];
     if (favorites.includes(productId)) {
@@ -97,7 +96,6 @@ const sortedCategories = useMemo(() => {
     }
   };
 
-  // 품목 데이터를 API로부터 불러오기
   useEffect(() => {
     f.fetchApiItems()
       .then((data) => {
@@ -110,7 +108,6 @@ const sortedCategories = useMemo(() => {
       });
   }, []);
 
-  // 협력사 데이터를 API로부터 불러오기
   useEffect(() => {
     f.fetchSuppliers()
       .then((data) => {
@@ -119,14 +116,10 @@ const sortedCategories = useMemo(() => {
       })
       .catch((err) => {
         console.error('협력사 데이터 불러오기 오류:', err);
-        setSuppliersLoaded(true); // 오류 발생 시에도 완료 상태로 처리
+        setSuppliersLoaded(true);
       });
   }, []);
 
-  // 매장 재고 데이터를 위한 상태 변수 추가
-  const [inventory, setInventory] = useState<any[]>([]);
-  const [inventoryLoaded, setInventoryLoaded] = useState<boolean>(false);
-  // 매장 재고 데이터를 불러오는 useEffect
   useEffect(() => {
     const fetchInventory = async () => {
       try {
@@ -144,11 +137,25 @@ const sortedCategories = useMemo(() => {
     fetchInventory();
   }, [storeId]);
 
-  // 제품 목록 관련 상수
+  useEffect(() => {
+    const fetchTableStatus = async () => {
+      try {
+        const response = await fetch(`${RN_API_URL}/api/management/table_status_list/`);
+        if (!response.ok) throw new Error('테이블 상태 목록 불러오기 오류');
+        const data = await response.json();
+        const storeOrderStatus = data.find((item: any) => item.테이블 === '매장_발주');
+        setOrderEnabled(storeOrderStatus && storeOrderStatus.상태 === 1);
+      } catch (error) {
+        console.error('테이블 상태 목록 불러오기 오류:', error);
+        setOrderEnabled(false);
+      }
+    };
+    fetchTableStatus();
+  }, []);
+
   const uniqueCategories = f.getUniqueCategories(apiItems);
   const filteredProducts = f.getFilteredProducts(apiItems, selectedCategory);
 
-  // 즐겨찾기 상품을 상단에 표시하도록 정렬
   const sortedProducts = useMemo(() => {
     let products = f.getFilteredProducts(apiItems, selectedCategory);
     if (isSearchActive && searchText.trim().length > 0) {
@@ -156,20 +163,16 @@ const sortedCategories = useMemo(() => {
         product.품목명.toLowerCase().includes(searchText.toLowerCase())
       );
     }
-    // 즐겨찾기와 공급업체 기준 정렬
     products.sort((a, b) => {
       const aIsFavorite = favorites.includes(a.품목_id);
       const bIsFavorite = favorites.includes(b.품목_id);
-      
       if (aIsFavorite && !bIsFavorite) return -1;
       if (!aIsFavorite && bIsFavorite) return 1;
-      
       return f.sortProductsBySupplierAndName([a, b], suppliers)[0] === a ? -1 : 1;
     });
     return products;
   }, [apiItems, selectedCategory, favorites, suppliers, isSearchActive, searchText]);
 
-  // 검색 기능: 검색 바가 활성화되고 입력값이 있을 경우 필터링
   let displayProducts = sortedProducts;
   if (isSearchActive && searchText.trim().length > 0) {
     displayProducts = sortedProducts.filter((product) =>
@@ -177,34 +180,28 @@ const sortedCategories = useMemo(() => {
     );
   }
   
-  // 선택한 품목들의 총 가격 계산
   const totalPrice = f.calculateTotalPrice(selectedItems);
 
-  // 이벤트 핸들러: 품목 추가
   const addItem = (product: APIProduct) => {
     const updatedItems = f.addItemToSelectedItems(selectedItems, product);
     setSelectedItems(updatedItems);
   };
 
-  // 이벤트 핸들러: 수량 업데이트 (증가/감소)
   const updateQuantity = (productId: string, increment: number) => {
     const updatedItems = f.updateQuantity(selectedItems, productId, increment);
     setSelectedItems(updatedItems);
   };
 
-  // 이벤트 핸들러: 텍스트 입력에 따른 수량 업데이트
   const updateCustomQuantity = (productId: string, text: string) => {
     const updatedItems = f.updateCustomQuantityUtil(selectedItems, productId, text);
     setSelectedItems(updatedItems);
   };
 
-  // 이벤트 핸들러: 품목 제거
   const removeItem = (productId: string) => {
     const updatedItems = f.removeItemUtil(selectedItems, productId);
     setSelectedItems(updatedItems);
   };
 
-  // 발주 확인 처리 함수
   const handleConfirmOrder = () => {
     const errors = f.handleConfirmOrderUtil(selectedItems);
     if (errors.length > 0) {
@@ -215,46 +212,69 @@ const sortedCategories = useMemo(() => {
     setIsConfirmation(true);
   };
 
-  // 발주 요청 제출 처리 함수
+  // 수정된 주문 요청 제출 함수
   const handleOrderSubmit = async () => {
     if (orderSubmitted) return;
     setOrderSubmitted(true);
     if (!storeId) {
       console.error('매장 ID가 존재하지 않습니다.');
+      setOrderSubmitted(false);
       return;
     }
-    const result = await f.handleOrderSubmitUtil(storeId, selectedItems);
-    if (result.failures) {
-      setOrderFailureMessages(result.failures);
+    if (!orderEnabled) {
+      setOrderFailureMessages(["발주 요청이 현재 비활성화되어 있습니다."]);
       setOrderFailureModalVisible(true);
-    } else if (result.newOrder) {
-      onNewOrder(result.newOrder);
+      setOrderSubmitted(false);
+      return;
+    }
+    try {
+      const ordersResponse = await fetch(`http://192.168.0.11:8000/api/orders/store_order_list/?store_id=${storeId}`);
+      if (!ordersResponse.ok) throw new Error("주문 목록 불러오기 실패");
+      const ordersData = await ordersResponse.json();
+
+      // 각 주문별로 개별 POST 요청 실행
+      const updatePromises = ordersData.orders.map(async (order: any) => {
+        const selectedItem = selectedItems.find(item => item.품목_id === order.품목_id);
+        if (selectedItem) {
+          const payload = {
+            ...order, // 기존 주문 데이터 유지 (매장_id, 품목_id, 기간, 회차 등)
+            매장_발주량: selectedItem.quantity, // 선택한 수량으로 업데이트
+          };
+          const updateResponse = await fetch(`http://192.168.0.11:8000/api/orders/store_order_update/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!updateResponse.ok) {
+            const errorData = await updateResponse.json();
+            throw new Error(errorData.error || "재고량 업데이트 실패");
+          }
+          return await updateResponse.json();
+        }
+        return null;
+      });
+
+      // 모든 요청 완료 후, null이 아닌 결과만 필터링하여 첫 번째 주문 업데이트 결과를 onNewOrder에 전달합니다.
+      const updatedOrders = (await Promise.all(updatePromises)).filter(res => res !== null);
+      onNewOrder(updatedOrders[0]);
       setOrderCompleteModalVisible(true);
+    } catch (error: any) {
+      console.error("발주 요청 실패:", error);
+      setOrderFailureMessages([error.message]);
+      setOrderFailureModalVisible(true);
     }
     setOrderSubmitted(false);
   };
 
-  // 매장 재고 정보를 렌더링하는 헬퍼 함수
   const renderInventoryText = (product: APIProduct) => {
-    // 재고 데이터가 아직 로딩 중이면 아무것도 렌더링하지 않음
-    if (!inventoryLoaded) {
-      return null;
-    }
-  
+    if (!inventoryLoaded) return null;
     const inv = inventory.find(item => item.품목_id === product.품목_id);
     if (inv) {
       const stock = inv.매장_재고량;
-      let formattedStock;
-      if (stock % 1 === 0) {
-        formattedStock = stock;
-      } else {
+      let formattedStock = stock % 1 === 0 ? stock : (() => {
         const fractionalPart = stock.toString().split('.')[1];
-        if (fractionalPart && fractionalPart.charAt(0) === '0') {
-          formattedStock = Math.floor(stock);
-        } else {
-          formattedStock = stock.toFixed(1);
-        }
-      }
+        return fractionalPart && fractionalPart.charAt(0) === '0' ? Math.floor(stock) : stock.toFixed(1);
+      })();
       return (
         <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(12) }}>
           현재고:{formattedStock}개
@@ -268,15 +288,12 @@ const sortedCategories = useMemo(() => {
     );
   };
 
-  // 선택된 품목 카드 렌더링 함수
   const renderProductCard = (product: APIProduct) => {
-    const selected = selectedItems.find((item) => item.품목_id === product.품목_id);
+    const selected = selectedItems.find(item => item.품목_id === product.품목_id);
     const cardStyle = selected
       ? [OrderRequeststyle.selectItemCard, OrderRequeststyle.selectedItemCard]
       : OrderRequeststyle.selectItemCard;
-
     const isFavorite = favorites.includes(product.품목_id);
-
     const favoriteButton = (
       <TouchableOpacity
         testID="favoriteButton"
@@ -288,7 +305,6 @@ const sortedCategories = useMemo(() => {
         </Text>
       </TouchableOpacity>
     );
-
     if (selected) {
       const computedPrice = selected.quantity * parseFloat(selected.입고단가);
       return (
@@ -317,62 +333,58 @@ const sortedCategories = useMemo(() => {
                 </TouchableOpacity>
               </View>
             </View>
-            {selected && (
-              <View testID="additionalRowContainer" style={OrderRequeststyle.additionalRowContainer}>
+            <View testID="additionalRowContainer" style={OrderRequeststyle.additionalRowContainer}>
+              <View
+                testID="Row2"
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  width: '100%',
+                  marginTop: moderateScale(8),
+                  marginLeft: moderateScale(20)
+                }}
+              >
+                <View testID="row1" style={{ flexDirection: 'column', position: 'relative', bottom: moderateScale(10), left: wp(1) }}>
+                  <Text testID="unitText" style={OrderRequeststyle.unitText}>
+                    출고단위:{f.formatPrice(product.출고단위)}{product.단위}
+                  </Text>
+                  <Text testID="priceText" style={OrderRequeststyle.priceText}>
+                    상품총액:{f.formatPrice(computedPrice)}원
+                  </Text>
+                </View>
                 <View
-                  testID="Row2"
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    width: '100%',
-                    marginTop: moderateScale(8),
-                  
-                    marginLeft: moderateScale(20)
-                  }}
+                  testID="quantityControlContainer"
+                  style={[OrderRequeststyle.quantityControlContainer, { marginLeft: 0, position: 'relative', bottom: moderateScale(5) }]}
                 >
-                  {/* 변경된 부분: 텍스트 두 개를 세로로 배치하는 컬럼 뷰 추가 */}
-                  <View testID="row1"style={{ flexDirection: 'column',position: 'relative',bottom: moderateScale(10),left:wp(1) }}>
-                    <Text testID="unitText" style={OrderRequeststyle.unitText}>
-                      출고단위:{f.formatPrice(product.출고단위)}{product.단위}
-                    </Text>
-                    <Text testID="priceText" style={OrderRequeststyle.priceText}>
-                      상품총액:{f.formatPrice(computedPrice)}원
-                    </Text>
-                  </View>
-                  <View
-                    testID="quantityControlContainer"
-                    style={[OrderRequeststyle.quantityControlContainer, { marginLeft: 0 ,position: 'relative',bottom: moderateScale(5)}]}
+                  <TouchableOpacity
+                    testID="decrementButton"
+                    style={[
+                      OrderRequeststyle.quantityButton,
+                      selected.quantity <= product.출고단위 && OrderRequeststyle.disabledButton,
+                    ]}
+                    onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
+                    disabled={selected.quantity <= product.출고단위}
                   >
-                    <TouchableOpacity
-                      testID="decrementButton"
-                      style={[
-                        OrderRequeststyle.quantityButton,
-                        selected.quantity <= product.출고단위 && OrderRequeststyle.disabledButton,
-                      ]}
-                      onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
-                      disabled={selected.quantity <= product.출고단위}
-                    >
-                      <Minus testID="minusIcon" color="#333" size={20} />
-                    </TouchableOpacity>
-                    <TextInput
-                      testID="quantityInput"
-                      style={OrderRequeststyle.quantityText}
-                      value={selected.customQuantity}
-                      keyboardType="numeric"
-                      onChangeText={(text) => updateCustomQuantity(product.품목_id, text)}
-                    />
-                    <TouchableOpacity
-                      testID="incrementButton"
-                      style={OrderRequeststyle.quantityButton}
-                      onPress={() => updateQuantity(product.품목_id, product.출고단위)}
-                    >
-                      <Plus testID="plusIcon" color="#333" size={20} />
-                    </TouchableOpacity>
-                  </View>
+                    <Minus testID="minusIcon" color="#333" size={20} />
+                  </TouchableOpacity>
+                  <TextInput
+                    testID="quantityInput"
+                    style={OrderRequeststyle.quantityText}
+                    value={selected.customQuantity}
+                    keyboardType="numeric"
+                    onChangeText={(text) => updateCustomQuantity(product.품목_id, text)}
+                  />
+                  <TouchableOpacity
+                    testID="incrementButton"
+                    style={OrderRequeststyle.quantityButton}
+                    onPress={() => updateQuantity(product.품목_id, product.출고단위)}
+                  >
+                    <Plus testID="plusIcon" color="#333" size={20} />
+                  </TouchableOpacity>
                 </View>
               </View>
-            )}
+            </View>
           </View>
           {selected.error && (
             <View testID="errorContainer" style={OrderRequeststyle.errorContainer}>
@@ -461,7 +473,6 @@ const sortedCategories = useMemo(() => {
                     flexGrow: 1,
                     justifyContent: 'flex-start',
                     alignItems: 'center',
-                    
                   }}
                 >
                   <TouchableOpacity

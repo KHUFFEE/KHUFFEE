@@ -25,9 +25,9 @@ export const homescreenStyles = StyleSheet.create({
   
   title: {
     ...commonTextStyle({
-      fontWeight: '700',
+      fontWeight: '600',
     }),
-    fontSize: RFValue(22),
+    fontSize: RFValue(18),
     color: '#0D326F',
     marginBottom: verticalScale(8),
   },
@@ -79,12 +79,12 @@ export const homescreenStyles = StyleSheet.create({
     ...commonTextStyle({
       fontWeight: '600',
     }),
-    fontSize: RFValue(16),
+    fontSize: RFValue(15),
     color: '#0D326F',
     backgroundColor: '#f8fafc',
-    paddingVertical: verticalScale(12),
-    paddingLeft: moderateScale(10),
-    // paddingHorizontal: moderateScale(12),
+    paddingVertical: verticalScale(6),
+    // paddingLeft: moderateScale(10), // 중앙 정렬을 원하면 이 속성을 제거하거나 수정하세요.
+    textAlign: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
@@ -97,32 +97,34 @@ export const homescreenStyles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     marginLeft: moderateScale(-15),
+    borderRadius: moderateScale(8),
+    marginBottom: verticalScale(10),
   },  
   
   // 범례 관련 스타일
   legendContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: verticalScale(10),
-    marginBottom: verticalScale(10),
+    // marginTop: verticalScale(10),
+    // marginBottom: verticalScale(10),
   },
   
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: moderateScale(10),
+    marginHorizontal: moderateScale(3),
   },
   
   legendColor: {
-    width: moderateScale(12),
-    height: moderateScale(12),
+    width: moderateScale(8),
+    height: moderateScale(8),
     borderRadius: moderateScale(6),
     marginRight: moderateScale(5),
   },
   
   legendText: {
     ...commonTextStyle(),
-    fontSize: RFValue(12),
+    fontSize: RFValue(8),
     color: '#64748b',
   },
   
@@ -310,6 +312,7 @@ export const homescreenStyles = StyleSheet.create({
     backgroundColor: '#f8fafc',
     // borderRadius: moderateScale(10),
     padding: moderateScale(18),
+    paddingLeft: moderateScale(15),
     borderTopWidth: 1,
     borderColor: '#e2e8f0',
     shadowColor: '#000',
@@ -346,7 +349,7 @@ export const homescreenStyles = StyleSheet.create({
   
   summaryLabel: {
     ...commonTextStyle({
-      fontWeight: '500',
+      // fontWeight: '500',
     }),
     fontSize: RFValue(14),
     color: '#64748b',
@@ -354,7 +357,7 @@ export const homescreenStyles = StyleSheet.create({
   
   summaryValue: {
     ...commonTextStyle({
-      fontWeight: '600',
+      // fontWeight: '600',
     }),
     fontSize: RFValue(14),
     color: '#0D326F',
@@ -388,8 +391,9 @@ export const homescreenStyles = StyleSheet.create({
   
   // 요약 헤더 스타일
   summaryHeader: {
-    paddingVertical: verticalScale(8),
+    padding: verticalScale(8),
     marginBottom: verticalScale(4),
+    marginTop: verticalScale(0),
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
@@ -398,12 +402,11 @@ export const homescreenStyles = StyleSheet.create({
     ...commonTextStyle({
       fontWeight: '600',
     }),
-    fontSize: RFValue(14),
-    color: '#334155',
+    fontSize: RFValue(15),
+    color: '#0D326F',
+    textAlign: 'center',
   },
   
-  // 모달 스타일 (제거)
-  // ... 기존 모달 스타일 코드 제거 ...
 });
 
 // DateRangeModal 스타일

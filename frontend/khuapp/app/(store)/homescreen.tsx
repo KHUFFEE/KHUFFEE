@@ -315,47 +315,48 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
     fetchOrders();
   }, [storeId]);
   
-  // 차트 데이터 준비
+  // 차트 데이터 준비 (주차별 금액이 0인 경우 해당 주차는 제외)
   const prepareChartData = (weeklyTotals: { [week: string]: number }, sortedWeeks: string[]) => {
+    const filteredWeeks = sortedWeeks.filter(week => (weeklyTotals[week] || 0) > 0);
     return {
-      labels: sortedWeeks.map(week => `${week}주`),
+      labels: filteredWeeks.map(week => `${week}주`),
       datasets: [
         {
-          data: sortedWeeks.map(week => (weeklyTotals[week] || 0) / 10000), // 단위: 만원, 발주가 없는 주차는 0으로 처리
+          data: filteredWeeks.map(week => (weeklyTotals[week] || 0) / 10000), // 단위: 만원
         }
       ]
     };
   };
   
-  // 통합 차트 데이터 준비
+  // 통합 차트 데이터 준비 (각 월의 금액이 0인 주차는 데이터에 포함하지 않음)
   const prepareCombinedChartData = (
     currentMonthWeeklyTotals: { [week: string]: number }, 
     lastMonthWeeklyTotals: { [week: string]: number }, 
     sortedWeeks: string[]
   ) => {
-    // 주차만 표시하는 라벨 생성
-    const combinedLabels = [
-      ...sortedWeeks.map(week => `${week}주`),
-      ...sortedWeeks.map(week => `${week}주`)
-    ];
+    // 각 월에서 금액이 0이 아닌 주차를 별도로 필터링
+    const filteredLastMonthWeeks = sortedWeeks.filter(week => (lastMonthWeeklyTotals[week] || 0) > 0);
+    const filteredCurrentMonthWeeks = sortedWeeks.filter(week => (currentMonthWeeklyTotals[week] || 0) > 0);
     
-    // 데이터 생성 (저번달 데이터, 이번달 데이터)
-    const lastMonthData = sortedWeeks.map(week => (lastMonthWeeklyTotals[week] || 0) / 10000);
-    const currentMonthData = sortedWeeks.map(week => (currentMonthWeeklyTotals[week] || 0) / 10000);
+    const lastMonthLabels = filteredLastMonthWeeks.map(week => `${week}주`);
+    const currentMonthLabels = filteredCurrentMonthWeeks.map(week => `${week}주`);
     
-    // 색상 함수 배열 생성
+    const lastMonthData = filteredLastMonthWeeks.map(week => (lastMonthWeeklyTotals[week] || 0) / 10000);
+    const currentMonthData = filteredCurrentMonthWeeks.map(week => (currentMonthWeeklyTotals[week] || 0) / 10000);
+    
+    const combinedLabels = [...lastMonthLabels, ...currentMonthLabels];
+    const combinedData = [...lastMonthData, ...currentMonthData];
+    
     const colorFunctions = [
-      // 지난달 색상 (파란색 계열 - 앱의 기본 색상)
-      ...lastMonthData.map(() => (opacity = 1) => `rgba(13, 50, 111, ${opacity})`),
-      // 이번달 색상 (녹색 계열)
-      ...currentMonthData.map(() => (opacity = 1) => `rgba(34, 139, 34, ${opacity})`)
+      ...lastMonthData.map(() => () => `rgb(13, 50, 111)`),
+      ...currentMonthData.map(() => () => `rgb(34, 139, 34)`)
     ];
     
     return {
       labels: combinedLabels,
       datasets: [
         {
-          data: [...lastMonthData, ...currentMonthData],
+          data: combinedData,
           colors: colorFunctions
         }
       ]
@@ -370,7 +371,7 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
     strokeWidth: 2,
     barPercentage: 0.7,
     decimalPlaces: 0,
-    useShadowColorFromDataset: false, // 데이터셋에서 색상 사용
+    useShadowColorFromDataset: false,
   };
   
   const screenWidth = Dimensions.get('window').width - 40;
@@ -396,35 +397,28 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                 <Text testID="noDataText" style={homescreenStyles.noDataText}>발주 내역이 없습니다.</Text>
               ) : (
                 <>
-                  <View testID="chartContainer" style={homescreenStyles.chartContainer}>
-                    <BarChart
-                      data={prepareCombinedChartData(currentMonthWeeklyTotals, lastMonthWeeklyTotals, currentMonthSortedWeeks)}
-                      width={screenWidth}
-                      height={280}
-                      chartConfig={chartConfig}
-                      fromZero={true}
-                      showValuesOnTopOfBars={true}
-                      yAxisLabel=""
-                      yAxisSuffix="만원"
-                      withCustomBarColorFromData={true}  // <--- 추가된 부분
-                    />
-                    
-                    {/* 차트 범례 추가 */}
-                    <View style={homescreenStyles.legendContainer}>
-                      <View style={homescreenStyles.legendItem}>
-                        <View style={[homescreenStyles.legendColor, { backgroundColor: 'rgba(13, 50, 111, 1)' }]} />
-                        <Text style={homescreenStyles.legendText}>{lastMonth}월</Text>
-                      </View>
-                      <View style={homescreenStyles.legendItem}>
-                        <View style={[homescreenStyles.legendColor, { backgroundColor: 'rgba(34, 139, 34, 1)' }]} />
-                        <Text style={homescreenStyles.legendText}>{currentMonth}월</Text>
-                      </View>
+                  {Object.values(currentMonthWeeklyTotals).every(value => value === 0) && 
+                   Object.values(lastMonthWeeklyTotals).every(value => value === 0) ? (
+                    <Text testID="noDataText" style={homescreenStyles.noDataText}>발주 내역이 없습니다.</Text>
+                  ) : (
+                    <View testID="chartContainer" style={homescreenStyles.chartContainer}>
+                      <BarChart
+                        data={prepareCombinedChartData(currentMonthWeeklyTotals, lastMonthWeeklyTotals, currentMonthSortedWeeks)}
+                        width={screenWidth}
+                        height={280}
+                        chartConfig={chartConfig}
+                        fromZero={true}
+                        showValuesOnTopOfBars={true}
+                        yAxisLabel=""
+                        yAxisSuffix="만원"
+                        withCustomBarColorFromData={true}
+                      />
                     </View>
-                  </View>
+                  )}
                   
                   <View testID="summarySection" style={homescreenStyles.summarySection}>
                     <View testID="summaryHeader" style={homescreenStyles.summaryHeader}>
-                      <Text testID="summaryHeaderText" style={homescreenStyles.summaryHeaderText}>저번달 ({lastMonth}월) 주차별 발주금액</Text>
+                      <Text testID="summaryHeaderText" style={homescreenStyles.summaryHeaderText}>{lastMonth}월 주차별 발주금액</Text>
                     </View>
                     {lastMonthSortedWeeks.map(week => (
                       <View key={week} testID="summaryRow" style={homescreenStyles.summaryRow}>
@@ -438,7 +432,7 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                     </View>
                     
                     <View testID="summaryHeader" style={[homescreenStyles.summaryHeader, { marginTop: 16 }]}>
-                      <Text testID="summaryHeaderText" style={homescreenStyles.summaryHeaderText}>이번달 ({currentMonth}월) 주차별 발주금액</Text>
+                      <Text testID="summaryHeaderText" style={homescreenStyles.summaryHeaderText}>{currentMonth}월 주차별 발주금액</Text>
                     </View>
                     {currentMonthSortedWeeks.map(week => (
                       <View key={week} testID="summaryRow" style={homescreenStyles.summaryRow}>
@@ -559,11 +553,11 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                   </View>
                   <View testID="comparisonContainer" style={homescreenStyles.comparisonContainer}>
                     <View testID="comparisonItem" style={homescreenStyles.comparisonItem}>
-                      <Text testID="comparisonLabel" style={homescreenStyles.comparisonLabel}>지난달 총 발주금액</Text>
+                      <Text testID="comparisonLabel" style={homescreenStyles.comparisonLabel}>전월 총 발주금액</Text>
                       <Text testID="comparisonValue" style={homescreenStyles.comparisonValue}>{f.formatPrice(lastMonthTotal)}원</Text>
                     </View>
                     <View testID="comparisonItem" style={homescreenStyles.comparisonItem}>
-                      <Text testID="comparisonLabel" style={homescreenStyles.comparisonLabel}>이번달 총 발주금액</Text>
+                      <Text testID="comparisonLabel" style={homescreenStyles.comparisonLabel}>당월 총 발주금액</Text>
                       <Text testID="comparisonValue" style={homescreenStyles.comparisonValue}>{f.formatPrice(currentMonthTotal)}원</Text>
                     </View>
                     <View testID="comparisonItem" style={homescreenStyles.comparisonItem}>

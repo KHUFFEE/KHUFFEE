@@ -455,6 +455,13 @@ export const homescreenStyles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   
+  monthHeaderCell: {
+    flex: 1,
+    padding: verticalScale(8),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
   weekCell: {
     flex: 0.8,
     backgroundColor: '#f8fafc',
@@ -467,7 +474,7 @@ export const homescreenStyles = StyleSheet.create({
     }),
     fontSize: RFValue(14),
     color: '#0D326F',
-    textAlign: 'center',
+    textAlign: 'right',
   },
   
   tableFooter: {

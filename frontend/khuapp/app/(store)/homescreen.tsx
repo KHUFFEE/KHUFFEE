@@ -425,11 +425,11 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                       <View testID="tableHeader" style={homescreenStyles.tableRow}>
                         <View testID="tableHeaderCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor: 'ffff' }]}>
                         </View>
-                        <View testID="tableHeaderCell" style={homescreenStyles.tableCell}>
-                          <Text testID="summaryHeaderText" style={homescreenStyles.tableHeaderText}>{lastMonth}월</Text>
+                        <View testID="tableHeaderCell" style={homescreenStyles.amountCell}>
+                          <Text testID="summaryHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15) }]}>{lastMonth}월</Text>
                         </View>
-                        <View testID="tableHeaderCell" style={homescreenStyles.tableCell}>
-                          <Text testID="summaryHeaderText" style={homescreenStyles.tableHeaderText}>{currentMonth}월</Text>
+                        <View testID="tableHeaderCell" style={homescreenStyles.amountCell}>
+                          <Text testID="summaryHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15) }]}>{currentMonth}월</Text>
                         </View>
                       </View>
 

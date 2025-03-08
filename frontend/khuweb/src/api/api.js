@@ -278,3 +278,54 @@ export const updateWarehouseOrder = async (orderData) => {
   }
   return await response.json();
 };
+
+// 창고 출고 생성 API 함수
+export const createWarehouseOutgoing = async (data) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/warehouse_outgoing_create/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to create warehouse outgoing record");
+  }
+  return await response.json();
+};
+
+// 창고 출고 조회 API 함수
+export const fetchWarehouseOutgoing = async (params) => {
+  let url = `${process.env.REACT_APP_API_URL}/api/orders/warehouse_outgoing_list/?`;
+  if (params.기간) {
+    url += `기간=${params.기간}`;
+  } else {
+    url += `page=${params.page || 1}`;
+  }
+  if (params.store_id) {
+    url += `&store_id=${params.store_id}`;
+  }
+  if (params.order) {
+    url += `&order=${params.order}`;
+  }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch warehouse outgoing records");
+  }
+  return await response.json();
+};
+
+// 창고 출고 수정 API 함수
+export const updateWarehouseOutgoing = async (data) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/warehouse_outgoing_update/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to update warehouse outgoing record");
+  }
+  return await response.json();
+};

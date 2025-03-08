@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import date
-from .serializers import StoreOrderCreateSerializer, StoreOrderListSerializer, WarehouseOrderCreateSerializer, WarehouseOrderListSerializer
-from .models import StoreOrder, WarehouseOrder
+from .serializers import StoreOrderCreateSerializer, StoreOrderListSerializer, WarehouseOrderCreateSerializer, WarehouseOrderListSerializer, WarehouseOutgoingCreateSerializer, WarehouseOutgoingListSerializer
+from .models import StoreOrder, WarehouseOrder, WarehouseOutgoing
 from collections import OrderedDict
 
 # 새로 추가: 외래키 모델 임포트
@@ -354,4 +354,161 @@ class WarehouseOrderUpdateView(APIView):
                     "기간": period,
                     "회차": round_val,
                     "창고_발주량": new_value
+                }, status=status.HTTP_201_CREATED)
+                
+class WarehouseOutgoingCreateView(APIView):
+    def post(self, request):
+        serializer = WarehouseOutgoingCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            outgoing_record = serializer.save()
+            return Response(WarehouseOutgoingCreateSerializer(outgoing_record).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class WarehouseOutgoingListView(APIView):
+    def get(self, request):
+        store_id = request.GET.get('store_id')
+        try:
+            page = int(request.GET.get('page', 1))
+        except ValueError:
+            return Response({"error": "유효한 페이지 번호를 입력하세요."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        order_param = request.GET.get('order', 'desc').lower()
+        ordering = '기간' if order_param == 'asc' else '-기간'
+        
+        qs = WarehouseOutgoing.objects.all()
+        if store_id:
+            qs = qs.filter(매장_id=store_id)
+        qs = qs.exclude(창고_출고량=0)
+        
+        period_param = request.GET.get('기간')
+        # 기간 범위 조회 (ex: "2025.03.1~2025.03.4")
+        if period_param and '~' in period_param:
+            start_period, end_period = period_param.split('~')
+            start_period = start_period.strip()
+            end_period = end_period.strip()
+            qs_range = qs.filter(기간__gte=start_period, 기간__lte=end_period).order_by(ordering)
+            records = list(qs_range.values('매장_id', '품목_id', '기간', '창고_출고량'))
+            result = {
+                "current_period": start_period,
+                "current_page": 1,
+                "total_pages": 1,
+                "orders": records,
+            }
+            return Response(result, status=status.HTTP_200_OK)
+        
+        # 특정 기간 조회
+        if period_param:
+            qs_period = qs.filter(기간=period_param).order_by(ordering)
+            records = list(qs_period.values('매장_id', '품목_id', '기간', '창고_출고량'))
+            result = {
+                "current_period": period_param,
+                "current_page": 1,
+                "total_pages": 1,
+                "orders": records,
+            }
+            return Response(result, status=status.HTTP_200_OK)
+        
+        # 페이지네이션: distinct한 기간별로 그룹화
+        distinct_periods = list(OrderedDict.fromkeys(qs.order_by(ordering).values_list('기간', flat=True)))
+        total_pages = len(distinct_periods)
+        if total_pages == 0:
+            return Response({
+                "current_period": None,
+                "current_page": 0,
+                "total_pages": 0,
+                "orders": []
+            }, status=status.HTTP_200_OK)
+        
+        if page < 1 or page > total_pages:
+            return Response({"error": f"페이지 번호는 1부터 {total_pages} 사이여야 합니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        selected_period = distinct_periods[page - 1]
+        qs_selected = qs.filter(기간=selected_period).order_by(ordering)
+        records = list(qs_selected.values('매장_id', '품목_id', '기간', '창고_출고량'))
+        
+        result = {
+            "current_period": selected_period,
+            "current_page": page,
+            "total_pages": total_pages,
+            "orders": records,
+        }
+        return Response(result, status=status.HTTP_200_OK)
+    
+class WarehouseOutgoingUpdateView(APIView):
+    def post(self, request):
+        store_id = request.data.get("매장_id")
+        item_id = request.data.get("품목_id")
+        period = request.data.get("기간")
+        order_amount = request.data.get("창고_출고량")
+
+        if not (store_id and item_id and period):
+            return Response(
+                {"error": "매장_id, 품목_id, 기간은 필수 입력입니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            store_obj = Store.objects.get(pk=store_id)
+        except Store.DoesNotExist:
+            return Response(
+                {"error": "해당 매장을 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            item_obj = Item.objects.get(pk=item_id)
+        except Item.DoesNotExist:
+            return Response(
+                {"error": "해당 품목을 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            new_value = int(order_amount) if order_amount not in [None, ""] else 0
+        except ValueError:
+            return Response(
+                {"error": "창고_출고량은 정수여야 합니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        qs = WarehouseOutgoing.objects.filter(
+            매장_id=store_obj,
+            품목_id=item_obj,
+            기간=period
+        )
+        if qs.exists():
+            if new_value == 0:
+                qs.delete()
+                return Response({
+                    "매장_id": store_obj.pk,
+                    "품목_id": item_obj.pk,
+                    "기간": period,
+                    "창고_출고량": 0
+                }, status=status.HTTP_200_OK)
+            else:
+                qs.update(창고_출고량=new_value)
+                updated_record = qs.order_by("매장_id", "품목_id", "기간")\
+                    .values("매장_id", "품목_id", "기간", "창고_출고량")\
+                    .first()
+                return Response(updated_record, status=status.HTTP_200_OK)
+        else:
+            if new_value == 0:
+                return Response({
+                    "매장_id": store_obj.pk,
+                    "품목_id": item_obj.pk,
+                    "기간": period,
+                    "창고_출고량": 0
+                }, status=status.HTTP_200_OK)
+            else:
+                WarehouseOutgoing.objects.create(
+                    매장_id=store_obj,
+                    품목_id=item_obj,
+                    기간=period,
+                    창고_출고량=new_value
+                )
+                return Response({
+                    "매장_id": store_obj.pk,
+                    "품목_id": item_obj.pk,
+                    "기간": period,
+                    "창고_출고량": new_value
                 }, status=status.HTTP_201_CREATED)

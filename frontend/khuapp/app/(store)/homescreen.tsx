@@ -429,7 +429,7 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                           <Text testID="summaryHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15) }]}>{lastMonth}월</Text>
                         </View>
                         <View testID="tableHeaderCell" style={homescreenStyles.amountCell}>
-                          <Text testID="summaryHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15) }]}>{currentMonth}월</Text>
+                          <Text testID="summaryHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15), color: 'rgb(34, 139, 34)' }]}>{currentMonth}월</Text>
                         </View>
                       </View>
 
@@ -445,7 +445,7 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
                             </Text>
                           </View>
                           <View testID="tableCell" style={homescreenStyles.amountCell}>
-                            <Text testID="summaryValue" style={[homescreenStyles.summaryValue, { fontSize: RFValue(13) }]}>
+                            <Text testID="summaryValue" style={[homescreenStyles.summaryValue, { fontSize: RFValue(13), color: 'rgb(34, 139, 34)' }]}>
                               {f.formatPrice(currentMonthWeeklyTotals[week] || 0)}원
                             </Text>
                           </View>
@@ -454,16 +454,16 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
 
                       {/* 월 총 발주금액 행 */}
                       <View testID="tableFooter" style={[homescreenStyles.tableRow, homescreenStyles.tableFooter, { minHeight: verticalScale(56) }]}>
-                        <View testID="tableCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell,{paddingHorizontal:moderateScale(0),marginLeft:moderateScale(5), backgroundColor:'#f1f5f9'}]}>
+                        <View testID="tableCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, {backgroundColor:'#f1f5f9'}]}>
                           <Text testID="summaryTotalLabel" style={[homescreenStyles.summaryTotalLabel]}>월발주금액</Text>
                         </View>
                         <View testID="tableCell" style={homescreenStyles.amountCell}>
-                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color: '#0D326F', fontWeight: '700' }]}>
+                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color: '#0D326F', fontWeight: '600' }]}>
                             {f.formatPrice(lastMonthTotal)}원
                           </Text>
                         </View>
                         <View testID="tableCell" style={homescreenStyles.amountCell}>
-                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color: '#0D326F', fontWeight: '700' }]}>
+                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color:'rgb(34, 139, 34)', fontWeight: '600' }]}>
                             {f.formatPrice(currentMonthTotal)}원
                           </Text>
                         </View>

@@ -19,7 +19,7 @@ export const homescreenStyles = StyleSheet.create({
   },
   
   header: {
-    marginBottom: verticalScale(20),
+    // marginBottom: verticalScale(20),
     alignItems: 'center',
   },
   
@@ -83,7 +83,8 @@ export const homescreenStyles = StyleSheet.create({
     color: '#0D326F',
     backgroundColor: '#f8fafc',
     paddingVertical: verticalScale(12),
-    paddingHorizontal: moderateScale(16),
+    paddingLeft: moderateScale(10),
+    // paddingHorizontal: moderateScale(12),
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
@@ -91,7 +92,10 @@ export const homescreenStyles = StyleSheet.create({
   // 차트 컨테이너 스타일
   chartContainer: {
     padding: moderateScale(16),
+    paddingBottom: verticalScale(0),
+    paddingTop: verticalScale(20),
     alignItems: 'center',
+
     backgroundColor: '#fff',
   },
   
@@ -169,10 +173,10 @@ export const homescreenStyles = StyleSheet.create({
   
   // 월별 상세보기 테이블 스타일
   monthlyTableContainer: {
-    marginBottom: verticalScale(16),
-    borderRadius: moderateScale(10),
+    // marginBottom: verticalScale(16),
+    // borderRadius: moderateScale(10),
     overflow: 'hidden',
-    borderWidth: 1,
+    borderBottomWidth: 1,
     borderColor: '#e2e8f0',
     shadowColor: '#000',
     shadowOffset: {
@@ -275,11 +279,11 @@ export const homescreenStyles = StyleSheet.create({
   
   // 요약 섹션 스타일
   summarySection: {
-    marginTop: moderateScale(8),
+    // marginTop: moderateScale(8),
     backgroundColor: '#f8fafc',
-    borderRadius: moderateScale(10),
+    // borderRadius: moderateScale(10),
     padding: moderateScale(18),
-    borderWidth: 1,
+    borderTopWidth: 1,
     borderColor: '#e2e8f0',
     shadowColor: '#000',
     shadowOffset: {
@@ -289,7 +293,7 @@ export const homescreenStyles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 3,
-    marginBottom: moderateScale(16),
+    // marginBottom: moderateScale(16),
   },
   
   summaryTitle: {

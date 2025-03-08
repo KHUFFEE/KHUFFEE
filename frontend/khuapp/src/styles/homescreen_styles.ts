@@ -388,7 +388,7 @@ export const homescreenStyles = StyleSheet.create({
   
   summaryTotalValue: {
     ...commonTextStyle({
-      fontWeight: '700',
+      fontWeight: '600',
     }),
     fontSize: RFValue(15),
     color: '#0D326F',

@@ -28,7 +28,7 @@ import { orderStatusStyles, dateRangeStyles } from '../../src/styles/OrderStatus
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { Picker } from '@react-native-picker/picker';
+import RNPickerSelect from 'react-native-picker-select';
 import { styles } from '../../src/components/ui/common/commonstyler';
 
 // 결합된 주문 데이터 타입 (StoreOrderData와 APIProduct의 속성을 모두 포함)
@@ -48,115 +48,47 @@ interface DateRangeModalProps {
    - 생성되는 날짜 문자열은 "YYYY.MM.W" 형식(예: "2025.02.5")이어야 합니다.
 =========================================================== */
 const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onConfirm, years }) => {
-  const [startYear, setStartYear] = useState('');
-  const [startMonth, setStartMonth] = useState('');
-  const [startWeek, setStartWeek] = useState('');
-  const [endYear, setEndYear] = useState('');
-  const [endMonth, setEndMonth] = useState('');
-  const [endWeek, setEndWeek] = useState('');
   const [activePreset, setActivePreset] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
 
-  const presets = ['직접입력', '최근 1개월', '최근 3개월', '최근 6개월', '올해', '1년'];
-  // 하드코딩된 연도 배열 대신 props로 전달받습니다.
-  const months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-  const weeks = ['1', '2', '3', '4', '5'];
+  // 프리셋 배열에서 직접입력 제거
+  const presets = ['최근 1개월', '최근 3개월', '최근 6개월', '올해', '1년'];
 
   useEffect(() => {
     if (visible) {
       setActivePreset(null);
-      setShowForm(false);
-      setStartYear('');
-      setStartMonth('');
-      setStartWeek('');
-      setEndYear('');
-      setEndMonth('');
-      setEndWeek('');
     }
   }, [visible]);
 
   const handlePresetPress = (preset: string) => {
     setActivePreset(preset);
-    if (preset === '직접입력') {
-      setShowForm(true);
-      setStartYear('');
-      setStartMonth('');
-      setStartWeek('');
-      setEndYear('');
-      setEndMonth('');
-      setEndWeek('');
-    } else {
-      setShowForm(false);
-      const today = new Date();
-      let newStartDate: Date;
-      
-      if (preset === '최근 1개월') {
-        newStartDate = new Date(today);
-        newStartDate.setMonth(today.getMonth() - 1);
-      } else if (preset === '최근 3개월') {
-        newStartDate = new Date(today);
-        newStartDate.setMonth(today.getMonth() - 3);
-      } else if (preset === '최근 6개월') {
-        newStartDate = new Date(today);
-        newStartDate.setMonth(today.getMonth() - 6);
-      } else if (preset === '올해') {
-        newStartDate = new Date(today.getFullYear(), 0, 1); // 올해 1월 1일
-      } else if (preset === '1년') {
-        newStartDate = new Date(today);
-        newStartDate.setFullYear(today.getFullYear() - 1);
-      } else {
-        newStartDate = today;
-      }
-      
-      // 주차 계산: 월의 시작을 1주차로 가정
-      const getWeek = (date: Date) => Math.ceil(date.getDate() / 7).toString();
-      
-      // 날짜 정보 설정 (UI 표시용)
-      setStartYear(String(newStartDate.getFullYear()));
-      setStartMonth(String(newStartDate.getMonth() + 1).padStart(2, '0'));
-      setStartWeek(getWeek(newStartDate));
-      setEndYear(String(today.getFullYear()));
-      setEndMonth(String(today.getMonth() + 1).padStart(2, '0'));
-      setEndWeek(getWeek(today));
-    }
   };
 
   const handleSearch = () => {
-    // 날짜 문자열은 "YYYY.MM.W" 형식
-    if (activePreset === '직접입력') {
-      // 직접 입력 모드일 때는 기존 방식 유지
-      const startDateDisplay = `${startYear || '년도'}.${startMonth || '월'}.${startWeek || ''}`;
-      const endDateDisplay = `${endYear || '년도'}.${endMonth || '월'}.${endWeek || ''}`;
-      onConfirm(startDateDisplay, endDateDisplay);
+    const today = new Date();
+    let startDate: Date;
+    
+    if (activePreset === '최근 1개월') {
+      startDate = new Date(today);
+      startDate.setMonth(today.getMonth() - 1);
+    } else if (activePreset === '최근 3개월') {
+      startDate = new Date(today);
+      startDate.setMonth(today.getMonth() - 3);
+    } else if (activePreset === '최근 6개월') {
+      startDate = new Date(today);
+      startDate.setMonth(today.getMonth() - 6);
+    } else if (activePreset === '올해') {
+      startDate = new Date(today.getFullYear(), 0, 1); // 올해 1월 1일
+    } else if (activePreset === '1년') {
+      startDate = new Date(today);
+      startDate.setFullYear(today.getFullYear() - 1);
     } else {
-      // 프리셋 버튼 모드일 때는 getCustomPeriodString 사용
-      const today = new Date();
-      let startDate: Date;
-      
-      if (activePreset === '최근 1개월') {
-        startDate = new Date(today);
-        startDate.setMonth(today.getMonth() - 1);
-      } else if (activePreset === '최근 3개월') {
-        startDate = new Date(today);
-        startDate.setMonth(today.getMonth() - 3);
-      } else if (activePreset === '최근 6개월') {
-        startDate = new Date(today);
-        startDate.setMonth(today.getMonth() - 6);
-      } else if (activePreset === '올해') {
-        startDate = new Date(today.getFullYear(), 0, 1); // 올해 1월 1일
-      } else if (activePreset === '1년') {
-        startDate = new Date(today);
-        startDate.setFullYear(today.getFullYear() - 1);
-      } else {
-        startDate = today;
-      }
-      
-      // getCustomPeriodString을 이용하여 날짜 문자열을 생성
-      const startDateStr = f.getCustomPeriodString(startDate);
-      const endDateStr = f.getCustomPeriodString(today);
-      
-      onConfirm(startDateStr, endDateStr);
+      startDate = today;
     }
+    
+    const startDateStr = f.getCustomPeriodString(startDate);
+    const endDateStr = f.getCustomPeriodString(today);
+    
+    onConfirm(startDateStr, endDateStr);
     onClose();
   };
 
@@ -193,113 +125,10 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
               </TouchableOpacity>
             ))}
           </ScrollView>
-          {activePreset && activePreset !== '직접입력' && (
+          {activePreset && (
             <TouchableOpacity testID="confirmButton" style={dateRangeStyles.searchButton} onPress={handleSearch}>
               <Text testID="confirmButtonText" style={dateRangeStyles.searchButtonText}>확인</Text>
             </TouchableOpacity>
-          )}
-          {showForm && activePreset === '직접입력' && (
-            <View testID="formContainer" style={dateRangeStyles.formContainer}>
-              <View testID="dateRangeSection" style={dateRangeStyles.dateRangeSection}>
-                <Text testID="dateRangeTitle" style={dateRangeStyles.dateRangeTitle}>날짜 범위</Text>
-                <View testID="dateRangeContainer" style={dateRangeStyles.dateRangeContainer}>
-                  <View testID="dateRangeHeader" style={dateRangeStyles.dateRangeHeader}>
-                    <View testID="datePart" style={dateRangeStyles.datePart}>
-                      <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>시작</Text>
-                      <Text testID="dateValue" style={dateRangeStyles.dateValue}>
-                        {`${startYear || '년도'}.${startMonth || '월'}.${startWeek || '주차'}`}
-                      </Text>
-                    </View>
-                    <Text testID="dateSeparator" style={dateRangeStyles.dateSeparator}>~</Text>
-                    <View testID="datePart" style={dateRangeStyles.datePart}>
-                      <Text testID="dateLabel" style={dateRangeStyles.dateLabel}>종료</Text>
-                      <Text testID="dateValue" style={dateRangeStyles.dateValue}>
-                        {`${endYear || '년도'}.${endMonth || '월'}.${endWeek || '주차'}`}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-              <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
-                <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>시작날짜 선택</Text>
-                <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
-                  <Picker
-                    testID="pickerYear"
-                    selectedValue={startYear}
-                    style={dateRangeStyles.picker}
-                    onValueChange={(itemValue) => setStartYear(itemValue)}
-                  >
-                    <Picker.Item label="년도" value="" />
-                    {years.map((y) => (
-                      <Picker.Item key={y} label={`${y}년`} value={y} />
-                    ))}
-                  </Picker>
-                  <Picker
-                    testID="pickerMonth"
-                    selectedValue={startMonth}
-                    style={dateRangeStyles.picker}
-                    onValueChange={(itemValue) => setStartMonth(String(itemValue).padStart(2, '0'))}
-                  >
-                    <Picker.Item label="월" value="" />
-                    {months.map((m) => (
-                      <Picker.Item key={m} label={`${m}월`} value={String(m).padStart(2, '0')} />
-                    ))}
-                  </Picker>
-                  <Picker
-                    testID="pickerWeek"
-                    selectedValue={startWeek}
-                    style={dateRangeStyles.picker}
-                    onValueChange={(itemValue) => setStartWeek(itemValue)}
-                  >
-                    <Picker.Item label="주차" value="" />
-                    {weeks.map((w) => (
-                      <Picker.Item key={w} label={`${w}주`} value={w} />
-                    ))}
-                  </Picker>
-                </View>
-              </View>
-              <View testID="pickerContainer" style={dateRangeStyles.pickerContainer}>
-                <Text testID="pickerTitle" style={dateRangeStyles.pickerTitle}>종료날짜 선택</Text>
-                <View testID="pickerRow" style={dateRangeStyles.pickerRow}>
-                  <Picker
-                    testID="pickerYear"
-                    selectedValue={endYear}
-                    style={dateRangeStyles.picker}
-                    onValueChange={(itemValue) => setEndYear(itemValue)}
-                  >
-                    <Picker.Item label="년도" value="" />
-                    {years.map((y) => (
-                      <Picker.Item key={y} label={`${y}년`} value={y} />
-                    ))}
-                  </Picker>
-                  <Picker
-                    testID="pickerMonth"
-                    selectedValue={endMonth}
-                    style={dateRangeStyles.picker}
-                    onValueChange={(itemValue) => setEndMonth(String(itemValue).padStart(2, '0'))}
-                  >
-                    <Picker.Item label="월" value="" />
-                    {months.map((m) => (
-                      <Picker.Item key={m} label={`${m}월`} value={String(m).padStart(2, '0')} />
-                    ))}
-                  </Picker>
-                  <Picker
-                    testID="pickerWeek"
-                    selectedValue={endWeek}
-                    style={dateRangeStyles.picker}
-                    onValueChange={(itemValue) => setEndWeek(itemValue)}
-                  >
-                    <Picker.Item label="주차" value="" />
-                    {weeks.map((w) => (
-                      <Picker.Item key={w} label={`${w}주`} value={w} />
-                    ))}
-                  </Picker>
-                </View>
-              </View>
-              <TouchableOpacity testID="searchButton" style={dateRangeStyles.searchButton} onPress={handleSearch}>
-                <Text testID="searchButtonText" style={dateRangeStyles.searchButtonText}>검색</Text>
-              </TouchableOpacity>
-            </View>
           )}
         </View>
       </View>
@@ -360,14 +189,20 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     return order === 'desc' ? sorted.reverse() : sorted;
   };
 
-  // 연도 범위 계산 함수: 2023년부터 최대 연도까지 오름차순 배열 생성
+  // 연도 범위 계산 함수: 최대 연도부터 내림차순으로 3개의 연도 추가
   const getYearRange = (orders: CombinedOrderData[], minYear: number = 2023): string[] => {
     const years = orders.map(order => parseInt(order.기간.split('.')[0]));
     const maxYear = Math.max(...years, minYear);
     const yearRange: string[] = [];
-    for (let y = minYear; y <= maxYear; y++) {
-      yearRange.push(y.toString());
+    
+    // 최대 연도부터 내림차순으로 3개의 연도 추가
+    for (let i = 0; i < 3; i++) {
+      const year = maxYear - i;
+      if (year >= minYear) {
+        yearRange.push(year.toString());
+      }
     }
+    
     return yearRange;
   };
 
@@ -379,7 +214,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
       try {
         const now = new Date();
   
-        // 기존에는 로컬 getPeriodString을 사용했지만 이제 f.getCustomPeriodString을 사용합니다.
         let startDate: Date, endDate: Date;
         if (page === 1) {
           endDate = now;
@@ -389,7 +223,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
           startDate = new Date(now.getFullYear() - page, now.getMonth(), now.getDate());
         }
   
-        // getCustomPeriodString을 이용하여 날짜 문자열을 생성
         const periodParam = `${f.getCustomPeriodString(startDate)}~${f.getCustomPeriodString(endDate)}`;
         const params = new URLSearchParams({
           store_id: storeId,
@@ -446,7 +279,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     setHasMore(false);
     setLoading(true);
     try {
-      // 날짜 문자열을 그대로 사용
       const periodParam = `${startDate}~${endDate}`;
       const params = new URLSearchParams({
         store_id: storeId,
@@ -489,7 +321,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
   const handleResetSearch = async () => {
     setShowPeriodModal(false);
     setIsPeriodSearch(false);
-    // 리셋 시 정렬 순서를 최신순('desc')으로 초기화
     setSortOrder('desc');
     setStoreOrders([]);
     setHasMore(true);
@@ -512,11 +343,8 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     }
   };
 
-  // 상세보기 모달 열기 (주문 데이터 오름차순 정렬)
-  // 동일 상품명(회차 무시, 기간 동일)인 주문은 매장_발주량과 totalCost를 합산합니다.
   const openDetailModal = (dateKey: string, orders: CombinedOrderData[]) => {
     setDetailGroupDate(dateKey);
-    // 주문 데이터를 상품명 기준으로 그룹화 (동일 상품이면 합산)
     const groupedOrdersMap: { [productName: string]: CombinedOrderData } = {};
     orders.forEach((order) => {
       const key = order.품목명 ?? '알 수 없는 품목';
@@ -533,7 +361,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     setDetailModalVisible(true);
   };
 
-  // 월별 상세보기 모달 열기 함수 추가
   const openMonthlyDetailModal = (year: string, month: string, monthlyOrders: CombinedOrderData[]) => {
     setMonthlyDetailDate(`${year}.${month}`);
     
@@ -665,7 +492,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     }
   }, [storeId, itemsLoaded]);
 
-  // 2023년부터 최대 연도까지 오름차순 배열 생성
   const availableYears = getYearRange(storeOrders, 2023);
 
   if (loading || !itemsLoaded) {
@@ -876,7 +702,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
             ) : null }
         />
       )}
-      {/* 상세보기 모달 */}
       <Modal
         testID="detailModal"
         visible={detailModalVisible}
@@ -930,7 +755,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
           </View>
         </View>
       </Modal>
-      {/* 월별 상세보기 모달 */}
       <Modal
         testID="monthlyDetailModal"
         visible={monthlyDetailModalVisible}
@@ -953,7 +777,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
               </TouchableOpacity>
             </View>
             <ScrollView testID="modalScrollView" style={[orderStatusStyles.modalScrollView, { flexGrow: 1 }]}>
-              {/* 주차별 상품 통계 테이블 */}
               <View testID='monthlyTableContainer' style={orderStatusStyles.monthlyTableContainer}>
                 <View testID='monthlyTableHeader' style={orderStatusStyles.monthlyTableHeader}>
                   <View testID='productColumn' style={orderStatusStyles.productColumn}>
@@ -996,7 +819,6 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                   </View>
                 ))}
               </View>
-              {/* 월별 요약 섹션 */}
               <View testID='summarySection' style={orderStatusStyles.summarySection}>
                 <Text testID='summaryTitle' style={orderStatusStyles.summaryTitle}>월 발주 금액 요약</Text>
                 {sortedWeeks.map(week => (
@@ -1020,7 +842,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
         onConfirm={(start, end) => {
           handlePeriodSearch(start, end);
         }}
-        years={availableYears}  // 2023년부터 최대 연도까지 동적 연도 배열 전달
+        years={availableYears}
       />
     </View>
   );

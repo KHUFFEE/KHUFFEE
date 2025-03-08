@@ -105,8 +105,8 @@ export const homescreenStyles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: moderateScale(16),
     backgroundColor: '#f8fafc',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    // borderTopWidth: 1,
+    // borderTopColor: '#e2e8f0',
   },
   
   comparisonItem: {

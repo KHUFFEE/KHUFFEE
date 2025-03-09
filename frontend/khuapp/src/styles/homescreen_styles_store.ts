@@ -92,12 +92,13 @@ export const homescreenStyles = StyleSheet.create({
   
   // 차트 컨테이너 스타일
   chartContainer: {
-    padding: moderateScale(16),
+    padding: moderateScale(0),
     paddingBottom: verticalScale(0),
-    paddingTop: verticalScale(20),
+    // paddingTop: verticalScale(20),
+    // paddingLeft: moderateScale(15),
     alignItems: 'center',
     backgroundColor: '#fff',
-    marginLeft: moderateScale(-15),
+    // marginRight: moderateScale(15),
     borderRadius: moderateScale(8),
     marginBottom: verticalScale(10),
   },  

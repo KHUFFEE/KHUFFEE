@@ -9,6 +9,7 @@ import { verticalScale, moderateScale } from 'react-native-size-matters';
 // react-native-chart-kit 대신 react-native-gifted-charts 사용
 import { BarChart } from 'react-native-gifted-charts';
 import { LinearGradient } from 'expo-linear-gradient';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 type CombinedOrderData = StoreOrderData & Partial<APIProduct>;
 
@@ -297,6 +298,17 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
     fetchOrders();
   }, [storeId]);
   
+  // 소수점 형식 지정 함수 수정 - 소수점 1자리까지만 표시
+  const formatDecimal = (value: number) => {
+    if (value % 1 === 0) {
+      // 정수인 경우
+      return value.toFixed(0);
+    } else {
+      // 소수점이 있는 경우 소수점 1자리까지만 표시
+      return value.toFixed(1);
+    }
+  };
+  
   // 차트 데이터 준비: 주차별 금액이 0인 경우 해당 주차는 제외
   const prepareChartData = (weeklyTotals: { [week: string]: number }, sortedWeeks: string[]) => {
     const filteredWeeks = sortedWeeks.filter(week => (weeklyTotals[week] || 0) > 0);
@@ -332,9 +344,37 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
         value: lastMonthData[index],
         label: lastMonthLabels[index],
         frontColor: 'rgb(13, 50, 111)',
+        // 수량 표시 (상단 레이블)
         topLabelComponent: () => (
-          <Text style={{ color: 'rgb(13, 50, 111)', fontSize: 10, marginBottom: 2 }}>
-            {lastMonthData[index].toFixed(0)}만원
+          <View style={{
+            position: 'absolute',
+            // top: -20,
+            // width: wp(20),
+            // left: wp(6) * -0.5, // 바의 너비의 반만큼 왼쪽으로 이동하여 중앙 정렬
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Text 
+              style={{ 
+                color: 'rgb(13, 50, 111)', 
+                fontSize: RFValue(9),
+                textAlign: 'center'
+              }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {formatDecimal(lastMonthData[index])}
+            </Text>
+          </View>
+        ),
+        // x축 라벨 컴포넌트 (파란색)
+        labelComponent: () => (
+          <Text style={{ 
+            color: 'rgb(13, 50, 111)', 
+            fontSize: moderateScale(11),
+            textAlign: 'center'
+          }}>
+            {lastMonthLabels[index]}
           </Text>
         )
       })),
@@ -342,9 +382,37 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
         value: currentMonthData[index],
         label: currentMonthLabels[index],
         frontColor: 'rgb(34, 139, 34)',
+        // 수량 표시 (상단 레이블)
         topLabelComponent: () => (
-          <Text style={{ color: 'rgb(34, 139, 34)', fontSize: 10, marginBottom: 2 }}>
-            {currentMonthData[index].toFixed(0)}만원
+          <View style={{
+            position: 'absolute',
+            // top: -20,
+            width: wp(20),
+            // left: wp(6) * -0.5, // 바의 너비의 반만큼 왼쪽으로 이동하여 중앙 정렬
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Text 
+              style={{ 
+                color: 'rgb(34, 139, 34)', 
+                fontSize: RFValue(9),
+                textAlign: 'center'
+              }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {formatDecimal(currentMonthData[index])}
+            </Text>
+          </View>
+        ),
+        // x축 라벨 컴포넌트 (초록색)
+        labelComponent: () => (
+          <Text style={{ 
+            color: 'rgb(34, 139, 34)', 
+            fontSize: moderateScale(11),
+            textAlign: 'center'
+          }}>
+            {currentMonthLabels[index]}
           </Text>
         )
       }))
@@ -382,67 +450,83 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                   ) : (
                     <View testID="chartContainer" style={homescreenStyles.chartContainer}>
                       <BarChart
-                        data={prepareCombinedChartData(currentMonthWeeklyTotals, lastMonthWeeklyTotals, currentMonthSortedWeeks)}
+                        data={prepareCombinedChartData(
+                          currentMonthWeeklyTotals,
+                          lastMonthWeeklyTotals,
+                          currentMonthSortedWeeks
+                        )}
                         width={screenWidth}
-                        height={280}
-                        barWidth={20}
-                        spacing={10}
-                        hideRules
-                        initialSpacing={5}
+                        height={hp(25)}
+                        barWidth={wp(6)}
+                        spacing={wp(1)}
+                        initialSpacing={10}
                         noOfSections={5}
-                        yAxisLabelTexts={['0', '10', '20', '30', '50']}
-                        yAxisTextStyle={{ color: '#333' }}
-                        xAxisLabelTextStyle={{ color: '#333', fontSize: 10 }}
-                        showFractionalValues={false}
-                        hideYAxisText={false}
-                        disablePress={true}
+                        barBorderRadius={4}
+                        // 바탕 배경
+                        backgroundColor={'#fff'}  //추후 변경 
+                        // 규칙선(가로선) 스타일
                         rulesType="dashed"
-                        backgroundColor={'#fff'}
-                        // isAnimated
-                        renderTooltip={(item: { value: number }) => {
-                          return (
-                            <View
-                              testID="tooltip"
-                              style={{
-                                backgroundColor: '#fff',
-                                padding: 8,
-                                borderRadius: 4,
-                                borderWidth: 1,
-                                borderColor: '#ddd',
-                              }}>
-                              <Text style={{ color: '#333', fontSize: 12 }}>
-                                {item.value.toFixed(0)}만원
-                              </Text>
-                            </View>
-                          );
+                        rulesColor="lightgray"
+                        rulesThickness={1}
+                        // 가로선 위치 오른쪽으로 이동
+                        horizontalRulesStyle={{
+                          paddingLeft: moderateScale(10)
                         }}
+                        // X축·Y축 스타일
+                        xAxisColor="#666"
+                        xAxisThickness={0}
+                        yAxisColor="#666"
+                        yAxisThickness={0}
+                        yAxisTextStyle={{ 
+                          color: 'black',
+                          // backgroundColor: 'red',
+                          fontSize: moderateScale(12), 
+                          width: wp(12),
+                          textAlign: 'right',
+                          paddingRight: moderateScale(5),
+                          // marginRight: moderateScale(10)
+                        }}
+                        // 커스텀 라벨 컴포넌트를 사용하므로 기본 스타일은 제거
+                        // xAxisLabelTextStyle={{ color: '#444', fontSize: moderateScale(11) }}
+                        // 커스텀 레이블 사용
+                        renderTooltip={() => null}
+                        hideAxesAndRules={false}
+                        hideYAxisText={false}
+                        showXAxisIndices={false}
+                        // y축 레이블 포맷: 값 뒤에 "만" 붙이기
+                        formatYLabel={(value) => `${value}만`}
+                        // 값 소수점 표시
+                        showFractionalValues={false}
+                        // Y축 텍스트 숨김 여부
+                        // hideYAxisText={false}
+                        // 터치 시 반응 막기
+                        disablePress={true}
                       />
                     </View>
                   )}
                   
                   <View testID="summarySection" style={[homescreenStyles.summarySection]}>
                     <View testID="summaryTable" style={homescreenStyles.summaryTable}>
-                      <View testID="tableHeader" style={homescreenStyles.tableRow}>
-                        <View testID="tableHeaderCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor: 'ffff' }]}>
+                      <View testID="tableRow" style={homescreenStyles.tableRow}>
+                        <View testID="weekCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor: 'ffff' }]} />
+                        <View testID="amountCell" style={homescreenStyles.amountCell}>
+                          <Text testID="tableHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15) }]}>{lastMonth}월</Text>
                         </View>
-                        <View testID="tableHeaderCell" style={homescreenStyles.amountCell}>
-                          <Text testID="summaryHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15) }]}>{lastMonth}월</Text>
-                        </View>
-                        <View testID="tableHeaderCell" style={homescreenStyles.amountCell}>
-                          <Text testID="summaryHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15), color: 'rgb(34, 139, 34)' }]}>{currentMonth}월</Text>
+                        <View testID="amountCell" style={homescreenStyles.amountCell}>
+                          <Text testID="tableHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15), color: 'rgb(34, 139, 34)' }]}>{currentMonth}월</Text>
                         </View>
                       </View>
                       {Array.from(new Set([...lastMonthSortedWeeks, ...currentMonthSortedWeeks])).sort().map(week => (
                         <View key={week} testID="tableRow" style={homescreenStyles.tableRow}>
-                          <View testID="tableCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { marginLeft: moderateScale(5) }]}>
+                          <View testID="weekCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { marginLeft: moderateScale(5) }]}>
                             <Text testID="summaryLabel" style={[homescreenStyles.summaryLabel, { fontSize: RFValue(14) }]}>{week}주차</Text>
                           </View>
-                          <View testID="tableCell" style={homescreenStyles.amountCell}>
+                          <View testID="amountCell" style={homescreenStyles.amountCell}>
                             <Text testID="summaryValue" style={[homescreenStyles.summaryValue, { fontSize: RFValue(13) }]}>
                               {f.formatPrice(lastMonthWeeklyTotals[week] || 0)}원
                             </Text>
                           </View>
-                          <View testID="tableCell" style={homescreenStyles.amountCell}>
+                          <View testID="amountCell" style={homescreenStyles.amountCell}>
                             <Text testID="summaryValue" style={[homescreenStyles.summaryValue, { fontSize: RFValue(13), color: 'rgb(34, 139, 34)' }]}>
                               {f.formatPrice(currentMonthWeeklyTotals[week] || 0)}원
                             </Text>
@@ -450,18 +534,14 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                         </View>
                       ))}
                       <View testID="tableFooter" style={[homescreenStyles.tableRow, homescreenStyles.tableFooter, { minHeight: verticalScale(56) }]}>
-                        <View testID="tableCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor:'#f1f5f9' }]}>
+                        <View testID="weekCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor:'#f1f5f9' }]}>
                           <Text testID="summaryTotalLabel" style={[homescreenStyles.summaryTotalLabel]}>월발주금액</Text>
                         </View>
-                        <View testID="tableCell" style={homescreenStyles.amountCell}>
-                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color: '#0D326F', fontWeight: '600' }]}>
-                            {f.formatPrice(lastMonthTotal)}원
-                          </Text>
+                        <View testID="amountCell" style={homescreenStyles.amountCell}>
+                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color: '#0D326F', fontWeight: '600' }]}>{f.formatPrice(lastMonthTotal)}원</Text>
                         </View>
-                        <View testID="tableCell" style={homescreenStyles.amountCell}>
-                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color:'rgb(34, 139, 34)', fontWeight: '600' }]}>
-                            {f.formatPrice(currentMonthTotal)}원
-                          </Text>
+                        <View testID="amountCell" style={homescreenStyles.amountCell}>
+                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color:'rgb(34, 139, 34)', fontWeight: '600' }]}>{f.formatPrice(currentMonthTotal)}원</Text>
                         </View>
                       </View>
                     </View>
@@ -496,7 +576,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                     .map((product, index) => (
                     <View 
                       key={index} 
-                      testID="monthlyTableRow"
+                      testID="monthlyTableRow" 
                       style={[homescreenStyles.monthlyTableRow, index % 2 === 1 ? { backgroundColor: '#f8fafc' } : {}]}
                     >
                       <View testID="productColumn" style={homescreenStyles.productColumn}>
@@ -543,7 +623,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                     {lastMonthProductSummary.map((product, index) => (
                       <View 
                         key={index} 
-                        testID="monthlyTableRow"
+                        testID="monthlyTableRow" 
                         style={[homescreenStyles.monthlyTableRow, index % 2 === 1 ? { backgroundColor: '#f8fafc' } : {}]}
                       >
                         <View testID="productColumn" style={homescreenStyles.productColumn}>

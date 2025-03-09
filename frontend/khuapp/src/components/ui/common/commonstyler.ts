@@ -345,24 +345,17 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerContainer: {
-    ...commonTextStyle,
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: moderateScale(12),
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: moderateScale(16),
-    paddingVertical: moderateScale(12),
-    // marginBottom: moderateScale(10),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    // paddingVertical: moderateScale(6),
+    borderBottomWidth: 2,
+    // borderTopWidth: 2,
+    borderBottomColor: 'rgba(139, 0, 0, 0.1)',
+    // borderTopColor: 'rgba(139, 0, 0, 0.1)',
+    width: '100%',
+    paddingRight: moderateScale(8), // 오른쪽 패딩 줄임
   },
   item_headerText: {
     ...commonTextStyle,
@@ -1286,18 +1279,21 @@ export const modernStyles = StyleSheet.create({
     borderBottomColor: 'rgba(139, 0, 0, 0.1)',
     // borderTopColor: 'rgba(139, 0, 0, 0.1)',
     width: '100%',
+    paddingRight: moderateScale(8), // 오른쪽 패딩 줄임
   },
   storeNameText: {
     fontSize: RFValue(18),
     fontWeight: '600',
     color: '#1e293b',
     flex: 1,
-    marginRight: moderateScale(10),
+    marginRight: moderateScale(15),
     ...commonTextStyle
   },
   settingsButton: {
     padding: moderateScale(8),
     borderRadius: 8,
+    marginLeft: 'auto',
+    alignSelf: 'flex-end',
   },
   bottomNavContainer: {
     flexDirection: 'row',
@@ -1321,6 +1317,7 @@ export const modernStyles = StyleSheet.create({
     color: '#64748b',
     fontSize: RFValue(12),
     marginTop: moderateScale(2),
+    marginBottom: moderateScale(6),
     ...commonTextStyle
   },
   activeNavText: {

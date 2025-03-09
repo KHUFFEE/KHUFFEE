@@ -943,6 +943,10 @@ export const orderStatusStyles = StyleSheet.create({
     fontWeight: '700',
     color: '#0D326F',
   },
+
+  yearContainer: {
+    marginBottom: verticalScale(10),
+  },
 });
 
 export const dateRangeStyles = StyleSheet.create({

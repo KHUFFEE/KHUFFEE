@@ -5,6 +5,7 @@ import {
   fetchSuppliers
 } from "../api/api";
 import "../styles/WarehouseInventory.css";
+import "../styles/table.css";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { warehouseInventoryDownloadExcel } from "../utils/WarehouseInventoryDownloadExcel";
 
@@ -249,7 +250,7 @@ const WarehouseInventory = () => {
               <svg width="24" height="24" viewBox="0 0 22 22">
                 <path
                   d="M7 10l5 5 5-5z"
-                  fill="#8B0000"
+                  fill="#445382"
                   transform={isYMOpen ? "rotate(180 11 11)" : ""}
                 />
               </svg>
@@ -277,7 +278,7 @@ const WarehouseInventory = () => {
               <svg width="24" height="24" viewBox="0 0 22 22">
                 <path
                   d="M7 10l5 5 5-5z"
-                  fill="#8B0000"
+                  fill="#445382"
                   transform={isDayOpen ? "rotate(180 11 11)" : ""}
                 />
               </svg>
@@ -295,7 +296,7 @@ const WarehouseInventory = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="wi-table">
+      <table className="small-table">
         <thead>
           <tr>
             <th className="wi-number-col">No.</th>

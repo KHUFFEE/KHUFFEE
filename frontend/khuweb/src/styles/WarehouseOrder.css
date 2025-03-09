@@ -6,27 +6,6 @@
     text-align: left;
   }
   
-  .wo-table {
-    width: 100%;
-    margin: 20px 0;
-    border-collapse: separate;
-    border-spacing: 0 1px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-  }
-  
-  .wo-table th {
-    font-weight: bold;
-    text-align: center;
-    padding: 12px;
-  }
-  
-  .wo-table th,
-  .wo-table td {
-    border: 1px solid #ddd;
-    padding: 12px;
-  }
-  
   .wo-number-col {
     width: 5px;
     text-align: center;
@@ -51,43 +30,5 @@
     width: 50px;
     text-align: right;
   }
-  
-  .wo-table thead {
-    position: sticky;
-    top: -20px;
-    z-index: 2;
-    background-color: #cf8888;
-  }
-  
-  .wo-table tbody tr {
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s ease;
-  }
-  
-  .wo-table tbody tr:hover {
-    transform: translateY(-4px);
-  }
-  
-  .wo-table tfoot tr {
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s ease;
-  }
-  
-  .wo-table tfoot tr:hover {
-    transform: translateY(-4px);
-  }
-  
-  .wo-table td input {
-    width: 100%;
-    box-sizing: border-box;
-    border: none;
-    padding: 0;
-    margin: 0;
-    background: transparent;
-    font-size: inherit;
-    line-height: inherit;
-    text-align: right;
-  }
+
   

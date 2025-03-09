@@ -13,6 +13,7 @@ import {
   deleteStoreOrder // 추가: store_order_delete API 함수
 } from "../api/api";
 import "../styles/StoreOrders.css";
+import "../styles/table.css";
 import { storeOrdersDownloadExcel } from "../utils/StoreOrdersDownloadExcel";
 import { storeOrdersCombinedDownloadExcel } from "../utils/StoreOrdersCombinedDownloadExcel";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -786,7 +787,7 @@ const StoreOrders = () => {
               <svg width="24" height="24" viewBox="0 0 22 22">
                 <path
                   d="M7 10l5 5 5-5z"
-                  fill="#8B0000"
+                  fill="#445382"
                   transform={isDropdownOpen ? "rotate(180 11 11)" : ""}
                 />
               </svg>
@@ -877,7 +878,7 @@ const StoreOrders = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="store-orders-table">
+      <table className="big-table">
         <thead>
           <tr>
             <th className="so-number-col">No.</th>
@@ -997,7 +998,7 @@ const StoreOrders = () => {
                     <svg width="16" height="16" viewBox="0 0 22 22">
                       <path
                         d="M7 10l5 5 5-5z"
-                        fill="#8B0000"
+                        fill="#445382"
                         transform={yearDropdownOpen ? "rotate(180 11 11)" : ""}
                       />
                     </svg>
@@ -1032,7 +1033,7 @@ const StoreOrders = () => {
                     <svg width="16" height="16" viewBox="0 0 22 22">
                       <path
                         d="M7 10l5 5 5-5z"
-                        fill="#8B0000"
+                        fill="#445382"
                         transform={monthDropdownOpen ? "rotate(180 11 11)" : ""}
                       />
                     </svg>
@@ -1067,7 +1068,7 @@ const StoreOrders = () => {
                     <svg width="16" height="16" viewBox="0 0 22 22">
                       <path
                         d="M7 10l5 5 5-5z"
-                        fill="#8B0000"
+                        fill="#445382"
                         transform={weekDropdownOpen ? "rotate(180 11 11)" : ""}
                       />
                     </svg>
@@ -1102,7 +1103,7 @@ const StoreOrders = () => {
                     <svg width="16" height="16" viewBox="0 0 22 22">
                       <path
                         d="M7 10l5 5 5-5z"
-                        fill="#8B0000"
+                        fill="#445382"
                         transform={roundDropdownOpen ? "rotate(180 11 11)" : ""}
                       />
                     </svg>
@@ -1156,7 +1157,7 @@ const StoreOrders = () => {
                     <svg width="16" height="16" viewBox="0 0 22 22">
                       <path
                         d="M7 10l5 5 5-5z"
-                        fill="#8B0000"
+                        fill="#445382"
                         transform={yearDropdownOpen ? "rotate(180 11 11)" : ""}
                       />
                     </svg>
@@ -1191,7 +1192,7 @@ const StoreOrders = () => {
                     <svg width="16" height="16" viewBox="0 0 22 22">
                       <path
                         d="M7 10l5 5 5-5z"
-                        fill="#8B0000"
+                        fill="#445382"
                         transform={monthDropdownOpen ? "rotate(180 11 11)" : ""}
                       />
                     </svg>
@@ -1226,7 +1227,7 @@ const StoreOrders = () => {
                     <svg width="16" height="16" viewBox="0 0 22 22">
                       <path
                         d="M7 10l5 5 5-5z"
-                        fill="#8B0000"
+                        fill="#445382"
                         transform={weekDropdownOpen ? "rotate(180 11 11)" : ""}
                       />
                     </svg>
@@ -1261,7 +1262,7 @@ const StoreOrders = () => {
                     <svg width="16" height="16" viewBox="0 0 22 22">
                       <path
                         d="M7 10l5 5 5-5z"
-                        fill="#8B0000"
+                        fill="#445382"
                         transform={roundDropdownOpen ? "rotate(180 11 11)" : ""}
                       />
                     </svg>

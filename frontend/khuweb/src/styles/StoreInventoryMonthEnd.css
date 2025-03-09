@@ -12,28 +12,6 @@
     font-size: 16px;
   }
   
-  /* 테이블 스타일 */
-  .store-orders-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 1px;
-    margin-top: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-  }
-  
-  .store-orders-table th {
-    font-weight: bold;
-    text-align: center;
-    padding: 12px;
-  }
-  
-  .store-orders-table th,
-  .store-orders-table td {
-    border: 1px solid #ddd;
-    padding: 12px;
-  }
-  
   .sime-number-col {
     width: 12px;
     text-align: center;
@@ -57,107 +35,13 @@
   }
   
   /* StoreOrders.css의 so-order-col 폭(50px)을 동일하게 적용 */
-  .store-orders-table th.sime-order-col,
-  .store-orders-table td.sime-order-col {
+  .big-table th.sime-order-col,
+  .big-table td.sime-order-col {
     width: 50px;
   }
   
-
-  
-  /* period-controls 및 드롭다운 스타일 (StoreOrders.css와 동일) */
-  .period-controls {
-    display: flex;
-    gap: 10px;
-    justify-content: space-between;
-    margin-top: -5px;
-    height: 40px;
-  }
-  
-  .period-search {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .period-search select {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    background-color: white;
-    appearance: none;
-    outline: none;
-  }
-  
-  .period-search .search-button,
-  .period-search .reset-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 10px 16px;
-    background-color: white;
-    color: #8B0000;
-    border: 1.6px solid #8B0000;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  }
-  
-  .period-search .search-button:hover,
-  .period-search .reset-button:hover {
-    background-color: #f7f7f7;
-  }
-  
-  .period-select-box {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 10px 16px;
-    background-color: white;
-    color: #000000;
-    border: 1.6px solid #8B0000;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  }
-  
-  .period-select-box:hover {
-    background-color: #f7f7f7;
-  }
-  
-  .period-select-box .select-display {
-    z-index: 2;
-    pointer-events: none;
-  }
-  
-  .period-select-box .custom-select {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    z-index: 1;
-    cursor: pointer;
-  }
-  
-  .period-select-box .toggle {
-    display: inline-block;
-    margin-left: 8px;
-    vertical-align: middle;
-    cursor: pointer;
-    z-index: 2;
-  }
-  
   /* StoreOrders.css의 헤더 폰트 설정과 동일하게 매장 헤더 칼럼에 적용 (14px, line-height 1.2) */
-  .store-orders-table thead th.sime-order-col {
+  .big-table thead th.sime-order-col {
     vertical-align: middle;
     font-size: 14px;
     line-height: 1.2;

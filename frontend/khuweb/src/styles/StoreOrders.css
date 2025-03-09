@@ -5,6 +5,7 @@
   margin: 0 auto;
   font-family: Arial, sans-serif;
   text-align: left;
+  position: relative; /* 추가: 상대 위치 설정 */
 }
 
 .store-orders-container p {
@@ -36,10 +37,10 @@
 
 .store-orders-table thead {
   position: sticky;
-  top: -20px;
+  top: 30px; /* period-controls(40px) + divider 높이(1px) + 간격(20px) */
   z-index: 2;
   background-color: #445382;
-  color: #fff
+  color: #fff;
 }
 
 .store-orders-table tbody tr:nth-child(even) {
@@ -129,8 +130,14 @@
   display: flex;
   gap: 10px;
   justify-content: space-between;
-  margin-top: -5px;
+  margin-top: 0px;
   height: 40px;
+  position: sticky; /* 추가: 스크롤 시 고정 */
+  top: -20px; /* 추가: 상단에 고정 */
+  z-index: 3; /* 추가: 테이블 헤더보다 위에 표시 */
+  background-color: white; /* 추가: 배경색 설정 */
+  padding-top: 0px; /* 추가: 상단 여백 유지 */
+  width: 100%; /* 추가: 전체 너비 차지 */
 }
 
 .period-search {
@@ -375,4 +382,17 @@
 /* 첫번째 옵션 오른쪽에 검은 구분선 추가 */
 .download-dropdown-option:first-child {
   border-bottom: 1.6px solid #2a2a2a;
+}
+
+/* 추가: divider 스타일 */
+.divider {
+  position: sticky;
+  top: 25px; /* period-controls 높이 */
+  z-index: 3;
+  margin: 0;
+  background-color: white;
+  border: 0;
+  border-top: 1px solid #ddd;
+  height: 1px;
+  width: 100%; /* 추가: 전체 너비 차지 */
 }

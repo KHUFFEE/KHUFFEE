@@ -193,7 +193,7 @@ const HeaderContent = ({ storeName, openSettingsModal }: { storeName: string, op
       numberOfLines={1}
       ellipsizeMode="tail"
     >
-      {storeName} (창고)
+      {storeName}
     </Text>
     <TouchableOpacity 
       testID='settingsButton'

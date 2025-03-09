@@ -12,55 +12,6 @@
   font-weight: bold;
 }
 
-/* 컨트롤 영역 (우측) */
-.controls {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.suppliers-table {
-  width: 30%;
-  border-collapse: separate;
-  border-spacing: 0 1px;
-  margin-top: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  text-align: left;
-  margin-left: 0;
-}
-
-/* 헤더 행 스타일 */
-.suppliers-table thead tr {
-  background-color: #f7f7f7;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease;
-  background-color: #cf8888;
-}
-
-/* 본문 행 스타일 */
-.suppliers-table tbody tr {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease;
-}
-
-.suppliers-table tbody tr:hover {
-  transform: translateY(-4px);
-}
-
-.suppliers-table th,
-.suppliers-table td {
-  border: 1px solid #ddd;
-  padding: 12px;
-}
-
-/* 기본 헤더 셀: 왼쪽 정렬 */
-.suppliers-table th {
-  font-weight: bold;
-  text-align: left;
-}
-
 /* 아래의 규칙으로 번호와 협력사명 헤더는 항상 가운데 정렬 */
 .suppliers-table th.suppliers-number-col,
 .suppliers-table th.suppliers-center-col {
@@ -134,4 +85,10 @@
   font-weight: bold;
 }
 
+.supplier-action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  width: 100%;
+}
 

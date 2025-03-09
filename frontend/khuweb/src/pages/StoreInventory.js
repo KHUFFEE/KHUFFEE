@@ -6,6 +6,7 @@ import {
   fetchStoreInventory,
 } from "../api/api";
 import "../styles/StoreInventory.css";
+import "../styles/table.css";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { storeInventoryDownloadExcel } from "../utils/StoreInventoryDownloadExcel";
 
@@ -257,7 +258,7 @@ const StoreInventory = () => {
               <svg width="24" height="24" viewBox="0 0 22 22">
                 <path
                   d="M7 10l5 5 5-5z"
-                  fill="#8B0000"
+                  fill="#445382"
                   transform={isStoreOpen ? "rotate(180 11 11)" : ""}
                 />
               </svg>
@@ -288,7 +289,7 @@ const StoreInventory = () => {
               <svg width="24" height="24" viewBox="0 0 22 22">
                 <path
                   d="M7 10l5 5 5-5z"
-                  fill="#8B0000"
+                  fill="#445382"
                   transform={isYMOpen ? "rotate(180 11 11)" : ""}
                 />
               </svg>
@@ -317,7 +318,7 @@ const StoreInventory = () => {
               <svg width="24" height="24" viewBox="0 0 22 22">
                 <path
                   d="M7 10l5 5 5-5z"
-                  fill="#8B0000"
+                  fill="#445382"
                   transform={isDayOpen ? "rotate(180 11 11)" : ""}
                 />
               </svg>
@@ -335,7 +336,7 @@ const StoreInventory = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="si-table">
+      <table className="small-table">
         <thead>
           <tr>
             <th className="si-number-col">No.</th>

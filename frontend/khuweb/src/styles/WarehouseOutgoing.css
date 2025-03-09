@@ -6,32 +6,11 @@
     text-align: left;
   }
   
-  .wg-table {
-    width: 100%;
-    margin: 20px 0;
-    border-collapse: separate;
-    border-spacing: 0 1px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-  }
-  
-  .wg-table th {
-    font-weight: bold;
-    text-align: center;
-    padding: 12px;
-  }
-  
-  .wg-table th,
-  .wg-table td {
-    border: 1px solid #ddd;
-    padding: 12px;
-  }
-  
   .wg-number-col {
     width: 5px;
     text-align: center;
   }
-  
+
   .wg-supplier-col {
     width: 80px;
     text-align: left;
@@ -51,43 +30,3 @@
     width: 50px;
     text-align: right;
   }
-  
-  .wg-table thead {
-    position: sticky;
-    top: -20px;
-    z-index: 2;
-    background-color: #cf8888;
-  }
-  
-  .wg-table tbody tr {
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s ease;
-  }
-  
-  .wg-table tbody tr:hover {
-    transform: translateY(-4px);
-  }
-  
-  .wg-table tfoot tr {
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s ease;
-  }
-  
-  .wg-table tfoot tr:hover {
-    transform: translateY(-4px);
-  }
-  
-  .wg-table td input {
-    width: 100%;
-    box-sizing: border-box;
-    border: none;
-    padding: 0;
-    margin: 0;
-    background: transparent;
-    font-size: inherit;
-    line-height: inherit;
-    text-align: right;
-  }
-  

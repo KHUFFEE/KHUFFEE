@@ -7,6 +7,7 @@ import {
   fetchWarehouseInventory
 } from "../api/api";
 import "../styles/WarehouseOutgoing.css";
+import "../styles/table.css";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const WarehouseOutgoing = () => {
@@ -267,7 +268,7 @@ const WarehouseOutgoing = () => {
               <svg width="24" height="24" viewBox="0 0 22 22">
                 <path
                   d="M7 10l5 5 5-5z"
-                  fill="#8B0000"
+                  fill="#445382"
                   transform={isDropdownOpen ? "rotate(180 11 11)" : ""}
                 />
               </svg>
@@ -279,7 +280,7 @@ const WarehouseOutgoing = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="wg-table">
+      <table className="big-table">
         <thead>
           <tr>
             <th className="wg-number-col">No.</th>

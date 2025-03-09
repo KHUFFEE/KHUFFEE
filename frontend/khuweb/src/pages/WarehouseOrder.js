@@ -9,6 +9,7 @@ import {
   fetchWarehouseInventory, // 추가된 부분
 } from "../api/api";
 import "../styles/WarehouseOrder.css";
+import "../styles/table.css";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const WarehouseOrder = () => {
@@ -362,7 +363,7 @@ const WarehouseOrder = () => {
               <svg width="24" height="24" viewBox="0 0 22 22">
                 <path
                   d="M7 10l5 5 5-5z"
-                  fill="#8B0000"
+                  fill="#445382"
                   transform={isDropdownOpen ? "rotate(180 11 11)" : ""}
                 />
               </svg>
@@ -382,7 +383,7 @@ const WarehouseOrder = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="wo-table">
+      <table className="big-table">
         <thead>
           <tr>
             <th className="wo-number-col">No.</th>

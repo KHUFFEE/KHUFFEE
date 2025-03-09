@@ -39,16 +39,6 @@ html, body {
   margin-left: -10px;
 }
 
-.divider {
-  width: 100%;
-  margin: 10px 0;
-  border: none;
-  height: 1.5px; /* 두께 조정 */
-  background-color: #445382; /* 기존 빨강 계열 유지 */
-  border-radius: 8px; /* add-button과 유사한 모서리 둥글기 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 입체감을 위한 그림자 효과 */
-}
-
 .logo-text {
   font-weight: bold;
   color: #8B0000;  /* 변경된 빨강 계열 */
@@ -115,8 +105,8 @@ html, body {
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #A40F16;
-  border: 1.6px solid #A40F16;
+  color: #445382;
+  border: 1.6px solid #445382;
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -126,7 +116,7 @@ html, body {
 }
 
 .logout-btn:hover {
-  background-color: #ffe6e6;
+  background-color: rgba(68, 83, 130, 0.1);
 }
 
 /* 사이드바 네비게이션: 메뉴 그룹 간 간격을 동일하게 */
@@ -161,7 +151,7 @@ html, body {
   /* background-color: rgba(13, 50, 111, 0.08); */
   color: #445382;
   box-shadow: none;
-  font-weight: bold;
+  font-weight: 750;
 }
 
 .menu-link:hover,
@@ -285,25 +275,25 @@ html, body {
 }
 
 .add-button {
-  color: #0D326F;
-  border-color: #0D326F;
+  color: #445382;
+  border-color: #445382;
 }
 
 .add-button:hover {
-  background-color: #f7f7f7;
-  color: #0D326F;
-  border-color: #0D326F;
+  background-color: rgba(68, 83, 130, 0.1);
+  color: #445382;
+  border-color: #445382;
 }
 
 .delete-button {
-  color: #8B0000;
-  border-color: #8B0000;
+  color: #445382;
+  border-color: #445382;
 }
 
 .delete-button:hover {
-  background-color: #ffe6e6;
-  color: #8B0000;
-  border-color: #8B0000;
+  background-color: rgba(68, 83, 130, 0.1);
+  color: #445382;
+  border-color: #445382;
 }
 
 /* 번호 헤더: 대각선 대신 "\" 문자 표시 */
@@ -341,9 +331,9 @@ html, body {
   justify-content: center;
   gap: 5px;
   padding: 11px 17px;
-  background-color: #8B0000;
+  background-color: #445382;
   color: #ffffff;
-  border: 1.6px solid #8B0000;
+  border: 1.6px solid #445382;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
@@ -352,8 +342,8 @@ html, body {
 }
 
 .delete-confirm-button:hover {
-  background-color: #8B0000;
-  border-color: #8B0000;
+  background-color: #394672;
+  border-color: #394672;
   color: #ffffff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
@@ -365,8 +355,8 @@ html, body {
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #8B0000; 
-  border: 1.6px solid #8B0000; 
+  color: #445382; 
+  border: 1.6px solid #445382; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -376,9 +366,9 @@ html, body {
 }
 
 .activate-button:hover {
-  background-color: #e8f5e9; 
-  color: #8B0000;
-  border-color: #8B0000;
+  background-color: rgba(68, 83, 130, 0.1);
+  color: #445382;
+  border-color: #445382;
 }
 
 .activate-confirm-button {
@@ -391,9 +381,9 @@ html, body {
   justify-content: center;
   gap: 5px;
   padding: 11px 17px;
-  background-color: #A40F16;
+  background-color: #445382;
   color: #ffffff;
-  border: 1.6px solid #A40F16;
+  border: 1.6px solid #445382;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
@@ -402,8 +392,8 @@ html, body {
 }
 
 .activate-confirm-button:hover {
-  background-color: #a71d2a;
-  border-color: #a71d2a;
+  background-color: #394672;
+  border-color: #394672;
   color: #ffffff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
@@ -415,8 +405,8 @@ html, body {
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #1e7e34; 
-  border: 1.6px solid #1e7e34; 
+  color: #445382; 
+  border: 1.6px solid #445382; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -426,9 +416,9 @@ html, body {
 }
 
 .edit-button:hover {
-  background-color: #e8f5e9; 
-  color: #1e7e34;
-  border-color: #1e7e34;
+  background-color: rgba(68, 83, 130, 0.1);
+  color: #445382;
+  border-color: #445382;
 }
 
 .status-open-button {
@@ -438,8 +428,8 @@ html, body {
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #A40F16; 
-  border: 1.6px solid #A40F16; 
+  color: #445382; 
+  border: 1.6px solid #445382; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -449,9 +439,9 @@ html, body {
 }
 
 .status-open-button:hover {
-  background-color: #e8f5e9; 
-  color: #A40F16;
-  border-color: #A40F16;
+  background-color: rgba(68, 83, 130, 0.1);
+  color: #445382;
+  border-color: #445382;
 }
 
 .status-close-button {
@@ -461,8 +451,8 @@ html, body {
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #A40F16; 
-  border: 1.6px solid #A40F16; 
+  color: #445382; 
+  border: 1.6px solid #445382; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -472,9 +462,9 @@ html, body {
 }
 
 .status-close-button:hover {
-  background-color: #e8f5e9; 
-  color: #A40F16;
-  border-color: #A40F16;
+  background-color: rgba(68, 83, 130, 0.1);
+  color: #445382;
+  border-color: #445382;
 }
 
 .session-button {
@@ -484,8 +474,8 @@ html, body {
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #A40F16; 
-  border: 1.6px solid #A40F16; 
+  color: #445382; 
+  border: 1.6px solid #445382; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -495,9 +485,9 @@ html, body {
 }
 
 .session-button:hover {
-  background-color: #e8f5e9; 
-  color: #A40F16;
-  border-color: #A40F16;
+  background-color: rgba(68, 83, 130, 0.1);
+  color: #445382;
+  border-color: #445382;
 }
 
 .edit-confirm-button {
@@ -510,9 +500,9 @@ html, body {
   justify-content: center;
   gap: 5px;
   padding: 11px 17px;
-  background-color: #1c7430; 
+  background-color: #445382; 
   color: #ffffff;
-  border: 1px solid #1c7430; 
+  border: 1px solid #445382; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -522,8 +512,8 @@ html, body {
 }
 
 .edit-confirm-button:hover {
-  background-color: #155724; 
-  border-color: #155724; 
+  background-color: #394672; 
+  border-color: #394672; 
   color: #ffffff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -537,13 +527,6 @@ html, body {
   font-weight: bold;
 }
 
-.controls {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: -5px;
-}
-
 .download-button {
   display: flex;
   align-items: center;
@@ -551,8 +534,8 @@ html, body {
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #2a2a2a;
-  border: 1.6px solid #2a2a2a;
+  color: #445382;
+  border: 1.6px solid #445382;
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -562,9 +545,9 @@ html, body {
 }
 
 .download-button:hover {
-  background-color: #f7f7f7;
-  color: #333333;
-  border-color: #333333;
+  background-color: rgba(68, 83, 130, 0.1);
+  color: #445382;
+  border-color: #445382;
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -582,10 +565,10 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .popup-cancel {
-  color: #A40F16;
+  color: #445382;
   padding: 8px 16px;
   background-color: white;
-  border: 1px solid #A40F16; 
+  border: 1px solid #445382; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -595,10 +578,10 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .popup-confirm {
-  color: #0D326F;
+  color: #445382;
   padding: 8px 16px;
   background-color: white;
-  border: 1px solid #0D326F; 
+  border: 1px solid #445382; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -608,11 +591,11 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .popup-cancel:hover {
-  background-color: #e0e0e0;
+  background-color: rgba(68, 83, 130, 0.1);
 }
 
 .popup-confirm:hover {
-  background-color: #e0e0e0;
+  background-color: rgba(68, 83, 130, 0.1);
 }
 
 .alert-popup {
@@ -641,7 +624,7 @@ input[type="number"]::-webkit-outer-spin-button {
 .alert-popup-button {
   margin-top: 20px;
   padding: 8px 16px;
-  background-color: #007bff;
+  background-color: #445382;
   color: white;
   border: none;
   border-radius: 4px;
@@ -652,7 +635,7 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: #007bff;
+  accent-color: #445382;
   margin: 0 0 0 6px;
   vertical-align: middle;
 }
@@ -739,15 +722,46 @@ input[type="checkbox"] {
   align-items: center;
 }
 
-  /* period-controls 및 드롭다운 스타일 (기존과 동일) */
+    /* period-controls: 드롭다운과 수정 버튼을 같은 행에 배치 */
   .period-controls {
     display: flex;
     gap: 10px;
     justify-content: space-between;
     margin-top: -5px;
     height: 40px;
+    position: sticky; /* 추가: 스크롤 시 고정 */
+    top: -15px; /* 추가: 상단에 고정 */
+    padding-bottom: 5px;
+    padding-top: 5px;
+    z-index: 3; /* 추가: 테이블 헤더보다 위에 표시 */
+    background-color: white; /* 추가: 배경색 설정 */
+    padding-top: 0px; /* 추가: 상단 여백 유지 */
+    width: 100%; /* 추가: 전체 너비 차지 */
   }
-  
+
+  /* 추가: period-controls 위쪽 흰색 배경 (스크롤 고정 시) */
+  .period-controls::before {
+    content: '';
+    position: absolute;
+    top: -15px; /* period-controls의 top 값과 동일하게 설정 */
+    left: 0;
+    width: 100%;
+    height: 15px; /* top 값의 절대값과 동일하게 설정 */
+    background-color: white;
+    z-index: 2;
+  }
+
+  /* 추가: period-controls와 divider 사이의 흰색 배경 (스크롤 고정 시) */
+  .period-controls::after {
+    content: '';
+    position: absolute;
+    bottom: -5px; /* divider까지의 공간 */
+    left: 0;
+    width: 100%;
+    height: 5px; /* period-controls와 divider 사이의 공간 높이 */
+    background-color: white;
+    z-index: 2;
+  }
   .period-search {
     display: flex;
     gap: 10px;
@@ -771,7 +785,7 @@ input[type="checkbox"] {
     padding: 10px 16px;
     background-color: white;
     color: #000000;
-    border: 1.6px solid #8B0000;
+    border: 1.6px solid #445382;
     border-radius: 8px;
     font-size: 14px;
     font-weight: bold;
@@ -815,8 +829,8 @@ input[type="checkbox"] {
     gap: 5px;
     padding: 10px 16px;
     background-color: white;
-    color: #8B0000;
-    border: 1.6px solid #8B0000;
+    color: #823C3C;
+    border: 1.6px solid #823C3C;
     border-radius: 8px;
     font-size: 14px;
     font-weight: bold;
@@ -826,7 +840,7 @@ input[type="checkbox"] {
   }
   
   .reset-button:hover {
-    background-color: #f7f7f7;
+    background-color: rgba(130, 60, 60, 0.1);
   }
   
   /* 스크롤바 스타일 (웹킷 기반) */
@@ -840,13 +854,13 @@ input[type="checkbox"] {
   }
   
   .period-select-box .custom-select::-webkit-scrollbar-thumb {
-    background: #B22222;
+    background: #445382;
     border-radius: 5px;
     border: 2px solid #f1f1f1;
   }
   
   .period-select-box .custom-select::-webkit-scrollbar-thumb:hover {
-    background: #B22222;
+    background: #394672;
   }
 
   .sime-item-cell,
@@ -863,3 +877,33 @@ input[type="checkbox"] {
   .item-cell::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera에서 스크롤바 숨김 */
   }
+
+    /* 추가: divider 스타일 */
+  .divider {
+    position: sticky;
+    margin: 10px 0;
+    top: 30px; /* period-controls 높이 */
+    z-index: 3;
+    margin: 0;
+    background-color: white;
+    border: none;
+    border-top: 1px solid #ddd;
+    height: 1.5px;
+    background-color: #445382; 
+    width: 100%; /* 추가: 전체 너비 차지 */
+    border-radius: 8px; /* add-button과 유사한 모서리 둥글기 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 입체감을 위한 그림자 효과 */
+    }
+    
+    /* 추가: divider와 store-orders-table 사이의 흰색 배경 (스크롤 고정 시) */
+    .divider::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; /* gap 높이에 맞춤 */
+    left: 0;
+    width: 100%;
+    height: 20px; /* gap 높이에 맞춤 */
+    background-color: white;
+    z-index: 2;
+    }
+  

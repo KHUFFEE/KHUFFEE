@@ -25,7 +25,7 @@ import {
   searchStyles,
   modalStyles,
   headerRowStyles,
-} from '../../src/styles/Inventory_styles';
+} from '../../src/styles/Inventory_styles_store';
 import { APIProduct } from '../../src/components/ui/common/types';
 import { Search, Minus, Plus, Trash2, X } from 'lucide-react-native';
 
@@ -57,6 +57,7 @@ interface InventoryItemRowProps {
   onIncrement: (품목_id: string) => void;
   onDecrement: (품목_id: string) => void;
   onDelete: (품목_id: string) => void;
+  index: number;
 }
 
 // InventoryItemRow를 forwardRef로 감싸서 commit 메서드를 노출
@@ -72,6 +73,7 @@ const InventoryItemRow = forwardRef<
     onIncrement,
     onDecrement,
     onDelete,
+    index,
   } = props;
   const inventoryValue =
     inventoryType === 'daily'
@@ -111,7 +113,21 @@ const InventoryItemRow = forwardRef<
   );
 
   return (
-    <View testID="itemContainer" style={inventoryStyles.itemContainer}>
+    <View 
+      testID="itemContainer" 
+      style={[
+        inventoryStyles.itemContainer,
+        index % 2 === 0 
+          ? { 
+              backgroundColor: '#ffffff',
+              borderColor: '#e2e8f0'
+            } 
+          : { 
+              backgroundColor: '#f5f8ff',
+              borderColor: '#d9e1f2'  // 배경색과 어울리는 테두리 색상
+            }
+      ]}
+    >
       <View
         testID="inventory_selectItemRowContainer"
         style={inventoryStyles.inventory_selectItemRowContainer}
@@ -187,7 +203,7 @@ const InventoryItemRow = forwardRef<
   );
 });
 
-const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
+const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [filteredData, setFilteredData] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -629,7 +645,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
                         : headerRowStyles.activeButtonText
                     }
                   >
-                    {saving ? '저장 중...' : '실사완료'}
+                    {saving ? '저장 중...' : '조정완료'}
                   </Text>
                 </TouchableOpacity>
               ) : (
@@ -651,7 +667,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
                         : headerRowStyles.buttonText
                     }
                   >
-                    재고실사
+                    재고조정
                   </Text>
                 </TouchableOpacity>
               )}
@@ -683,7 +699,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
         data={filteredData}
         keyExtractor={(item) => item.품목_id}
         style={inventoryStyles.flat_inventory}
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           // 각 행에 대해 ref 생성 및 할당
           if (!rowRefs.current[item.품목_id]) {
             rowRefs.current[item.품목_id] = React.createRef();
@@ -698,6 +714,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
               onIncrement={handleIncrement}
               onDecrement={handleDecrement}
               onDelete={handleDelete}
+              index={index}
             />
           );
         }}
@@ -706,4 +723,4 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
   );
 };
 
-export default Inventory;
+export default Inventory_store;

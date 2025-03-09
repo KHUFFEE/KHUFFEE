@@ -25,7 +25,7 @@ import {
 } from 'lucide-react-native';
 import { RN_API_URL } from '@env';
 import { StoreOrderData, APIProduct } from '../../src/components/ui/common/types';
-import { orderStatusStyles, dateRangeStyles } from '../../src/styles/OrderStatus_styles';
+import { orderStatusStyles, dateRangeStyles } from '../../src/styles/OrderStatus_styles_store';
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -184,7 +184,7 @@ interface OrderStatusProps {
   storeId: string;
 }
 
-const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
+const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
   // item 로딩 
   const [itemsLoaded, setItemsLoaded] = useState<boolean>(false);
   // 모든 품목(활성화 여부와 관계없이)을 가져오기 위한 상태
@@ -1118,4 +1118,4 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
   );
 };
 
-export default OrderStatus;
+export default OrderStatus_store;

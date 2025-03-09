@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
-import { homescreenStyles } from '../../src/styles/homescreen_styles';
+import { homescreenStyles } from '../../src/styles/homescreen_styles_store';
 import { StoreOrderData, APIProduct } from '../../src/components/ui/common/types';
 import { RN_API_URL } from '@env';
 import * as f from '../../src/components/ui/common/function';
@@ -12,12 +12,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 type CombinedOrderData = StoreOrderData & Partial<APIProduct>;
 
-interface HomescreenProps {
-  storeId: string;
+interface HomeScreenProps {
   storeName: string;
+  storeId: string;
 }
 
-const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
+const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => {
   // 상태 관리
   const [loading, setLoading] = useState<boolean>(true);
   const [allItems, setAllItems] = useState<APIProduct[]>([]);
@@ -591,4 +591,4 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
   );
 };
 
-export default Homescreen;
+export default HomeScreen_store;

@@ -629,7 +629,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
                         : headerRowStyles.activeButtonText
                     }
                   >
-                    {saving ? '저장 중...' : '실사완료'}
+                    {saving ? '저장 중...' : '조정완료'}
                   </Text>
                 </TouchableOpacity>
               ) : (
@@ -651,7 +651,7 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
                         : headerRowStyles.buttonText
                     }
                   >
-                    재고실사
+                    재고조정
                   </Text>
                 </TouchableOpacity>
               )}

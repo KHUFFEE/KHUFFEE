@@ -71,25 +71,27 @@ const Suppliers = () => {
   return (
     <div className="suppliers-container">
       <h2 className="title">협력사 관리</h2>
-      <div className="controls">
-        <button onClick={handleDownloadExcel} className="download-button">
-          Excel 다운로드
-        </button>
-        <button
-          onClick={() => setShowPopup(true)}
-          className="add-button"
-        >
-          + 협력사 추가
-        </button>
-        <button
-          onClick={() => {
-            setIsDeleteMode((prev) => !prev);
-            if (isDeleteMode) setSelectedSuppliers([]);
-          }}
-          className="delete-button"
-        >
-          {isDeleteMode ? "취소" : "삭제"}
-        </button>
+      <div className="period-controls">
+        <div className="supplier-action-buttons">
+          <button onClick={handleDownloadExcel} className="download-button">
+            Excel 다운로드
+          </button>
+          <button
+            onClick={() => setShowPopup(true)}
+            className="add-button"
+          >
+            + 협력사 추가
+          </button>
+          <button
+            onClick={() => {
+              setIsDeleteMode((prev) => !prev);
+              if (isDeleteMode) setSelectedSuppliers([]);
+            }}
+            className="delete-button"
+          >
+            {isDeleteMode ? "취소" : "삭제"}
+          </button>
+        </div>  
       </div>
       <hr className="divider" />
       {error && <p className="suppliers-error">{error}</p>}

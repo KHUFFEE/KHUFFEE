@@ -527,13 +527,6 @@ html, body {
   font-weight: bold;
 }
 
-.controls {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: -5px;
-}
-
 .download-button {
   display: flex;
   align-items: center;
@@ -737,11 +730,25 @@ input[type="checkbox"] {
     margin-top: -5px;
     height: 40px;
     position: sticky; /* 추가: 스크롤 시 고정 */
-    top: -20px; /* 추가: 상단에 고정 */
+    top: -15px; /* 추가: 상단에 고정 */
+    padding-bottom: 5px;
+    padding-top: 5px;
     z-index: 3; /* 추가: 테이블 헤더보다 위에 표시 */
     background-color: white; /* 추가: 배경색 설정 */
     padding-top: 0px; /* 추가: 상단 여백 유지 */
     width: 100%; /* 추가: 전체 너비 차지 */
+  }
+
+  /* 추가: period-controls 위쪽 흰색 배경 (스크롤 고정 시) */
+  .period-controls::before {
+    content: '';
+    position: absolute;
+    top: -15px; /* period-controls의 top 값과 동일하게 설정 */
+    left: 0;
+    width: 100%;
+    height: 15px; /* top 값의 절대값과 동일하게 설정 */
+    background-color: white;
+    z-index: 2;
   }
 
   /* 추가: period-controls와 divider 사이의 흰색 배경 (스크롤 고정 시) */
@@ -875,7 +882,7 @@ input[type="checkbox"] {
   .divider {
     position: sticky;
     margin: 10px 0;
-    top: 25px; /* period-controls 높이 */
+    top: 30px; /* period-controls 높이 */
     z-index: 3;
     margin: 0;
     background-color: white;

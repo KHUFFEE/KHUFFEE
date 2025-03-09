@@ -1,0 +1,124 @@
+/* ───────────────────────────────────────────── */
+/* 1. 공통 테이블 컨테이너 스타일 (big-table, small-table, suppliers-table) */
+/* ───────────────────────────────────────────── */
+.item-table,
+.suppliers-table,
+.big-table,
+.small-table {
+  position: relative;
+  z-index: 1;
+  border-collapse: separate;
+  border-spacing: 0 1px;
+  margin-top: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* 개별 너비 설정 */
+.item-table,
+.big-table {
+  width: 100%;
+}
+
+.small-table {
+  width: 60%;
+}
+
+.suppliers-table {
+  width: 30%;
+}
+
+/* ───────────────────────────────────────────── */
+/* 2. 공통 셀 스타일 (th, td) */
+/* ───────────────────────────────────────────── */
+.item-table th,
+.item-table td,
+.big-table th,
+.big-table td,
+.small-table th,
+.small-table td,
+.suppliers-table th,
+.suppliers-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+}
+
+/* ───────────────────────────────────────────── */
+/* 3. 공통 헤더 셀 스타일 */
+/* ───────────────────────────────────────────── */
+/* big-table, small-table: 중앙 정렬 */
+.item-table th,
+.suppliers-table th,
+.big-table th,
+.small-table th {
+  font-weight: bold;
+  text-align: center;
+}
+
+/* ───────────────────────────────────────────── */
+/* 4. 공통 인풋 스타일 (각 테이블의 td 내) */
+/* ───────────────────────────────────────────── */
+.big-table td input,
+.small-table td input {
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  font-size: inherit;
+  line-height: inherit;
+  text-align: right;
+}
+
+/* ───────────────────────────────────────────── */
+/* 5. 공통 tbody, tfoot 행 스타일 */
+/* ───────────────────────────────────────────── */
+.item-table tbody tr,
+.big-table tbody tr,
+.small-table tbody tr,
+.suppliers-table tbody tr,
+.item-table tfoot tr,
+.big-table tfoot tr,
+.small-table tfoot tr,
+.suppliers-table tfoot tr {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.big-table tbody tr:hover,
+.small-table tbody tr:hover,
+.item-table tbody tr:hover,
+.suppliers-table tbody tr:hover,
+.big-table tfoot tr:hover,
+.small-table tfoot tr:hover,
+.item-table tfoot tr:hover,
+.suppliers-table tfoot tr:hover {
+  transform: translateY(-4px);
+}
+
+/* ───────────────────────────────────────────── */
+/* 6. thead 스타일 (원본 store-orders-table 기준) */
+/* ───────────────────────────────────────────── */
+.item-table thead,
+.suppliers-table thead,
+.big-table thead,
+.small-table thead {
+  position: sticky;
+  top: 30px; /* period-controls(40px) + divider 높이(1px) + 간격(20px) */
+  z-index: 2;
+  background-color: #445382;
+  color: #fff;
+}
+
+/* ───────────────────────────────────────────── */
+/* 7. 짝수 행 배경 (원본 store-orders-table 기준) */
+/* ───────────────────────────────────────────── */
+.item-table tbody tr:nth-child(even),
+.suppliers-table tbody tr:nth-child(even),
+.big-table tbody tr:nth-child(even),
+.small-table tbody tr:nth-child(even) {
+  background-color: #e3e9f0;
+}
+

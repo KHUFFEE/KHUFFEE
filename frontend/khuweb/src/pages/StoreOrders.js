@@ -13,6 +13,7 @@ import {
   deleteStoreOrder // 추가: store_order_delete API 함수
 } from "../api/api";
 import "../styles/StoreOrders.css";
+import "../styles/table.css";
 import { storeOrdersDownloadExcel } from "../utils/StoreOrdersDownloadExcel";
 import { storeOrdersCombinedDownloadExcel } from "../utils/StoreOrdersCombinedDownloadExcel";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -877,7 +878,7 @@ const StoreOrders = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="store-orders-table">
+      <table className="big-table">
         <thead>
           <tr>
             <th className="so-number-col">No.</th>

@@ -39,16 +39,6 @@ html, body {
   margin-left: -10px;
 }
 
-.divider {
-  width: 100%;
-  margin: 10px 0;
-  border: none;
-  height: 1.5px; /* 두께 조정 */
-  background-color: #445382; /* 기존 빨강 계열 유지 */
-  border-radius: 8px; /* add-button과 유사한 모서리 둥글기 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 입체감을 위한 그림자 효과 */
-}
-
 .logo-text {
   font-weight: bold;
   color: #8B0000;  /* 변경된 빨강 계열 */
@@ -161,7 +151,7 @@ html, body {
   /* background-color: rgba(13, 50, 111, 0.08); */
   color: #445382;
   box-shadow: none;
-  font-weight: bold;
+  font-weight: 750;
 }
 
 .menu-link:hover,
@@ -739,15 +729,32 @@ input[type="checkbox"] {
   align-items: center;
 }
 
-  /* period-controls 및 드롭다운 스타일 (기존과 동일) */
+    /* period-controls: 드롭다운과 수정 버튼을 같은 행에 배치 */
   .period-controls {
     display: flex;
     gap: 10px;
     justify-content: space-between;
     margin-top: -5px;
     height: 40px;
+    position: sticky; /* 추가: 스크롤 시 고정 */
+    top: -20px; /* 추가: 상단에 고정 */
+    z-index: 3; /* 추가: 테이블 헤더보다 위에 표시 */
+    background-color: white; /* 추가: 배경색 설정 */
+    padding-top: 0px; /* 추가: 상단 여백 유지 */
+    width: 100%; /* 추가: 전체 너비 차지 */
   }
-  
+
+  /* 추가: period-controls와 divider 사이의 흰색 배경 (스크롤 고정 시) */
+  .period-controls::after {
+    content: '';
+    position: absolute;
+    bottom: -5px; /* divider까지의 공간 */
+    left: 0;
+    width: 100%;
+    height: 5px; /* period-controls와 divider 사이의 공간 높이 */
+    background-color: white;
+    z-index: 2;
+  }
   .period-search {
     display: flex;
     gap: 10px;
@@ -815,8 +822,8 @@ input[type="checkbox"] {
     gap: 5px;
     padding: 10px 16px;
     background-color: white;
-    color: #445382;
-    border: 1.6px solid #445382;
+    color: #823C3C;
+    border: 1.6px solid #823C3C;
     border-radius: 8px;
     font-size: 14px;
     font-weight: bold;
@@ -826,7 +833,7 @@ input[type="checkbox"] {
   }
   
   .reset-button:hover {
-    background-color: rgba(68, 83, 130, 0.1);
+    background-color: rgba(130, 60, 60, 0.1);
   }
   
   /* 스크롤바 스타일 (웹킷 기반) */
@@ -863,3 +870,33 @@ input[type="checkbox"] {
   .item-cell::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera에서 스크롤바 숨김 */
   }
+
+    /* 추가: divider 스타일 */
+  .divider {
+    position: sticky;
+    margin: 10px 0;
+    top: 25px; /* period-controls 높이 */
+    z-index: 3;
+    margin: 0;
+    background-color: white;
+    border: none;
+    border-top: 1px solid #ddd;
+    height: 1.5px;
+    background-color: #445382; 
+    width: 100%; /* 추가: 전체 너비 차지 */
+    border-radius: 8px; /* add-button과 유사한 모서리 둥글기 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 입체감을 위한 그림자 효과 */
+    }
+    
+    /* 추가: divider와 store-orders-table 사이의 흰색 배경 (스크롤 고정 시) */
+    .divider::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; /* gap 높이에 맞춤 */
+    left: 0;
+    width: 100%;
+    height: 20px; /* gap 높이에 맞춤 */
+    background-color: white;
+    z-index: 2;
+    }
+  

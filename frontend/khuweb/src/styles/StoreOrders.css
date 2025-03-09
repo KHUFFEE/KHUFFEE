@@ -13,85 +13,19 @@
   font-size: 16px;
 }
 
-/* 테이블 스타일 */
-.store-orders-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 1px;
-  margin-top: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-}
-
-.store-orders-table th {
-  font-weight: bold;
-  text-align: center;
-  padding: 12px;
-}
-
-.store-orders-table th,
-.store-orders-table td {
-  border: 1px solid #ddd;
-  padding: 12px;
-}
-
-.store-orders-table thead {
-  position: sticky;
-  top: 30px; /* period-controls(40px) + divider 높이(1px) + 간격(20px) */
-  z-index: 2;
-  background-color: #445382;
-  color: #fff;
-}
-
-.store-orders-table tbody tr:nth-child(even) {
-  background-color: #e3e9f0 ; /* 옅은 붉은 회색 계열 */
-}
-
-.store-orders-table tbody tr {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease;
-}
-
-.store-orders-table tbody tr:hover {
-  transform: translateY(-4px);
-}
-
-.store-orders-table tfoot tr {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease;
-}
-
-.store-orders-table tfoot tr:hover {
-  transform: translateY(-4px);
-}
-
-.store-orders-table td input {
-  width: 100%;
-  box-sizing: border-box;
-  border: none;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  font-size: inherit;
-  line-height: inherit;
-  text-align: right;
-}
-
 /* 매장 헤더 칼럼 전용 스타일 */
-.store-orders-table thead th.so-order-col,
-.store-orders-table thead th.so-warehouse-col {
+.big-table thead th.so-order-col,
+.big-table thead th.so-warehouse-col {
   vertical-align: middle;
   font-size: 14px;
   line-height: 1.2;
 }
 
-.store-orders-table th.so-sum-col,
-.store-orders-table td.so-sum-col,
-.store-orders-table th.so-order-col,
-.store-orders-table td.so-order-col,
-.store-orders-table td.so-warehouse-col {
+.big-table th.so-sum-col,
+.big-table td.so-sum-col,
+.big-table th.so-order-col,
+.big-table td.so-order-col,
+.big-table td.so-warehouse-col {
   width: 50px;
 }
 
@@ -125,140 +59,11 @@
   text-align: right;
 }
 
-/* period-controls: 드롭다운과 수정 버튼을 같은 행에 배치 */
-.period-controls {
-  display: flex;
-  gap: 10px;
-  justify-content: space-between;
-  margin-top: 0px;
-  height: 40px;
-  position: sticky; /* 추가: 스크롤 시 고정 */
-  top: -20px; /* 추가: 상단에 고정 */
-  z-index: 3; /* 추가: 테이블 헤더보다 위에 표시 */
-  background-color: white; /* 추가: 배경색 설정 */
-  padding-top: 0px; /* 추가: 상단 여백 유지 */
-  width: 100%; /* 추가: 전체 너비 차지 */
-}
 
-/* 추가: period-controls와 divider 사이의 흰색 배경 (스크롤 고정 시) */
-.period-controls::after {
-  content: '';
-  position: absolute;
-  bottom: -5px; /* divider까지의 공간 */
-  left: 0;
-  width: 100%;
-  height: 5px; /* period-controls와 divider 사이의 공간 높이 */
-  background-color: white;
-  z-index: 2;
-}
-
-.period-search {
-  display: flex;
-  gap: 10px;
-}
-
-.period-search select {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  background-color: white;
-  appearance: none;
-  outline: none;
-}
-
-.period-search .search-button,
-.period-search .reset-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 10px 16px;
-  background-color: white;
-  color: #8B0000;
-  border: 1.6px solid #8B0000;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.period-search .search-button:hover,
-.period-search .reset-button:hover {
-  background-color: #f7f7f7;
-}
-
-/* period-select-box: 커스텀 드롭다운 박스 + 토글 아이콘 */
-.period-select-box {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 10px 16px;
-  background-color: white;
-  color: #000;
-  border: 1.6px solid #8B0000;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.period-select-box:hover {
-  background-color: #f7f7f7;
-}
-
-.period-select-box .select-display {
-  z-index: 2;
-  pointer-events: none;
-}
-
-.period-select-box .custom-select {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  z-index: 1;
-  cursor: pointer;
-}
-
-.period-select-box .toggle {
-  display: inline-block;
-  margin-left: 8px;
-  vertical-align: middle;
-  cursor: pointer;
-  z-index: 2;
-}
 
 .store-action-buttons {
   display: flex;
   gap: 10px;
-}
-
-/* period-select-box 드롭다운 스크롤바 스타일 (웹킷 기반 브라우저) */
-.period-select-box .custom-select::-webkit-scrollbar {
-  width: 10px;
-}
-
-.period-select-box .custom-select::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 5px;
-}
-
-.period-select-box .custom-select::-webkit-scrollbar-thumb {
-  background: #B22222;
-  border-radius: 5px;
-  border: 2px solid #f1f1f1;
-}
-
-.period-select-box .custom-select::-webkit-scrollbar-thumb:hover {
-  background: #B22222;
 }
 
 /* Popup Styles */
@@ -396,26 +201,3 @@
   border-bottom: 1.6px solid #2a2a2a;
 }
 
-/* 추가: divider 스타일 */
-.divider {
-  position: sticky;
-  top: 25px; /* period-controls 높이 */
-  z-index: 3;
-  margin: 0;
-  background-color: white;
-  border: 0;
-  border-top: 1px solid #ddd;
-  height: 1px;
-  width: 100%; /* 추가: 전체 너비 차지 */
-}
-/* 추가: divider와 store-orders-table 사이의 흰색 배경 (스크롤 고정 시) */
-.divider::after {
-  content: '';
-  position: absolute;
-  bottom: -4px; /* store-orders-table까지의 공간 */
-  left: 0;
-  width: 100%;
-  height: 4px; /* divider와 store-orders-table 사이의 공간 높이 */
-  background-color: white;
-  z-index: 2;
-}

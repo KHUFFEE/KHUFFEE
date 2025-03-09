@@ -9,6 +9,7 @@ import {
   updateTableStatus,
 } from "../api/api";
 import "../styles/StoreInventoryMonthEnd.css";
+import "../styles/table.css";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const StoreInventoryMonthEnd = () => {
@@ -600,7 +601,7 @@ const StoreInventoryMonthEnd = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="store-orders-table">
+      <table className="big-table">
         <thead>
           <tr>
             <th className="sime-number-col">No.</th>

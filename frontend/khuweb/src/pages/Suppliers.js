@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchSuppliers, addSupplier, deleteSuppliers } from "../api/api";
 import "../styles/Suppliers.css";
+import "../styles/table.css";
 import { suppliersDownloadExcel } from "../utils/SuppliersDownloadExcel";
 
 const Suppliers = () => {

@@ -6,6 +6,7 @@ import {
   fetchStoreInventory,
 } from "../api/api";
 import "../styles/StoreInventory.css";
+import "../styles/table.css";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { storeInventoryDownloadExcel } from "../utils/StoreInventoryDownloadExcel";
 
@@ -335,7 +336,7 @@ const StoreInventory = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="si-table">
+      <table className="small-table">
         <thead>
           <tr>
             <th className="si-number-col">No.</th>

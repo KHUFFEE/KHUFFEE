@@ -12,13 +12,6 @@
   font-weight: bold;
 }
 
-/* 컨트롤 영역 (우측) */
-.controls {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
 /* 아래의 규칙으로 번호와 협력사명 헤더는 항상 가운데 정렬 */
 .suppliers-table th.suppliers-number-col,
 .suppliers-table th.suppliers-center-col {
@@ -92,4 +85,10 @@
   font-weight: bold;
 }
 
+.supplier-action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  width: 100%;
+}
 

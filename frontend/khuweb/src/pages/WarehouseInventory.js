@@ -250,7 +250,7 @@ const WarehouseInventory = () => {
               <svg width="24" height="24" viewBox="0 0 22 22">
                 <path
                   d="M7 10l5 5 5-5z"
-                  fill="#8B0000"
+                  fill="#445382"
                   transform={isYMOpen ? "rotate(180 11 11)" : ""}
                 />
               </svg>
@@ -278,7 +278,7 @@ const WarehouseInventory = () => {
               <svg width="24" height="24" viewBox="0 0 22 22">
                 <path
                   d="M7 10l5 5 5-5z"
-                  fill="#8B0000"
+                  fill="#445382"
                   transform={isDayOpen ? "rotate(180 11 11)" : ""}
                 />
               </svg>

@@ -242,10 +242,13 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
             old_회차: order.회차, // 기존 회차 추가
             매장_발주량: selectedItem.quantity, // 선택한 수량을 추가
           };
-          const updateResponse = await fetch(`${RN_API_URL}/api/orders/store_order_update/?app=true`, {
+          const updateResponse = await fetch(`${RN_API_URL}/api/orders/store_order_update/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({
+              ...payload,
+              app: "true"
+            }),
           });
           if (!updateResponse.ok) {
             const errorData = await updateResponse.json();

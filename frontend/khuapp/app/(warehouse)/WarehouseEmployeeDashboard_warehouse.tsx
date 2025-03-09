@@ -22,15 +22,17 @@ const WarehouseEmployeeDashboard_warehouse: React.FC<WarehouseEmployeeDashboardP
   const [warehouseId, setWarehouseId] = useState<string>('');
   const [items, setItems] = useState<APIProduct[]>([]);
 
-  // 창고 정보 조회
+  // 창고 정보 조회 - stores API 사용 (warehouses API가 없음)
   useEffect(() => {
     const fetchWarehouseInfo = async () => {
       try {
-        const response = await fetch(`${RN_API_URL}/api/accounts/warehouses/`);
-        const warehousesData = await response.json();
-        const matchedWarehouse = warehousesData.find((warehouse: any) => warehouse.창고명 === storeName);
-        if (matchedWarehouse) {
-          setWarehouseId(matchedWarehouse.창고_id);
+        // warehouses API가 없으므로 stores API를 사용
+        const response = await fetch(`${RN_API_URL}/api/accounts/stores/`);
+        const storesData = await response.json();
+        // 창고는 매장 테이블에서 매장_id가 'ST_102'인 항목
+        const warehouse = storesData.find((store: any) => store.매장_id === 'ST_102');
+        if (warehouse) {
+          setWarehouseId(warehouse.매장_id);
         }
       } catch (error) {
         console.error('창고 정보 조회 중 오류:', error);

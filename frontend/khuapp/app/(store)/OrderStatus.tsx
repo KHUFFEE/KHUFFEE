@@ -10,6 +10,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Modal,
+  Alert,
 } from 'react-native';
 import {
   Home,
@@ -549,8 +550,18 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
 
   const openDetailModal = (dateKey: string, orders: CombinedOrderData[]) => {
     setDetailGroupDate(dateKey);
+    
+    // 매장_발주량이 0보다 큰 주문만 필터링
+    const filteredOrders = orders.filter(order => (order.매장_발주량 || 0) > 0);
+    
+    // 필터링된 주문이 없으면 모달을 열지 않음
+    if (filteredOrders.length === 0) {
+      Alert.alert('알림', '발주 내역이 없습니다.');
+      return;
+    }
+    
     const groupedOrdersMap: { [productName: string]: CombinedOrderData } = {};
-    orders.forEach((order) => {
+    filteredOrders.forEach((order) => {
       const key = order.품목명 ?? '알 수 없는 품목';
       if (groupedOrdersMap[key]) {
         groupedOrdersMap[key].매장_발주량 = (groupedOrdersMap[key].매장_발주량 || 0) + (order.매장_발주량 || 0);
@@ -566,6 +577,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
   };
 
   const openMonthlyDetailModal = (year: string, month: string, monthlyOrders: CombinedOrderData[]) => {
+    // 매장_발주량이 0보다 큰 주문만 필터링
+    const filteredMonthlyOrders = monthlyOrders.filter(order => (order.매장_발주량 || 0) > 0);
+    
+    // 필터링된 주문이 없으면 모달을 열지 않음
+    if (filteredMonthlyOrders.length === 0) {
+      Alert.alert('알림', '발주 내역이 없습니다.');
+      return;
+    }
+    
     setMonthlyDetailDate(`${year}.${month}`);
     
     const weeklyData: { [week: string]: CombinedOrderData[] } = {};
@@ -580,7 +600,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     const weeklyTotals: { [week: string]: number } = {};
     const allWeeks: string[] = [];
     
-    monthlyOrders.forEach(order => {
+    filteredMonthlyOrders.forEach(order => {
       const [, , week] = order.기간.split('.');
       if (!weeklyData[week]) {
         weeklyData[week] = [];
@@ -614,7 +634,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     const sortedWeeks = allWeeks.sort((a, b) => parseInt(a) - parseInt(b));
     
     const productsForSorting: CombinedOrderData[] = Object.entries(productSummaryMap).map(([품목_id, data]) => {
-      const originalOrder = monthlyOrders.find(order => order.품목_id === 품목_id);
+      const originalOrder = filteredMonthlyOrders.find(order => order.품목_id === 품목_id);
       return {
         품목_id,
         품목명: data.품목명,
@@ -630,7 +650,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     const sortedProducts = sortedProductsData.map(product => productSummaryMap[product.품목_id]);
     const monthlyTotal = Object.values(weeklyTotals).reduce((sum, total) => sum + total, 0);
     
-    setMonthlyDetailOrders(monthlyOrders);
+    setMonthlyDetailOrders(filteredMonthlyOrders);
     setWeeklyData(weeklyData);
     setWeeklyTotals(weeklyTotals);
     setSortedWeeks(sortedWeeks);
@@ -796,27 +816,61 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
           renderItem={({ item: year }) => {
             const monthsObj = groupedByYearMonthWeek[year];
             const sortedMonths = sortKeys(Object.keys(monthsObj));
+            
+            // 이 연도에 매장_발주량이 0보다 큰 주문이 있는지 확인
+            const hasNonZeroOrdersInYear = sortedMonths.some(month => {
+              const weeksObj = monthsObj[month];
+              const weeks = Object.keys(weeksObj);
+              return weeks.some(week => {
+                const ordersInWeek = weeksObj[week];
+                return ordersInWeek.some((order: CombinedOrderData) => (order.매장_발주량 || 0) > 0);
+              });
+            });
+            
+            // 매장_발주량이 0보다 큰 주문이 없는 연도는 표시하지 않음
+            if (!hasNonZeroOrdersInYear) {
+              return null;
+            }
+            
             return (
-              <>
+              <React.Fragment key={year}>
                 <Text testID="yearHeader" style={orderStatusStyles.yearHeader}>
                   {year}년 발주내역
                 </Text>
                 {sortedMonths.map((month) => {
                   const weeksObj = monthsObj[month];
                   const sortedWeeks = sortKeys(Object.keys(weeksObj));
-                  const monthTotalCost = sortedWeeks.reduce((monthSum, w) => {
+                  
+                  // 각 주차별로 발주량이 0보다 큰 주문이 있는지 확인
+                  const weeksWithNonZeroOrders = sortedWeeks.filter(w => {
                     const ordersInWeek = weeksObj[w];
+                    return ordersInWeek.some((order: CombinedOrderData) => (order.매장_발주량 || 0) > 0);
+                  });
+                  
+                  // 발주량이 0보다 큰 주문이 없는 월은 표시하지 않음
+                  if (weeksWithNonZeroOrders.length === 0) {
+                    return null;
+                  }
+                  
+                  const monthTotalCost = weeksWithNonZeroOrders.reduce((monthSum, w) => {
+                    const ordersInWeek = weeksObj[w];
+                    // 발주량이 0보다 큰 주문만 필터링하여 총액 계산
+                    const filteredOrdersInWeek = ordersInWeek.filter((o: CombinedOrderData) => (o.매장_발주량 || 0) > 0);
                     return (
                       monthSum +
-                      ordersInWeek.reduce(
+                      filteredOrdersInWeek.reduce(
                         (weekSum: number, o: CombinedOrderData) => weekSum + (o.totalCost || 0),
                         0
                       )
                     );
                   }, 0);
+                  
+                  // 발주량이 0보다 큰 주문만 모아서 월별 상세보기에 전달
                   const allMonthOrders = sortedWeeks.reduce((allOrders: CombinedOrderData[], week) => {
-                    return [...allOrders, ...weeksObj[week]];
+                    const filteredOrders = weeksObj[week].filter((o: CombinedOrderData) => (o.매장_발주량 || 0) > 0);
+                    return [...allOrders, ...filteredOrders];
                   }, []);
+                  
                   return (
                     <View key={month} testID="monthContainer" style={orderStatusStyles.monthContainer}>
                       <View testID="monthHeader" style={orderStatusStyles.monthHeader}>
@@ -840,13 +894,25 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                       </View>
                       {sortedWeeks.map((week) => {
                         const ordersSorted = sortOrders(weeksObj[week], sortOrder);
-                        const ordersAsc = sortOrders(weeksObj[week], 'asc');
+                        
+                        // 매장_발주량이 0보다 큰 주문이 있는지 확인
+                        const hasNonZeroOrders = ordersSorted.some(order => (order.매장_발주량 || 0) > 0);
+                        
+                        // 모든 주문의 매장_발주량이 0이면 weekContainer를 표시하지 않음
+                        if (!hasNonZeroOrders) {
+                          return null;
+                        }
+                        
+                        // 매장_발주량이 0보다 큰 주문만 필터링
+                        const filteredOrders = ordersSorted.filter(order => (order.매장_발주량 || 0) > 0);
+                        const ordersAsc = sortOrders(filteredOrders, 'asc');
                         const firstOrder = ordersAsc[0];
-                        const extraCount = ordersSorted.length - 1;
-                        const weekTotalCost = ordersSorted.reduce(
+                        const extraCount = filteredOrders.length - 1;
+                        const weekTotalCost = filteredOrders.reduce(
                           (sum: number, o: CombinedOrderData) => sum + (o.totalCost || 0),
                           0
                         );
+                        
                         return (
                           <View key={week} testID="weekContainer" style={orderStatusStyles.weekContainer}>
                             <View testID="weekHeader" style={orderStatusStyles.weekHeader}>
@@ -880,7 +946,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                     </View>
                   );
                 })}
-              </>
+              </React.Fragment>
             );
           }}
           ListFooterComponent={ !isPeriodSearch && hasMore ? (

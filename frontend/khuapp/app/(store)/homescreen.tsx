@@ -371,95 +371,103 @@ const Homescreen: React.FC<HomescreenProps> = ({ storeId, storeName }) => {
               <Text testID="sectionTitle" style={homescreenStyles.sectionTitle}>
                 {lastMonth}월 & {currentMonth}월 주차별 발주 금액
               </Text>
-              <View style={{alignItems: 'center', marginTop: 10, marginBottom: 20}}>
-                {Object.values(currentMonthWeeklyTotals).every(value => value === 0) &&
-                 Object.values(lastMonthWeeklyTotals).every(value => value === 0) ? (
-                  <Text testID="noDataText" style={homescreenStyles.noDataText}>발주 내역이 없습니다.</Text>
-                ) : (
-                  <View testID="chartContainer" style={homescreenStyles.chartContainer}>
-                    <BarChart
-                      data={prepareCombinedChartData(currentMonthWeeklyTotals, lastMonthWeeklyTotals, currentMonthSortedWeeks)}
-                      width={screenWidth}
-                      height={250}
-                      barWidth={16}
-                      barBorderRadius={4}
-                      spacing={10}
-                      initialSpacing={5}
-                      
-                      // 축 설정
-                      xAxisThickness={1}
-                      yAxisThickness={1}
-                      xAxisColor="#DDDDDD"
-                      yAxisColor="#DDDDDD"
-                      
-                      // 수평 가이드 라인 설정 - Y축 범례에 맞는 수평선 추가
-                      showYAxisIndices={true}
-                      yAxisIndicesColor="#999999"
-                      yAxisIndicesWidth={4}
-                      hideRules={false}
-                      rulesColor="#F0F0F0"
-                      rulesThickness={1}
-                      rulesType="dashed"
-                      dashWidth={5}
-                      dashGap={5}
-                      
-                      // Y축 텍스트 설정
-                      yAxisTextStyle={{color: '#666666', fontSize: 10, fontWeight: '500'}}
-                      xAxisLabelTextStyle={{color: '#555555', fontSize: 11}}
-                      
-                      // Y축 범례값 설정 (만원 단위로 표시)
-                      noOfSections={4}
-                      maxValue={200}
-                      yAxisLabelTexts={['0', '50', '100', '150', '200']}
-                      yAxisLabelPrefix=""
-                      yAxisLabelSuffix="만원"
-                      
-                      // 기타 설정
-                      showFractionalValues={false}
-                      hideYAxisText={false}
-                      disablePress={true}
-                      backgroundColor={'#fff'}
-                      // isAnimated={true}
-                      animationDuration={700}
-                      
-                      renderTooltip={(item: { value: number }) => {
-                        return (
-                          <View
-                            testID="tooltip"
-                            style={{
-                              backgroundColor: '#fff',
-                              padding: 6,
-                              borderRadius: 4,
-                              borderWidth: 1,
-                              borderColor: '#e0e0e0',
-                              shadowColor: '#000',
-                              shadowOffset: { width: 0, height: 1 },
-                              shadowOpacity: 0.1,
-                              shadowRadius: 1,
-                              elevation: 2,
-                            }}>
-                            <Text style={{ color: '#333', fontSize: 12, fontWeight: '500' }}>
-                              {item.value.toFixed(0)}만원
+              
+              {currentMonthOrders.length === 0 && lastMonthOrders.length === 0 ? (
+                <Text testID="noDataText" style={homescreenStyles.noDataText}>발주 내역이 없습니다.</Text>
+              ) : (
+                <>
+                  {Object.values(currentMonthWeeklyTotals).every(value => value === 0) &&
+                   Object.values(lastMonthWeeklyTotals).every(value => value === 0) ? (
+                    <Text testID="noDataText" style={homescreenStyles.noDataText}>발주 내역이 없습니다.</Text>
+                  ) : (
+                    <View testID="chartContainer" style={homescreenStyles.chartContainer}>
+                      <BarChart
+                        data={prepareCombinedChartData(currentMonthWeeklyTotals, lastMonthWeeklyTotals, currentMonthSortedWeeks)}
+                        width={screenWidth}
+                        height={280}
+                        barWidth={20}
+                        spacing={10}
+                        hideRules
+                        initialSpacing={5}
+                        noOfSections={5}
+                        yAxisLabelTexts={['0', '10', '20', '30', '50']}
+                        yAxisTextStyle={{ color: '#333' }}
+                        xAxisLabelTextStyle={{ color: '#333', fontSize: 10 }}
+                        showFractionalValues={false}
+                        hideYAxisText={false}
+                        disablePress={true}
+                        rulesType="dashed"
+                        backgroundColor={'#fff'}
+                        // isAnimated
+                        renderTooltip={(item: { value: number }) => {
+                          return (
+                            <View
+                              testID="tooltip"
+                              style={{
+                                backgroundColor: '#fff',
+                                padding: 8,
+                                borderRadius: 4,
+                                borderWidth: 1,
+                                borderColor: '#ddd',
+                              }}>
+                              <Text style={{ color: '#333', fontSize: 12 }}>
+                                {item.value.toFixed(0)}만원
+                              </Text>
+                            </View>
+                          );
+                        }}
+                      />
+                    </View>
+                  )}
+                  
+                  <View testID="summarySection" style={[homescreenStyles.summarySection]}>
+                    <View testID="summaryTable" style={homescreenStyles.summaryTable}>
+                      <View testID="tableHeader" style={homescreenStyles.tableRow}>
+                        <View testID="tableHeaderCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor: 'ffff' }]}>
+                        </View>
+                        <View testID="tableHeaderCell" style={homescreenStyles.amountCell}>
+                          <Text testID="summaryHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15) }]}>{lastMonth}월</Text>
+                        </View>
+                        <View testID="tableHeaderCell" style={homescreenStyles.amountCell}>
+                          <Text testID="summaryHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15), color: 'rgb(34, 139, 34)' }]}>{currentMonth}월</Text>
+                        </View>
+                      </View>
+                      {Array.from(new Set([...lastMonthSortedWeeks, ...currentMonthSortedWeeks])).sort().map(week => (
+                        <View key={week} testID="tableRow" style={homescreenStyles.tableRow}>
+                          <View testID="tableCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { marginLeft: moderateScale(5) }]}>
+                            <Text testID="summaryLabel" style={[homescreenStyles.summaryLabel, { fontSize: RFValue(14) }]}>{week}주차</Text>
+                          </View>
+                          <View testID="tableCell" style={homescreenStyles.amountCell}>
+                            <Text testID="summaryValue" style={[homescreenStyles.summaryValue, { fontSize: RFValue(13) }]}>
+                              {f.formatPrice(lastMonthWeeklyTotals[week] || 0)}원
                             </Text>
                           </View>
-                        );
-                      }}
-                    />
-                    
-                    {/* 범례 추가 */}
-                    <View style={{flexDirection: 'row', justifyContent: 'center', marginTop: 10}}>
-                      <View style={{flexDirection: 'row', alignItems: 'center', marginRight: 20}}>
-                        <View style={{width: 12, height: 12, backgroundColor: 'rgb(13, 50, 111)', borderRadius: 2, marginRight: 5}} />
-                        <Text style={{fontSize: 12, color: '#555555'}}>{lastMonth}월</Text>
-                      </View>
-                      <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                        <View style={{width: 12, height: 12, backgroundColor: 'rgb(34, 139, 34)', borderRadius: 2, marginRight: 5}} />
-                        <Text style={{fontSize: 12, color: '#555555'}}>{currentMonth}월</Text>
+                          <View testID="tableCell" style={homescreenStyles.amountCell}>
+                            <Text testID="summaryValue" style={[homescreenStyles.summaryValue, { fontSize: RFValue(13), color: 'rgb(34, 139, 34)' }]}>
+                              {f.formatPrice(currentMonthWeeklyTotals[week] || 0)}원
+                            </Text>
+                          </View>
+                        </View>
+                      ))}
+                      <View testID="tableFooter" style={[homescreenStyles.tableRow, homescreenStyles.tableFooter, { minHeight: verticalScale(56) }]}>
+                        <View testID="tableCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor:'#f1f5f9' }]}>
+                          <Text testID="summaryTotalLabel" style={[homescreenStyles.summaryTotalLabel]}>월발주금액</Text>
+                        </View>
+                        <View testID="tableCell" style={homescreenStyles.amountCell}>
+                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color: '#0D326F', fontWeight: '600' }]}>
+                            {f.formatPrice(lastMonthTotal)}원
+                          </Text>
+                        </View>
+                        <View testID="tableCell" style={homescreenStyles.amountCell}>
+                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color:'rgb(34, 139, 34)', fontWeight: '600' }]}>
+                            {f.formatPrice(currentMonthTotal)}원
+                          </Text>
+                        </View>
                       </View>
                     </View>
                   </View>
-                )}
-              </View>
+                </>
+              )}
             </View>
             
             {/* 이번달 상세 발주 내역 */}

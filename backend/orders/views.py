@@ -13,7 +13,7 @@ from .serializers import (
 )
 from .models import StoreOrder, WarehouseOrder, WarehouseOutgoing
 from collections import OrderedDict
-
+from django.db.models import F
 # 새로 추가: 외래키 모델 임포트
 from accounts.models import Store
 from suppliers.models import Item
@@ -184,7 +184,7 @@ class StoreOrderUpdateView(APIView):
             new_round = 1
 
         if app_param:
-            # app=true인 경우: 기존 주문의 매장_발주량에 new_value를 더함.
+            # app=true인 경우: 기존 주문의 매장_발주량에 new_value를 누적 업데이트 (F() 표현식 사용)
             if old_period is not None and old_round is not None:
                 qs = StoreOrder.objects.filter(
                     매장_id=store_obj,
@@ -193,9 +193,7 @@ class StoreOrderUpdateView(APIView):
                     회차=old_round
                 )
                 if qs.exists():
-                    record = qs.first()
-                    updated_value = record.매장_발주량 + new_value
-                    qs.update(기간=period, 회차=new_round, 매장_발주량=updated_value)
+                    qs.update(기간=period, 회차=new_round, 매장_발주량=F('매장_발주량') + new_value)
                     updated_record = qs.order_by("매장_id", "품목_id", "기간", "회차")\
                                          .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")\
                                          .first()
@@ -218,9 +216,7 @@ class StoreOrderUpdateView(APIView):
                     회차=new_round
                 )
                 if qs.exists():
-                    record = qs.first()
-                    updated_value = record.매장_발주량 + new_value
-                    qs.update(매장_발주량=updated_value)
+                    qs.update(매장_발주량=F('매장_발주량') + new_value)
                     updated_record = qs.order_by("매장_id", "품목_id", "기간", "회차")\
                                          .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")\
                                          .first()

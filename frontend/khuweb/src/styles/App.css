@@ -286,14 +286,14 @@ html, body {
 }
 
 .delete-button {
-  color: #445382;
-  border-color: #445382;
+  color: #aa3849;
+  border-color: #aa3849;
 }
 
 .delete-button:hover {
-  background-color: rgba(68, 83, 130, 0.1);
-  color: #445382;
-  border-color: #445382;
+  background-color: rgba(170, 56, 73, 0.1);
+  color: #aa3849;
+  border-color: #aa3849;
 }
 
 /* 번호 헤더: 대각선 대신 "\" 문자 표시 */
@@ -302,11 +302,6 @@ html, body {
   text-align: center;
   vertical-align: middle;
   font-weight: bold;
-}
-.diagonal-header::after {
-  content: "\\";
-  font-size: 16px;
-  color: black;
 }
 
 .narrow-col {
@@ -354,8 +349,8 @@ html, body {
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #445382; 
-  border: 1.6px solid #445382; 
+  color: #823C3C; 
+  border: 1.6px solid #823C3C; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -365,9 +360,9 @@ html, body {
 }
 
 .activate-button:hover {
-  background-color: rgba(68, 83, 130, 0.1);
-  color: #445382;
-  border-color: #445382;
+  background-color: rgba(130, 60, 60, 0.1);
+  color: #823C3C;
+  border-color: #823C3C;
 }
 
 .activate-confirm-button {
@@ -402,8 +397,8 @@ html, body {
   gap: 5px;
   padding: 10px 16px;
   background-color: white;
-  color: #445382; 
-  border: 1.6px solid #445382; 
+  color: #198828; 
+  border: 1.6px solid #198828; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -413,9 +408,9 @@ html, body {
 }
 
 .edit-button:hover {
-  background-color: rgba(68, 83, 130, 0.1);
-  color: #445382;
-  border-color: #445382;
+  background-color: rgba(25, 136, 40, 0.1);
+  color: #198828;
+  border-color: #198828;
 }
 
 .status-open-button {
@@ -551,10 +546,10 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .popup-cancel {
-  color: #445382;
+  color: #aa3849;
   padding: 8px 16px;
   background-color: white;
-  border: 1px solid #445382; 
+  border: 1px solid #aa3849; 
   border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
@@ -577,7 +572,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .popup-cancel:hover {
-  background-color: rgba(68, 83, 130, 0.1);
+  background-color: rgba(170, 56, 73, 0.1);
 }
 
 .popup-confirm:hover {
@@ -849,21 +844,6 @@ input[type="checkbox"] {
     background: #394672;
   }
 
-  .sime-item-cell,
-  .supplier-cell,
-  .item-cell {
-    height: 20px;
-    overflow-y: auto;
-    display: block;
-    scrollbar-width: none; /* Firefox에서 스크롤바 숨김 */
-    -ms-overflow-style: none; /* IE 10+에서 스크롤바 숨김 */
-  }
-
-  .supplier-cell::-webkit-scrollbar,
-  .item-cell::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera에서 스크롤바 숨김 */
-  }
-
     /* 추가: divider 스타일 */
   .divider {
     position: sticky;
@@ -893,3 +873,6 @@ input[type="checkbox"] {
     z-index: 2;
     }
   
+
+    
+    

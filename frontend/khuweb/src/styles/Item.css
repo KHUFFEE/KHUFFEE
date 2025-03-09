@@ -236,3 +236,15 @@
   border: none;
   background: transparent;
 }
+
+/* 비활성화된 버튼 스타일 */
+.dimmed-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(50%);
+  transition: opacity 0.3s ease;
+}
+
+.dimmed-button:hover {
+  opacity: 0.5;
+}

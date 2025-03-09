@@ -140,6 +140,18 @@
   width: 100%; /* 추가: 전체 너비 차지 */
 }
 
+/* 추가: period-controls와 divider 사이의 흰색 배경 (스크롤 고정 시) */
+.period-controls::after {
+  content: '';
+  position: absolute;
+  bottom: -5px; /* divider까지의 공간 */
+  left: 0;
+  width: 100%;
+  height: 5px; /* period-controls와 divider 사이의 공간 높이 */
+  background-color: white;
+  z-index: 2;
+}
+
 .period-search {
   display: flex;
   gap: 10px;
@@ -395,4 +407,15 @@
   border-top: 1px solid #ddd;
   height: 1px;
   width: 100%; /* 추가: 전체 너비 차지 */
+}
+/* 추가: divider와 store-orders-table 사이의 흰색 배경 (스크롤 고정 시) */
+.divider::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; /* store-orders-table까지의 공간 */
+  left: 0;
+  width: 100%;
+  height: 4px; /* divider와 store-orders-table 사이의 공간 높이 */
+  background-color: white;
+  z-index: 2;
 }

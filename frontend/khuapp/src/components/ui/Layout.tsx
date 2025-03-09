@@ -74,8 +74,8 @@ const Layout: React.FC<LayoutProps> = ({
     <View style={styles.dashboardContainer}>
       {/* 상단 헤더 - 블러 효과와 그라데이션 적용 */}
       {Platform.OS === 'ios' ? (
-        <View style={[modernStyles.headerContainer, { backgroundColor: 'rgba(255, 255, 255, 0.9)' }]}>
-          <BlurView intensity={80} tint="light" style={[StyleSheet.absoluteFill]}>
+        <View testID='headerContainer' style={[modernStyles.headerContainer, { backgroundColor: 'rgba(255, 255, 255, 0.9)' }]}>
+          <BlurView testID='blurView' intensity={80} tint="light" style={[StyleSheet.absoluteFill]}>
             <View style={{ opacity: 0 }} />
           </BlurView>
           <HeaderContent storeName={storeName} openSettingsModal={openSettingsModal} />
@@ -186,7 +186,7 @@ const Layout: React.FC<LayoutProps> = ({
 
 // 헤더 컨텐츠 컴포넌트
 const HeaderContent = ({ storeName, openSettingsModal }: { storeName: string, openSettingsModal: () => void }) => (
-  <>
+  <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
     <Text 
       testID="storeNameText" 
       style={modernStyles.storeNameText}
@@ -196,13 +196,14 @@ const HeaderContent = ({ storeName, openSettingsModal }: { storeName: string, op
       {storeName}
     </Text>
     <TouchableOpacity 
+      testID='settingsButton'
       onPress={openSettingsModal}
       style={modernStyles.settingsButton}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
     > 
       <Settings size={24} color="#0D326F" strokeWidth={2} />
     </TouchableOpacity>
-  </>
+  </View>
 );
 
 // 하단 네비게이션 컨텐츠 컴포넌트

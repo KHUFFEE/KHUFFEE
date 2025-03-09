@@ -343,7 +343,7 @@ const Item = () => {
                 }
               }
             }}
-            className="activate-button"
+            className={`activate-button ${isDeleteMode ? 'dimmed-button' : ''} ${isEditMode ? 'dimmed-button' : ''}`}
             disabled={isEditMode || isDeleteMode}
           >
             {isActivateMode ? "취소" : "활성화"}
@@ -353,7 +353,7 @@ const Item = () => {
               setIsDeleteMode((prev) => !prev);
               if (isDeleteMode) setSelectedItems([]);
             }}
-            className="delete-button"
+            className={`activate-button ${isActivateMode ? 'dimmed-button' : ''} ${isEditMode ? 'dimmed-button' : ''}`}
             disabled={isEditMode || isActivateMode}
           >
             {isDeleteMode ? "취소" : "비활성화"}
@@ -389,7 +389,7 @@ const Item = () => {
               )}
               <button
                 onClick={handleEditToggle}
-                className="edit-button"
+                className={`edit-button ${isDeleteMode || isActivateMode ? 'dimmed-button' : ''}`}
                 disabled={isDeleteMode || isActivateMode}
               >
                 {isEditMode ? "취소" : "수정"}

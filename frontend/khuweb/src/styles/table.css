@@ -58,6 +58,7 @@
 /* ───────────────────────────────────────────── */
 /* 4. 공통 인풋 스타일 (각 테이블의 td 내) */
 /* ───────────────────────────────────────────── */
+.item-table td input,
 .big-table td input,
 .small-table td input {
   width: 100%;
@@ -122,3 +123,18 @@
   background-color: #e3e9f0;
 }
 
+.sime-item-cell,
+.supplier-cell,
+.item-cell {
+  height: 20px;
+  overflow-y: auto;
+  display: block;
+  scrollbar-width: none; /* Firefox에서 스크롤바 숨김 */
+  -ms-overflow-style: none; /* IE 10+에서 스크롤바 숨김 */
+}
+
+.sime-item-cell::-webkit-scrollbar,
+.supplier-cell::-webkit-scrollbar,
+.item-cell::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera에서 스크롤바 숨김 */
+}

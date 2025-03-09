@@ -569,7 +569,12 @@ const StoreInventoryMonthEnd = () => {
             </span>
           </div>
           {/* 최신 조회 버튼 클릭 시 handleReset(true)로 호출하여 로딩 스피너 발생 */}
-          <button className="reset-button" onClick={() => handleReset(true)} disabled={isEditMode}>
+          <button 
+            className="reset-button" 
+            onClick={() => handleReset(true)} 
+            disabled={isEditMode}
+            style={{ opacity: isEditMode ? 0.5 : 1, cursor: isEditMode ? 'not-allowed' : 'pointer' }}
+          >
             최신 조회
           </button>
           {latestPeriodValue &&
@@ -583,7 +588,8 @@ const StoreInventoryMonthEnd = () => {
         <div className="store-action-buttons">
           {latestPeriodValue &&
             `${selectedYear}.${selectedMonth}` === latestPeriodValue &&
-            tableStatus !== null && (
+            tableStatus !== null && 
+            !isEditMode && (
               <button
                 className={tableStatus === 0 ? "status-open-button" : "status-close-button"}
                 onClick={() => setPopupType(tableStatus === 0 ? "open" : "close")}
@@ -592,9 +598,16 @@ const StoreInventoryMonthEnd = () => {
                 {openButtonText}
               </button>
             )}
-          <button onClick={handleExcelDownload} className="download-button" disabled={isEditMode}>
-            Excel 다운로드
-          </button>
+          {!isEditMode && (
+            <button onClick={handleExcelDownload} className="download-button" disabled={isEditMode}>
+              Excel 다운로드
+            </button>
+          )}
+          {isEditMode && (
+            <button className="edit-confirm-button" onClick={handleEditSubmit}>
+              수정 완료
+            </button>
+          )}
           <button className="edit-button" onClick={handleEditToggle}>
             {isEditMode ? "취소" : "수정"}
           </button>
@@ -669,11 +682,6 @@ const StoreInventoryMonthEnd = () => {
           </tr>
         </tfoot>
       </table>
-      {isEditMode && (
-        <button className="edit-confirm-button" onClick={handleEditSubmit}>
-          수정완료
-        </button>
-      )}
 
       {/* 팝업 모달 */}
       {popupType && (

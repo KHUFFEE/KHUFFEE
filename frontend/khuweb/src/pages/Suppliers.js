@@ -73,15 +73,28 @@ const Suppliers = () => {
       <h2 className="title">협력사 관리</h2>
       <div className="period-controls">
         <div className="supplier-action-buttons">
-          <button onClick={handleDownloadExcel} className="download-button">
-            Excel 다운로드
-          </button>
-          <button
-            onClick={() => setShowPopup(true)}
-            className="add-button"
-          >
-            + 협력사 추가
-          </button>
+          {!isDeleteMode && (
+            <>
+              <button onClick={handleDownloadExcel} className="download-button">
+                Excel 다운로드
+              </button>
+              <button
+                onClick={() => setShowPopup(true)}
+                className="add-button"
+              >
+                + 협력사 추가
+              </button>
+            </>
+          )}
+          {isDeleteMode && (
+            <button
+              onClick={handleDeleteSuppliers}
+              disabled={selectedSuppliers.length === 0}
+              className="delete-confirm-button"
+            >
+              선택 삭제
+            </button>
+          )}
           <button
             onClick={() => {
               setIsDeleteMode((prev) => !prev);
@@ -123,16 +136,6 @@ const Suppliers = () => {
             ))}
         </tbody>
       </table>
-      {isDeleteMode && (
-        <button
-          onClick={handleDeleteSuppliers}
-          disabled={selectedSuppliers.length === 0}
-          className="delete-confirm-button"
-        >
-          선택 삭제
-        </button>
-      )}
-
       {/* 협력사 추가 팝업 */}
       {showPopup && (
         <div className="suppliers-popup">

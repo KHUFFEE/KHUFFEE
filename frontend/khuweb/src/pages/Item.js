@@ -343,7 +343,7 @@ const Item = () => {
                 }
               }
             }}
-            className="activate-button"
+            className={`activate-button ${isDeleteMode ? 'dimmed-button' : ''} ${isEditMode ? 'dimmed-button' : ''}`}
             disabled={isEditMode || isDeleteMode}
           >
             {isActivateMode ? "취소" : "활성화"}
@@ -353,7 +353,7 @@ const Item = () => {
               setIsDeleteMode((prev) => !prev);
               if (isDeleteMode) setSelectedItems([]);
             }}
-            className="delete-button"
+            className={`activate-button ${isActivateMode ? 'dimmed-button' : ''} ${isEditMode ? 'dimmed-button' : ''}`}
             disabled={isEditMode || isActivateMode}
           >
             {isDeleteMode ? "취소" : "비활성화"}
@@ -368,23 +368,56 @@ const Item = () => {
           <button
             onClick={() => itemDownloadExcel({ sortedItems, suppliers })}
             className="download-button"
+            style={{ display: isDeleteMode || isActivateMode || isEditMode ? 'none' : 'inline-block' }}
           >
             Excel 다운로드
           </button>
           <button
             onClick={() => setShowPopup(true)}
             className="add-button"
+            style={{ display: isDeleteMode || isActivateMode || isEditMode ? 'none' : 'inline-block' }}
             disabled={isEditMode || isDeleteMode || isActivateMode}
           >
             + 제품 추가
           </button>
-          <button
-            onClick={handleEditToggle}
-            className="edit-button"
-            disabled={isDeleteMode || isActivateMode}
-          >
-            {isEditMode ? "취소" : "수정"}
-          </button>
+          {!isDeleteMode && !isActivateMode && (
+            <>
+              {isEditMode && (
+                <button onClick={handleEditSubmit} className="edit-confirm-button">
+                  수정 완료
+                </button>
+              )}
+              <button
+                onClick={handleEditToggle}
+                className={`edit-button ${isDeleteMode || isActivateMode ? 'dimmed-button' : ''}`}
+                disabled={isDeleteMode || isActivateMode}
+              >
+                {isEditMode ? "취소" : "수정"}
+              </button>
+            </>
+          )}
+          {(isDeleteMode || isActivateMode) && (
+            <>
+              {isDeleteMode && (
+                <button
+                  onClick={handleDelete}
+                  disabled={selectedItems.length === 0}
+                  className="delete-confirm-button"
+                >
+                  선택 비활성화
+                </button>
+              )}
+              {isActivateMode && (
+                <button
+                  onClick={handleActivateConfirm}
+                  disabled={selectedActivateItems.length === 0}
+                  className="activate-confirm-button"
+                >
+                  선택 활성화
+                </button>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -459,13 +492,14 @@ const Item = () => {
                 ) : null}
                 <td className="number-col">{index + 1}</td>
                 <td>
-                  {isEditMode ? (
+                {isEditMode ? (
                     <input
                       type="text"
                       value={editedItems[item.품목_id]?.품목명 || ""}
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "품목명", e.target.value)
                       }
+                      style={{ textAlign: "left" }}
                     />
                   ) : (
                     item.품목명
@@ -509,30 +543,32 @@ const Item = () => {
                   )}
                 </td>
                 <td>
-                  {isEditMode ? (
+                {isEditMode ? (
                     <input
                       type="text"
                       value={editedItems[item.품목_id]?.규격 || ""}
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "규격", e.target.value)
                       }
+                      style={{ textAlign: "left" }}
                     />
                   ) : (
                     item.규격
                   )}
                 </td>
                 <td>
-                  {isEditMode ? (
+                {isEditMode ? (
                     <input
                       type="text"
                       value={editedItems[item.품목_id]?.단위 || ""}
                       onChange={(e) =>
                         handleEditChange(item.품목_id, "단위", e.target.value)
                       }
+                      style={{ textAlign: "left" }}
                     />
                   ) : (
                     item.단위
-                  )}
+                  )}  
                 </td>
                 <td className="right-align">
                   {isEditMode ? (
@@ -600,30 +636,6 @@ const Item = () => {
           })}
         </tbody>
       </table>
-
-      {isDeleteMode && (
-        <button
-          onClick={handleDelete}
-          disabled={selectedItems.length === 0}
-          className="delete-confirm-button"
-        >
-          선택 비활성화
-        </button>
-      )}
-      {isActivateMode && (
-        <button
-          onClick={handleActivateConfirm}
-          disabled={selectedActivateItems.length === 0}
-          className="activate-confirm-button"
-        >
-          선택 활성화
-        </button>
-      )}
-      {isEditMode && (
-        <button onClick={handleEditSubmit} className="edit-confirm-button">
-          수정 완료
-        </button>
-      )}
 
       {/* 제품 추가 팝업 */}
       {showPopup && (

@@ -24,9 +24,11 @@
 .item-table th.right-align {
   text-align: center;
 }
+
 .item-table td.right-align {
   text-align: right;
 }
+
 .item-table input,
 .item-table select {
   width: 100%;
@@ -34,6 +36,14 @@
   height: 30px;
   padding: 4px;
   margin: 0;
+  font-size: inherit;
+}
+
+.item-table td span {
+  display: inline-block;
+  width: 100%;
+  padding: 4px;
+  box-sizing: border-box;
   font-size: inherit;
 }
 
@@ -217,4 +227,24 @@
 .item-action-buttons {
   display: flex;
   gap: 10px;
+}
+
+.calc-input {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.5); /* 글자 색을 반투명하게 */
+  filter: blur(0.1px);       /* 글자에 흐림 효과 적용 */
+  border: none;
+  background: transparent;
+}
+
+/* 비활성화된 버튼 스타일 */
+.dimmed-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(50%);
+  transition: opacity 0.3s ease;
+}
+
+.dimmed-button:hover {
+  opacity: 0.5;
 }

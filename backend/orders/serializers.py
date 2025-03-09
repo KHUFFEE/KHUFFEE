@@ -1,6 +1,6 @@
 # backend/orders/serializers.py
 from rest_framework import serializers
-from .models import StoreOrder, WarehouseOrder, WarehouseOutgoing
+from .models import StoreOrder, WarehouseOrder, WarehouseOutgoing, WarehouseIncoming
 from datetime import date
 from orders.utils import get_기간_string  # 앞서 작성한 헬퍼 함수
 from django.db import connection
@@ -203,3 +203,74 @@ class WarehouseOutgoingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = WarehouseOutgoing
         fields = ('매장_id', '품목_id', '기간', '창고_출고량')
+        
+class WarehouseIncomingCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WarehouseIncoming
+        fields = ('매장_id', '품목_id', '창고_입고량')
+    
+    def create(self, validated_data):
+        # 매장_id가 ST_102가 아니면 생성 불가
+        store_obj = validated_data.get('매장_id')
+        if store_obj.pk != "ST_102":
+            raise serializers.ValidationError("매장_id must be ST_102 for WarehouseIncoming.")
+        
+        today = date.today()
+        validated_data['기간'] = get_기간_string(today)
+        new_value = validated_data.get('창고_입고량')
+        duplicate_qs = WarehouseIncoming.objects.filter(
+            매장_id=validated_data['매장_id'],
+            품목_id=validated_data['품목_id'],
+            기간=validated_data['기간']
+        )
+        table_name = WarehouseIncoming._meta.db_table
+
+        if duplicate_qs.exists():
+            if new_value == "" or float(new_value) == 0:
+                duplicate_qs.delete()
+                instance = WarehouseIncoming()
+                instance.매장_id = validated_data['매장_id']
+                instance.품목_id = validated_data['품목_id']
+                instance.기간 = validated_data['기간']
+                instance.창고_입고량 = 0
+                return instance
+            else:
+                store_pk = validated_data['매장_id'].pk if hasattr(validated_data['매장_id'], 'pk') else validated_data['매장_id']
+                item_pk = validated_data['품목_id'].pk if hasattr(validated_data['품목_id'], 'pk') else validated_data['품목_id']
+                period_val = validated_data['기간']
+                add_amount = new_value
+
+                with connection.cursor() as cursor:
+                    update_sql = f"""
+                        UPDATE {table_name}
+                        SET 창고_입고량 = 창고_입고량 + %s
+                        WHERE 매장_id = %s AND 품목_id = %s AND 기간 = %s
+                    """
+                    cursor.execute(update_sql, [add_amount, store_pk, item_pk, period_val])
+                    
+                    select_sql = f"""
+                        SELECT 창고_입고량
+                        FROM {table_name}
+                        WHERE 매장_id = %s AND 품목_id = %s AND 기간 = %s
+                    """
+                    cursor.execute(select_sql, [store_pk, item_pk, period_val])
+                    row = cursor.fetchone()
+                    new_amount = row[0] if row else add_amount
+
+                instance = WarehouseIncoming()
+                instance.매장_id = validated_data['매장_id']
+                instance.품목_id = validated_data['품목_id']
+                instance.기간 = period_val
+                instance.창고_입고량 = new_amount
+                return instance
+        
+        return super().create(validated_data)
+
+
+class WarehouseIncomingListSerializer(serializers.ModelSerializer):
+    매장_id = serializers.CharField(source='매장_id.매장_id')
+    품목_id = serializers.CharField(source='품목_id.품목_id')
+    
+    class Meta:
+        model = WarehouseIncoming
+        fields = ('매장_id', '품목_id', '기간', '창고_입고량')

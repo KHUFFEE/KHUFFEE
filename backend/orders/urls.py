@@ -1,6 +1,6 @@
 # backend/orders/urls.py
 from django.urls import path
-from .views import StoreOrderCreateView, StoreOrderListView, StoreOrderUpdateView,WarehouseOrderCreateView, WarehouseOrderListView, WarehouseOrderUpdateView, WarehouseOutgoingCreateView, WarehouseOutgoingListView, WarehouseOutgoingUpdateView, StoreOrderDeleteView  
+from .views import StoreOrderCreateView, StoreOrderListView, StoreOrderUpdateView,WarehouseOrderCreateView, WarehouseOrderListView, WarehouseOrderUpdateView, WarehouseOutgoingCreateView, WarehouseOutgoingListView, WarehouseOutgoingUpdateView, StoreOrderDeleteView, WarehouseIncomingCreateView, WarehouseIncomingListView, WarehouseIncomingUpdateView
 
 urlpatterns = [
     path('store_order_create/', StoreOrderCreateView.as_view(), name='store-order-create'),
@@ -13,4 +13,7 @@ urlpatterns = [
     path('warehouse_outgoing_create/', WarehouseOutgoingCreateView.as_view(), name='warehouse-outgoing-create'),
     path('warehouse_outgoing_list/', WarehouseOutgoingListView.as_view(), name='warehouse-outgoing-list'),
     path('warehouse_outgoing_update/', WarehouseOutgoingUpdateView.as_view(), name='warehouse-outgoing-update'),
+    path('warehouse_incoming_create/', WarehouseIncomingCreateView.as_view(), name='warehouse-incoming-create'),
+    path('warehouse_incoming_list/', WarehouseIncomingListView.as_view(), name='warehouse-incoming-list'),
+    path('warehouse_incoming_update/', WarehouseIncomingUpdateView.as_view(), name='warehouse-incoming-update'),
 ]

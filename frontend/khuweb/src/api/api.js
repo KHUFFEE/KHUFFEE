@@ -357,3 +357,16 @@ export const deleteStoreOrder = async (payload) => {
   return await response.json();
 };
 
+export const updateWarehouseInventory = async (data) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/inventory/warehouse_inventory_update/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to update warehouse inventory");
+  }
+  return await response.json();
+};

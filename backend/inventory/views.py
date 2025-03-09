@@ -263,3 +263,56 @@ class StoreMonthEndInventoryUpdateView(APIView):
                 "기간": period,
                 "월말_재고량": new_value
             }, status=status.HTTP_201_CREATED)
+            
+class WarehouseInventoryUpdateView(APIView):
+    def post(self, request):
+        # 필수 필드: 매장_id, 품목_id, 기간, 창고_재고량
+        store_id = request.data.get("매장_id")
+        item_id = request.data.get("품목_id")
+        period = request.data.get("기간")
+        inventory_amount = request.data.get("창고_재고량")
+        
+        if not (store_id and item_id and period):
+            return Response(
+                {"error": "매장_id, 품목_id, 기간은 필수 입력입니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 외래키 객체로 변환
+        try:
+            store_obj = Store.objects.get(pk=store_id)
+        except Store.DoesNotExist:
+            return Response({"error": "해당 매장을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            item_obj = Item.objects.get(pk=item_id)
+        except Item.DoesNotExist:
+            return Response({"error": "해당 품목을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # 창고_재고량을 정수로 변환 (빈 문자열이나 None은 0으로 처리)
+        try:
+            new_value = int(inventory_amount) if inventory_amount not in [None, ""] else 0
+        except Exception:
+            return Response({"error": "창고_재고량은 정수 형태여야 합니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 기존 창고 재고 조회
+        qs = WarehouseInventory.objects.filter(매장_id=store_obj, 품목_id=item_obj, 기간=period)
+        if qs.exists():
+            qs.update(창고_재고량=new_value)
+            updated_record = qs.order_by("매장_id", "품목_id", "기간") \
+                               .values("매장_id", "품목_id", "기간", "창고_재고량") \
+                               .first()
+            return Response(updated_record, status=status.HTTP_200_OK)
+        else:
+            WarehouseInventory.objects.create(
+                매장_id=store_obj,
+                품목_id=item_obj,
+                기간=period,
+                창고_재고량=new_value
+            )
+            return Response({
+                "매장_id": store_obj.pk,
+                "품목_id": item_obj.pk,
+                "기간": period,
+                "창고_재고량": new_value
+            }, status=status.HTTP_201_CREATED)

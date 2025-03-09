@@ -1,7 +1,7 @@
 // C:\Users\usert\Desktop\KHUFFEE\frontend\khuapp\src\components\ui\common\commonstyler.ts
 
 // 수정해야함
-import { Platform, TextInput, StyleSheet, Dimensions, Text } from 'react-native';
+import { Platform, TextInput, StyleSheet, Dimensions, Text, StatusBar } from 'react-native';
 const { height: screenHeight } = Dimensions.get('window');
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -18,7 +18,13 @@ const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
 
 
 export const styles = StyleSheet.create({
-
+  // SafeArea 컨테이너 스타일
+  safeAreaContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    ...commonTextStyle
+  },
   // login.tsx 밑 공통 compon
   dashboardContainer: {     // login.tsx, main.tsx , StoreEmployeeDashboard 사용 
     flex: 1,

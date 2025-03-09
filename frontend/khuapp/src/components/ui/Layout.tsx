@@ -74,9 +74,12 @@ const Layout: React.FC<LayoutProps> = ({
     <View style={styles.dashboardContainer}>
       {/* 상단 헤더 - 블러 효과와 그라데이션 적용 */}
       {Platform.OS === 'ios' ? (
-        <BlurView intensity={80} tint="light" style={modernStyles.headerContainer}>
+        <View style={[modernStyles.headerContainer, { backgroundColor: 'rgba(255, 255, 255, 0.9)' }]}>
+          <BlurView intensity={80} tint="light" style={[StyleSheet.absoluteFill]}>
+            <View style={{ opacity: 0 }} />
+          </BlurView>
           <HeaderContent storeName={storeName} openSettingsModal={openSettingsModal} />
-        </BlurView>
+        </View>
       ) : (
         <LinearGradient
           colors={['#ffffff', '#f8f9fa']}
@@ -93,13 +96,16 @@ const Layout: React.FC<LayoutProps> = ({
 
       {/* 하단 네비게이션 바 - 모던한 디자인 적용 */}
       {Platform.OS === 'ios' ? (
-        <BlurView intensity={80} tint="light" style={modernStyles.bottomNavContainer}>
+        <View style={[modernStyles.bottomNavContainer, { backgroundColor: 'rgba(255, 255, 255, 0.9)' }]}>
+          <BlurView intensity={80} tint="light" style={[StyleSheet.absoluteFill]}>
+            <View style={{ opacity: 0 }} />
+          </BlurView>
           <BottomNavContent 
             activeView={activeView} 
             setActiveView={setActiveView} 
             renderIcon={renderIcon} 
           />
-        </BlurView>
+        </View>
       ) : (
         <LinearGradient
           colors={['#f8f9fa', '#ffffff']}

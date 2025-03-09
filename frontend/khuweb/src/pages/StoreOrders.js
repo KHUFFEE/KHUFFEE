@@ -565,6 +565,8 @@ const StoreOrders = () => {
       // 최신 조회 버튼 효과: handleReset(true) 호출
       await handleReset(true);
       setEditPeriodModalVisible(false);
+      // 편집 모드에서 나가도록 추가
+      setIsEditMode(false);
     } catch (err) {
       console.error("기간 수정 실패:", err);
     }
@@ -813,7 +815,16 @@ const StoreOrders = () => {
           {isEditMode ? (
             <>
               <button className="delete-button" onClick={() => setDeleteModalVisible(true)}>
-                삭제
+                현재 회차 삭제
+              </button>
+              <button
+                className="session-button"
+                onClick={() => setEditPeriodModalVisible(true)}
+              >
+                기간 수정
+              </button>
+              <button className="edit-confirm-button" onClick={handleEditSubmit}>
+                수정완료
               </button>
               <button className="edit-button" onClick={handleEditToggle}>
                 취소
@@ -833,7 +844,7 @@ const StoreOrders = () => {
                   >
                     발주 마감하기
                   </button>
-              ))}
+                ))}
               <div style={{ position: "relative", display: "inline-block" }}>
                 <button
                   className="download-button"
@@ -864,12 +875,6 @@ const StoreOrders = () => {
                   </div>
                 )}
               </div>
-              <button
-                className="session-button"
-                onClick={() => setEditPeriodModalVisible(true)}
-              >
-                기간 수정
-              </button>
               <button className="edit-button" onClick={handleEditToggle}>
                 수정
               </button>
@@ -975,11 +980,6 @@ const StoreOrders = () => {
           </tr>
         </tfoot>
       </table>
-      {isEditMode && (
-        <button className="edit-confirm-button" onClick={handleEditSubmit}>
-          수정완료
-        </button>
-      )}
 
       {/* 오픈하기 팝업 */}
       {openModalVisible && (

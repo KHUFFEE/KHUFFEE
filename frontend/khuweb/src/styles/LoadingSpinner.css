@@ -8,7 +8,7 @@
   
   .loading-spinner {
     border: 10px solid #f3f3f3;       /* 연한 회색 */
-    border-top: 10px solid #8B0000;     /* UI에 맞춘 빨강 계열 */
+    border-top: 10px solid #445382;     /* UI에 맞춘 빨강 계열 */
     border-radius: 50%;
     width: 60px;
     height: 60px;

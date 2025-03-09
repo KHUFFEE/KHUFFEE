@@ -36,14 +36,7 @@ export interface MergedInventoryItem extends APIProduct {
   매장_재고량: number;
 }
 
-// 월간 재고 타입
-export interface MergedMonthInventoryItem extends APIProduct {
-  매장_id: string;
-  기간: string;
-  월말_재고량: number;
-}
-
-type InventoryItem = MergedInventoryItem | MergedMonthInventoryItem;
+type InventoryItem = MergedInventoryItem;
 
 interface InventoryProps {
   warehouseId: string;
@@ -52,7 +45,6 @@ interface InventoryProps {
 
 interface InventoryItemRowProps {
   item: InventoryItem;
-  inventoryType: 'daily' | 'monthly';
   editMode: boolean;
   onValueChange: (품목_id: string, newValue: string) => void;
   onIncrement: (품목_id: string) => void;
@@ -68,7 +60,6 @@ const InventoryItemRow = forwardRef<
 >((props, ref) => {
   const {
     item,
-    inventoryType,
     editMode,
     onValueChange,
     onIncrement,
@@ -76,10 +67,7 @@ const InventoryItemRow = forwardRef<
     onDelete,
     index,
   } = props;
-  const inventoryValue =
-    inventoryType === 'daily'
-      ? (item as MergedInventoryItem).매장_재고량
-      : (item as MergedMonthInventoryItem).월말_재고량;
+  const inventoryValue = item.매장_재고량;
 
   // 로컬 상태: 사용자가 입력 중인 값을 관리
   const [localInput, setLocalInput] = useState<string>(
@@ -210,12 +198,7 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [editMode, setEditMode] = useState<boolean>(false);
-  const [inventoryType, setInventoryType] = useState<'daily' | 'monthly'>(
-    'daily'
-  );
   const [saving, setSaving] = useState<boolean>(false);
-  const [isMonthlyEditable, setIsMonthlyEditable] = useState<boolean>(true);
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
 
   // 각 InventoryItemRow의 ref를 저장할 객체
@@ -236,9 +219,7 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
     setInventoryData((prev) =>
       prev.map((item) =>
         item.품목_id === 품목_id
-          ? inventoryType === 'daily'
-            ? { ...item, 매장_재고량: parseFloat(newValue) || 0 }
-            : { ...item, 월말_재고량: parseFloat(newValue) || 0 }
+          ? { ...item, 매장_재고량: parseFloat(newValue) || 0 }
           : item
       )
     );
@@ -248,17 +229,10 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
     setInventoryData((prev) =>
       prev.map((item) =>
         item.품목_id === 품목_id
-          ? inventoryType === 'daily'
-            ? {
-                ...item,
-                매장_재고량:
-                  ((item as MergedInventoryItem).매장_재고량 || 0) + 1,
-              }
-            : {
-                ...item,
-                월말_재고량:
-                  ((item as MergedMonthInventoryItem).월말_재고량 || 0) + 1,
-              }
+          ? {
+              ...item,
+              매장_재고량: (item.매장_재고량 || 0) + 1,
+            }
           : item
       )
     );
@@ -268,14 +242,8 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
     setInventoryData((prev) =>
       prev.map((item) => {
         if (item.품목_id !== 품목_id) return item;
-        if (inventoryType === 'daily') {
-          const currentValue = (item as MergedInventoryItem).매장_재고량 || 0;
-          return { ...item, 매장_재고량: Math.max(0, currentValue - 1) };
-        } else {
-          const currentValue =
-            (item as MergedMonthInventoryItem).월말_재고량 || 0;
-          return { ...item, 월말_재고량: Math.max(0, currentValue - 1) };
-        }
+        const currentValue = item.매장_재고량 || 0;
+        return { ...item, 매장_재고량: Math.max(0, currentValue - 1) };
       })
     );
   };
@@ -284,9 +252,7 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
     setInventoryData((prev) =>
       prev.map((item) =>
         item.품목_id === 품목_id
-          ? inventoryType === 'daily'
-            ? { ...item, 매장_재고량: 0 }
-            : { ...item, 월말_재고량: 0 }
+          ? { ...item, 매장_재고량: 0 }
           : item
       )
     );
@@ -317,7 +283,7 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
     setSaving(true);
     try {
       await Promise.all(
-        (inventoryData as MergedInventoryItem[]).map((item) => {
+        inventoryData.map((item) => {
           const payload = {
             매장_id: warehouseId,
             품목_id: item.품목_id,
@@ -343,108 +309,38 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
     }
   };
 
-  const handleMonthlySave = async () => {
-    // 변경된 값 강제 반영
-    commitAllRows();
-    setSaving(true);
-    try {
-      await Promise.all(
-        (inventoryData as MergedMonthInventoryItem[]).map((item) => {
-          const payload = {
-            매장_id: warehouseId,
-            품목_id: item.품목_id,
-            기간: item.기간,
-            월말_재고량: item.월말_재고량,
-          };
-          return fetch(
-            `${RN_API_URL}/api/inventory/store_monthend_inventory_update/`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload),
-            }
-          ).then((response) => {
-            if (!response.ok) {
-              throw new Error(`품목 ${item.품목명} 월간 업데이트 실패`);
-            }
-          });
-        })
-      );
-      setEditMode(false);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // AbortController를 사용하여 재고 유형 전환 시 진행 중인 네트워크 요청 취소
+  // AbortController를 사용하여 진행 중인 네트워크 요청 취소
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
     setInventoryData([]);
     setLoading(true);
 
-    if (inventoryType === 'monthly') {
-      fetch(`${RN_API_URL}/api/management/table_status_list/`, { signal })
-        .then((res) => res.json())
-        .then((data) => {
-          const monthlyTable = data.find(
-            (item: any) => item.테이블 === '매장_월말재고'
-          );
-          setIsMonthlyEditable(monthlyTable && monthlyTable.상태 === 1);
-        })
-        .catch((err) => {
-          if (err.name !== 'AbortError') {
-            setIsMonthlyEditable(false);
-          }
-        });
-    } else {
-      setIsMonthlyEditable(true);
-    }
-
     const fetchData = async () => {
       try {
         const [invResponse, itemsData, suppliersData] = await Promise.all([
           fetch(
-            inventoryType === 'daily'
-              ? `${RN_API_URL}/api/inventory/store/?매장_id=${warehouseId}`   //요기 수정함
-              : `${RN_API_URL}/api/inventory/store_monthend/?store_id=${warehouseId}`,
+            `${RN_API_URL}/api/inventory/warehouse`,
             { signal }
           ),
           f.fetchApiItems(),
           f.fetchSuppliers(),
         ]);
         if (!invResponse.ok) {
-          throw new Error(
-            inventoryType === 'daily'
-              ? '재고 데이터를 불러오지 못했습니다.'
-              : '월간 재고 데이터를 불러오지 못했습니다.'
-          );
+          throw new Error('재고 데이터를 불러오지 못했습니다.');
         }
         const invData = await invResponse.json();
-        const invArray =
-          inventoryType === 'daily' ? invData : invData.inventories;
         const mergedData: InventoryItem[] = itemsData.map(
           (product: APIProduct) => {
-            const matchingInv = invArray.find(
+            const matchingInv = invData.find(
               (inv: any) => inv.품목_id === product.품목_id
             );
-            if (inventoryType === 'daily') {
-              return {
-                ...product,
-                매장_id: warehouseId,
-                기간: matchingInv ? matchingInv.기간 : getCurrentDateString(),
-                매장_재고량: matchingInv ? matchingInv.매장_재고량 : 0,
-              } as MergedInventoryItem;
-            } else {
-              return {
-                ...product,
-                매장_id: warehouseId,
-                기간: matchingInv ? matchingInv.기간 : getCurrentDateString(),
-                월말_재고량: matchingInv ? matchingInv.월말_재고량 : 0,
-              } as MergedMonthInventoryItem;
-            }
+            return {
+              ...product,
+              매장_id: warehouseId,
+              기간: matchingInv ? matchingInv.기간 : getCurrentDateString(),
+              매장_재고량: matchingInv ? matchingInv.매장_재고량 : 0,
+            } as MergedInventoryItem;
           }
         );
         const sortedData = f.sortProductsBySupplierAndName(
@@ -467,12 +363,7 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
     return () => {
       controller.abort();
     };
-  }, [warehouseId, inventoryType]);
-
-  const handleToggle = (type: 'daily' | 'monthly') => {
-    setEditMode(false);
-    setInventoryType(type);
-  };
+  }, [warehouseId]);
 
   if (loading) {
     return (
@@ -507,54 +398,22 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
 
   return (
     <View testID="status_container" style={inventoryStyles.status_container}>
-      <Modal transparent visible={modalVisible} animationType="slide">
-        <View testID="overlay" style={modalStyles.overlay}>
-          <View testID="modalContainer" style={modalStyles.modalContainer}>
-            <Text testID="modalText" style={modalStyles.modalText}>
-              월별 재고 입력기간이 아니어서 월별 재고를 변경할 수 없습니다.
-            </Text>
-            <Button title="확인" onPress={() => setModalVisible(false)} />
-          </View>
-        </View>
-      </Modal>
-
       <View testID="container" style={toggleButtonStyles.container}>
         <TouchableOpacity
           testID="button"
           style={[
             toggleButtonStyles.button,
-            inventoryType === 'daily' && toggleButtonStyles.buttonActive,
-            { marginRight: 1 },
+            toggleButtonStyles.buttonActive,
           ]}
-          onPress={() => handleToggle('daily')}
         >
           <Text
             testID="buttonText"
             style={[
               toggleButtonStyles.buttonText,
-              inventoryType === 'daily' && toggleButtonStyles.buttonTextActive,
+              toggleButtonStyles.buttonTextActive,
             ]}
           >
             일별 재고
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          testID="button"
-          style={[
-            toggleButtonStyles.button,
-            inventoryType === 'monthly' && toggleButtonStyles.buttonActive,
-            { marginLeft: 1 },
-          ]}
-          onPress={() => handleToggle('monthly')}
-        >
-          <Text
-            testID="buttonText"
-            style={[
-              toggleButtonStyles.buttonText,
-              inventoryType === 'monthly' && toggleButtonStyles.buttonTextActive,
-            ]}
-          >
-            월말 재고
           </Text>
         </TouchableOpacity>
       </View>
@@ -589,91 +448,41 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
         style={headerRowStyles.container}
       >
         <View style={headerRowStyles.rightContainer}>
-          {inventoryType === 'daily' ? (
-            <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
-              {editMode ? (
-                <TouchableOpacity
-                  testID="smallButton"
+          <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
+            {editMode ? (
+              <TouchableOpacity
+                testID="smallButton"
+                style={
+                  saving
+                    ? headerRowStyles.disabledButton
+                    : headerRowStyles.activeButton
+                }
+                onPress={handleGlobalSave}
+                disabled={saving}
+              >
+                <Text
+                  testID="buttonText"
                   style={
                     saving
-                      ? headerRowStyles.disabledButton
-                      : headerRowStyles.activeButton
+                      ? headerRowStyles.disabledButtonText
+                      : headerRowStyles.activeButtonText
                   }
-                  onPress={handleGlobalSave}
-                  disabled={saving}
                 >
-                  <Text
-                    testID="buttonText"
-                    style={
-                      saving
-                        ? headerRowStyles.disabledButtonText
-                        : headerRowStyles.activeButtonText
-                    }
-                  >
-                    {saving ? '저장 중...' : '조정완료'}
-                  </Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  testID="smallButton"
-                  style={headerRowStyles.smallButton}
-                  onPress={() => setEditMode(true)}
-                >
-                  <Text testID="buttonText" style={headerRowStyles.buttonText}>
-                    재고조정
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          ) : (
-            <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
-              {editMode ? (
-                <TouchableOpacity
-                  testID="smallButton"
-                  style={
-                    saving || !isMonthlyEditable
-                      ? headerRowStyles.disabledButton
-                      : headerRowStyles.activeButton
-                  }
-                  onPress={handleMonthlySave}
-                  disabled={saving || !isMonthlyEditable}
-                >
-                  <Text
-                    testID="buttonText"
-                    style={
-                      saving || !isMonthlyEditable
-                        ? headerRowStyles.disabledButtonText
-                        : headerRowStyles.activeButtonText
-                    }
-                  >
-                    {saving ? '저장 중...' : '조정완료'}
-                  </Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  testID="smallButton"
-                  style={
-                    !isMonthlyEditable
-                      ? headerRowStyles.disabledButton
-                      : headerRowStyles.smallButton
-                  }
-                  onPress={() => setEditMode(true)}
-                  disabled={!isMonthlyEditable}
-                >
-                  <Text
-                    testID="buttonText"
-                    style={
-                      !isMonthlyEditable
-                        ? headerRowStyles.disabledButtonText
-                        : headerRowStyles.buttonText
-                    }
-                  >
-                    재고조정
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
+                  {saving ? '저장 중...' : '조정완료'}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                testID="smallButton"
+                style={headerRowStyles.smallButton}
+                onPress={() => setEditMode(true)}
+              >
+                <Text testID="buttonText" style={headerRowStyles.buttonText}>
+                  재고조정
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
 
@@ -709,7 +518,6 @@ const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, item
             <InventoryItemRow
               ref={rowRefs.current[item.품목_id]}
               item={item}
-              inventoryType={inventoryType}
               editMode={editMode}
               onValueChange={handleValueChange}
               onIncrement={handleIncrement}

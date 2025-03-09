@@ -2,7 +2,7 @@ import { Text } from 'react-native';
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './login';
-import StoreDashboardScreen from '../(store)/main';
+import StoreDashboardScreen from '../(store)/main_store';
 import WarehouseDashboardScreen from '../(warehouse)/main';
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';

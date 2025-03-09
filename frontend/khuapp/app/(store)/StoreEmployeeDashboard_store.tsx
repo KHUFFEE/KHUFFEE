@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { RN_API_URL } from '@env';
-import HomeScreen from './homescreen';
-import OrderRequest from './OrderRequest';
-import OrderStatus from './OrderStatus';
-import Inventory from './Inventory';
+import HomeScreen_store from './homescreen_store';
+import OrderRequest_store from './OrderRequest_store';
+import OrderStatus_store from './OrderStatus_store';
+import Inventory_store from './Inventory_store';
 import { styles } from '../../src/components/ui/common/commonstyler';
 import { StoreOrderData, APIProduct, LocalOrder, ViewType, storename } from '../../src/components/ui/common/types';
 
@@ -15,7 +15,7 @@ interface StoreEmployeeDashboardProps extends storename {
   setActiveView: (view: ViewType) => void;
 }
 
-const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ 
+const StoreEmployeeDashboard_store: React.FC<StoreEmployeeDashboardProps> = ({ 
   storeName, 
   activeView, 
   setActiveView 
@@ -58,10 +58,10 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({
   const renderView = () => {
     switch (activeView) {
       case 'home':
-        return <HomeScreen storeName={storeName} storeId={storeId} />;
+        return <HomeScreen_store storeName={storeName} storeId={storeId} />;
       case 'order-request':
         return (
-          <OrderRequest
+          <OrderRequest_store
             storeName={storeName}
             storeId={storeId}
             onOrderComplete={() => setActiveView('order-status')}
@@ -69,9 +69,9 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({
           />
         );
       case 'order-status':
-        return <OrderStatus storeId={storeId} />;
+        return <OrderStatus_store storeId={storeId} />;
       case 'inventory':
-        return <Inventory storeId={storeId} />;
+        return <Inventory_store storeId={storeId} />;
       default:
         return null;
     }
@@ -85,4 +85,4 @@ const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({
   );
 };
 
-export default StoreEmployeeDashboard;
+export default StoreEmployeeDashboard_store;

@@ -25,7 +25,7 @@ import {
   searchStyles,
   modalStyles,
   headerRowStyles,
-} from '../../src/styles/Inventory_styles';
+} from '../../src/styles/Inventory_styles_store';
 import { APIProduct } from '../../src/components/ui/common/types';
 import { Search, Minus, Plus, Trash2, X } from 'lucide-react-native';
 
@@ -203,7 +203,7 @@ const InventoryItemRow = forwardRef<
   );
 });
 
-const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
+const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [filteredData, setFilteredData] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -723,4 +723,4 @@ const Inventory: React.FC<InventoryProps> = ({ storeId }) => {
   );
 };
 
-export default Inventory;
+export default Inventory_store;

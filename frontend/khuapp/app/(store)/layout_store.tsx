@@ -3,7 +3,7 @@ import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { RouteProp } from '@react-navigation/native';
-import StoreEmployeeDashboard from './StoreEmployeeDashboard';
+import StoreEmployeeDashboard from './StoreEmployeeDashboard_store';
 import { ViewType } from '@/components/ui/common/types';
 
 type StoreLayoutRouteProp = RouteProp<{ params: { storeName: string } }, 'params'>;

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../(login)/index';
-import StoreEmployeeDashboard from './StoreEmployeeDashboard';
+import StoreEmployeeDashboard_store from './StoreEmployeeDashboard_store';
 import { styles } from '../../src/components/ui/common/commonstyler';
 import Layout_store from '../../src/components/ui/Layout_store';
 import { ViewType } from '../../src/components/ui/common/types';
@@ -21,7 +21,7 @@ export default function StoreDashboardScreen() {
         activeView={activeView} 
         setActiveView={setActiveView}
       >
-        <StoreEmployeeDashboard 
+        <StoreEmployeeDashboard_store 
           storeName={storeName} 
           activeView={activeView} 
           setActiveView={setActiveView} 

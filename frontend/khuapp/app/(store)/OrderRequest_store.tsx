@@ -18,12 +18,12 @@ import {
 import { styles, modalStyles } from '../../src/components/ui/common/commonstyler';
 import * as f from '../../src/components/ui/common/function';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
-import { OrderRequeststyle } from '../../src/styles/Orderrequest_styles';
+import { OrderRequeststyle } from '../../src/styles/Orderrequest_styles_store';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { RN_API_URL } from '@env';
 import { RFValue } from 'react-native-responsive-fontsize';
 
-const OrderRequest: React.FC<StoreOrderRequestProps> = ({
+const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
   storeName,
   storeId,
   onOrderComplete,
@@ -776,4 +776,4 @@ const OrderRequest: React.FC<StoreOrderRequestProps> = ({
   );
 };
 
-export default OrderRequest;
+export default OrderRequest_store;

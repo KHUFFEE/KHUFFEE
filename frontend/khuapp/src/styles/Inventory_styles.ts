@@ -128,7 +128,7 @@ export const inventoryStyles = StyleSheet.create({
     flat_inventory: {
       ...commonTextStyle,
       flex: 1,
-      marginBottom: moderateScale(10),
+      marginBottom: moderateScale(2),
     },
     editButton: {
       ...commonTextStyle,

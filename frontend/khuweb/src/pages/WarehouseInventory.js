@@ -5,6 +5,7 @@ import {
   fetchSuppliers
 } from "../api/api";
 import "../styles/WarehouseInventory.css";
+import "../styles/table.css";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { warehouseInventoryDownloadExcel } from "../utils/WarehouseInventoryDownloadExcel";
 
@@ -295,7 +296,7 @@ const WarehouseInventory = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="wi-table">
+      <table className="small-table">
         <thead>
           <tr>
             <th className="wi-number-col">No.</th>

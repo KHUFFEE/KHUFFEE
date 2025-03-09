@@ -7,6 +7,7 @@ import {
   fetchWarehouseInventory
 } from "../api/api";
 import "../styles/WarehouseOutgoing.css";
+import "../styles/table.css";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const WarehouseOutgoing = () => {
@@ -279,7 +280,7 @@ const WarehouseOutgoing = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="wg-table">
+      <table className="big-table">
         <thead>
           <tr>
             <th className="wg-number-col">No.</th>

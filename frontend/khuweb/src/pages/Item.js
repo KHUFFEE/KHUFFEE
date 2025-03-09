@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchItems, fetchSuppliers, addItem, deleteItems, updateItem } from "../api/api";
 import "../styles/Item.css";
+import "../styles/table.css";
 import { itemDownloadExcel } from "../utils/ItemDownloadExcel";
 
 const Item = () => {
@@ -317,7 +318,7 @@ const Item = () => {
   return (
     <div className="item-container">
       <h2 className="title">제품 관리</h2>
-      <div className="item-controls">
+      <div className="period-controls">
         <div className="active-controls">
           <button
             onClick={async () => {

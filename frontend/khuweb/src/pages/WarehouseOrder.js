@@ -9,6 +9,7 @@ import {
   fetchWarehouseInventory, // 추가된 부분
 } from "../api/api";
 import "../styles/WarehouseOrder.css";
+import "../styles/table.css";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const WarehouseOrder = () => {
@@ -382,7 +383,7 @@ const WarehouseOrder = () => {
         </div>
       </div>
       <hr className="divider" />
-      <table className="wo-table">
+      <table className="big-table">
         <thead>
           <tr>
             <th className="wo-number-col">No.</th>

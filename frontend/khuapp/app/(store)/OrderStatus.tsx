@@ -10,6 +10,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Modal,
+  Alert,
 } from 'react-native';
 import {
   Home,
@@ -85,11 +86,54 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ visible, onClose, onCon
       startDate = today;
     }
     
-    const startDateStr = f.getCustomPeriodString(startDate);
-    const endDateStr = f.getCustomPeriodString(today);
-    
-    onConfirm(startDateStr, endDateStr);
-    onClose();
+    // 먼저 current_period를 가져오기 위한 API 호출
+    fetch(`${RN_API_URL}/api/orders/store_order_list/?order=desc&page=1`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('현재 기간 조회 실패');
+        }
+        return response.json();
+      })
+      .then(data => {
+        const currentPeriod = data.current_period;
+        
+        if (!currentPeriod) {
+          throw new Error('현재 기간 정보를 받아오지 못했습니다');
+        }
+        
+        // 프리셋에 따라 시작 날짜 계산
+        const [endYear, endMonth, endWeek] = currentPeriod.split('.').map(Number);
+        let startPeriod;
+        
+        if (activePreset === '최근 1개월') {
+          const prevMonth = endMonth - 1 <= 0 ? 12 : endMonth - 1;
+          const prevYear = endMonth - 1 <= 0 ? endYear - 1 : endYear;
+          startPeriod = `${prevYear}.${String(prevMonth).padStart(2, '0')}.${endWeek}`;
+        } else if (activePreset === '최근 3개월') {
+          const prevMonth = endMonth - 3 <= 0 ? endMonth - 3 + 12 : endMonth - 3;
+          const prevYear = endMonth - 3 <= 0 ? endYear - 1 : endYear;
+          startPeriod = `${prevYear}.${String(prevMonth).padStart(2, '0')}.${endWeek}`;
+        } else if (activePreset === '최근 6개월') {
+          const prevMonth = endMonth - 6 <= 0 ? endMonth - 6 + 12 : endMonth - 6;
+          const prevYear = endMonth - 6 <= 0 ? endYear - 1 : endYear;
+          startPeriod = `${prevYear}.${String(prevMonth).padStart(2, '0')}.${endWeek}`;
+        } else if (activePreset === '올해') {
+          startPeriod = `${endYear}.01.1`;
+        } else if (activePreset === '1년') {
+          startPeriod = `${endYear - 1}.${String(endMonth).padStart(2, '0')}.${endWeek}`;
+        } else {
+          startPeriod = currentPeriod;
+        }
+        
+        onConfirm(startPeriod, currentPeriod);
+        onClose();
+      })
+      .catch(error => {
+        console.error('기간 설정 중 오류 발생:', error);
+        onClose();
+      });
+      
+    return null; // ReactNode를 반환하도록 null 반환
   };
 
   return (
@@ -212,18 +256,40 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     setLoading(true);
     if (forceFetch || !isPeriodSearch) {
       try {
-        const now = new Date();
-  
-        let startDate: Date, endDate: Date;
-        if (page === 1) {
-          endDate = now;
-          startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-        } else {
-          endDate = new Date(now.getFullYear() - (page - 1), now.getMonth(), now.getDate());
-          startDate = new Date(now.getFullYear() - page, now.getMonth(), now.getDate());
+        // 먼저 current_period를 가져오기 위한 API 호출
+        const currentPeriodParams = new URLSearchParams({
+          store_id: storeId,
+          order: 'desc',
+          page: '1'
+        });
+        const currentPeriodUrl = `${RN_API_URL}/api/orders/store_order_list/?${currentPeriodParams.toString()}`;
+        
+        const currentPeriodResponse = await fetch(currentPeriodUrl);
+        if (!currentPeriodResponse.ok) {
+          console.error('현재 기간 조회 실패');
+          setLoading(false);
+          return;
         }
-  
-        const periodParam = `${f.getCustomPeriodString(startDate)}~${f.getCustomPeriodString(endDate)}`;
+
+        const currentPeriodData = await currentPeriodResponse.json();
+        const currentPeriod = currentPeriodData.current_period;
+        
+        if (!currentPeriod) {
+          console.error('현재 기간 정보를 받아오지 못했습니다');
+          setLoading(false);
+          return;
+        }
+
+        // 현재 기간에서 마지막 날짜 설정
+        const endDate = currentPeriod;
+        
+        // 시작 날짜는 마지막 날짜에서 1년을 빼서 계산
+        // current_period는 YYYY.MM.W 형태이므로 연도만 추출하여 1년 전으로 계산
+        const [endYear, endMonth, endWeek] = endDate.split('.').map(Number);
+        const startYear = endYear - 1;
+        const startDate = `${startYear}.${String(endMonth).padStart(2, '0')}.${endWeek}`;
+        
+        const periodParam = `${startDate}~${endDate}`;
         const params = new URLSearchParams({
           store_id: storeId,
           기간: periodParam,
@@ -325,9 +391,82 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     setStoreOrders([]);
     setHasMore(true);
     setLoading(true);
-    await fetchOrders(1, 'desc', true);
-    setCurrentPage(2);
-    setLoading(false);
+    
+    try {
+      // 마지막 날짜를 API에서 가져옴
+      const currentPeriodParams = new URLSearchParams({
+        store_id: storeId,
+        order: 'desc',
+        page: '1'
+      });
+      const currentPeriodUrl = `${RN_API_URL}/api/orders/store_order_list/?${currentPeriodParams.toString()}`;
+      
+      const currentPeriodResponse = await fetch(currentPeriodUrl);
+      if (!currentPeriodResponse.ok) {
+        console.error('현재 기간 조회 실패');
+        setLoading(false);
+        return;
+      }
+
+      const currentPeriodData = await currentPeriodResponse.json();
+      const currentPeriod = currentPeriodData.current_period;
+      
+      if (!currentPeriod) {
+        console.error('현재 기간 정보를 받아오지 못했습니다');
+        setLoading(false);
+        return;
+      }
+
+      // 현재 기간에서 마지막 날짜 설정
+      const endDate = currentPeriod;
+      
+      // 시작 날짜는 마지막 날짜에서 1년을 빼서 계산
+      const [endYear, endMonth, endWeek] = endDate.split('.').map(Number);
+      const startYear = endYear - 1;
+      const startDate = `${startYear}.${String(endMonth).padStart(2, '0')}.${endWeek}`;
+      
+      const periodParam = `${startDate}~${endDate}`;
+      const params = new URLSearchParams({
+        store_id: storeId,
+        기간: periodParam,
+        order: 'desc',
+        all: "true"
+      });
+      const url = `${RN_API_URL}/api/orders/store_order_list/?${params.toString()}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.error('발주 내역 초기화 조회 실패');
+        setLoading(false);
+        return;
+      }
+      
+      const result = await response.json();
+      const orders: StoreOrderData[] = result.orders;
+      const combined = orders.map((o) => {
+        const foundItem = allItems.find((it) => it.품목_id === o.품목_id);
+        const unitPrice = foundItem ? parseFloat(foundItem.입고단가) : 0;
+        const qty = o.매장_발주량 || 0;
+        return {
+          ...o,
+          품목명: foundItem?.품목명 ?? '알 수 없는 품목',
+          협력사명: foundItem?.협력사명 ?? '',
+          협력사_id: foundItem?.협력사_id ?? '',
+          종류: foundItem?.종류 ?? '',
+          출고단위: foundItem?.출고단위,
+          입고단가: foundItem?.입고단가,
+          totalCost: qty * unitPrice,
+        } as CombinedOrderData;
+      });
+      
+      const sortedCombined = sortOrders(combined, 'desc');
+      setStoreOrders(sortedCombined);
+      setCurrentPage(2);
+    } catch (error) {
+      console.error('초기화 조회 오류:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleSortOrder = () => {
@@ -339,14 +478,90 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
       setStoreOrders([]);
       setHasMore(true);
       setCurrentPage(1);
-      fetchOrders(1, newOrder);
+      setLoading(true);
+      
+      // 마지막 날짜를 API에서 가져옴
+      fetch(`${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&order=desc&page=1`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('현재 기간 조회 실패');
+          }
+          return response.json();
+        })
+        .then(data => {
+          const currentPeriod = data.current_period;
+          
+          if (!currentPeriod) {
+            throw new Error('현재 기간 정보를 받아오지 못했습니다');
+          }
+          
+          // 현재 기간에서 마지막 날짜 설정
+          const endDate = currentPeriod;
+          
+          // 시작 날짜는 마지막 날짜에서 1년을 빼서 계산
+          const [endYear, endMonth, endWeek] = endDate.split('.').map(Number);
+          const startYear = endYear - 1;
+          const startDate = `${startYear}.${String(endMonth).padStart(2, '0')}.${endWeek}`;
+          
+          const periodParam = `${startDate}~${endDate}`;
+          const params = new URLSearchParams({
+            store_id: storeId,
+            기간: periodParam,
+            order: newOrder,
+            all: "true"
+          });
+          
+          return fetch(`${RN_API_URL}/api/orders/store_order_list/?${params.toString()}`);
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('발주 내역 조회 실패');
+          }
+          return response.json();
+        })
+        .then(result => {
+          const orders: StoreOrderData[] = result.orders;
+          const combined = orders.map((o) => {
+            const foundItem = allItems.find((it) => it.품목_id === o.품목_id);
+            const unitPrice = foundItem ? parseFloat(foundItem.입고단가) : 0;
+            const qty = o.매장_발주량 || 0;
+            return {
+              ...o,
+              품목명: foundItem?.품목명 ?? '알 수 없는 품목',
+              협력사명: foundItem?.협력사명 ?? '',
+              협력사_id: foundItem?.협력사_id ?? '',
+              종류: foundItem?.종류 ?? '',
+              출고단위: foundItem?.출고단위,
+              입고단가: foundItem?.입고단가,
+              totalCost: qty * unitPrice,
+            } as CombinedOrderData;
+          });
+          
+          const sortedCombined = sortOrders(combined, newOrder);
+          setStoreOrders(sortedCombined);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('정렬 순서 변경 중 오류:', error);
+          setLoading(false);
+        });
     }
   };
 
   const openDetailModal = (dateKey: string, orders: CombinedOrderData[]) => {
     setDetailGroupDate(dateKey);
+    
+    // 매장_발주량이 0보다 큰 주문만 필터링
+    const filteredOrders = orders.filter(order => (order.매장_발주량 || 0) > 0);
+    
+    // 필터링된 주문이 없으면 모달을 열지 않음
+    if (filteredOrders.length === 0) {
+      Alert.alert('알림', '발주 내역이 없습니다.');
+      return;
+    }
+    
     const groupedOrdersMap: { [productName: string]: CombinedOrderData } = {};
-    orders.forEach((order) => {
+    filteredOrders.forEach((order) => {
       const key = order.품목명 ?? '알 수 없는 품목';
       if (groupedOrdersMap[key]) {
         groupedOrdersMap[key].매장_발주량 = (groupedOrdersMap[key].매장_발주량 || 0) + (order.매장_발주량 || 0);
@@ -362,6 +577,15 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
   };
 
   const openMonthlyDetailModal = (year: string, month: string, monthlyOrders: CombinedOrderData[]) => {
+    // 매장_발주량이 0보다 큰 주문만 필터링
+    const filteredMonthlyOrders = monthlyOrders.filter(order => (order.매장_발주량 || 0) > 0);
+    
+    // 필터링된 주문이 없으면 모달을 열지 않음
+    if (filteredMonthlyOrders.length === 0) {
+      Alert.alert('알림', '발주 내역이 없습니다.');
+      return;
+    }
+    
     setMonthlyDetailDate(`${year}.${month}`);
     
     const weeklyData: { [week: string]: CombinedOrderData[] } = {};
@@ -376,7 +600,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     const weeklyTotals: { [week: string]: number } = {};
     const allWeeks: string[] = [];
     
-    monthlyOrders.forEach(order => {
+    filteredMonthlyOrders.forEach(order => {
       const [, , week] = order.기간.split('.');
       if (!weeklyData[week]) {
         weeklyData[week] = [];
@@ -410,7 +634,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     const sortedWeeks = allWeeks.sort((a, b) => parseInt(a) - parseInt(b));
     
     const productsForSorting: CombinedOrderData[] = Object.entries(productSummaryMap).map(([품목_id, data]) => {
-      const originalOrder = monthlyOrders.find(order => order.품목_id === 품목_id);
+      const originalOrder = filteredMonthlyOrders.find(order => order.품목_id === 품목_id);
       return {
         품목_id,
         품목명: data.품목명,
@@ -426,7 +650,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
     const sortedProducts = sortedProductsData.map(product => productSummaryMap[product.품목_id]);
     const monthlyTotal = Object.values(weeklyTotals).reduce((sum, total) => sum + total, 0);
     
-    setMonthlyDetailOrders(monthlyOrders);
+    setMonthlyDetailOrders(filteredMonthlyOrders);
     setWeeklyData(weeklyData);
     setWeeklyTotals(weeklyTotals);
     setSortedWeeks(sortedWeeks);
@@ -592,27 +816,61 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
           renderItem={({ item: year }) => {
             const monthsObj = groupedByYearMonthWeek[year];
             const sortedMonths = sortKeys(Object.keys(monthsObj));
+            
+            // 이 연도에 매장_발주량이 0보다 큰 주문이 있는지 확인
+            const hasNonZeroOrdersInYear = sortedMonths.some(month => {
+              const weeksObj = monthsObj[month];
+              const weeks = Object.keys(weeksObj);
+              return weeks.some(week => {
+                const ordersInWeek = weeksObj[week];
+                return ordersInWeek.some((order: CombinedOrderData) => (order.매장_발주량 || 0) > 0);
+              });
+            });
+            
+            // 매장_발주량이 0보다 큰 주문이 없는 연도는 표시하지 않음
+            if (!hasNonZeroOrdersInYear) {
+              return null;
+            }
+            
             return (
-              <>
+              <React.Fragment key={year}>
                 <Text testID="yearHeader" style={orderStatusStyles.yearHeader}>
                   {year}년 발주내역
                 </Text>
                 {sortedMonths.map((month) => {
                   const weeksObj = monthsObj[month];
                   const sortedWeeks = sortKeys(Object.keys(weeksObj));
-                  const monthTotalCost = sortedWeeks.reduce((monthSum, w) => {
+                  
+                  // 각 주차별로 발주량이 0보다 큰 주문이 있는지 확인
+                  const weeksWithNonZeroOrders = sortedWeeks.filter(w => {
                     const ordersInWeek = weeksObj[w];
+                    return ordersInWeek.some((order: CombinedOrderData) => (order.매장_발주량 || 0) > 0);
+                  });
+                  
+                  // 발주량이 0보다 큰 주문이 없는 월은 표시하지 않음
+                  if (weeksWithNonZeroOrders.length === 0) {
+                    return null;
+                  }
+                  
+                  const monthTotalCost = weeksWithNonZeroOrders.reduce((monthSum, w) => {
+                    const ordersInWeek = weeksObj[w];
+                    // 발주량이 0보다 큰 주문만 필터링하여 총액 계산
+                    const filteredOrdersInWeek = ordersInWeek.filter((o: CombinedOrderData) => (o.매장_발주량 || 0) > 0);
                     return (
                       monthSum +
-                      ordersInWeek.reduce(
+                      filteredOrdersInWeek.reduce(
                         (weekSum: number, o: CombinedOrderData) => weekSum + (o.totalCost || 0),
                         0
                       )
                     );
                   }, 0);
+                  
+                  // 발주량이 0보다 큰 주문만 모아서 월별 상세보기에 전달
                   const allMonthOrders = sortedWeeks.reduce((allOrders: CombinedOrderData[], week) => {
-                    return [...allOrders, ...weeksObj[week]];
+                    const filteredOrders = weeksObj[week].filter((o: CombinedOrderData) => (o.매장_발주량 || 0) > 0);
+                    return [...allOrders, ...filteredOrders];
                   }, []);
+                  
                   return (
                     <View key={month} testID="monthContainer" style={orderStatusStyles.monthContainer}>
                       <View testID="monthHeader" style={orderStatusStyles.monthHeader}>
@@ -636,13 +894,25 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                       </View>
                       {sortedWeeks.map((week) => {
                         const ordersSorted = sortOrders(weeksObj[week], sortOrder);
-                        const ordersAsc = sortOrders(weeksObj[week], 'asc');
+                        
+                        // 매장_발주량이 0보다 큰 주문이 있는지 확인
+                        const hasNonZeroOrders = ordersSorted.some(order => (order.매장_발주량 || 0) > 0);
+                        
+                        // 모든 주문의 매장_발주량이 0이면 weekContainer를 표시하지 않음
+                        if (!hasNonZeroOrders) {
+                          return null;
+                        }
+                        
+                        // 매장_발주량이 0보다 큰 주문만 필터링
+                        const filteredOrders = ordersSorted.filter(order => (order.매장_발주량 || 0) > 0);
+                        const ordersAsc = sortOrders(filteredOrders, 'asc');
                         const firstOrder = ordersAsc[0];
-                        const extraCount = ordersSorted.length - 1;
-                        const weekTotalCost = ordersSorted.reduce(
+                        const extraCount = filteredOrders.length - 1;
+                        const weekTotalCost = filteredOrders.reduce(
                           (sum: number, o: CombinedOrderData) => sum + (o.totalCost || 0),
                           0
                         );
+                        
                         return (
                           <View key={week} testID="weekContainer" style={orderStatusStyles.weekContainer}>
                             <View testID="weekHeader" style={orderStatusStyles.weekHeader}>
@@ -676,7 +946,7 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ storeId }) => {
                     </View>
                   );
                 })}
-              </>
+              </React.Fragment>
             );
           }}
           ListFooterComponent={ !isPeriodSearch && hasMore ? (

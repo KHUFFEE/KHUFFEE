@@ -17,6 +17,7 @@ export const orderStatusStyles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: moderateScale(10),
     paddingTop: verticalScale(0),
+    paddingBottom: verticalScale(0),
   },
   
   // 헤더 스타일

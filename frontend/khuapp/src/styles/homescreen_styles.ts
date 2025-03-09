@@ -16,6 +16,7 @@ export const homescreenStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: moderateScale(16),
+    paddingBottom: moderateScale(0),
   },
   
   header: {

@@ -4,7 +4,7 @@ import { useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../(login)/index';
 import StoreEmployeeDashboard from './StoreEmployeeDashboard';
 import { styles } from '../../src/components/ui/common/commonstyler';
-import Layout from '../../src/components/ui/Layout';
+import Layout_store from '../../src/components/ui/Layout_store';
 import { ViewType } from '../../src/components/ui/common/types';
 
 export default function StoreDashboardScreen() {
@@ -16,7 +16,7 @@ export default function StoreDashboardScreen() {
 
   return (
     <SafeAreaView testID='dashboardContainer' style={styles.dashboardContainer}>
-      <Layout 
+      <Layout_store 
         storeName={storeName} 
         activeView={activeView} 
         setActiveView={setActiveView}
@@ -26,7 +26,7 @@ export default function StoreDashboardScreen() {
           activeView={activeView} 
           setActiveView={setActiveView} 
         />
-      </Layout>
+      </Layout_store>
     </SafeAreaView>
   );
 }

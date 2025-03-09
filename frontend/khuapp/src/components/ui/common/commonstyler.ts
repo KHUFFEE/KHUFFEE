@@ -8,9 +8,15 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import { RFValue } from 'react-native-responsive-fontsize';
 import { relative } from 'path';
 import { Wheat } from 'lucide-react-native';
-const commonTextStyle = {
-  fontFamily: 'Pretendard-Regular',
-};
+import { TextStyle } from 'react-native';
+
+const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
+  fontFamily: 'PretendardVariable',
+  fontWeight: customStyle.fontWeight ? customStyle.fontWeight : '400',
+  ...customStyle,
+});
+
+
 export const styles = StyleSheet.create({
 
   // login.tsx 밑 공통 compon
@@ -32,7 +38,7 @@ export const styles = StyleSheet.create({
   },
   logoContainer: {       //login.tsx 로고 
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: moderateScale(40),
     ...commonTextStyle
   },
   logo: {             //login.tsx 로고 이미지 크기 설정
@@ -45,7 +51,7 @@ export const styles = StyleSheet.create({
   },
   logo_name: {            //logo 아래 이름
     fontSize: RFValue(27),
-    fontWeight: 700,
+    fontWeight: 600,
     marginBottom: moderateScale(-10),
     textAlign: 'center',
     color: '#8B0000',
@@ -71,8 +77,8 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#B5B5B5', // 원하는 테두리 색으로 변경
     borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 5,
+    paddingHorizontal: moderateScale(15),
+    marginBottom: moderateScale(5),
     backgroundColor: '#FFFFFF', // 내부 채우기를 흰색으로 설정
     ...commonTextStyle
   },
@@ -90,7 +96,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,   // 버튼의 모서리를 둥글게 만들어 8 픽셀의 반경을 적용합니다.
     justifyContent: 'center',  // // 수직 중앙 정렬 (flexDirection: 'column'인 경우)
     alignItems: 'center', // 수평 중앙 정렬
-    marginTop: 5,  // 버튼 위쪽에 10 픽셀의 여백을 추가합니다.
+    marginTop: moderateScale(5),  // 버튼 위쪽에 10 픽셀의 여백을 추가합니다.
     // iOS용 그림자 설정
     shadowColor: '#000',            // 그림자의 색상을 검정색으로 설정합니다.
     shadowOffset: { width: 0, height: 2 },  // 그림자의 위치를 버튼 아래쪽으로 2 픽셀 이동시킵니다.
@@ -146,13 +152,13 @@ export const styles = StyleSheet.create({
   },
   bottom_navText: {
     color: 'black',
-    marginTop: 4,
+    marginTop: moderateScale(4),
     ...commonTextStyle
   },
   bottom_activeNavText: {
     color: '#8B0000',
     fontWeight: 'bold',
-    marginTop: 4,
+    marginTop: moderateScale(4),
     ...commonTextStyle
   },
   bottom_Overlay: {
@@ -192,7 +198,7 @@ export const styles = StyleSheet.create({
     marginTop: moderateScale(3),
     fontSize: RFValue(16),
     fontWeight: '600',
-    left: 5,
+    left: moderateScale(5),
     color: '#00000080',
     alignItems: 'center',
     ...commonTextStyle
@@ -1139,27 +1145,27 @@ export const orderStatusStyles = StyleSheet.create({
     ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: moderateScale(8),
     color: '#333',
-    paddingLeft: 4,
+    paddingLeft: moderateScale(4),
   },
   extraCountText: {
     ...commonTextStyle,
     color: '#0D326F',
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: moderateScale(4),
   },
   productName: {
     ...commonTextStyle,
     fontSize: RFValue(16),
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: moderateScale(4),
   },
   quantity: {
     ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#555',
-    marginBottom: 6,
+    marginBottom: moderateScale(6),
   },
   actionButton: {
     ...commonTextStyle,
@@ -1169,7 +1175,7 @@ export const orderStatusStyles = StyleSheet.create({
     borderRadius: 6,
     width: wp(20),
     height: hp(5),
-    marginLeft: 10,
+    marginLeft: moderateScale(10),
     justifyContent: 'center',  // // 수직 중앙 정렬 (flexDirection: 'column'인 경우)
     alignItems: 'center',
   },
@@ -1191,13 +1197,13 @@ export const receiptStyles = StyleSheet.create({
   receiptContainer: {
     ...commonTextStyle,
     width: '100%',
-    padding: 20,
+    padding: moderateScale(20),
     backgroundColor: '#fff',
   },
   header: {
     ...commonTextStyle,
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: moderateScale(10),
   },
   headerTitle: {
     ...commonTextStyle,
@@ -1208,20 +1214,20 @@ export const receiptStyles = StyleSheet.create({
     ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#666',
-    marginTop: 2,
+    marginTop: moderateScale(2),
   },
   divider: {
     ...commonTextStyle,
     borderBottomColor: '#ccc',
     borderBottomWidth: 1,
     borderStyle: 'dashed',
-    marginVertical: 8,
+    marginVertical: moderateScale(8),
   },
   itemRow: {
     ...commonTextStyle,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: moderateScale(6),
   },
   itemRowLeft: {
     ...commonTextStyle,
@@ -1241,7 +1247,7 @@ export const receiptStyles = StyleSheet.create({
     ...commonTextStyle,
     fontSize: RFValue(14),
     color: '#666',
-    marginTop: 2,
+    marginTop: moderateScale(2),
   },
   itemPrice: {
     ...commonTextStyle,
@@ -1251,7 +1257,7 @@ export const receiptStyles = StyleSheet.create({
   },
   footer: {
     ...commonTextStyle,
-    marginTop: 10,
+    marginTop: moderateScale(10),
     alignItems: 'flex-end',
   },
   footerText: {
@@ -1262,3 +1268,168 @@ export const receiptStyles = StyleSheet.create({
   },
 });
 
+export const modernStyles = StyleSheet.create({
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: moderateScale(16),
+    // paddingVertical: moderateScale(6),
+    borderBottomWidth: 2,
+    // borderTopWidth: 2,
+    borderBottomColor: 'rgba(139, 0, 0, 0.1)',
+    // borderTopColor: 'rgba(139, 0, 0, 0.1)',
+    width: '100%',
+  },
+  storeNameText: {
+    fontSize: RFValue(18),
+    fontWeight: '600',
+    color: '#1e293b',
+    flex: 1,
+    marginRight: moderateScale(10),
+    ...commonTextStyle
+  },
+  settingsButton: {
+    padding: moderateScale(8),
+    borderRadius: 8,
+  },
+  bottomNavContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    // paddingVertical: moderateScale(10),
+    paddingTop: moderateScale(2),
+    borderTopWidth: 2,
+    borderTopColor: 'rgba(139, 0, 0, 0.1)',
+  },
+  navButton: {
+    alignItems: 'center',
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: moderateScale(8),
+    paddingBottom: moderateScale(0),
+    borderRadius: moderateScale(12),
+  },
+  activeNavButton: {
+    backgroundColor: 'rgba(139, 0, 0, 0.08)',
+  },
+  navText: {
+    color: '#64748b',
+    fontSize: RFValue(12),
+    marginTop: moderateScale(2),
+    ...commonTextStyle
+  },
+  activeNavText: {
+    color: '#8B0000',
+    fontWeight: '600',
+    fontSize: RFValue(12),
+    marginTop: moderateScale(2),
+    ...commonTextStyle
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '85%',
+    backgroundColor: '#ffffff',
+    borderRadius: moderateScale(16),
+    padding: moderateScale(20),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: moderateScale(16),
+    paddingBottom: moderateScale(12),
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  modalTitle: {
+    fontSize: RFValue(18),
+    fontWeight: '600',
+    color: '#0f172a',
+    ...commonTextStyle
+  },
+  closeButton: {
+    padding: moderateScale(4),
+    borderRadius: moderateScale(8),
+    backgroundColor: '#f1f5f9',
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: moderateScale(14),
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  modalOptionText: {
+    fontSize: RFValue(16),
+    color: '#334155',
+    marginLeft: moderateScale(12),
+    ...commonTextStyle
+  },
+  confirmContainer: {
+    width: '85%',
+    backgroundColor: '#ffffff',
+    borderRadius: moderateScale(16),
+    padding: moderateScale(20),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  confirmTitle: {
+    fontSize: RFValue(18),
+    fontWeight: '600',
+    color: '#0f172a',
+    marginBottom: moderateScale(8),
+    textAlign: 'center',
+    ...commonTextStyle
+  },
+  confirmMessage: {
+    fontSize: RFValue(16),
+    color: '#475569',
+    marginBottom: moderateScale(24),
+    textAlign: 'center',
+    ...commonTextStyle
+  },
+  confirmButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: moderateScale(12),
+    marginRight: moderateScale(8),
+    borderRadius: moderateScale(8),
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#64748b',
+    fontSize: RFValue(16),
+    fontWeight: '500',
+    ...commonTextStyle
+  },
+  logoutButton: {
+    flex: 1,
+    paddingVertical: moderateScale(12),
+    marginLeft: moderateScale(8),
+    borderRadius: moderateScale(8),
+    backgroundColor: 'rgba(139, 0, 0, 0.1)',
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: '#8B0000',
+    fontSize: RFValue(16),
+    fontWeight: '600',
+    ...commonTextStyle
+  },
+});

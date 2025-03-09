@@ -1,18 +1,25 @@
 // src/components/ui/StoreEmployeeDashboard.tsx
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
-import { Home, ShoppingCart, Receipt, Clipboard } from 'lucide-react-native';
+import { View } from 'react-native';
 import { RN_API_URL } from '@env';
 import HomeScreen from './homescreen';
 import OrderRequest from './OrderRequest';
 import OrderStatus from './OrderStatus';
 import Inventory from './Inventory';
-import {styles } from '../../src/components/ui/common/commonstyler';
+import { styles } from '../../src/components/ui/common/commonstyler';
 import { StoreOrderData, APIProduct, LocalOrder, ViewType, storename } from '../../src/components/ui/common/types';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
-const StoreEmployeeDashboard: React.FC<storename> = ({ storeName }) => {
-  const [activeView, setActiveView] = useState<ViewType>('home');
+// props 타입 확장
+interface StoreEmployeeDashboardProps extends storename {
+  activeView: ViewType;
+  setActiveView: (view: ViewType) => void;
+}
+
+const StoreEmployeeDashboard: React.FC<StoreEmployeeDashboardProps> = ({ 
+  storeName, 
+  activeView, 
+  setActiveView 
+}) => {
   const [storeId, setStoreId] = useState<string>('');
   const [items, setItems] = useState<APIProduct[]>([]);
   const [localOrders, setLocalOrders] = useState<LocalOrder[]>([]);
@@ -69,28 +76,11 @@ const StoreEmployeeDashboard: React.FC<storename> = ({ storeName }) => {
         return null;
     }
   };
-//하단 바 
+
+  // 하단 바를 제거하고 내용만 렌더링
   return (
-    <View style={styles.dashboardContainer}>
-      <View style={styles.mainContent}>{renderView()}</View>
-      <View style={styles.bottom_navbar}>
-        <TouchableOpacity style={styles.bottom_navButton} onPress={() => setActiveView('home')}>
-          <Home color={activeView === 'home' ? '#8B0000' : 'black'} />
-          <Text style={activeView === 'home' ? styles.bottom_activeNavText : styles.bottom_navText}>홈</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.bottom_navButton} onPress={() => setActiveView('order-request')}>
-          <ShoppingCart color={activeView === 'order-request' ? '#8B0000' : 'black'} />
-          <Text style={activeView === 'order-request' ? styles.bottom_activeNavText : styles.bottom_navText}>발주 요청</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.bottom_navButton} onPress={() => setActiveView('order-status')}>
-          <Receipt color={activeView === 'order-status' ? '#8B0000' : 'black'} />
-          <Text style={activeView === 'order-status' ? styles.bottom_activeNavText : styles.bottom_navText}>발주 내역</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.bottom_navButton} onPress={() => setActiveView('inventory')}>
-          <Clipboard color={activeView === 'inventory' ? '#8B0000' : 'black'} />
-          <Text style={activeView === 'inventory' ? styles.bottom_activeNavText : styles.bottom_navText}>재고 관리</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={styles.mainContent}>
+      {renderView()}
     </View>
   );
 };

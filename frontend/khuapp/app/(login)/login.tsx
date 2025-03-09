@@ -61,9 +61,24 @@ const LoginScreen: React.FC = () => {
       const data = await response.json();
       console.log('로그인 성공:', data);
 
-      // 조건에 따라 메인 화면으로 이동
-      // 필요에 따라 매장명이 'admin' 또는 '창고'인 경우의 분기를 추가할 수 있습니다.
-      navigation.replace('Main', { storeName: 매장명 });
+      // 매장 정보 조회
+      try {
+        const storesResponse = await fetch(`${RN_API_URL}/api/accounts/stores/`);
+        const storesData = await storesResponse.json();
+        const matchedStore = storesData.find((store: any) => store.매장명 === 매장명);
+        
+        if (matchedStore && matchedStore.매장_id === 'ST_102') {
+          // 창고(ST_102)인 경우 창고 화면으로 이동
+          navigation.replace('(warehouse)/main', { storeName: 매장명 });
+        } else {
+          // 일반 매장인 경우 매장 화면으로 이동
+          navigation.replace('(store)/main', { storeName: 매장명 });
+        }
+      } catch (error) {
+        console.error('매장 정보 조회 오류:', error);
+        // 오류 발생 시 기본적으로 매장 화면으로 이동
+        navigation.replace('(store)/main', { storeName: 매장명 });
+      }
     } catch (error) {
       console.error('로그인 에러:', error);
       setErrorMessage('네트워크 오류가 발생했습니다. 다시 시도해주세요.');

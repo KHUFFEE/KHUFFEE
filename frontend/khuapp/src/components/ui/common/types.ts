@@ -1,5 +1,5 @@
 /** 화면 전환 타입 */
-export type ViewType = 'home' | 'order-request' | 'order-status' | 'inventory';
+export type ViewType = 'home' | 'order-request' | 'order-status' | 'inventory' | 'expiration' | 'stock';
 import { RN_API_URL } from '@env';
 /** 서버에서 받아오는 "발주 내역" 타입 */
 export interface StoreOrderData {

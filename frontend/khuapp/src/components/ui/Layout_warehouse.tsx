@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, Animated } from 'react-native';
-import { Settings, Home, ShoppingCart, Receipt, Clipboard, LogOut, User, X } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform } from 'react-native';
+import { Settings, Home, Package, Calendar, Clipboard, LogOut, User, X } from 'lucide-react-native';
 import { styles, modernStyles } from './common/commonstyler';
 import { ViewType } from './common/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,7 +17,7 @@ interface LayoutProps {
   setActiveView: (view: ViewType) => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ 
+const Layout_warehouse: React.FC<LayoutProps> = ({ 
   children, 
   storeName, 
   activeView, 
@@ -193,7 +193,7 @@ const HeaderContent = ({ storeName, openSettingsModal }: { storeName: string, op
       numberOfLines={1}
       ellipsizeMode="tail"
     >
-      {storeName}
+      {storeName} (창고)
     </Text>
     <TouchableOpacity 
       testID='settingsButton'
@@ -218,57 +218,6 @@ const BottomNavContent = ({
 }) => (
   <>
     <TouchableOpacity 
-     testID='homeButton'
-      style={[
-        modernStyles.navButton,
-        activeView === 'home' && modernStyles.activeNavButton
-      ]} 
-      onPress={() => setActiveView('home')}
-    >
-      {renderIcon(Home, activeView === 'home')}
-      <Text 
-        testID={activeView === 'home' ? "activeNavText" : "navText"} 
-        style={activeView === 'home' ? modernStyles.activeNavText : modernStyles.navText}
-      >
-        홈
-      </Text>
-    </TouchableOpacity>
-    
-    <TouchableOpacity 
-      testID='orderRequestButton'
-      style={[
-        modernStyles.navButton,
-        activeView === 'order-request' && modernStyles.activeNavButton
-      ]} 
-      onPress={() => setActiveView('order-request')}
-    >
-      {renderIcon(ShoppingCart, activeView === 'order-request')}
-      <Text 
-        testID={activeView === 'order-request' ? "activeNavText" : "navText"} 
-        style={activeView === 'order-request' ? modernStyles.activeNavText : modernStyles.navText}
-      >
-        발주 요청
-      </Text>
-    </TouchableOpacity>
-    
-    <TouchableOpacity 
-      testID='orderStatusButton'
-      style={[
-        modernStyles.navButton,
-        activeView === 'order-status' && modernStyles.activeNavButton
-      ]} 
-      onPress={() => setActiveView('order-status')}
-    >
-      {renderIcon(Receipt, activeView === 'order-status')}
-      <Text 
-        testID={activeView === 'order-status' ? "activeNavText" : "navText"} 
-        style={activeView === 'order-status' ? modernStyles.activeNavText : modernStyles.navText}
-      >
-        발주 내역
-      </Text>
-    </TouchableOpacity>
-    
-    <TouchableOpacity 
       testID='inventoryButton'
       style={[
         modernStyles.navButton,
@@ -276,15 +225,49 @@ const BottomNavContent = ({
       ]} 
       onPress={() => setActiveView('inventory')}
     >
-      {renderIcon(Clipboard, activeView === 'inventory')}
+      {renderIcon(Package, activeView === 'inventory')}
       <Text 
         testID={activeView === 'inventory' ? "activeNavText" : "navText"} 
         style={activeView === 'inventory' ? modernStyles.activeNavText : modernStyles.navText}
       >
-        재고 관리
+        입고관리
+      </Text>
+    </TouchableOpacity>
+    
+    <TouchableOpacity 
+      testID='expirationButton'
+      style={[
+        modernStyles.navButton,
+        activeView === 'expiration' && modernStyles.activeNavButton
+      ]} 
+      onPress={() => setActiveView('expiration')}
+    >
+      {renderIcon(Calendar, activeView === 'expiration')}
+      <Text 
+        testID={activeView === 'expiration' ? "activeNavText" : "navText"} 
+        style={activeView === 'expiration' ? modernStyles.activeNavText : modernStyles.navText}
+      >
+        유통기한관리
+      </Text>
+    </TouchableOpacity>
+    
+    <TouchableOpacity 
+      testID='stockButton'
+      style={[
+        modernStyles.navButton,
+        activeView === 'stock' && modernStyles.activeNavButton
+      ]} 
+      onPress={() => setActiveView('stock')}
+    >
+      {renderIcon(Clipboard, activeView === 'stock')}
+      <Text 
+        testID={activeView === 'stock' ? "activeNavText" : "navText"} 
+        style={activeView === 'stock' ? modernStyles.activeNavText : modernStyles.navText}
+      >
+        재고관리
       </Text>
     </TouchableOpacity>
   </>
 );
 
-export default Layout;
+export default Layout_warehouse;

@@ -1,301 +1,727 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal } from 'react-native';
+import React, {
+  useEffect,
+  useState,
+  useImperativeHandle,
+  forwardRef,
+  useRef,
+} from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  Button,
+} from 'react-native';
 import { RN_API_URL } from '@env';
+import * as f from '../../src/components/ui/common/function';
+import { styles } from '../../src/components/ui/common/commonstyler';
+import {
+  inventoryStyles,
+  toggleButtonStyles,
+  editModeStyles,
+  searchStyles,
+  modalStyles,
+  headerRowStyles,
+} from '../../src/styles/Inventory_styles_store';
 import { APIProduct } from '../../src/components/ui/common/types';
+import { Search, Minus, Plus, Trash2, X } from 'lucide-react-native';
 
-interface StockManagementProps {
+// 일간 재고 타입
+export interface MergedInventoryItem extends APIProduct {
+  매장_id: string;
+  기간: string;
+  매장_재고량: number;
+}
+
+// 월간 재고 타입
+export interface MergedMonthInventoryItem extends APIProduct {
+  매장_id: string;
+  기간: string;
+  월말_재고량: number;
+}
+
+type InventoryItem = MergedInventoryItem | MergedMonthInventoryItem;
+
+interface InventoryProps {
   warehouseId: string;
   items: APIProduct[];
 }
 
-const StockManagement_warehouse: React.FC<StockManagementProps> = ({ warehouseId, items }) => {
-  const [stockData, setStockData] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filteredData, setFilteredData] = useState<any[]>([]);
-  const [sortBy, setSortBy] = useState<'name' | 'quantity'>('name');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [categories, setCategories] = useState<string[]>([]);
+interface InventoryItemRowProps {
+  item: InventoryItem;
+  inventoryType: 'daily' | 'monthly';
+  editMode: boolean;
+  onValueChange: (품목_id: string, newValue: string) => void;
+  onIncrement: (품목_id: string) => void;
+  onDecrement: (품목_id: string) => void;
+  onDelete: (품목_id: string) => void;
+  index: number;
+}
 
+// InventoryItemRow를 forwardRef로 감싸서 commit 메서드를 노출
+const InventoryItemRow = forwardRef<
+  { commit: () => void },
+  InventoryItemRowProps
+>((props, ref) => {
+  const {
+    item,
+    inventoryType,
+    editMode,
+    onValueChange,
+    onIncrement,
+    onDecrement,
+    onDelete,
+    index,
+  } = props;
+  const inventoryValue =
+    inventoryType === 'daily'
+      ? (item as MergedInventoryItem).매장_재고량
+      : (item as MergedMonthInventoryItem).월말_재고량;
+
+  // 로컬 상태: 사용자가 입력 중인 값을 관리
+  const [localInput, setLocalInput] = useState<string>(
+    inventoryValue === 0 ? '' : f.formatPrice(inventoryValue)
+  );
+  const [isFocused, setIsFocused] = useState(false);
+
+  // 부모의 inventoryData가 업데이트되면 localInput도 업데이트
   useEffect(() => {
-    const fetchStockData = async () => {
-      if (!warehouseId) return;
-      
+    if (!isFocused) {
+      if (editMode) {
+        setLocalInput(inventoryValue === 0 ? "0" : f.formatPrice(inventoryValue));
+      } else {
+        setLocalInput(inventoryValue === 0 ? '' : f.formatPrice(inventoryValue));
+      }
+    }
+  }, [inventoryValue, isFocused, editMode]);
+
+
+  // 외부에서 commit() 호출 시 현재 입력값을 파싱하여 업데이트
+  useImperativeHandle(
+    ref,
+    () => ({
+      commit: () => {
+        const parsed = parseFloat(localInput.replace(/,/g, ''));
+        const numericValue = isNaN(parsed) ? 0 : parsed;
+        // 부모의 상태만 업데이트. 이후 useEffect가 inventoryValue 변경에 따라 localInput을 업데이트함
+        onValueChange(item.품목_id, numericValue.toString());
+      },
+    }),
+    [localInput, item.품목_id, onValueChange]
+  );
+
+  return (
+    <View 
+      testID="itemContainer" 
+      style={[
+        inventoryStyles.itemContainer,
+        index % 2 === 0 
+          ? { 
+              backgroundColor: '#ffffff',
+              borderColor: '#e2e8f0'
+            } 
+          : { 
+              backgroundColor: '#f5f8ff',
+              borderColor: '#d9e1f2'  // 배경색과 어울리는 테두리 색상
+            }
+      ]}
+    >
+      <View
+        testID="inventory_selectItemRowContainer"
+        style={inventoryStyles.inventory_selectItemRowContainer}
+      >
+        <Text testID="name_itemText" style={inventoryStyles.name_itemText}>
+          {item.품목명}
+        </Text>
+
+        {editMode ? (
+          <View testID="controlContainer" style={editModeStyles.controlContainer}>
+            <View testID="inputContainer" style={editModeStyles.inputContainer}>
+              <TouchableOpacity
+                testID="decrementButton"
+                style={[
+                  editModeStyles.controlButton,
+                  editModeStyles.leftButton,
+                ]}
+                onPress={() => onDecrement(item.품목_id)}
+              >
+                <Minus color="#0A2A5E" size={18} />
+              </TouchableOpacity>
+              <TextInput
+                testID="quantityInput"
+                style={editModeStyles.quantityInput}
+                value={localInput}
+                onChangeText={(text) => {
+                  // 현재 입력된 텍스트에서 콤마 제거
+                  const rawText = text.replace(/,/g, '');
+                  // 숫자로 파싱
+                  const parsed = parseFloat(rawText);
+                  // 숫자면 포맷 적용, 아니면 그대로 사용 (예: 빈 문자열)
+                  const formatted = isNaN(parsed) ? rawText : f.formatPrice(parsed);
+                  setLocalInput(formatted);
+                  onValueChange(item.품목_id, isNaN(parsed) ? "0" : parsed.toString());
+                }}
+                onFocus={() => {
+                  setIsFocused(true);
+                  if (localInput === "0") {
+                    setLocalInput('');
+                  }
+                }}
+                onBlur={() => {
+                  setIsFocused(false);
+                  const parsed = parseFloat(localInput.replace(/,/g, ''));
+                  const numericValue = isNaN(parsed) ? 0 : parsed;
+                  setLocalInput(
+                    numericValue === 0
+                      ? (editMode ? "0" : '')
+                      : f.formatPrice(numericValue)
+                  );
+                }}
+                keyboardType="numeric"
+              />
+              <TouchableOpacity
+                testID="incrementButton"
+                style={[
+                  editModeStyles.controlButton,
+                  editModeStyles.rightButton,
+                ]}
+                onPress={() => onIncrement(item.품목_id)}
+              >
+                <Plus color="#0A2A5E" size={18} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <Text testID="unit_itemText" style={inventoryStyles.unit_itemText}>
+            {f.formatPrice(inventoryValue)}
+          </Text>
+        )}
+      </View>
+    </View>
+  );
+});
+
+const StockManagement_warehouse: React.FC<InventoryProps> = ({ warehouseId, items }) => {
+  const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
+  const [filteredData, setFilteredData] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
+  const [editMode, setEditMode] = useState<boolean>(false);
+  const [inventoryType, setInventoryType] = useState<'daily' | 'monthly'>(
+    'daily'
+  );
+  const [saving, setSaving] = useState<boolean>(false);
+  const [isMonthlyEditable, setIsMonthlyEditable] = useState<boolean>(true);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [searchText, setSearchText] = useState<string>('');
+
+  // 각 InventoryItemRow의 ref를 저장할 객체
+  const rowRefs = useRef<{
+    [key: string]: React.RefObject<{ commit: () => void }>;
+  }>({});
+
+  // 현재 날짜를 "YYYY.MM.DD" 형식으로 반환
+  const getCurrentDateString = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}.${month}.${day}`;
+  };
+
+  const handleValueChange = (품목_id: string, newValue: string) => {
+    setInventoryData((prev) =>
+      prev.map((item) =>
+        item.품목_id === 품목_id
+          ? inventoryType === 'daily'
+            ? { ...item, 매장_재고량: parseFloat(newValue) || 0 }
+            : { ...item, 월말_재고량: parseFloat(newValue) || 0 }
+          : item
+      )
+    );
+  };
+
+  const handleIncrement = (품목_id: string) => {
+    setInventoryData((prev) =>
+      prev.map((item) =>
+        item.품목_id === 품목_id
+          ? inventoryType === 'daily'
+            ? {
+                ...item,
+                매장_재고량:
+                  ((item as MergedInventoryItem).매장_재고량 || 0) + 1,
+              }
+            : {
+                ...item,
+                월말_재고량:
+                  ((item as MergedMonthInventoryItem).월말_재고량 || 0) + 1,
+              }
+          : item
+      )
+    );
+  };
+
+  const handleDecrement = (품목_id: string) => {
+    setInventoryData((prev) =>
+      prev.map((item) => {
+        if (item.품목_id !== 품목_id) return item;
+        if (inventoryType === 'daily') {
+          const currentValue = (item as MergedInventoryItem).매장_재고량 || 0;
+          return { ...item, 매장_재고량: Math.max(0, currentValue - 1) };
+        } else {
+          const currentValue =
+            (item as MergedMonthInventoryItem).월말_재고량 || 0;
+          return { ...item, 월말_재고량: Math.max(0, currentValue - 1) };
+        }
+      })
+    );
+  };
+
+  const handleDelete = (품목_id: string) => {
+    setInventoryData((prev) =>
+      prev.map((item) =>
+        item.품목_id === 품목_id
+          ? inventoryType === 'daily'
+            ? { ...item, 매장_재고량: 0 }
+            : { ...item, 월말_재고량: 0 }
+          : item
+      )
+    );
+  };
+
+  // 검색 필터 적용
+  useEffect(() => {
+    if (searchText.trim() === '') {
+      setFilteredData(inventoryData);
+    } else {
+      const filtered = inventoryData.filter((item) =>
+        item.품목명.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setFilteredData(filtered);
+    }
+  }, [searchText, inventoryData]);
+
+  // 모든 InventoryItemRow의 commit 메서드를 호출
+  const commitAllRows = () => {
+    Object.values(rowRefs.current).forEach((ref) => {
+      ref.current?.commit();
+    });
+  };
+
+  const handleGlobalSave = async () => {
+    // 변경된 값 강제 반영
+    commitAllRows();
+    setSaving(true);
+    try {
+      await Promise.all(
+        (inventoryData as MergedInventoryItem[]).map((item) => {
+          const payload = {
+            매장_id: warehouseId,
+            품목_id: item.품목_id,
+            기간: getCurrentDateString(),
+            매장_재고량: item.매장_재고량,
+          };
+          return fetch(`${RN_API_URL}/api/inventory/store_inventory_update/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }).then((response) => {
+            if (!response.ok) {
+              throw new Error(`품목 ${item.품목명} 업데이트 실패`);
+            }
+          });
+        })
+      );
+      setEditMode(false);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleMonthlySave = async () => {
+    // 변경된 값 강제 반영
+    commitAllRows();
+    setSaving(true);
+    try {
+      await Promise.all(
+        (inventoryData as MergedMonthInventoryItem[]).map((item) => {
+          const payload = {
+            매장_id: warehouseId,
+            품목_id: item.품목_id,
+            기간: item.기간,
+            월말_재고량: item.월말_재고량,
+          };
+          return fetch(
+            `${RN_API_URL}/api/inventory/store_monthend_inventory_update/`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            }
+          ).then((response) => {
+            if (!response.ok) {
+              throw new Error(`품목 ${item.품목명} 월간 업데이트 실패`);
+            }
+          });
+        })
+      );
+      setEditMode(false);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // AbortController를 사용하여 재고 유형 전환 시 진행 중인 네트워크 요청 취소
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    setInventoryData([]);
+    setLoading(true);
+
+    if (inventoryType === 'monthly') {
+      fetch(`${RN_API_URL}/api/management/table_status_list/`, { signal })
+        .then((res) => res.json())
+        .then((data) => {
+          const monthlyTable = data.find(
+            (item: any) => item.테이블 === '매장_월말재고'
+          );
+          setIsMonthlyEditable(monthlyTable && monthlyTable.상태 === 1);
+        })
+        .catch((err) => {
+          if (err.name !== 'AbortError') {
+            setIsMonthlyEditable(false);
+          }
+        });
+    } else {
+      setIsMonthlyEditable(true);
+    }
+
+    const fetchData = async () => {
       try {
-        setLoading(true);
-        const response = await fetch(`${RN_API_URL}/api/warehouses/${warehouseId}/stock`);
-        const data = await response.json();
-        setStockData(data);
-        setFilteredData(data);
-        
-        // 카테고리 추출
-        const uniqueCategories = [...new Set(data.map((item: any) => item.카테고리))] as string[];
-        setCategories(uniqueCategories);
-      } catch (error) {
-        console.error('재고 데이터 조회 중 오류:', error);
+        const [invResponse, itemsData, suppliersData] = await Promise.all([
+          fetch(
+            inventoryType === 'daily'
+              ? `${RN_API_URL}/api/inventory/store/?매장_id=${warehouseId}`   //요기 수정함
+              : `${RN_API_URL}/api/inventory/store_monthend/?store_id=${warehouseId}`,
+            { signal }
+          ),
+          f.fetchApiItems(),
+          f.fetchSuppliers(),
+        ]);
+        if (!invResponse.ok) {
+          throw new Error(
+            inventoryType === 'daily'
+              ? '재고 데이터를 불러오지 못했습니다.'
+              : '월간 재고 데이터를 불러오지 못했습니다.'
+          );
+        }
+        const invData = await invResponse.json();
+        const invArray =
+          inventoryType === 'daily' ? invData : invData.inventories;
+        const mergedData: InventoryItem[] = itemsData.map(
+          (product: APIProduct) => {
+            const matchingInv = invArray.find(
+              (inv: any) => inv.품목_id === product.품목_id
+            );
+            if (inventoryType === 'daily') {
+              return {
+                ...product,
+                매장_id: warehouseId,
+                기간: matchingInv ? matchingInv.기간 : getCurrentDateString(),
+                매장_재고량: matchingInv ? matchingInv.매장_재고량 : 0,
+              } as MergedInventoryItem;
+            } else {
+              return {
+                ...product,
+                매장_id: warehouseId,
+                기간: matchingInv ? matchingInv.기간 : getCurrentDateString(),
+                월말_재고량: matchingInv ? matchingInv.월말_재고량 : 0,
+              } as MergedMonthInventoryItem;
+            }
+          }
+        );
+        const sortedData = f.sortProductsBySupplierAndName(
+          mergedData,
+          suppliersData
+        ) as InventoryItem[];
+        setInventoryData(sortedData);
+        setFilteredData(sortedData);
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          setError(err.message);
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStockData();
-  }, [warehouseId]);
+    fetchData();
 
-  useEffect(() => {
-    let filtered = [...stockData];
-    
-    // 카테고리 필터링
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(item => item.카테고리 === selectedCategory);
-    }
-    
-    // 검색어 필터링
-    if (searchQuery.trim() !== '') {
-      filtered = filtered.filter(item => 
-        item.품목명.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.품목코드.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    
-    // 정렬
-    if (sortBy === 'name') {
-      filtered.sort((a, b) => a.품목명.localeCompare(b.품목명));
-    } else if (sortBy === 'quantity') {
-      filtered.sort((a, b) => b.재고수량 - a.재고수량);
-    }
-    
-    setFilteredData(filtered);
-  }, [searchQuery, stockData, sortBy, selectedCategory]);
+    return () => {
+      controller.abort();
+    };
+  }, [warehouseId, inventoryType]);
 
-  // 재고 상태에 따른 스타일 결정
-  const getStockStatusStyle = (quantity: number, minStock: number) => {
-    if (quantity <= 0) {
-      return styles.outOfStock;
-    } else if (quantity < minStock) {
-      return styles.lowStock;
-    } else {
-      return styles.inStock;
-    }
+  const handleToggle = (type: 'daily' | 'monthly') => {
+    setEditMode(false);
+    setInventoryType(type);
   };
 
-  const renderItem = ({ item }: { item: any }) => {
-    const stockStatusStyle = getStockStatusStyle(item.재고수량, item.최소재고);
-    
+  if (loading) {
     return (
-      <View style={[styles.itemContainer, stockStatusStyle]}>
-        <Text style={styles.itemName}>{item.품목명}</Text>
-        <Text style={styles.itemCode}>품목코드: {item.품목코드}</Text>
-        <Text>카테고리: {item.카테고리}</Text>
-        <View style={styles.stockInfo}>
-          <Text style={styles.stockQuantity}>재고: {item.재고수량}</Text>
-          <Text style={styles.minStock}>최소재고: {item.최소재고}</Text>
-        </View>
-        <Text>위치: {item.보관위치}</Text>
+      <View testID="loading_Container" style={styles.loading_Container}>
+        <ActivityIndicator size="large" color="#0D326F80" />
+        <Text testID="loading_Text" style={styles.loading_Text}>
+          로딩 중...
+        </Text>
       </View>
     );
-  };
+  }
+
+  if (error) {
+    return (
+      <View testID="container" style={inventoryStyles.container}>
+        <Text testID="message" style={inventoryStyles.message}>
+          오류 발생: {error}
+        </Text>
+      </View>
+    );
+  }
+
+  if (inventoryData.length === 0) {
+    return (
+      <View testID="container" style={inventoryStyles.container}>
+        <Text testID="message" style={inventoryStyles.message}>
+          재고 데이터가 없습니다.
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>재고 관리</Text>
-      
-      <View style={styles.filterContainer}>
+    <View testID="status_container" style={inventoryStyles.status_container}>
+      <Modal transparent visible={modalVisible} animationType="slide">
+        <View testID="overlay" style={modalStyles.overlay}>
+          <View testID="modalContainer" style={modalStyles.modalContainer}>
+            <Text testID="modalText" style={modalStyles.modalText}>
+              월별 재고 입력기간이 아니어서 월별 재고를 변경할 수 없습니다.
+            </Text>
+            <Button title="확인" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
+
+      <View testID="container" style={toggleButtonStyles.container}>
+        <TouchableOpacity
+          testID="button"
+          style={[
+            toggleButtonStyles.button,
+            inventoryType === 'daily' && toggleButtonStyles.buttonActive,
+            { marginRight: 1 },
+          ]}
+          onPress={() => handleToggle('daily')}
+        >
+          <Text
+            testID="buttonText"
+            style={[
+              toggleButtonStyles.buttonText,
+              inventoryType === 'daily' && toggleButtonStyles.buttonTextActive,
+            ]}
+          >
+            일별 재고
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          testID="button"
+          style={[
+            toggleButtonStyles.button,
+            inventoryType === 'monthly' && toggleButtonStyles.buttonActive,
+            { marginLeft: 1 },
+          ]}
+          onPress={() => handleToggle('monthly')}
+        >
+          <Text
+            testID="buttonText"
+            style={[
+              toggleButtonStyles.buttonText,
+              inventoryType === 'monthly' && toggleButtonStyles.buttonTextActive,
+            ]}
+          >
+            월말 재고
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View testID="searchContainer" style={searchStyles.searchContainer}>
+        <Search
+          testID="searchIconInInput"
+          color="#0A2A5E"
+          style={searchStyles.searchIconSize}
+        />
         <TextInput
-          style={styles.searchInput}
-          placeholder="품목명 또는 코드로 검색"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
+          testID="searchInput"
+          style={searchStyles.searchInput}
+          placeholder="제품명 검색..."
+          value={searchText}
+          onChangeText={(text) => setSearchText(text)}
+          placeholderTextColor="#94a3b8"
         />
+        {searchText.length > 0 && (
+          <TouchableOpacity
+            testID="clearSearchButton"
+            style={searchStyles.searchIcon}
+            onPress={() => setSearchText('')}
+          >
+            <X color="#0A2A5E" style={searchStyles.searchIconSize} />
+          </TouchableOpacity>
+        )}
       </View>
-      
-      <View style={styles.controlsContainer}>
-        <View style={styles.categoryButtons}>
-          <TouchableOpacity 
-            style={[styles.categoryButton, selectedCategory === 'all' && styles.activeCategory]}
-            onPress={() => setSelectedCategory('all')}
-          >
-            <Text>전체</Text>
-          </TouchableOpacity>
-          {categories.map(category => (
-            <TouchableOpacity 
-              key={category}
-              style={[styles.categoryButton, selectedCategory === category && styles.activeCategory]}
-              onPress={() => setSelectedCategory(category)}
-            >
-              <Text>{category}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        <View style={styles.sortButtons}>
-          <TouchableOpacity 
-            style={[styles.sortButton, sortBy === 'name' && styles.activeSort]}
-            onPress={() => setSortBy('name')}
-          >
-            <Text>이름순</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.sortButton, sortBy === 'quantity' && styles.activeSort]}
-            onPress={() => setSortBy('quantity')}
-          >
-            <Text>수량순</Text>
-          </TouchableOpacity>
+
+      <View
+        testID="headerRowStyles_container"
+        style={headerRowStyles.container}
+      >
+        <View style={headerRowStyles.rightContainer}>
+          {inventoryType === 'daily' ? (
+            <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
+              {editMode ? (
+                <TouchableOpacity
+                  testID="smallButton"
+                  style={
+                    saving
+                      ? headerRowStyles.disabledButton
+                      : headerRowStyles.activeButton
+                  }
+                  onPress={handleGlobalSave}
+                  disabled={saving}
+                >
+                  <Text
+                    testID="buttonText"
+                    style={
+                      saving
+                        ? headerRowStyles.disabledButtonText
+                        : headerRowStyles.activeButtonText
+                    }
+                  >
+                    {saving ? '저장 중...' : '조정완료'}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  testID="smallButton"
+                  style={headerRowStyles.smallButton}
+                  onPress={() => setEditMode(true)}
+                >
+                  <Text testID="buttonText" style={headerRowStyles.buttonText}>
+                    재고조정
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
+              {editMode ? (
+                <TouchableOpacity
+                  testID="smallButton"
+                  style={
+                    saving || !isMonthlyEditable
+                      ? headerRowStyles.disabledButton
+                      : headerRowStyles.activeButton
+                  }
+                  onPress={handleMonthlySave}
+                  disabled={saving || !isMonthlyEditable}
+                >
+                  <Text
+                    testID="buttonText"
+                    style={
+                      saving || !isMonthlyEditable
+                        ? headerRowStyles.disabledButtonText
+                        : headerRowStyles.activeButtonText
+                    }
+                  >
+                    {saving ? '저장 중...' : '조정완료'}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  testID="smallButton"
+                  style={
+                    !isMonthlyEditable
+                      ? headerRowStyles.disabledButton
+                      : headerRowStyles.smallButton
+                  }
+                  onPress={() => setEditMode(true)}
+                  disabled={!isMonthlyEditable}
+                >
+                  <Text
+                    testID="buttonText"
+                    style={
+                      !isMonthlyEditable
+                        ? headerRowStyles.disabledButtonText
+                        : headerRowStyles.buttonText
+                    }
+                  >
+                    재고조정
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       </View>
 
-      <View style={styles.legendContainer}>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendColor, styles.outOfStock]} />
-          <Text>품절</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendColor, styles.lowStock]} />
-          <Text>부족</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendColor, styles.inStock]} />
-          <Text>정상</Text>
-        </View>
+      <View
+        testID="inventory_HeaderContainer"
+        style={inventoryStyles.inventory_HeaderContainer}
+      >
+        <Text
+          testID="name_headerText"
+          style={inventoryStyles.inventory_item_headerText}
+        >
+          상품명
+        </Text>
+        <Text
+          testID="unit_headerText"
+          style={inventoryStyles.inventory_unit_headerText}
+        >
+          재고량
+        </Text>
       </View>
 
-      {loading ? (
-        <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
-      ) : (
-        <FlatList
-          data={filteredData}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => `${item.품목코드}-${index}`}
-          ListEmptyComponent={<Text style={styles.emptyText}>재고 데이터가 없습니다.</Text>}
-        />
-      )}
+      <FlatList
+        testID="flat_inventory"
+        data={filteredData}
+        keyExtractor={(item) => item.품목_id}
+        style={inventoryStyles.flat_inventory}
+        renderItem={({ item, index }) => {
+          // 각 행에 대해 ref 생성 및 할당
+          if (!rowRefs.current[item.품목_id]) {
+            rowRefs.current[item.품목_id] = React.createRef();
+          }
+          return (
+            <InventoryItemRow
+              ref={rowRefs.current[item.품목_id]}
+              item={item}
+              inventoryType={inventoryType}
+              editMode={editMode}
+              onValueChange={handleValueChange}
+              onIncrement={handleIncrement}
+              onDecrement={handleDecrement}
+              onDelete={handleDelete}
+              index={index}
+            />
+          );
+        }}
+      />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#333',
-  },
-  filterContainer: {
-    marginBottom: 8,
-  },
-  searchInput: {
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#fff',
-  },
-  controlsContainer: {
-    marginBottom: 16,
-  },
-  categoryButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 8,
-  },
-  categoryButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#eee',
-    borderRadius: 8,
-    marginRight: 4,
-    marginBottom: 4,
-  },
-  activeCategory: {
-    backgroundColor: '#ddd',
-  },
-  sortButtons: {
-    flexDirection: 'row',
-  },
-  sortButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#eee',
-    borderRadius: 8,
-    marginRight: 4,
-  },
-  activeSort: {
-    backgroundColor: '#ddd',
-  },
-  itemContainer: {
-    padding: 16,
-    marginBottom: 8,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
-    elevation: 2,
-  },
-  outOfStock: {
-    backgroundColor: '#ffcdd2', // 연한 빨강
-  },
-  lowStock: {
-    backgroundColor: '#fff9c4', // 연한 노랑
-  },
-  inStock: {
-    backgroundColor: '#fff',
-  },
-  itemName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  itemCode: {
-    color: '#666',
-    marginBottom: 8,
-  },
-  stockInfo: {
-    flexDirection: 'row',
-    marginVertical: 4,
-  },
-  stockQuantity: {
-    fontWeight: 'bold',
-    marginRight: 16,
-  },
-  minStock: {
-    color: '#666',
-  },
-  loadingText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    color: '#666',
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    color: '#666',
-  },
-  legendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 16,
-    backgroundColor: '#fff',
-    padding: 8,
-    borderRadius: 8,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  legendColor: {
-    width: 16,
-    height: 16,
-    borderRadius: 4,
-    marginRight: 4,
-  },
-});
 
 export default StockManagement_warehouse; 

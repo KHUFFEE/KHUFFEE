@@ -1,29 +1,29 @@
-import { Text } from 'react-native';
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from './login';
-import StoreDashboardScreen from '../(store)/main_store';
-import WarehouseDashboardScreen from '../(warehouse)/main';
-import { useFonts } from 'expo-font';
-import AppLoading from 'expo-app-loading';
+import { Text } from "react-native";
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import LoginScreen from "./login";
+import StoreDashboardScreen from "../(store)/main_store";
+import WarehouseDashboardScreen from "../(warehouse)/main";
+import { useFonts } from "expo-font";
+import AppLoading from "expo-app-loading";
 
 if ((Text as any).defaultProps == null) {
   (Text as any).defaultProps = {};
 }
-(Text as any).defaultProps.style = { fontFamily: 'PretendardVariable' };
+(Text as any).defaultProps.style = { fontFamily: "PretendardVariable" };
 
 export type RootStackParamList = {
   Login: undefined;
   Main: { storeName: string };
-  '(store)/main': { storeName: string };
-  '(warehouse)/main': { storeName: string };
+  "(store)/main": { storeName: string };
+  "(warehouse)/main": { storeName: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    'Pretendard-Variable': require('../../assets/fonts/PretendardVariable.ttf'),
+    "Pretendard-Variable": require("../../assets/fonts/PretendardVariable.ttf"),
   });
 
   if (!fontsLoaded) {
@@ -32,10 +32,26 @@ export default function App() {
 
   return (
     <Stack.Navigator initialRouteName="Login">
-      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Main" component={StoreDashboardScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="(store)/main" component={StoreDashboardScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="(warehouse)/main" component={WarehouseDashboardScreen} options={{ headerShown: false }} />
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Main"
+        component={StoreDashboardScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="(store)/main"
+        component={StoreDashboardScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="(warehouse)/main"
+        component={WarehouseDashboardScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }

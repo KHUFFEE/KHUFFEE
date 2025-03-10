@@ -33,7 +33,10 @@ const Suppliers = () => {
       setSuppliers((prev) => [...prev, addedSupplier]);
       setNewSupplier("");
       setShowPopup(false);
-      setAlertPopup({ show: true, message: "협력사가 성공적으로 추가되었습니다." });
+      setAlertPopup({
+        show: true,
+        message: "협력사가 성공적으로 추가되었습니다.",
+      });
     } catch (err) {
       setAlertPopup({ show: true, message: "협력사 추가에 실패하였습니다." });
     }
@@ -44,12 +47,15 @@ const Suppliers = () => {
       await deleteSuppliers(selectedSuppliers);
       setSuppliers((prev) =>
         prev.filter(
-          (supplier) => !selectedSuppliers.includes(supplier.협력사명)
-        )
+          (supplier) => !selectedSuppliers.includes(supplier.협력사명),
+        ),
       );
       setSelectedSuppliers([]);
       setIsDeleteMode(false);
-      setAlertPopup({ show: true, message: "협력사가 성공적으로 삭제되었습니다." });
+      setAlertPopup({
+        show: true,
+        message: "협력사가 성공적으로 삭제되었습니다.",
+      });
     } catch (err) {
       setAlertPopup({ show: true, message: "협력사 삭제에 실패하였습니다." });
     }
@@ -59,7 +65,7 @@ const Suppliers = () => {
     setSelectedSuppliers((prev) =>
       prev.includes(name)
         ? prev.filter((selectedName) => selectedName !== name)
-        : [...prev, name]
+        : [...prev, name],
     );
   };
 
@@ -78,10 +84,7 @@ const Suppliers = () => {
               <button onClick={handleDownloadExcel} className="download-button">
                 Excel 다운로드
               </button>
-              <button
-                onClick={() => setShowPopup(true)}
-                className="add-button"
-              >
+              <button onClick={() => setShowPopup(true)} className="add-button">
                 + 협력사 추가
               </button>
             </>
@@ -104,7 +107,7 @@ const Suppliers = () => {
           >
             {isDeleteMode ? "취소" : "삭제"}
           </button>
-        </div>  
+        </div>
       </div>
       <hr className="divider" />
       {error && <p className="suppliers-error">{error}</p>}
@@ -149,7 +152,10 @@ const Suppliers = () => {
               className="suppliers-popup-input"
             />
             <div className="suppliers-popup-buttons">
-              <button onClick={() => setShowPopup(false)} className="popup-cancel">
+              <button
+                onClick={() => setShowPopup(false)}
+                className="popup-cancel"
+              >
                 취소
               </button>
               <button onClick={handleAddSupplier} className="popup-confirm">

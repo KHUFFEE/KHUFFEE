@@ -67,10 +67,22 @@ export const itemDownloadExcel = ({ sortedItems, suppliers }) => {
       if (!ws[addr]) ws[addr] = { t: "s", v: "" };
       ws[addr].s = ws[addr].s || {};
       ws[addr].s.border = {
-        top: r === titleMerge.s.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
-        bottom: r === titleMerge.e.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
-        left: c === titleMerge.s.c ? { style: "medium", color: { rgb: "000000" } } : undefined,
-        right: c === titleMerge.e.c ? { style: "medium", color: { rgb: "000000" } } : undefined,
+        top:
+          r === titleMerge.s.r
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
+        bottom:
+          r === titleMerge.e.r
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
+        left:
+          c === titleMerge.s.c
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
+        right:
+          c === titleMerge.e.c
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
       };
     }
   }
@@ -86,8 +98,10 @@ export const itemDownloadExcel = ({ sortedItems, suppliers }) => {
         top: { style: "medium", color: { rgb: "000000" } },
         bottom: { style: "medium", color: { rgb: "000000" } },
       };
-      if (i === 0) borderObj.left = { style: "medium", color: { rgb: "000000" } };
-      if (i === headers.length - 1) borderObj.right = { style: "medium", color: { rgb: "000000" } };
+      if (i === 0)
+        borderObj.left = { style: "medium", color: { rgb: "000000" } };
+      if (i === headers.length - 1)
+        borderObj.right = { style: "medium", color: { rgb: "000000" } };
       ws[cellAddr].s.border = borderObj;
     }
   }

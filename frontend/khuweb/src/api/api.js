@@ -1,6 +1,8 @@
 export const fetchItems = async (all = false) => {
-  const query = all ? '?all=true' : '';
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/items/${query}`);
+  const query = all ? "?all=true" : "";
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/suppliers/items/${query}`,
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch items");
   }
@@ -8,7 +10,9 @@ export const fetchItems = async (all = false) => {
 };
 
 export const fetchSuppliers = async () => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/`);
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/suppliers/`,
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch suppliers");
   }
@@ -16,13 +20,16 @@ export const fetchSuppliers = async () => {
 };
 
 export const addSupplier = async (supplierName) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/suppliers/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ 협력사명: supplierName }),
     },
-    body: JSON.stringify({ 협력사명: supplierName }),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to add supplier");
   }
@@ -30,13 +37,16 @@ export const addSupplier = async (supplierName) => {
 };
 
 export const deleteSuppliers = async (supplierNames) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/delete/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/suppliers/delete/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ names: supplierNames }),
     },
-    body: JSON.stringify({ names: supplierNames }),
-  });
+  );
 
   if (!response.ok) {
     throw new Error("Failed to delete suppliers");
@@ -46,13 +56,16 @@ export const deleteSuppliers = async (supplierNames) => {
 };
 
 export const addItem = async (newItem) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/items/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/suppliers/items/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newItem),
     },
-    body: JSON.stringify(newItem),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to add item");
   }
@@ -60,13 +73,16 @@ export const addItem = async (newItem) => {
 };
 
 export const deleteItems = async (payload) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/items/delete/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/suppliers/items/delete/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
     },
-    body: JSON.stringify(payload),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to delete items");
   }
@@ -74,13 +90,16 @@ export const deleteItems = async (payload) => {
 };
 
 export const updateItem = async (itemData) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/suppliers/items/update/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/suppliers/items/update/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(itemData),
     },
-    body: JSON.stringify(itemData),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to update item");
   }
@@ -110,13 +129,16 @@ export const fetchOrders = async (params) => {
 };
 
 export const createStoreOrder = async (orderData) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/store_order_create/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/orders/store_order_create/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderData),
     },
-    body: JSON.stringify(orderData),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to create store order");
   }
@@ -125,7 +147,9 @@ export const createStoreOrder = async (orderData) => {
 
 /* 추가: 매장 목록 불러오기 (StoreListView 활용) */
 export const fetchStores = async () => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/accounts/stores/`);
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/accounts/stores/`,
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch stores");
   }
@@ -133,13 +157,16 @@ export const fetchStores = async () => {
 };
 
 export const updateStoreOrder = async (orderData) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/store_order_update/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/orders/store_order_update/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderData),
     },
-    body: JSON.stringify(orderData),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to update store order");
   }
@@ -200,7 +227,7 @@ export const updateStoreMonthEndInventory = async (data) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -220,7 +247,7 @@ export const updateTableStatus = async (data) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -233,7 +260,7 @@ export const updateTableStatus = async (data) => {
 // 상태 관리(상태_관리 테이블) GET 함수
 export const getTableStatusList = async () => {
   const response = await fetch(
-    `${process.env.REACT_APP_API_URL}/api/management/table_status_list/`
+    `${process.env.REACT_APP_API_URL}/api/management/table_status_list/`,
   );
 
   if (!response.ok) {
@@ -245,13 +272,16 @@ export const getTableStatusList = async () => {
 
 // WarehouseOrder 관련 API 추가
 export const createWarehouseOrder = async (orderData) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/warehouse_order_create/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/orders/warehouse_order_create/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderData),
     },
-    body: JSON.stringify(orderData),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to create warehouse order");
   }
@@ -279,13 +309,16 @@ export const fetchWarehouseOrders = async (params) => {
 };
 
 export const updateWarehouseOrder = async (orderData) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/warehouse_order_update/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/orders/warehouse_order_update/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderData),
     },
-    body: JSON.stringify(orderData),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to update warehouse order");
   }
@@ -294,13 +327,16 @@ export const updateWarehouseOrder = async (orderData) => {
 
 // 창고 출고 생성 API 함수
 export const createWarehouseOutgoing = async (data) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/warehouse_outgoing_create/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/orders/warehouse_outgoing_create/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     },
-    body: JSON.stringify(data),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to create warehouse outgoing record");
   }
@@ -330,13 +366,16 @@ export const fetchWarehouseOutgoing = async (params) => {
 
 // 창고 출고 수정 API 함수
 export const updateWarehouseOutgoing = async (data) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/warehouse_outgoing_update/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/orders/warehouse_outgoing_update/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     },
-    body: JSON.stringify(data),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to update warehouse outgoing record");
   }
@@ -344,13 +383,16 @@ export const updateWarehouseOutgoing = async (data) => {
 };
 
 export const deleteStoreOrder = async (payload) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/store_order_delete/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/orders/store_order_delete/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
     },
-    body: JSON.stringify(payload),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to delete store order");
   }
@@ -358,13 +400,16 @@ export const deleteStoreOrder = async (payload) => {
 };
 
 export const updateWarehouseInventory = async (data) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/inventory/warehouse_inventory_update/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/inventory/warehouse_inventory_update/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     },
-    body: JSON.stringify(data),
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to update warehouse inventory");
   }

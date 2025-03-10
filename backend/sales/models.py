@@ -1,6 +1,7 @@
 from django.db import models
 from accounts.models import Store
 
+
 class Sales(models.Model):
     매장_id = models.ForeignKey(Store, on_delete=models.PROTECT, db_column="매장_id")
     기간 = models.CharField(max_length=7)  # YYYY.MM

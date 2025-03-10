@@ -550,7 +550,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                           rulesThickness={1}
                           // 가로선 위치 오른쪽으로 이동
                           horizontalRulesStyle={{
-                            paddingLeft: moderateScale(10 * deviceScale.spacingScale)
+                            paddingLeft: moderateScale(0 * deviceScale.spacingScale)
                           }}
                           // X축·Y축 스타일
                           xAxisColor="#666"
@@ -558,14 +558,14 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                           yAxisColor="#666"
                           yAxisThickness={0}
                           // Y축 텍스트 영역 설정
-                          yAxisLabelWidth={wp(10)}
+                          yAxisLabelWidth={wp(8)}
                           yAxisTextStyle={{ 
                             color: 'black',
                             fontSize: RFValue(9.5), // 폰트 크기 더 줄임
                             fontWeight: '500',
-                            textAlign: 'right',
+                            textAlign: 'left',
                             width: '100%',
-                            paddingRight: 0, // 패딩 제거
+                            paddingLeft: moderateScale(3), // 패딩 제거
                           }}
                           // y축 레이블 포맷: 값만 표시
                           formatYLabel={(value) => `${value}`}

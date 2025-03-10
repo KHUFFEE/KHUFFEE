@@ -57,7 +57,6 @@ const WarehouseEmployeeDashboard_warehouse: React.FC<WarehouseEmployeeDashboardP
   // 현재 선택된 뷰에 따라 컴포넌트 렌더링
   const renderView = () => {
     switch (activeView) {
-
       case 'expiration':
         return <ExpirationManagement_warehouse warehouseId={warehouseId} items={items} />;
       case 'stock':

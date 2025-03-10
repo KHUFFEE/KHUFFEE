@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { RN_API_URL } from '@env';
-import Inventory_warehouse from './Inventory_warehouse';
 import ExpirationManagement_warehouse from './ExpirationManagement_warehouse';
 import StockManagement_warehouse from './StockManagement_warehouse';
 import { styles } from '../../src/components/ui/common/commonstyler';
@@ -58,14 +57,13 @@ const WarehouseEmployeeDashboard_warehouse: React.FC<WarehouseEmployeeDashboardP
   // 현재 선택된 뷰에 따라 컴포넌트 렌더링
   const renderView = () => {
     switch (activeView) {
-      case 'inventory':
-        return <Inventory_warehouse warehouseId={warehouseId} items={items} />;
+
       case 'expiration':
         return <ExpirationManagement_warehouse warehouseId={warehouseId} items={items} />;
       case 'stock':
-        return <StockManagement_warehouse warehouseId={warehouseId} items={items} />;
+        return <StockManagement_warehouse storeId={warehouseId} />;
       default:
-        return <Inventory_warehouse warehouseId={warehouseId} items={items} />;
+        return <StockManagement_warehouse storeId={warehouseId} />;
     }
   };
 

@@ -22,6 +22,7 @@ export const homescreenStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: moderateScale(16),
+    paddingTop: moderateScale(0),
     paddingBottom: moderateScale(0),
   },
   
@@ -36,7 +37,7 @@ export const homescreenStyles = StyleSheet.create({
     }),
     fontSize: RFValue(18),
     color: '#0D326F',
-    marginBottom: verticalScale(8),
+    marginVertical: verticalScale(8),
   },
   
   subtitle: {
@@ -66,7 +67,7 @@ export const homescreenStyles = StyleSheet.create({
   
   // 섹션 컨테이너 스타일
   sectionContainer: {
-    marginBottom: verticalScale(24),
+    marginBottom: verticalScale(10),
     backgroundColor: '#fff',
     borderRadius: moderateScale(10),
     overflow: 'hidden',
@@ -143,7 +144,7 @@ export const homescreenStyles = StyleSheet.create({
   // 차트 단위 텍스트 스타일
   chartUnitText: {
     ...commonTextStyle(),
-    fontSize: RFValue(10),
+    fontSize: RFValue(9),
     color: '#888888',
     textAlign: 'right',
     alignSelf: 'flex-end',
@@ -168,7 +169,7 @@ export const homescreenStyles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 3,
     elevation: 2,
-    marginBottom: verticalScale(15),
+    marginBottom: verticalScale(3),
     marginHorizontal: moderateScale(2),
     overflow: 'hidden',
   },
@@ -194,14 +195,14 @@ export const homescreenStyles = StyleSheet.create({
     }),
     fontSize: RFValue(12),
     color: '#64748b',
-    marginBottom: verticalScale(4),
+    // marginBottom: verticalScale(4),
   },
   
   comparisonValue: {
     ...commonTextStyle({
-      fontWeight: '700',
+      fontWeight: '500',
     }),
-    fontSize: RFValue(14),
+    fontSize: RFValue(13),
     color: '#0D326F',
   },
   
@@ -416,7 +417,7 @@ export const homescreenStyles = StyleSheet.create({
   
   summaryTotalValue: {
     ...commonTextStyle({
-      fontWeight: '600',
+      fontWeight: '500',
     }),
     fontSize: RFValue(15),
     color: '#0D326F',
@@ -458,6 +459,15 @@ export const homescreenStyles = StyleSheet.create({
     minHeight: verticalScale(45),
     width: '100%',
     justifyContent: 'space-between',
+    paddingHorizontal: moderateScale(8),
+  },
+  
+  tableRowEven: {
+    backgroundColor: '#FFFFFF',
+  },
+  
+  tableRowOdd: {
+    backgroundColor: '#F8FAFC',
   },
   
   tableCell: {
@@ -497,9 +507,9 @@ export const homescreenStyles = StyleSheet.create({
   },
   
   tableFooter: {
-    backgroundColor: '#f1f5f9',
-    // borderTopWidth: 1,
-    borderTopColor: '#94a3b8',
+    backgroundColor: '#E6EFF9',
+    borderTopWidth: 1,
+    borderTopColor: '#CBD5E1',
   },
 });
 

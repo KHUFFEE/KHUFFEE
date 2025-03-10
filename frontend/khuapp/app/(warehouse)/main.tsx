@@ -10,8 +10,8 @@ export default function WarehouseDashboardScreen() {
   const route = useRoute();
   const { storeName } = route.params as { storeName: string };
 
-  // 현재 활성화된 뷰 상태 - 기본값을 'inventory'로 설정
-  const [activeView, setActiveView] = useState<ViewType>('inventory');
+  // 현재 활성화된 뷰 상태 - 기본값을 'stock'으로 설정
+  const [activeView, setActiveView] = useState<ViewType>('stock');
 
   return (
     <SafeAreaView testID='dashboardContainer' style={styles.dashboardContainer}>

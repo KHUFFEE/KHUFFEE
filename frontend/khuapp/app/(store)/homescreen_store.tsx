@@ -535,8 +535,8 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                             currentMonthSortedWeeks
                           )}
                           width={chartDimensions.width}
-                          height={chartDimensions.height}
-                          barWidth={chartDimensions.barWidth}
+                          height={hp(20)}
+                          barWidth={wp(6.5)}
                           spacing={chartDimensions.spacing}
                           initialSpacing={moderateScale(2 * deviceScale.spacingScale)}
                           endSpacing={moderateScale(25 * deviceScale.spacingScale)}

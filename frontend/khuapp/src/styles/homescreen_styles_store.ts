@@ -250,8 +250,6 @@ export const homescreenStyles = StyleSheet.create({
     // marginBottom: verticalScale(16),
     // borderRadius: moderateScale(10),
     overflow: 'hidden',
-    borderBottomWidth: 1,
-    borderColor: '#e2e8f0',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -329,8 +327,8 @@ export const homescreenStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: wp('9%'),
-    borderRightWidth: 1,
-    borderRightColor: '#e2e8f0',
+    borderLeftWidth: 1,
+    borderLeftColor: '#e2e8f0',
   },
   
   productColumn: {
@@ -338,8 +336,6 @@ export const homescreenStyles = StyleSheet.create({
     paddingLeft: moderateScale(10),
     justifyContent: 'center',
     minWidth: wp('32%'),
-    borderRightWidth: 1,
-    borderRightColor: '#e2e8f0',
   },
   
   quantityColumn: {

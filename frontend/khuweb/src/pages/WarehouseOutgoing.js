@@ -197,9 +197,11 @@ const WarehouseOutgoing = () => {
         supplierName: supplier.협력사명 || "N/A",
         itemName,
         규격: matchedItem ? matchedItem.규격 : "",
-        단위: matchedItem ? matchedItem.단위 : "",
         입고단가: matchedItem ? matchedItem.입고단가 : "",
-        입고단위: matchedItem ? matchedItem.입고단위 : "",
+        입고단위:
+          matchedItem && matchedItem.입고단위
+            ? Number(matchedItem.입고단위)
+            : "",
         입고단위단가: matchedItem ? matchedItem.입고단위단가 : "",
         prevInv: prevInvValue,
         week1,
@@ -286,21 +288,50 @@ const WarehouseOutgoing = () => {
         <thead>
           <tr>
             <th className="wg-number-col">No.</th>
-            <th className="wg-supplier-col">협력사</th>
-            <th className="wg-item-col">품목명</th>
-            <th className="wg-spec-col">규격</th>
-            <th className="wg-unit-col">단위</th>
-            <th className="wg-price-col">입고단가</th>
-            <th className="wg-inunit-col">입고단위</th>
-            <th className="wg-inunitprice-col">입고단위단가</th>
-            <th className="wg-previnv-col">전월 재고</th>
-            <th className="wg-week-col">1주차 출고</th>
-            <th className="wg-week-col">2주차 출고</th>
-            <th className="wg-week-col">3주차 출고</th>
-            <th className="wg-week-col">4주차 출고</th>
-            <th className="wg-week-col">5주차 출고</th>
-            <th className="wg-month-col">월 출고량</th>
-            <th className="wg-month-col">월 출고 금액</th>
+            <th className="wg-supplier-col nowrap">협력사</th>
+            <th className="wg-item-col nowrap">품목명</th>
+            <th className="wg-spec-col nowrap">규격</th>
+            <th className="wg-price-col nowrap">입고단가</th>
+            <th className="wg-inunit-col nowrap">입고단위</th>
+            <th className="wg-inunitprice-col">
+              입고단위
+              <br />
+              단가
+            </th>
+            <th className="wg-previnv-col nowrap">전월 재고</th>
+            <th className="wg-week-col">
+              1주차
+              <br />
+              출고
+            </th>
+            <th className="wg-week-col">
+              2주차
+              <br />
+              출고
+            </th>
+            <th className="wg-week-col">
+              3주차
+              <br />
+              출고
+            </th>
+            <th className="wg-week-col">
+              4주차
+              <br />
+              출고
+            </th>
+            <th className="wg-week-col">
+              5주차
+              <br />
+              출고
+            </th>
+            <th className="wg-month-col">
+              월<br />
+              출고량
+            </th>
+            <th className="wg-month-col">
+              월<br />
+              출고금액
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -308,17 +339,20 @@ const WarehouseOutgoing = () => {
             <tr key={row.itemId}>
               <td className="wg-number-col">{index + 1}</td>
               <td className="wg-supplier-col">
-                <span className="wg-supplier-col">{row.supplierName}</span>
+                <div className="wg-supplier-cell">{row.supplierName}</div>
               </td>
               <td className="wg-item-col">
-                <span className="wg-item-col">{row.itemName}</span>
+                <div className="wg-item-cell">{row.itemName}</div>
               </td>
-              <td className="wg-spec-col">{row.규격 || "-"}</td>
-              <td className="wg-unit-col">{row.단위 || "-"}</td>
+              <td className="wg-spec-col">
+                <div className="wg-spec-cell">{row.규격 || "-"}</div>
+              </td>
               <td className="wg-price-col">
                 {row.입고단가 ? Number(row.입고단가).toLocaleString() : "-"}
               </td>
-              <td className="wg-inunit-col">{row.입고단위 || "-"}</td>
+              <td className="wg-inunit-col">
+                {row.입고단위 ? Number(row.입고단위).toLocaleString() : "-"}
+              </td>
               <td className="wg-inunitprice-col">
                 {row.입고단위단가
                   ? Number(row.입고단위단가).toLocaleString()

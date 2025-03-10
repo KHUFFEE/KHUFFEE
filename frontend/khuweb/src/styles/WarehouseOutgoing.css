@@ -1,32 +1,32 @@
 .wg-container {
-    padding: 0;
-    max-width: 1250px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    text-align: left;
-  }
-  
-  .wg-number-col {
-    width: 5px;
-    text-align: center;
-  }
+  padding: 0;
+  max-width: 1250px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  text-align: left;
+}
 
-  .wg-supplier-col {
-    width: 80px;
-    text-align: left;
-  }
-  
-  .wg-item-col {
-    width: 170px;
-    text-align: left;
-  }
-  
-  .wg-sum-col {
-    width: 60px;
-    text-align: right;
-  }
-  
-  .wg-cost-col {
-    width: 50px;
-    text-align: right;
-  }
+.wg-number-col {
+  width: 5px;
+  text-align: center;
+}
+
+.wg-supplier-col {
+  width: 80px;
+  text-align: left;
+}
+
+.wg-item-col {
+  width: 170px;
+  text-align: left;
+}
+
+.wg-sum-col {
+  width: 60px;
+  text-align: right;
+}
+
+.wg-cost-col {
+  width: 50px;
+  text-align: right;
+}

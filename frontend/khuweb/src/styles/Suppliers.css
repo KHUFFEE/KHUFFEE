@@ -36,7 +36,6 @@
 /* 기타 (필요시 다른 스타일 유지) */
 /* ... */
 
-
 /* Popup Styles */
 .suppliers-popup {
   position: fixed;
@@ -91,4 +90,3 @@
   justify-content: flex-end;
   width: 100%;
 }
-

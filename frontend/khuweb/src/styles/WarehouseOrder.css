@@ -1,34 +1,32 @@
 .wo-container {
-    padding: 0;
-    max-width: 1250px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    text-align: left;
-  }
-  
-  .wo-number-col {
-    width: 5px;
-    text-align: center;
-  }
-  
-  .wo-supplier-col {
-    width: 80px;
-    text-align: left;
-  }
-  
-  .wo-item-col {
-    width: 170px;
-    text-align: left;
-  }
-  
-  .wo-sum-col {
-    width: 60px;
-    text-align: right;
-  }
-  
-  .wo-cost-col {
-    width: 50px;
-    text-align: right;
-  }
+  padding: 0;
+  max-width: 1250px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  text-align: left;
+}
 
-  
+.wo-number-col {
+  width: 5px;
+  text-align: center;
+}
+
+.wo-supplier-col {
+  width: 80px;
+  text-align: left;
+}
+
+.wo-item-col {
+  width: 170px;
+  text-align: left;
+}
+
+.wo-sum-col {
+  width: 60px;
+  text-align: right;
+}
+
+.wo-cost-col {
+  width: 50px;
+  text-align: right;
+}

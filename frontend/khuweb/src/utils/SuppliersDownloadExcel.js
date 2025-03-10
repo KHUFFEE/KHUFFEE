@@ -10,7 +10,7 @@ export const suppliersDownloadExcel = (suppliers) => {
 
   // 2. JSON 데이터 준비 (협력사명만)
   const data = suppliers.map((supplier) => ({
-    "협력사명": supplier.협력사명,
+    협력사명: supplier.협력사명,
   }));
 
   // 3. 워크시트 생성 (테이블은 A1부터 시작)
@@ -24,7 +24,10 @@ export const suppliersDownloadExcel = (suppliers) => {
   if (ws[headerCellAddr]) {
     ws[headerCellAddr].s = ws[headerCellAddr].s || {};
     ws[headerCellAddr].s.font = { name: "Arial", bold: true };
-    ws[headerCellAddr].s.alignment = { horizontal: "center", vertical: "center" };
+    ws[headerCellAddr].s.alignment = {
+      horizontal: "center",
+      vertical: "center",
+    };
     ws[headerCellAddr].s.border = {
       top: { style: "medium", color: { rgb: "000000" } },
       bottom: { style: "medium", color: { rgb: "000000" } },

@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+
 class TableStatus(models.Model):
     테이블 = models.CharField(max_length=255, primary_key=True)  # 기존 DB 테이블의 PK
     상태 = models.PositiveSmallIntegerField(

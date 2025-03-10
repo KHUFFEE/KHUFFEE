@@ -98,7 +98,7 @@ const StoreInventoryMonthEnd = () => {
     try {
       const statusList = await getTableStatusList();
       const targetStatus = statusList.find(
-        (item) => item.테이블 === "매장_월말재고"
+        (item) => item.테이블 === "매장_월말재고",
       );
       if (targetStatus !== undefined) {
         setTableStatus(targetStatus.상태);
@@ -125,7 +125,7 @@ const StoreInventoryMonthEnd = () => {
     try {
       // 첫 페이지를 별도로 호출하여 전체 페이지 수를 가져옴
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=1`
+        `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=1`,
       );
       if (!response.ok) {
         throw new Error("Failed to fetch distinct period");
@@ -136,7 +136,7 @@ const StoreInventoryMonthEnd = () => {
       for (let p = 1; p <= totalPages; p++) {
         periodPromises.push(
           fetch(
-            `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=${p}`
+            `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=${p}`,
           )
             .then((response) => {
               if (!response.ok) {
@@ -144,7 +144,7 @@ const StoreInventoryMonthEnd = () => {
               }
               return response.json();
             })
-            .then((data) => data.current_period)
+            .then((data) => data.current_period),
         );
       }
       const periods = await Promise.all(periodPromises);
@@ -158,11 +158,15 @@ const StoreInventoryMonthEnd = () => {
   };
 
   useEffect(() => {
-    if (inventoryData && inventoryData.total_pages && distinctPeriods.length === 0) {
+    if (
+      inventoryData &&
+      inventoryData.total_pages &&
+      distinctPeriods.length === 0
+    ) {
       refreshDistinctPeriods();
     }
   }, [inventoryData, distinctPeriods.length]);
-  
+
   // 기간 드롭다운 옵션 – "YYYY년 MM월" 형식
   const generatePeriodOptions = () => {
     const sortedPeriods = [...distinctPeriods].sort((a, b) => {
@@ -242,7 +246,7 @@ const StoreInventoryMonthEnd = () => {
   const handleStatusToggle = async () => {
     try {
       const newStatus = tableStatus === 0 ? 1 : 0;
-      await updateTableStatus({ "테이블": "매장_월말재고", "상태": newStatus });
+      await updateTableStatus({ 테이블: "매장_월말재고", 상태: newStatus });
       setTableStatus(newStatus);
     } catch (err) {
       console.error("테이블 상태 업데이트 실패:", err);
@@ -393,7 +397,7 @@ const StoreInventoryMonthEnd = () => {
     sortedTableRows.reduce((sum, row) => {
       const val = getCellValue(row, store.매장_id);
       return sum + (val ? Number(val) : 0);
-    }, 0)
+    }, 0),
   );
 
   const formatNumber = (num) => {
@@ -429,7 +433,8 @@ const StoreInventoryMonthEnd = () => {
       for (const itemId in editedInventories) {
         for (const storeId in editedInventories[itemId]) {
           const newValue = editedInventories[itemId][storeId];
-          const originalVal = tableRows.find((row) => row.itemId === itemId)?.inventory[storeId];
+          const originalVal = tableRows.find((row) => row.itemId === itemId)
+            ?.inventory[storeId];
           if (newValue === "" || Number(newValue) === 0) {
             if (originalVal === 0 || originalVal === "") continue;
           } else if (newValue === originalVal) continue;
@@ -473,7 +478,9 @@ const StoreInventoryMonthEnd = () => {
   }
 
   // 팝업 메시지에 사용할 현재월과 다음월 계산 (버튼 컨텍스트와 일치하도록)
-  const currentMonthNumber = latestMonthForButton ? parseInt(latestMonthForButton, 10) : null;
+  const currentMonthNumber = latestMonthForButton
+    ? parseInt(latestMonthForButton, 10)
+    : null;
   const nextMonthNumber =
     latestMonthForButton && currentMonthNumber !== null
       ? currentMonthNumber + 1 > 12
@@ -485,7 +492,7 @@ const StoreInventoryMonthEnd = () => {
     tableStatus === 0
       ? `${nextMonthNumber}월 오픈하기`
       : `${currentMonthNumber}월 마감하기`;
-    
+
   // 요청사항 2: 최신 기간일 때, 상태 메시지 표시 (3월 마감 상태와 4월 오픈 상태에 따른 메시지)
   let statusMessage = "";
   if (
@@ -569,18 +576,24 @@ const StoreInventoryMonthEnd = () => {
             </span>
           </div>
           {/* 최신 조회 버튼 클릭 시 handleReset(true)로 호출하여 로딩 스피너 발생 */}
-          <button 
-            className="reset-button" 
-            onClick={() => handleReset(true)} 
+          <button
+            className="reset-button"
+            onClick={() => handleReset(true)}
             disabled={isEditMode}
-            style={{ opacity: isEditMode ? 0.5 : 1, cursor: isEditMode ? 'not-allowed' : 'pointer' }}
+            style={{
+              opacity: isEditMode ? 0.5 : 1,
+              cursor: isEditMode ? "not-allowed" : "pointer",
+            }}
           >
             최신 조회
           </button>
           {latestPeriodValue &&
             `${selectedYear}.${selectedMonth}` === latestPeriodValue &&
             tableStatus !== null && (
-              <div className="status-message" style={{ whiteSpace: "pre-wrap" }}>
+              <div
+                className="status-message"
+                style={{ whiteSpace: "pre-wrap" }}
+              >
                 {statusMessage}
               </div>
             )}
@@ -588,18 +601,28 @@ const StoreInventoryMonthEnd = () => {
         <div className="store-action-buttons">
           {latestPeriodValue &&
             `${selectedYear}.${selectedMonth}` === latestPeriodValue &&
-            tableStatus !== null && 
+            tableStatus !== null &&
             !isEditMode && (
               <button
-                className={tableStatus === 0 ? "status-open-button" : "status-close-button"}
-                onClick={() => setPopupType(tableStatus === 0 ? "open" : "close")}
+                className={
+                  tableStatus === 0
+                    ? "status-open-button"
+                    : "status-close-button"
+                }
+                onClick={() =>
+                  setPopupType(tableStatus === 0 ? "open" : "close")
+                }
                 disabled={isEditMode}
               >
                 {openButtonText}
               </button>
             )}
           {!isEditMode && (
-            <button onClick={handleExcelDownload} className="download-button" disabled={isEditMode}>
+            <button
+              onClick={handleExcelDownload}
+              className="download-button"
+              disabled={isEditMode}
+            >
               Excel 다운로드
             </button>
           )}
@@ -646,15 +669,20 @@ const StoreInventoryMonthEnd = () => {
                       pattern="^\\d*(\\.\\d{0,2})?$"
                       value={
                         editedInventories[row.itemId] &&
-                        editedInventories[row.itemId][store.매장_id] !== undefined
+                        editedInventories[row.itemId][store.매장_id] !==
+                          undefined
                           ? editedInventories[row.itemId][store.매장_id]
                           : ""
                       }
                       onChange={(e) => {
                         let newValue = e.target.value.replace(/,/g, "");
                         if (/^\d*(\.\d{0,2})?$/.test(newValue)) {
-                          handleInventoryChange(row.itemId, store.매장_id, newValue);
-                        }                        
+                          handleInventoryChange(
+                            row.itemId,
+                            store.매장_id,
+                            newValue,
+                          );
+                        }
                       }}
                       style={{ textAlign: "right" }}
                     />
@@ -671,7 +699,11 @@ const StoreInventoryMonthEnd = () => {
         <tfoot>
           <tr>
             <td className="sime-number-col"></td>
-            <td className="sime-supplier-col" colSpan="2" style={{ textAlign: "center" }}>
+            <td
+              className="sime-supplier-col"
+              colSpan="2"
+              style={{ textAlign: "center" }}
+            >
               합계
             </td>
             {storeTotals.map((total, idx) => (
@@ -691,21 +723,28 @@ const StoreInventoryMonthEnd = () => {
               <>
                 <h3>!! 주의 !!</h3>
                 <p>
-                  확인 버튼을 누르면 매니저의 {nextMonthNumber}월말 재고 입력이 허용됩니다.
+                  확인 버튼을 누르면 매니저의 {nextMonthNumber}월말 재고 입력이
+                  허용됩니다.
                 </p>
               </>
             ) : (
               <>
                 <h3>!! 주의 !!</h3>
                 <p>
-                  확인 버튼을 누르면 매니저는 {currentMonthNumber}월말 재고 입력이 불가능해지며
+                  확인 버튼을 누르면 매니저는 {currentMonthNumber}월말 재고
+                  입력이 불가능해지며
                   <br />
                   관리자 외에는 수정 권한이 제한됩니다.
                 </p>
               </>
             )}
             <div className="sime-popup-buttons">
-              <button className="popup-cancel" onClick={() => setPopupType(null)}>취소</button>
+              <button
+                className="popup-cancel"
+                onClick={() => setPopupType(null)}
+              >
+                취소
+              </button>
               <button
                 className="popup-confirm"
                 onClick={() => {

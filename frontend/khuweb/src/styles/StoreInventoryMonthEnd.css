@@ -1,90 +1,89 @@
 /* 기본 컨테이너 */
 .store-orders-container {
-    padding: 0;
-    max-width: 1250px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    text-align: left;
-  }
-  
-  .store-orders-container p {
-    margin: 10px 0 20px;
-    font-size: 16px;
-  }
-  
-  .sime-number-col {
-    width: 12px;
-    text-align: center;
-  }
-  
-  .sime-supplier-col,
-  .sime-item-col {
-    text-align: left;
-  }
-  
-  .sime-supplier-col {
-    width: 100px;
-  }
-  
-  .sime-item-col {
-    width: 200px;
-  }
-  
-  .sime-order-col {
-    text-align: right;
-  }
-  
-  /* StoreOrders.css의 so-order-col 폭(50px)을 동일하게 적용 */
-  .big-table th.sime-order-col,
-  .big-table td.sime-order-col {
-    width: 50px;
-  }
-  
-  /* StoreOrders.css의 헤더 폰트 설정과 동일하게 매장 헤더 칼럼에 적용 (14px, line-height 1.2) */
-  .big-table thead th.sime-order-col {
-    vertical-align: middle;
-    font-size: 14px;
-    line-height: 1.2;
-  }
-    
-  /* Popup Styles */
-  .sime-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-  }
+  padding: 0;
+  max-width: 1250px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  text-align: left;
+}
 
-  .sime-popup-content {
-    background-color: #fff;
-    padding: 45px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 550px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
+.store-orders-container p {
+  margin: 10px 0 20px;
+  font-size: 16px;
+}
 
-  .sime-popup-content h3 {
-    font-size: 22px !important;
-    color: #445382;
-    margin-top: -12px;
-    margin-bottom: 35px;
-    text-align: center;
-  }
+.sime-number-col {
+  width: 12px;
+  text-align: center;
+}
 
-  .sime-popup-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-  }
+.sime-supplier-col,
+.sime-item-col {
+  text-align: left;
+}
 
-  .sime-popup-content p {
-    font-size: 20px !important; 
-  }
+.sime-supplier-col {
+  width: 100px;
+}
+
+.sime-item-col {
+  width: 200px;
+}
+
+.sime-order-col {
+  text-align: right;
+}
+
+/* StoreOrders.css의 so-order-col 폭(50px)을 동일하게 적용 */
+.big-table th.sime-order-col,
+.big-table td.sime-order-col {
+  width: 50px;
+}
+
+/* StoreOrders.css의 헤더 폰트 설정과 동일하게 매장 헤더 칼럼에 적용 (14px, line-height 1.2) */
+.big-table thead th.sime-order-col {
+  vertical-align: middle;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+/* Popup Styles */
+.sime-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.sime-popup-content {
+  background-color: #fff;
+  padding: 45px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 550px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.sime-popup-content h3 {
+  font-size: 22px !important;
+  color: #445382;
+  margin-top: -12px;
+  margin-bottom: 35px;
+  text-align: center;
+}
+
+.sime-popup-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.sime-popup-content p {
+  font-size: 20px !important;
+}

@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { fetchItems, fetchSuppliers, addItem, deleteItems, updateItem } from "../api/api";
+import {
+  fetchItems,
+  fetchSuppliers,
+  addItem,
+  deleteItems,
+  updateItem,
+} from "../api/api";
 import "../styles/Item.css";
 import "../styles/table.css";
 import { itemDownloadExcel } from "../utils/ItemDownloadExcel";
@@ -31,8 +37,8 @@ const Item = () => {
       입고단가: "",
       입고단위: "",
       입고단위단가: "",
-      출고단위: ""
-    }
+      출고단위: "",
+    },
   ]);
   const [alertPopup, setAlertPopup] = useState({ show: false, message: "" });
 
@@ -97,18 +103,21 @@ const Item = () => {
   // 정렬 함수
   const getSortedItems = () => {
     let sorted = [...items];
-    const activeOrder =
-      (manualSortOrder.length > 0 ? manualSortOrder : ["협력사명", "종류", "품목명"]).filter(
-        (col) => sortCriteria[col] !== null
-      );
+    const activeOrder = (
+      manualSortOrder.length > 0
+        ? manualSortOrder
+        : ["협력사명", "종류", "품목명"]
+    ).filter((col) => sortCriteria[col] !== null);
     sorted.sort((a, b) => {
       for (let col of activeOrder) {
         const order = sortCriteria[col];
         let aVal = "";
         let bVal = "";
         if (col === "협력사명") {
-          aVal = suppliers.find((s) => s.협력사_id === a.협력사_id)?.협력사명 || "";
-          bVal = suppliers.find((s) => s.협력사_id === b.협력사_id)?.협력사명 || "";
+          aVal =
+            suppliers.find((s) => s.협력사_id === a.협력사_id)?.협력사명 || "";
+          bVal =
+            suppliers.find((s) => s.협력사_id === b.협력사_id)?.협력사명 || "";
         } else {
           aVal = a[col] || "";
           bVal = b[col] || "";
@@ -127,7 +136,12 @@ const Item = () => {
   const handleInputChange = (index, e) => {
     const { name, value } = e.target;
     // 숫자 필드인 경우 쉼표 제거 후 저장
-    const rawValue = ["입고단가", "입고단위", "입고단위단가", "출고단위"].includes(name)
+    const rawValue = [
+      "입고단가",
+      "입고단위",
+      "입고단위단가",
+      "출고단위",
+    ].includes(name)
       ? value.replace(/,/g, "")
       : value;
     setNewItems((prev) => {
@@ -175,7 +189,10 @@ const Item = () => {
       await fetchAllItems();
       setSelectedItems([]);
       setIsDeleteMode(false);
-      setAlertPopup({ show: true, message: "제품이 성공적으로 비활성화되었습니다." });
+      setAlertPopup({
+        show: true,
+        message: "제품이 성공적으로 비활성화되었습니다.",
+      });
     } catch (err) {
       setAlertPopup({ show: true, message: "제품 비활성화에 실패하였습니다." });
     }
@@ -193,7 +210,10 @@ const Item = () => {
       await fetchAllItems();
       setSelectedActivateItems([]);
       setIsActivateMode(false);
-      setAlertPopup({ show: true, message: "제품이 성공적으로 활성화되었습니다." });
+      setAlertPopup({
+        show: true,
+        message: "제품이 성공적으로 활성화되었습니다.",
+      });
     } catch (err) {
       setAlertPopup({ show: true, message: "제품 활성화에 실패하였습니다." });
     }
@@ -217,10 +237,13 @@ const Item = () => {
           입고단가: "",
           입고단위: "",
           입고단위단가: "",
-          출고단위: ""
-        }
+          출고단위: "",
+        },
       ]);
-      setAlertPopup({ show: true, message: "제품이 성공적으로 추가되었습니다." });
+      setAlertPopup({
+        show: true,
+        message: "제품이 성공적으로 추가되었습니다.",
+      });
     } catch (err) {
       setAlertPopup({ show: true, message: "제품 추가에 실패하였습니다." });
     }
@@ -239,8 +262,8 @@ const Item = () => {
         입고단가: "",
         입고단위: "",
         입고단위단가: "",
-        출고단위: ""
-      }
+        출고단위: "",
+      },
     ]);
   };
 
@@ -259,7 +282,9 @@ const Item = () => {
         initialEdited[item.품목_id] = {
           품목_id: item.품목_id,
           품목명: item.품목명,
-          협력사명: suppliers.find((s) => s.협력사_id === item.협력사_id)?.협력사명 || "",
+          협력사명:
+            suppliers.find((s) => s.협력사_id === item.협력사_id)?.협력사명 ||
+            "",
           종류: item.종류,
           규격: item.규격,
           단위: item.단위,
@@ -279,7 +304,12 @@ const Item = () => {
   // 수정 모드 핸들러 (입고단위, 입고단위단가 변경 시 자동 계산)
   const handleEditChange = (itemId, field, value) => {
     // 숫자 필드인 경우 쉼표 제거
-    const rawValue = ["입고단가", "입고단위", "입고단위단가", "출고단위"].includes(field)
+    const rawValue = [
+      "입고단가",
+      "입고단위",
+      "입고단위단가",
+      "출고단위",
+    ].includes(field)
       ? value.replace(/,/g, "")
       : value;
     setEditedItems((prev) => {
@@ -305,10 +335,15 @@ const Item = () => {
         const updatedData = updatedItems[itemId];
         const res = await updateItem(updatedData);
         setItems((prev) =>
-          prev.map((item) => (item.품목_id === itemId ? { ...item, ...res } : item))
+          prev.map((item) =>
+            item.품목_id === itemId ? { ...item, ...res } : item,
+          ),
         );
       }
-      setAlertPopup({ show: true, message: "제품이 성공적으로 수정되었습니다." });
+      setAlertPopup({
+        show: true,
+        message: "제품이 성공적으로 수정되었습니다.",
+      });
       setIsEditMode(false);
     } catch (err) {
       setAlertPopup({ show: true, message: "제품 수정에 실패하였습니다." });
@@ -325,13 +360,18 @@ const Item = () => {
               if (!isActivateMode) {
                 try {
                   const data = await fetchItems(true);
-                  const deactivatedItems = data.filter((item) => item.활성화 === false);
+                  const deactivatedItems = data.filter(
+                    (item) => item.활성화 === false,
+                  );
                   setItems(deactivatedItems);
                   setIsActivateMode(true);
                   setSelectedActivateItems([]);
                   if (isDeleteMode) setIsDeleteMode(false);
                 } catch (err) {
-                  setAlertPopup({ show: true, message: "비활성 품목 불러오기에 실패하였습니다." });
+                  setAlertPopup({
+                    show: true,
+                    message: "비활성 품목 불러오기에 실패하였습니다.",
+                  });
                 }
               } else {
                 try {
@@ -339,11 +379,14 @@ const Item = () => {
                   setIsActivateMode(false);
                   setSelectedActivateItems([]);
                 } catch (err) {
-                  setAlertPopup({ show: true, message: "품목 불러오기에 실패하였습니다." });
+                  setAlertPopup({
+                    show: true,
+                    message: "품목 불러오기에 실패하였습니다.",
+                  });
                 }
               }
             }}
-            className={`activate-button ${isDeleteMode ? 'dimmed-button' : ''} ${isEditMode ? 'dimmed-button' : ''}`}
+            className={`activate-button ${isDeleteMode ? "dimmed-button" : ""} ${isEditMode ? "dimmed-button" : ""}`}
             disabled={isEditMode || isDeleteMode}
           >
             {isActivateMode ? "취소" : "활성화"}
@@ -353,14 +396,16 @@ const Item = () => {
               setIsDeleteMode((prev) => !prev);
               if (isDeleteMode) setSelectedItems([]);
             }}
-            className={`activate-button ${isActivateMode ? 'dimmed-button' : ''} ${isEditMode ? 'dimmed-button' : ''}`}
+            className={`activate-button ${isActivateMode ? "dimmed-button" : ""} ${isEditMode ? "dimmed-button" : ""}`}
             disabled={isEditMode || isActivateMode}
           >
             {isDeleteMode ? "취소" : "비활성화"}
           </button>
           <span className="control-description">
-            모든 품목은 각각 고유하게 관리됩니다.<br />
-            제품 추가 및 수정 전에는 활성화/비활성화 기능을 통해 상태를 확인해 주세요.
+            모든 품목은 각각 고유하게 관리됩니다.
+            <br />
+            제품 추가 및 수정 전에는 활성화/비활성화 기능을 통해 상태를 확인해
+            주세요.
           </span>
         </div>
 
@@ -368,14 +413,24 @@ const Item = () => {
           <button
             onClick={() => itemDownloadExcel({ sortedItems, suppliers })}
             className="download-button"
-            style={{ display: isDeleteMode || isActivateMode || isEditMode ? 'none' : 'inline-block' }}
+            style={{
+              display:
+                isDeleteMode || isActivateMode || isEditMode
+                  ? "none"
+                  : "inline-block",
+            }}
           >
             Excel 다운로드
           </button>
           <button
             onClick={() => setShowPopup(true)}
             className="add-button"
-            style={{ display: isDeleteMode || isActivateMode || isEditMode ? 'none' : 'inline-block' }}
+            style={{
+              display:
+                isDeleteMode || isActivateMode || isEditMode
+                  ? "none"
+                  : "inline-block",
+            }}
             disabled={isEditMode || isDeleteMode || isActivateMode}
           >
             + 제품 추가
@@ -383,13 +438,16 @@ const Item = () => {
           {!isDeleteMode && !isActivateMode && (
             <>
               {isEditMode && (
-                <button onClick={handleEditSubmit} className="edit-confirm-button">
+                <button
+                  onClick={handleEditSubmit}
+                  className="edit-confirm-button"
+                >
                   수정 완료
                 </button>
               )}
               <button
                 onClick={handleEditToggle}
-                className={`edit-button ${isDeleteMode || isActivateMode ? 'dimmed-button' : ''}`}
+                className={`edit-button ${isDeleteMode || isActivateMode ? "dimmed-button" : ""}`}
                 disabled={isDeleteMode || isActivateMode}
               >
                 {isEditMode ? "취소" : "수정"}
@@ -428,7 +486,9 @@ const Item = () => {
       <table className="item-table">
         <thead>
           <tr>
-            {(isDeleteMode || isActivateMode) && <th className="narrow-col">선택</th>}
+            {(isDeleteMode || isActivateMode) && (
+              <th className="narrow-col">선택</th>
+            )}
             <th className="number-col">No.</th>
             <th style={isEditMode ? { width: "200px" } : {}}>
               품목명
@@ -436,18 +496,21 @@ const Item = () => {
                 {sortCriteria.품목명 === "asc"
                   ? "▲"
                   : sortCriteria.품목명 === "desc"
-                  ? "▼"
-                  : "—"}
+                    ? "▼"
+                    : "—"}
               </button>
             </th>
             <th style={isEditMode ? { width: "120px" } : {}}>
               협력사명
-              <button className="sort-btn" onClick={() => toggleSort("협력사명")}>
+              <button
+                className="sort-btn"
+                onClick={() => toggleSort("협력사명")}
+              >
                 {sortCriteria.협력사명 === "asc"
                   ? "▲"
                   : sortCriteria.협력사명 === "desc"
-                  ? "▼"
-                  : "—"}
+                    ? "▼"
+                    : "—"}
               </button>
             </th>
             <th>
@@ -456,8 +519,8 @@ const Item = () => {
                 {sortCriteria.종류 === "asc"
                   ? "▲"
                   : sortCriteria.종류 === "desc"
-                  ? "▼"
-                  : "—"}
+                    ? "▼"
+                    : "—"}
               </button>
             </th>
             <th>규격</th>
@@ -470,7 +533,9 @@ const Item = () => {
         </thead>
         <tbody>
           {sortedItems.map((item, index) => {
-            const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id);
+            const supplier = suppliers.find(
+              (s) => s.협력사_id === item.협력사_id,
+            );
             return (
               <tr key={item.품목_id}>
                 {isDeleteMode ? (
@@ -478,7 +543,9 @@ const Item = () => {
                     <input
                       type="checkbox"
                       checked={selectedItems.includes(item.품목_id)}
-                      onChange={(e) => handleDeleteCheckboxChange(e, item.품목_id)}
+                      onChange={(e) =>
+                        handleDeleteCheckboxChange(e, item.품목_id)
+                      }
                     />
                   </td>
                 ) : isActivateMode ? (
@@ -486,13 +553,15 @@ const Item = () => {
                     <input
                       type="checkbox"
                       checked={selectedActivateItems.includes(item.품목_id)}
-                      onChange={(e) => handleActivateCheckboxChange(e, item.품목_id)}
+                      onChange={(e) =>
+                        handleActivateCheckboxChange(e, item.품목_id)
+                      }
                     />
                   </td>
                 ) : null}
                 <td className="number-col">{index + 1}</td>
                 <td>
-                {isEditMode ? (
+                  {isEditMode ? (
                     <input
                       type="text"
                       value={editedItems[item.품목_id]?.품목명 || ""}
@@ -510,7 +579,11 @@ const Item = () => {
                     <select
                       value={editedItems[item.품목_id]?.협력사명 || ""}
                       onChange={(e) =>
-                        handleEditChange(item.품목_id, "협력사명", e.target.value)
+                        handleEditChange(
+                          item.품목_id,
+                          "협력사명",
+                          e.target.value,
+                        )
                       }
                     >
                       <option value="">-- 선택하세요 --</option>
@@ -520,8 +593,10 @@ const Item = () => {
                         </option>
                       ))}
                     </select>
+                  ) : supplier ? (
+                    supplier.협력사명
                   ) : (
-                    supplier ? supplier.협력사명 : "N/A"
+                    "N/A"
                   )}
                 </td>
                 <td>
@@ -543,7 +618,7 @@ const Item = () => {
                   )}
                 </td>
                 <td>
-                {isEditMode ? (
+                  {isEditMode ? (
                     <input
                       type="text"
                       value={editedItems[item.품목_id]?.규격 || ""}
@@ -557,7 +632,7 @@ const Item = () => {
                   )}
                 </td>
                 <td>
-                {isEditMode ? (
+                  {isEditMode ? (
                     <input
                       type="text"
                       value={editedItems[item.품목_id]?.단위 || ""}
@@ -568,7 +643,7 @@ const Item = () => {
                     />
                   ) : (
                     item.단위
-                  )}  
+                  )}
                 </td>
                 <td className="right-align">
                   {isEditMode ? (
@@ -589,7 +664,9 @@ const Item = () => {
                     <input
                       type="text"
                       name="입고단위"
-                      value={formatNumber(editedItems[item.품목_id]?.입고단위 || "")}
+                      value={formatNumber(
+                        editedItems[item.품목_id]?.입고단위 || "",
+                      )}
                       disabled
                       className="calc-input"
                       style={{ textAlign: "right" }}
@@ -603,7 +680,9 @@ const Item = () => {
                     <input
                       type="text"
                       name="입고단위단가"
-                      value={formatNumber(editedItems[item.품목_id]?.입고단위단가 || "")}
+                      value={formatNumber(
+                        editedItems[item.품목_id]?.입고단위단가 || "",
+                      )}
                       disabled
                       className="calc-input"
                       style={{ textAlign: "right" }}
@@ -617,12 +696,14 @@ const Item = () => {
                     <input
                       type="text"
                       name="출고단위"
-                      value={formatNumber(editedItems[item.품목_id]?.출고단위 || "")}
+                      value={formatNumber(
+                        editedItems[item.품목_id]?.출고단위 || "",
+                      )}
                       onChange={(e) =>
                         handleEditChange(
                           item.품목_id,
                           "출고단위",
-                          e.target.value.replace(/,/g, "")
+                          e.target.value.replace(/,/g, ""),
                         )
                       }
                       style={{ textAlign: "right" }}
@@ -800,7 +881,10 @@ const Item = () => {
               </div>
             </div>
             <div className="item-popup-buttons">
-              <button onClick={() => setShowPopup(false)} className="popup-cancel">
+              <button
+                onClick={() => setShowPopup(false)}
+                className="popup-cancel"
+              >
                 취소
               </button>
               <button onClick={handleSubmit} className="popup-confirm">

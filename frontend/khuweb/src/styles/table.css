@@ -125,7 +125,9 @@
 
 .sime-item-cell,
 .supplier-cell,
-.item-cell {
+.item-cell,
+td .wg-supplier-col,
+td .wg-item-col {
   height: 20px;
   overflow-y: auto;
   display: block;
@@ -135,6 +137,15 @@
 
 .sime-item-cell::-webkit-scrollbar,
 .supplier-cell::-webkit-scrollbar,
-.item-cell::-webkit-scrollbar {
+.item-cell::-webkit-scrollbar,
+td .wg-supplier-col::-webkit-scrollbar,
+td .wg-item-col::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera에서 스크롤바 숨김 */
+}
+
+/* WarehouseOutgoing 테이블 셀 너비 및 스타일 */
+td.wg-supplier-col,
+td.wg-item-col {
+  padding: 8px;
+  max-width: 150px; /* 셀의 최대 너비 설정 */
 }

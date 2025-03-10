@@ -407,6 +407,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
     const labelFontSize = RFValue(9 * deviceScale.fontScale);
     const axisLabelFontSize = moderateScale(11 * deviceScale.fontScale);
     const labelWidth = wp(20 * deviceScale.barWidthScale);
+    const labelHeight = verticalScale(15 * deviceScale.fontScale);
     
     // react-native-gifted-charts 형식에 맞게 데이터 구조 변경
     const barData = [
@@ -440,7 +441,11 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
           <Text style={{ 
             color: 'rgb(13, 50, 111)', 
             fontSize: axisLabelFontSize,
-            textAlign: 'center'
+            textAlign: 'center',
+            height: labelHeight,
+            // marginTop: verticalScale(3 * deviceScale.spacingScale),
+            fontWeight: '500',
+            paddingHorizontal: moderateScale(2),
           }}>
             {lastMonthLabels[index]}
           </Text>
@@ -476,7 +481,11 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
           <Text style={{ 
             color: 'rgb(34, 139, 34)', 
             fontSize: axisLabelFontSize,
-            textAlign: 'center'
+            textAlign: 'center',
+            height: labelHeight,
+            // marginTop: verticalScale(3 * deviceScale.spacingScale),
+            fontWeight: '500',
+            paddingHorizontal: moderateScale(2),
           }}>
             {currentMonthLabels[index]}
           </Text>

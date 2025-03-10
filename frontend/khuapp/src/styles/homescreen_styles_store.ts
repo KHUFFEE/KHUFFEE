@@ -1,9 +1,15 @@
-import { StyleSheet, Dimensions, TextStyle } from 'react-native';
+import { StyleSheet, Dimensions, TextStyle, Platform } from 'react-native';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { RFValue } from 'react-native-responsive-fontsize';
 
 const { height: screenHeight } = Dimensions.get('window');
+
+// 디바이스 체크 함수
+const isTablet = () => {
+  const { width, height } = Dimensions.get('window');
+  return (width >= 768 || height >= 768);
+};
 
 const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
   fontFamily: 'PretendardVariable',
@@ -93,14 +99,18 @@ export const homescreenStyles = StyleSheet.create({
   // 차트 컨테이너 스타일
   chartContainer: {
     padding: moderateScale(0),
-    paddingBottom: verticalScale(0),
-    // paddingTop: verticalScale(20),
-    // paddingLeft: moderateScale(15),
+    paddingBottom: verticalScale(8),
+    paddingTop: verticalScale(5),
     alignItems: 'center',
     backgroundColor: '#fff',
-    // marginRight: moderateScale(15),
     borderRadius: moderateScale(8),
-    marginBottom: verticalScale(10),
+    // 태블릿과 모바일에 따라 다르게 패딩 적용
+    paddingLeft: moderateScale(0),
+    paddingRight: isTablet() ? moderateScale(20) : moderateScale(15), // 오른쪽 여백 추가
+    // 가로 모드를 위한 최대 너비 설정
+    maxWidth: isTablet() ? 1024 : '100%',
+    alignSelf: 'center',
+    width: '100%', // 너비를 100%로 설정
   },  
   
   // 범례 관련 스타일
@@ -128,6 +138,39 @@ export const homescreenStyles = StyleSheet.create({
     ...commonTextStyle(),
     fontSize: RFValue(8),
     color: '#64748b',
+  },
+  
+  // 차트 단위 텍스트 스타일
+  chartUnitText: {
+    ...commonTextStyle(),
+    fontSize: RFValue(10),
+    color: '#888888',
+    textAlign: 'right',
+    alignSelf: 'flex-end',
+    marginRight: moderateScale(15),
+    marginTop: verticalScale(8),
+    marginBottom: verticalScale(10),
+    position: 'relative',
+    left: moderateScale(30),
+  },
+  
+  // 차트와 데이터를 감싸는 부모 컨테이너
+  chartDataContainer: {
+    backgroundColor: '#fff',
+    borderRadius: moderateScale(12),
+    borderWidth: 1,
+    borderColor: '#eaeaea',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
+    marginBottom: verticalScale(15),
+    marginHorizontal: moderateScale(2),
+    overflow: 'hidden',
   },
   
   // 비교 컨테이너 스타일
@@ -310,24 +353,11 @@ export const homescreenStyles = StyleSheet.create({
   
   // 요약 섹션 스타일
   summarySection: {
-    // marginTop: moderateScale(8),
-    backgroundColor: '#f8fafc',
-    // borderRadius: moderateScale(10),
-    // padding: moderateScale(18),
+    backgroundColor: '#ffffff',
     paddingBottom: moderateScale(0),
-    paddingTop: moderateScale(5),
-    // paddingLeft: moderateScale(15),
+    paddingTop: moderateScale(0),
     borderTopWidth: 1,
     borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 3,
-    // marginBottom: moderateScale(16),
   },
   
   summaryTitle: {
@@ -419,26 +449,17 @@ export const homescreenStyles = StyleSheet.create({
   summaryTable: {
     width: '100%',
     overflow: 'hidden',
-    borderBottomWidth: 1,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
     backgroundColor: '#fff',
+    borderBottomWidth: 0,
   },
   
   tableRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#e9e9e9',
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
-    minHeight: verticalScale(48),
+    minHeight: verticalScale(45),
     width: '100%',
     justifyContent: 'space-between',
   },

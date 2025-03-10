@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, Dimensions, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { homescreenStyles } from '../../src/styles/homescreen_styles_store';
 import { StoreOrderData, APIProduct } from '../../src/components/ui/common/types';
 import { RN_API_URL } from '@env';
@@ -58,6 +58,71 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
   const lastMonth = currentMonth === 1 ? 12 : currentMonth - 1;
   const lastMonthYear = currentMonth === 1 ? currentYear - 1 : currentYear;
   const formattedLastMonth = lastMonth < 10 ? `0${lastMonth}` : `${lastMonth}`;
+  
+  // 화면 방향 변경 감지를 위한 상태
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const isLandscape = windowWidth > windowHeight;
+  const [orientation, setOrientation] = useState(isLandscape ? 'landscape' : 'portrait');
+  
+  // 화면 방향 변경 감지 효과
+  useEffect(() => {
+    const newOrientation = windowWidth > windowHeight ? 'landscape' : 'portrait';
+    if (orientation !== newOrientation) {
+      setOrientation(newOrientation);
+    }
+  }, [windowWidth, windowHeight]);
+  
+  // 디바이스 유형에 따른 스케일 조정
+  const getDeviceTypeScale = useCallback(() => {
+    // 일반적으로 태블릿은 768dp 이상으로 간주
+    const isTablet = windowWidth >= 768 || windowHeight >= 768;
+    
+    return {
+      barWidthScale: isTablet ? (isLandscape ? 1.2 : 1.5) : 1,
+      barHeightScale: isTablet ? (isLandscape ? 1.3 : 1.5) : 1,
+      fontScale: isTablet ? 1.2 : 1,
+      spacingScale: isTablet ? 1.5 : 1
+    };
+  }, [windowWidth, windowHeight, isLandscape]);
+  
+  // 방향 변경 시 차트 디멘션 업데이트
+  useEffect(() => {
+    // 차트 디멘션 다시 계산
+    getChartDimensions();
+  }, [orientation, windowWidth, windowHeight]);
+  
+  // 스케일 값 계산
+  const deviceScale = getDeviceTypeScale();
+  
+  // 차트 크기와 스타일을 계산하는 함수
+  const getChartDimensions = useCallback(() => {
+    // 일반적으로 태블릿은 768dp 이상으로 간주
+    const isTablet = windowWidth >= 768 || windowHeight >= 768;
+    
+    // 화면 방향과 디바이스 유형에 따라 차트 너비 조정
+    const chartWidth = isLandscape 
+      ? windowWidth * 0.93 // 가로 모드에서는 화면 너비의 93%로 약간 줄임
+      : windowWidth * 0.97; // 세로 모드에서도 약간 여유 공간 확보
+      
+    // 높이 계산 - 화면 방향과 디바이스 유형에 따라 다르게 설정
+    const chartHeight = isLandscape
+      ? hp(20) * deviceScale.barHeightScale
+      : hp(25) * deviceScale.barHeightScale;
+      
+    // 바 너비 계산
+    const calculatedBarWidth = wp(6) * deviceScale.barWidthScale;
+    
+    // 간격 계산
+    const calculatedSpacing = wp(1) * deviceScale.spacingScale;
+    
+    return {
+      width: chartWidth,
+      height: chartHeight,
+      barWidth: calculatedBarWidth,
+      spacing: calculatedSpacing,
+      initialSpacing: moderateScale(isTablet ? 15 : 10)
+    };
+  }, [windowWidth, windowHeight, deviceScale, isLandscape]);
   
   // 제품 정렬 함수
   const sortOrders = (orders: CombinedOrderData[], order: 'asc' | 'desc' = 'asc') => {
@@ -338,6 +403,11 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
     const lastMonthData = filteredLastMonthWeeks.map(week => (lastMonthWeeklyTotals[week] || 0) / 10000);
     const currentMonthData = filteredCurrentMonthWeeks.map(week => (currentMonthWeeklyTotals[week] || 0) / 10000);
     
+    // 디바이스 스케일에 따른 레이블 크기 조정
+    const labelFontSize = RFValue(9 * deviceScale.fontScale);
+    const axisLabelFontSize = moderateScale(11 * deviceScale.fontScale);
+    const labelWidth = wp(20 * deviceScale.barWidthScale);
+    
     // react-native-gifted-charts 형식에 맞게 데이터 구조 변경
     const barData = [
       ...filteredLastMonthWeeks.map((week, index) => ({
@@ -348,16 +418,14 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
         topLabelComponent: () => (
           <View style={{
             position: 'absolute',
-            // top: -20,
-            // width: wp(20),
-            // left: wp(6) * -0.5, // 바의 너비의 반만큼 왼쪽으로 이동하여 중앙 정렬
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            width: labelWidth
           }}>
             <Text 
               style={{ 
                 color: 'rgb(13, 50, 111)', 
-                fontSize: RFValue(9),
+                fontSize: labelFontSize,
                 textAlign: 'center'
               }}
               numberOfLines={1}
@@ -371,7 +439,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
         labelComponent: () => (
           <Text style={{ 
             color: 'rgb(13, 50, 111)', 
-            fontSize: moderateScale(11),
+            fontSize: axisLabelFontSize,
             textAlign: 'center'
           }}>
             {lastMonthLabels[index]}
@@ -386,16 +454,14 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
         topLabelComponent: () => (
           <View style={{
             position: 'absolute',
-            // top: -20,
-            width: wp(20),
-            // left: wp(6) * -0.5, // 바의 너비의 반만큼 왼쪽으로 이동하여 중앙 정렬
+            width: labelWidth,
             alignItems: 'center',
             justifyContent: 'center'
           }}>
             <Text 
               style={{ 
                 color: 'rgb(34, 139, 34)', 
-                fontSize: RFValue(9),
+                fontSize: labelFontSize,
                 textAlign: 'center'
               }}
               numberOfLines={1}
@@ -405,11 +471,11 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
             </Text>
           </View>
         ),
-        // x축 라벨 컴포넌트 (초록색)
+        // x축 라벨 컴포넌트 (녹색)
         labelComponent: () => (
           <Text style={{ 
             color: 'rgb(34, 139, 34)', 
-            fontSize: moderateScale(11),
+            fontSize: axisLabelFontSize,
             textAlign: 'center'
           }}>
             {currentMonthLabels[index]}
@@ -421,7 +487,9 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
     return barData;
   };
   
-  const screenWidth = Dimensions.get('window').width - 40;
+  // 차트 디멘션 계산
+  const chartDimensions = getChartDimensions();
+  
   
   return (
     <View testID="container" style={homescreenStyles.container}>
@@ -448,104 +516,104 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                    Object.values(lastMonthWeeklyTotals).every(value => value === 0) ? (
                     <Text testID="noDataText" style={homescreenStyles.noDataText}>발주 내역이 없습니다.</Text>
                   ) : (
-                    <View testID="chartContainer" style={homescreenStyles.chartContainer}>
-                      <BarChart
-                        data={prepareCombinedChartData(
-                          currentMonthWeeklyTotals,
-                          lastMonthWeeklyTotals,
-                          currentMonthSortedWeeks
-                        )}
-                        width={screenWidth}
-                        height={hp(25)}
-                        barWidth={wp(6)}
-                        spacing={wp(1)}
-                        initialSpacing={10}
-                        noOfSections={5}
-                        barBorderRadius={4}
-                        // 바탕 배경
-                        backgroundColor={'#fff'}  //추후 변경 
-                        // 규칙선(가로선) 스타일
-                        rulesType="dashed"
-                        rulesColor="lightgray"
-                        rulesThickness={1}
-                        // 가로선 위치 오른쪽으로 이동
-                        horizontalRulesStyle={{
-                          paddingLeft: moderateScale(10)
-                        }}
-                        // X축·Y축 스타일
-                        xAxisColor="#666"
-                        xAxisThickness={0}
-                        yAxisColor="#666"
-                        yAxisThickness={0}
-                        yAxisTextStyle={{ 
-                          color: 'black',
-                          // backgroundColor: 'red',
-                          fontSize: moderateScale(12), 
-                          width: wp(12),
-                          textAlign: 'right',
-                          paddingRight: moderateScale(5),
-                          // marginRight: moderateScale(10)
-                        }}
-                        // 커스텀 라벨 컴포넌트를 사용하므로 기본 스타일은 제거
-                        // xAxisLabelTextStyle={{ color: '#444', fontSize: moderateScale(11) }}
-                        // 커스텀 레이블 사용
-                        renderTooltip={() => null}
-                        hideAxesAndRules={false}
-                        hideYAxisText={false}
-                        showXAxisIndices={false}
-                        // y축 레이블 포맷: 값 뒤에 "만" 붙이기
-                        formatYLabel={(value) => `${value}만`}
-                        // 값 소수점 표시
-                        showFractionalValues={false}
-                        // Y축 텍스트 숨김 여부
-                        // hideYAxisText={false}
-                        // 터치 시 반응 막기
-                        disablePress={true}
-                      />
+                    <View testID="chartDataContainer" style={homescreenStyles.chartDataContainer}>
+                      <View testID="chartContainer" style={homescreenStyles.chartContainer}>
+                        <Text style={homescreenStyles.chartUnitText}>(단위: 만원)</Text>
+                        <BarChart
+                          data={prepareCombinedChartData(
+                            currentMonthWeeklyTotals,
+                            lastMonthWeeklyTotals,
+                            currentMonthSortedWeeks
+                          )}
+                          width={chartDimensions.width}
+                          height={chartDimensions.height}
+                          barWidth={chartDimensions.barWidth}
+                          spacing={chartDimensions.spacing}
+                          initialSpacing={moderateScale(2 * deviceScale.spacingScale)}
+                          endSpacing={moderateScale(25 * deviceScale.spacingScale)}
+                          noOfSections={5}
+                          barBorderRadius={4}
+                          // 바탕 배경
+                          backgroundColor={'#fff'}  //추후 변경 
+                          // 규칙선(가로선) 스타일
+                          rulesType="dashed"
+                          rulesColor="lightgray"
+                          rulesThickness={1}
+                          // 가로선 위치 오른쪽으로 이동
+                          horizontalRulesStyle={{
+                            paddingLeft: moderateScale(10 * deviceScale.spacingScale)
+                          }}
+                          // X축·Y축 스타일
+                          xAxisColor="#666"
+                          xAxisThickness={0}
+                          yAxisColor="#666"
+                          yAxisThickness={0}
+                          // Y축 텍스트 영역 설정
+                          yAxisLabelWidth={wp(10)}
+                          yAxisTextStyle={{ 
+                            color: 'black',
+                            fontSize: RFValue(9.5), // 폰트 크기 더 줄임
+                            fontWeight: '500',
+                            textAlign: 'right',
+                            width: '100%',
+                            paddingRight: 0, // 패딩 제거
+                          }}
+                          // y축 레이블 포맷: 값만 표시
+                          formatYLabel={(value) => `${value}`}
+                          // 값 소수점 표시
+                          showFractionalValues={false}
+                          // Y축 텍스트 숨김 여부
+                          hideYAxisText={false}
+                          // 커스텀 라벨 사용
+                          renderTooltip={() => null}
+                          hideAxesAndRules={false}
+                          showXAxisIndices={false}
+                        />
+                      </View>
+                      
+                      <View testID="summarySection" style={[homescreenStyles.summarySection]}>
+                        <View testID="summaryTable" style={homescreenStyles.summaryTable}>
+                          <View testID="tableRow" style={homescreenStyles.tableRow}>
+                            <View testID="weekCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor: 'ffff' }]} />
+                            <View testID="amountCell" style={homescreenStyles.amountCell}>
+                              <Text testID="tableHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15) }]}>{lastMonth}월</Text>
+                            </View>
+                            <View testID="amountCell" style={homescreenStyles.amountCell}>
+                              <Text testID="tableHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15), color: 'rgb(34, 139, 34)' }]}>{currentMonth}월</Text>
+                            </View>
+                          </View>
+                          {Array.from(new Set([...lastMonthSortedWeeks, ...currentMonthSortedWeeks])).sort().map(week => (
+                            <View key={week} testID="tableRow" style={homescreenStyles.tableRow}>
+                              <View testID="weekCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { marginLeft: moderateScale(5) }]}>
+                                <Text testID="summaryLabel" style={[homescreenStyles.summaryLabel, { fontSize: RFValue(14) }]}>{week}주차</Text>
+                              </View>
+                              <View testID="amountCell" style={homescreenStyles.amountCell}>
+                                <Text testID="summaryValue" style={[homescreenStyles.summaryValue, { fontSize: RFValue(13) }]}>
+                                  {f.formatPrice(lastMonthWeeklyTotals[week] || 0)}원
+                                </Text>
+                              </View>
+                              <View testID="amountCell" style={homescreenStyles.amountCell}>
+                                <Text testID="summaryValue" style={[homescreenStyles.summaryValue, { fontSize: RFValue(13), color: 'rgb(34, 139, 34)' }]}>
+                                  {f.formatPrice(currentMonthWeeklyTotals[week] || 0)}원
+                                </Text>
+                              </View>
+                            </View>
+                          ))}
+                          <View testID="tableFooter" style={[homescreenStyles.tableRow, homescreenStyles.tableFooter, { minHeight: verticalScale(56) }]}>
+                            <View testID="weekCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor:'#f1f5f9' }]}>
+                              <Text testID="summaryTotalLabel" style={[homescreenStyles.summaryTotalLabel]}>월발주금액</Text>
+                            </View>
+                            <View testID="amountCell" style={homescreenStyles.amountCell}>
+                              <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color: '#0D326F', fontWeight: '600' }]}>{f.formatPrice(lastMonthTotal)}원</Text>
+                            </View>
+                            <View testID="amountCell" style={homescreenStyles.amountCell}>
+                              <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color:'rgb(34, 139, 34)', fontWeight: '600' }]}>{f.formatPrice(currentMonthTotal)}원</Text>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
                     </View>
                   )}
-                  
-                  <View testID="summarySection" style={[homescreenStyles.summarySection]}>
-                    <View testID="summaryTable" style={homescreenStyles.summaryTable}>
-                      <View testID="tableRow" style={homescreenStyles.tableRow}>
-                        <View testID="weekCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor: 'ffff' }]} />
-                        <View testID="amountCell" style={homescreenStyles.amountCell}>
-                          <Text testID="tableHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15) }]}>{lastMonth}월</Text>
-                        </View>
-                        <View testID="amountCell" style={homescreenStyles.amountCell}>
-                          <Text testID="tableHeaderText" style={[homescreenStyles.tableHeaderText, { paddingRight: moderateScale(15), color: 'rgb(34, 139, 34)' }]}>{currentMonth}월</Text>
-                        </View>
-                      </View>
-                      {Array.from(new Set([...lastMonthSortedWeeks, ...currentMonthSortedWeeks])).sort().map(week => (
-                        <View key={week} testID="tableRow" style={homescreenStyles.tableRow}>
-                          <View testID="weekCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { marginLeft: moderateScale(5) }]}>
-                            <Text testID="summaryLabel" style={[homescreenStyles.summaryLabel, { fontSize: RFValue(14) }]}>{week}주차</Text>
-                          </View>
-                          <View testID="amountCell" style={homescreenStyles.amountCell}>
-                            <Text testID="summaryValue" style={[homescreenStyles.summaryValue, { fontSize: RFValue(13) }]}>
-                              {f.formatPrice(lastMonthWeeklyTotals[week] || 0)}원
-                            </Text>
-                          </View>
-                          <View testID="amountCell" style={homescreenStyles.amountCell}>
-                            <Text testID="summaryValue" style={[homescreenStyles.summaryValue, { fontSize: RFValue(13), color: 'rgb(34, 139, 34)' }]}>
-                              {f.formatPrice(currentMonthWeeklyTotals[week] || 0)}원
-                            </Text>
-                          </View>
-                        </View>
-                      ))}
-                      <View testID="tableFooter" style={[homescreenStyles.tableRow, homescreenStyles.tableFooter, { minHeight: verticalScale(56) }]}>
-                        <View testID="weekCell" style={[homescreenStyles.tableCell, homescreenStyles.weekCell, { backgroundColor:'#f1f5f9' }]}>
-                          <Text testID="summaryTotalLabel" style={[homescreenStyles.summaryTotalLabel]}>월발주금액</Text>
-                        </View>
-                        <View testID="amountCell" style={homescreenStyles.amountCell}>
-                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color: '#0D326F', fontWeight: '600' }]}>{f.formatPrice(lastMonthTotal)}원</Text>
-                        </View>
-                        <View testID="amountCell" style={homescreenStyles.amountCell}>
-                          <Text testID="summaryTotalValue" style={[homescreenStyles.summaryTotalValue, { fontSize: RFValue(14), color:'rgb(34, 139, 34)', fontWeight: '600' }]}>{f.formatPrice(currentMonthTotal)}원</Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
                 </>
               )}
             </View>

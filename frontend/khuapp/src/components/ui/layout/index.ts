@@ -1,3 +1,3 @@
-export { Collapsible } from './Collapsible';
-import ParallaxScrollView from './ParallaxScrollView';
+export { Collapsible } from "./Collapsible";
+import ParallaxScrollView from "./ParallaxScrollView";
 export { ParallaxScrollView };

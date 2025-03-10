@@ -1,6 +1,11 @@
 // frontend/khuweb/src/utils/StoreOrdersCombinedDownloadExcel.js
 import * as XLSX from "xlsx-js-style";
-import { fetchOrders, fetchItems, fetchSuppliers, fetchStores } from "../api/api";
+import {
+  fetchOrders,
+  fetchItems,
+  fetchSuppliers,
+  fetchStores,
+} from "../api/api";
 
 export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
   if (!distinctPeriods || distinctPeriods.length === 0) {
@@ -68,7 +73,10 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
     const periodParam = `${year}.${formattedMonth}.${week}`;
 
     // 해당 기간에 대한 발주 데이터 조회 (회차는 round)
-    const ordersResponse = await fetchOrders({ 기간: periodParam, 회차: round });
+    const ordersResponse = await fetchOrders({
+      기간: periodParam,
+      회차: round,
+    });
     const orders = (ordersResponse && ordersResponse.orders) || [];
 
     // 그룹화: 품목별 매장 주문량
@@ -96,10 +104,11 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
     });
     // 추가 행: 활성화되어 있는 품목 중 주문 데이터에 없는 항목
     const activeItemsNotInOrders = items.filter(
-      (item) => item.활성화 && !orderItemIds.includes(item.품목_id)
+      (item) => item.활성화 && !orderItemIds.includes(item.품목_id),
     );
     const tableRowsFromActive = activeItemsNotInOrders.map((item) => {
-      const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
+      const supplier =
+        suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
       return {
         itemId: item.품목_id,
         supplierName: supplier.협력사명 || "N/A",
@@ -129,7 +138,7 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
       sortedTableRows.reduce((sum, row) => {
         const val = row.orders[store.매장_id];
         return sum + (val ? Number(val) : 0);
-      }, 0)
+      }, 0),
     );
 
     // 4. 시트에 들어갈 데이터 배열 구성
@@ -167,7 +176,7 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
       const excelRowNumber = dataStartRow + i;
       excelRow[totalCols - 2] = {
         f: `SUM(${firstStoreColLetter}${excelRowNumber}:${lastStoreColLetter}${excelRowNumber})`,
-        z: "#,##0;(#,##0);\"-\"",
+        z: '#,##0;(#,##0);"-"',
       };
       // "확인" 열: 빈칸
       excelRow[totalCols - 1] = "";
@@ -182,7 +191,7 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
       const colLetter = XLSX.utils.encode_col(col);
       totalsRow[col] = {
         f: `SUM(${colLetter}${dataStartRow}:${colLetter}${dataStartRow + sortedTableRows.length - 1})`,
-        z: "#,##0;(#,##0);\"-\"",
+        z: '#,##0;(#,##0);"-"',
       };
     }
     totalsRow[totalCols - 1] = "";
@@ -228,23 +237,38 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
         ws[cellAddr].s = ws[cellAddr].s || {};
         if (r === 0 && c === 0) {
           ws[cellAddr].s.font = { name: "맑은 고딕", sz: 14, bold: true };
-          ws[cellAddr].s.alignment = { horizontal: "center", vertical: "center" };
+          ws[cellAddr].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
         }
         if (r === 0) {
           ws[cellAddr].s.border = ws[cellAddr].s.border || {};
-          ws[cellAddr].s.border.top = { style: "thin", color: { rgb: "000000" } };
+          ws[cellAddr].s.border.top = {
+            style: "thin",
+            color: { rgb: "000000" },
+          };
         }
         if (r === 1) {
           ws[cellAddr].s.border = ws[cellAddr].s.border || {};
-          ws[cellAddr].s.border.bottom = { style: "thin", color: { rgb: "000000" } };
+          ws[cellAddr].s.border.bottom = {
+            style: "thin",
+            color: { rgb: "000000" },
+          };
         }
         if (c === 0) {
           ws[cellAddr].s.border = ws[cellAddr].s.border || {};
-          ws[cellAddr].s.border.left = { style: "thin", color: { rgb: "000000" } };
+          ws[cellAddr].s.border.left = {
+            style: "thin",
+            color: { rgb: "000000" },
+          };
         }
         if (c === maxCol - 1) {
           ws[cellAddr].s.border = ws[cellAddr].s.border || {};
-          ws[cellAddr].s.border.right = { style: "thin", color: { rgb: "000000" } };
+          ws[cellAddr].s.border.right = {
+            style: "thin",
+            color: { rgb: "000000" },
+          };
         }
       }
     }
@@ -275,11 +299,23 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
       if (ws[cellAddr]) {
         ws[cellAddr].s.border = ws[cellAddr].s.border || {};
         if (c === 0)
-          ws[cellAddr].s.border.left = { style: "thick", color: { rgb: "000000" } };
+          ws[cellAddr].s.border.left = {
+            style: "thick",
+            color: { rgb: "000000" },
+          };
         if (c === totalCols - 1)
-          ws[cellAddr].s.border.right = { style: "thick", color: { rgb: "000000" } };
-        ws[cellAddr].s.border.top = { style: "thick", color: { rgb: "000000" } };
-        ws[cellAddr].s.border.bottom = { style: "thick", color: { rgb: "000000" } };
+          ws[cellAddr].s.border.right = {
+            style: "thick",
+            color: { rgb: "000000" },
+          };
+        ws[cellAddr].s.border.top = {
+          style: "thick",
+          color: { rgb: "000000" },
+        };
+        ws[cellAddr].s.border.bottom = {
+          style: "thick",
+          color: { rgb: "000000" },
+        };
       }
     }
     for (let r = 4; r < totalsRowIndex; r++) {
@@ -288,7 +324,7 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
         if (!ws[cellAddr]) continue;
         ws[cellAddr].s.font = { name: "Arial", sz: c === 0 ? 12 : 10 };
         if (c >= 2 && c < totalCols - 1) {
-          ws[cellAddr].s.numFmt = "#,##0;(#,##0);\"-\"";
+          ws[cellAddr].s.numFmt = '#,##0;(#,##0);"-"';
         }
         ws[cellAddr].s.border = {
           top: { style: "thin", color: { rgb: "000000" } },
@@ -340,10 +376,16 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
         });
         const mergeAddr = XLSX.utils.encode_cell({ r: startRowIdx, c: 0 });
         if (ws[mergeAddr]) {
-          ws[mergeAddr].s.alignment = { horizontal: "center", vertical: "center" };
+          ws[mergeAddr].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
         }
         for (let col = 0; col < totalCols; col++) {
-          const bottomCellAddr = XLSX.utils.encode_cell({ r: endRowIdx, c: col });
+          const bottomCellAddr = XLSX.utils.encode_cell({
+            r: endRowIdx,
+            c: col,
+          });
           if (ws[bottomCellAddr]) {
             ws[bottomCellAddr].s.border = ws[bottomCellAddr].s.border || {};
             ws[bottomCellAddr].s.border.bottom = {

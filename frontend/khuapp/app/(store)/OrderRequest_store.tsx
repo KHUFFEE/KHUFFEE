@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,21 +7,27 @@ import {
   TextInput,
   Modal,
   ActivityIndicator,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plus, Minus, X, Search } from 'lucide-react-native';
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Plus, Minus, X, Search } from "lucide-react-native";
 import {
   StoreOrderRequestProps,
   APIProduct,
   SelectedItem,
-} from '../../src/components/ui/common/types';
-import { styles, modalStyles } from '../../src/components/ui/common/commonstyler';
-import * as f from '../../src/components/ui/common/function';
-import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
-import { OrderRequeststyle } from '../../src/styles/Orderrequest_styles_store';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { RN_API_URL } from '@env';
-import { RFValue } from 'react-native-responsive-fontsize';
+} from "../../src/components/ui/common/types";
+import {
+  styles,
+  modalStyles,
+} from "../../src/components/ui/common/commonstyler";
+import * as f from "../../src/components/ui/common/function";
+import { scale, verticalScale, moderateScale } from "react-native-size-matters";
+import { OrderRequeststyle } from "../../src/styles/Orderrequest_styles_store";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import { RN_API_URL } from "@env";
+import { RFValue } from "react-native-responsive-fontsize";
 
 const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
   storeName,
@@ -37,9 +43,13 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [isConfirmation, setIsConfirmation] = useState<boolean>(false);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [orderCompleteModalVisible, setOrderCompleteModalVisible] = useState<boolean>(false);
-  const [orderFailureModalVisible, setOrderFailureModalVisible] = useState<boolean>(false);
-  const [orderFailureMessages, setOrderFailureMessages] = useState<string[]>([]);
+  const [orderCompleteModalVisible, setOrderCompleteModalVisible] =
+    useState<boolean>(false);
+  const [orderFailureModalVisible, setOrderFailureModalVisible] =
+    useState<boolean>(false);
+  const [orderFailureMessages, setOrderFailureMessages] = useState<string[]>(
+    [],
+  );
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
 
@@ -54,15 +64,15 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
   // 제품 카테고리 정렬
   const sortedCategories = useMemo(() => {
     let categories = f.getUniqueCategories(apiItems);
-    categories = categories.filter(category => category !== '전체');
-    categories.sort((a, b) => a.localeCompare(b, 'ko'));
+    categories = categories.filter((category) => category !== "전체");
+    categories.sort((a, b) => a.localeCompare(b, "ko"));
     return categories;
   }, [apiItems]);
 
   // 즐겨찾기 상태 (매장별)
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
 
   const getFavoritesKey = (storeId: string) => `favorites_${storeId}`;
 
@@ -74,7 +84,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
         const favs = jsonValue ? JSON.parse(jsonValue) : [];
         setFavorites(favs);
       } catch (e) {
-        console.error('즐겨찾기 불러오기 실패:', e);
+        console.error("즐겨찾기 불러오기 실패:", e);
       }
     };
     loadFavorites();
@@ -89,10 +99,13 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
     }
     try {
       if (!storeId) return;
-      await AsyncStorage.setItem(getFavoritesKey(storeId), JSON.stringify(newFavorites));
+      await AsyncStorage.setItem(
+        getFavoritesKey(storeId),
+        JSON.stringify(newFavorites),
+      );
       setFavorites(newFavorites);
     } catch (e) {
-      console.error('즐겨찾기 업데이트 실패:', e);
+      console.error("즐겨찾기 업데이트 실패:", e);
     }
   };
 
@@ -103,7 +116,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
         setLoading(false);
       })
       .catch(() => {
-        setFetchError('품목을 불러오는 중 오류가 발생했습니다.');
+        setFetchError("품목을 불러오는 중 오류가 발생했습니다.");
         setLoading(false);
       });
   }, []);
@@ -115,7 +128,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
         setSuppliersLoaded(true);
       })
       .catch((err) => {
-        console.error('협력사 데이터 불러오기 오류:', err);
+        console.error("협력사 데이터 불러오기 오류:", err);
         setSuppliersLoaded(true);
       });
   }, []);
@@ -124,13 +137,16 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
     const fetchInventory = async () => {
       try {
         if (!storeId) return;
-        const response = await fetch(`${RN_API_URL}/api/inventory/store/?매장_id=${storeId}`);
-        if (!response.ok) throw new Error('재고 데이터를 불러오는 중 오류 발생');
+        const response = await fetch(
+          `${RN_API_URL}/api/inventory/store/?매장_id=${storeId}`,
+        );
+        if (!response.ok)
+          throw new Error("재고 데이터를 불러오는 중 오류 발생");
         const data = await response.json();
         setInventory(data);
         setInventoryLoaded(true);
       } catch (error) {
-        console.error('재고 데이터 불러오기 오류:', error);
+        console.error("재고 데이터 불러오기 오류:", error);
         setInventoryLoaded(true);
       }
     };
@@ -140,13 +156,17 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
   useEffect(() => {
     const fetchTableStatus = async () => {
       try {
-        const response = await fetch(`${RN_API_URL}/api/management/table_status_list/`);
-        if (!response.ok) throw new Error('테이블 상태 목록 불러오기 오류');
+        const response = await fetch(
+          `${RN_API_URL}/api/management/table_status_list/`,
+        );
+        if (!response.ok) throw new Error("테이블 상태 목록 불러오기 오류");
         const data = await response.json();
-        const storeOrderStatus = data.find((item: any) => item.테이블 === '매장_발주');
+        const storeOrderStatus = data.find(
+          (item: any) => item.테이블 === "매장_발주",
+        );
         setOrderEnabled(storeOrderStatus && storeOrderStatus.상태 === 1);
       } catch (error) {
-        console.error('테이블 상태 목록 불러오기 오류:', error);
+        console.error("테이블 상태 목록 불러오기 오류:", error);
         setOrderEnabled(false);
       }
     };
@@ -159,8 +179,8 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
   const sortedProducts = useMemo(() => {
     let products = f.getFilteredProducts(apiItems, selectedCategory);
     if (isSearchActive && searchText.trim().length > 0) {
-      products = products.filter(product =>
-        product.품목명.toLowerCase().includes(searchText.toLowerCase())
+      products = products.filter((product) =>
+        product.품목명.toLowerCase().includes(searchText.toLowerCase()),
       );
     }
     products.sort((a, b) => {
@@ -168,18 +188,27 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
       const bIsFavorite = favorites.includes(b.품목_id);
       if (aIsFavorite && !bIsFavorite) return -1;
       if (!aIsFavorite && bIsFavorite) return 1;
-      return f.sortProductsBySupplierAndName([a, b], suppliers)[0] === a ? -1 : 1;
+      return f.sortProductsBySupplierAndName([a, b], suppliers)[0] === a
+        ? -1
+        : 1;
     });
     return products;
-  }, [apiItems, selectedCategory, favorites, suppliers, isSearchActive, searchText]);
+  }, [
+    apiItems,
+    selectedCategory,
+    favorites,
+    suppliers,
+    isSearchActive,
+    searchText,
+  ]);
 
   let displayProducts = sortedProducts;
   if (isSearchActive && searchText.trim().length > 0) {
     displayProducts = sortedProducts.filter((product) =>
-      product.품목명.toLowerCase().includes(searchText.toLowerCase())
+      product.품목명.toLowerCase().includes(searchText.toLowerCase()),
     );
   }
-  
+
   const totalPrice = f.calculateTotalPrice(selectedItems);
 
   const addItem = (product: APIProduct) => {
@@ -193,7 +222,11 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
   };
 
   const updateCustomQuantity = (productId: string, text: string) => {
-    const updatedItems = f.updateCustomQuantityUtil(selectedItems, productId, text);
+    const updatedItems = f.updateCustomQuantityUtil(
+      selectedItems,
+      productId,
+      text,
+    );
     setSelectedItems(updatedItems);
   };
 
@@ -217,7 +250,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
     if (orderSubmitted) return;
     setOrderSubmitted(true);
     if (!storeId) {
-      console.error('매장 ID가 존재하지 않습니다.');
+      console.error("매장 ID가 존재하지 않습니다.");
       setOrderSubmitted(false);
       return;
     }
@@ -228,13 +261,17 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
       return;
     }
     try {
-      const ordersResponse = await fetch(`${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}`);
+      const ordersResponse = await fetch(
+        `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}`,
+      );
       if (!ordersResponse.ok) throw new Error("주문 목록 불러오기 실패");
       const ordersData = await ordersResponse.json();
 
       // 각 주문별로 개별 POST 요청 실행 (추가 방식)
       const updatePromises = ordersData.orders.map(async (order: any) => {
-        const selectedItem = selectedItems.find(item => item.품목_id === order.품목_id);
+        const selectedItem = selectedItems.find(
+          (item) => item.품목_id === order.품목_id,
+        );
         if (selectedItem) {
           const payload = {
             ...order, // 기존 주문 데이터 유지 (매장_id, 품목_id, 기간, 회차 등)
@@ -242,14 +279,17 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
             old_회차: order.회차, // 기존 회차 추가
             매장_발주량: selectedItem.quantity, // 선택한 수량을 추가
           };
-          const updateResponse = await fetch(`${RN_API_URL}/api/orders/store_order_update/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...payload,
-              app: "true"
-            }),
-          });
+          const updateResponse = await fetch(
+            `${RN_API_URL}/api/orders/store_order_update/`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...payload,
+                app: "true",
+              }),
+            },
+          );
           if (!updateResponse.ok) {
             const errorData = await updateResponse.json();
             throw new Error(errorData.error || "재고량 업데이트 실패");
@@ -260,7 +300,9 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
       });
 
       // 모든 요청 완료 후, null이 아닌 결과만 필터링하여 첫 번째 주문 업데이트 결과를 onNewOrder에 전달합니다.
-      const updatedOrders = (await Promise.all(updatePromises)).filter(res => res !== null);
+      const updatedOrders = (await Promise.all(updatePromises)).filter(
+        (res) => res !== null,
+      );
       onNewOrder(updatedOrders[0]);
       setOrderCompleteModalVisible(true);
     } catch (error: any) {
@@ -273,28 +315,38 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
 
   const renderInventoryText = (product: APIProduct) => {
     if (!inventoryLoaded) return null;
-    const inv = inventory.find(item => item.품목_id === product.품목_id);
+    const inv = inventory.find((item) => item.품목_id === product.품목_id);
     if (inv) {
       const stock = inv.매장_재고량;
-      let formattedStock = stock % 1 === 0 ? stock : (() => {
-        const fractionalPart = stock.toString().split('.')[1];
-        return fractionalPart && fractionalPart.charAt(0) === '0' ? Math.floor(stock) : stock.toFixed(1);
-      })();
+      let formattedStock =
+        stock % 1 === 0
+          ? stock
+          : (() => {
+              const fractionalPart = stock.toString().split(".")[1];
+              return fractionalPart && fractionalPart.charAt(0) === "0"
+                ? Math.floor(stock)
+                : stock.toFixed(1);
+            })();
       return (
-        <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(12) }}>
+        <Text
+          testID="현재고"
+          style={{ color: "#3A9D23", fontSize: RFValue(12) }}
+        >
           현재고:{formattedStock}개
         </Text>
       );
     }
     return (
-      <Text testID="현재고" style={{ color: '#3A9D23', fontSize: RFValue(12) }}>
+      <Text testID="현재고" style={{ color: "#3A9D23", fontSize: RFValue(12) }}>
         현재고:0개
       </Text>
     );
   };
 
   const renderProductCard = (product: APIProduct) => {
-    const selected = selectedItems.find(item => item.품목_id === product.품목_id);
+    const selected = selectedItems.find(
+      (item) => item.품목_id === product.품목_id,
+    );
     const cardStyle = selected
       ? [OrderRequeststyle.selectItemCard, OrderRequeststyle.selectedItemCard]
       : OrderRequeststyle.selectItemCard;
@@ -305,8 +357,11 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
         onPress={() => toggleFavorite(product.품목_id)}
         style={OrderRequeststyle.favoriteButton}
       >
-        <Text testID="favoriteButtonText" style={OrderRequeststyle.favoriteButtonText}>
-          {isFavorite ? '★' : '☆'}
+        <Text
+          testID="favoriteButtonText"
+          style={OrderRequeststyle.favoriteButtonText}
+        >
+          {isFavorite ? "★" : "☆"}
         </Text>
       </TouchableOpacity>
     );
@@ -315,44 +370,84 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
       return (
         <View testID="selectItemCard" key={product.품목_id} style={cardStyle}>
           <View testID="cardContent" style={[OrderRequeststyle.cardContent]}>
-            <View testID="productInfoContainer" style={[OrderRequeststyle.productInfoContainer, { height: 'auto' }]}>
-              <View testID="selectedItemRowContainer" style={OrderRequeststyle.selectedItemRowContainer}>
-                <View testID="nameWithFavoriteContainer" style={OrderRequeststyle.nameWithFavoriteContainer}>
+            <View
+              testID="productInfoContainer"
+              style={[
+                OrderRequeststyle.productInfoContainer,
+                { height: "auto" },
+              ]}
+            >
+              <View
+                testID="selectedItemRowContainer"
+                style={OrderRequeststyle.selectedItemRowContainer}
+              >
+                <View
+                  testID="nameWithFavoriteContainer"
+                  style={OrderRequeststyle.nameWithFavoriteContainer}
+                >
                   {favoriteButton}
-                  <Text testID="selectItemName" style={OrderRequeststyle.selectItemName}>
-                    {product.품목명}{'\n'}
+                  <Text
+                    testID="selectItemName"
+                    style={OrderRequeststyle.selectItemName}
+                  >
+                    {product.품목명}
+                    {"\n"}
                     {renderInventoryText(product)}
                   </Text>
                 </View>
-                <Text testID="price_unit_Text" style={OrderRequeststyle.price_unit_Text}>
-                  {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
+                <Text
+                  testID="price_unit_Text"
+                  style={OrderRequeststyle.price_unit_Text}
+                >
+                  {f.formatPrice(
+                    parseFloat(product.입고단가) * product.출고단위,
+                  )}
+                  원
                 </Text>
                 <TouchableOpacity
                   testID="cancelButton"
-                  style={[OrderRequeststyle.orderButton, OrderRequeststyle.cancelButton]}
+                  style={[
+                    OrderRequeststyle.orderButton,
+                    OrderRequeststyle.cancelButton,
+                  ]}
                   onPress={() => removeItem(product.품목_id)}
                 >
-                  <Text testID="cancelButtonText" style={OrderRequeststyle.cancelButtonText}>
+                  <Text
+                    testID="cancelButtonText"
+                    style={OrderRequeststyle.cancelButtonText}
+                  >
                     취소
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
-            <View testID="additionalRowContainer" style={OrderRequeststyle.additionalRowContainer}>
+            <View
+              testID="additionalRowContainer"
+              style={OrderRequeststyle.additionalRowContainer}
+            >
               <View
                 testID="Row2"
                 style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  width: '100%',
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  width: "100%",
                   marginTop: moderateScale(8),
-                  marginLeft: moderateScale(20)
+                  marginLeft: moderateScale(20),
                 }}
               >
-                <View testID="row1" style={{ flexDirection: 'column', position: 'relative', bottom: moderateScale(10), left: wp(1) }}>
+                <View
+                  testID="row1"
+                  style={{
+                    flexDirection: "column",
+                    position: "relative",
+                    bottom: moderateScale(10),
+                    left: wp(1),
+                  }}
+                >
                   <Text testID="unitText" style={OrderRequeststyle.unitText}>
-                    출고단위:{f.formatPrice(product.출고단위)}{product.단위}
+                    출고단위:{f.formatPrice(product.출고단위)}
+                    {product.단위}
                   </Text>
                   <Text testID="priceText" style={OrderRequeststyle.priceText}>
                     상품총액:{f.formatPrice(computedPrice)}원
@@ -360,15 +455,25 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
                 </View>
                 <View
                   testID="quantityControlContainer"
-                  style={[OrderRequeststyle.quantityControlContainer, { marginLeft: 0, position: 'relative', bottom: moderateScale(5) }]}
+                  style={[
+                    OrderRequeststyle.quantityControlContainer,
+                    {
+                      marginLeft: 0,
+                      position: "relative",
+                      bottom: moderateScale(5),
+                    },
+                  ]}
                 >
                   <TouchableOpacity
                     testID="decrementButton"
                     style={[
                       OrderRequeststyle.quantityButton,
-                      selected.quantity <= product.출고단위 && OrderRequeststyle.disabledButton,
+                      selected.quantity <= product.출고단위 &&
+                        OrderRequeststyle.disabledButton,
                     ]}
-                    onPress={() => updateQuantity(product.품목_id, -product.출고단위)}
+                    onPress={() =>
+                      updateQuantity(product.품목_id, -product.출고단위)
+                    }
                     disabled={selected.quantity <= product.출고단위}
                   >
                     <Minus testID="minusIcon" color="#333" size={20} />
@@ -378,12 +483,16 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
                     style={OrderRequeststyle.quantityText}
                     value={selected.customQuantity}
                     keyboardType="numeric"
-                    onChangeText={(text) => updateCustomQuantity(product.품목_id, text)}
+                    onChangeText={(text) =>
+                      updateCustomQuantity(product.품목_id, text)
+                    }
                   />
                   <TouchableOpacity
                     testID="incrementButton"
                     style={OrderRequeststyle.quantityButton}
-                    onPress={() => updateQuantity(product.품목_id, product.출고단위)}
+                    onPress={() =>
+                      updateQuantity(product.품목_id, product.출고단위)
+                    }
                   >
                     <Plus testID="plusIcon" color="#333" size={20} />
                   </TouchableOpacity>
@@ -392,8 +501,15 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
             </View>
           </View>
           {selected.error && (
-            <View testID="errorContainer" style={OrderRequeststyle.errorContainer}>
-              <Text testID="errorText" style={OrderRequeststyle.errorText} numberOfLines={1}>
+            <View
+              testID="errorContainer"
+              style={OrderRequeststyle.errorContainer}
+            >
+              <Text
+                testID="errorText"
+                style={OrderRequeststyle.errorText}
+                numberOfLines={1}
+              >
                 {selected.error}
               </Text>
             </View>
@@ -408,24 +524,44 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
           style={cardStyle}
           onPress={() => addItem(product)}
         >
-          <View testID="productCardContent" style={OrderRequeststyle.productCardContent}>
-            <View testID="productCardRow" style={OrderRequeststyle.productCardRow}>
-              <View testID="nameWithFavoriteContainer" style={OrderRequeststyle.nameWithFavoriteContainer}>
+          <View
+            testID="productCardContent"
+            style={OrderRequeststyle.productCardContent}
+          >
+            <View
+              testID="productCardRow"
+              style={OrderRequeststyle.productCardRow}
+            >
+              <View
+                testID="nameWithFavoriteContainer"
+                style={OrderRequeststyle.nameWithFavoriteContainer}
+              >
                 {favoriteButton}
-                <Text testID="productName" style={OrderRequeststyle.productName}>
-                  {product.품목명}{'\n'}
+                <Text
+                  testID="productName"
+                  style={OrderRequeststyle.productName}
+                >
+                  {product.품목명}
+                  {"\n"}
                   {renderInventoryText(product)}
                 </Text>
               </View>
-              <Text testID="productPrice" style={OrderRequeststyle.productPrice}>
-                {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}원
+              <Text
+                testID="productPrice"
+                style={OrderRequeststyle.productPrice}
+              >
+                {f.formatPrice(parseFloat(product.입고단가) * product.출고단위)}
+                원
               </Text>
               <TouchableOpacity
                 testID="addButton"
                 style={OrderRequeststyle.orderButton}
                 onPress={() => addItem(product)}
               >
-                <Text testID="orderButtonText" style={OrderRequeststyle.orderButtonText}>
+                <Text
+                  testID="orderButtonText"
+                  style={OrderRequeststyle.orderButtonText}
+                >
                   선택
                 </Text>
               </TouchableOpacity>
@@ -439,7 +575,11 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
   if (loading || !inventoryLoaded || !suppliersLoaded) {
     return (
       <View testID="loading_Container" style={styles.loading_Container}>
-        <ActivityIndicator testID="activityIndicator" size="large" color="#0D326F80" />
+        <ActivityIndicator
+          testID="activityIndicator"
+          size="large"
+          color="#0D326F80"
+        />
         <Text testID="loading_Text" style={styles.loading_Text}>
           로딩 중...
         </Text>
@@ -464,9 +604,18 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
             contentContainerStyle={OrderRequeststyle.scrollContainer}
             stickyHeaderIndices={[0]}
           >
-            <View testID="fixedHeaderContainer" style={OrderRequeststyle.fixedHeaderContainer}>
-              <View testID="categorySection" style={OrderRequeststyle.categorySection}>
-                <Text testID="sectionTitle" style={OrderRequeststyle.sectionTitle}>
+            <View
+              testID="fixedHeaderContainer"
+              style={OrderRequeststyle.fixedHeaderContainer}
+            >
+              <View
+                testID="categorySection"
+                style={OrderRequeststyle.categorySection}
+              >
+                <Text
+                  testID="sectionTitle"
+                  style={OrderRequeststyle.sectionTitle}
+                >
                   상품 유형 선택
                 </Text>
                 <ScrollView
@@ -476,15 +625,16 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
                   style={OrderRequeststyle.categoryList}
                   contentContainerStyle={{
                     flexGrow: 1,
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
+                    justifyContent: "flex-start",
+                    alignItems: "center",
                   }}
                 >
                   <TouchableOpacity
                     testID="categoryButton"
                     style={[
                       OrderRequeststyle.categoryButton,
-                      selectedCategory === null && OrderRequeststyle.categoryButtonActive,
+                      selectedCategory === null &&
+                        OrderRequeststyle.categoryButtonActive,
                     ]}
                     onPress={() => setSelectedCategory(null)}
                   >
@@ -492,7 +642,8 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
                       testID="categoryButtonText"
                       style={[
                         OrderRequeststyle.categoryButtonText,
-                        selectedCategory === null && OrderRequeststyle.categoryButtonTextActive,
+                        selectedCategory === null &&
+                          OrderRequeststyle.categoryButtonTextActive,
                       ]}
                     >
                       전체
@@ -504,7 +655,8 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
                       testID="categoryButton"
                       style={[
                         OrderRequeststyle.categoryButton,
-                        selectedCategory === cat && OrderRequeststyle.categoryButtonActive,
+                        selectedCategory === cat &&
+                          OrderRequeststyle.categoryButtonActive,
                       ]}
                       onPress={() => setSelectedCategory(cat)}
                     >
@@ -512,7 +664,8 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
                         testID="categoryButtonText"
                         style={[
                           OrderRequeststyle.categoryButtonText,
-                          selectedCategory === cat && OrderRequeststyle.categoryButtonTextActive,
+                          selectedCategory === cat &&
+                            OrderRequeststyle.categoryButtonTextActive,
                         ]}
                       >
                         {cat}
@@ -521,28 +674,44 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
                   ))}
                 </ScrollView>
               </View>
-              <View testID="sectionContainer" style={OrderRequeststyle.sectionContainer}>
-                <View testID="sectionTitleRow" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text testID="sectionTitle_2" style={OrderRequeststyle.sectionTitle_2}>
+              <View
+                testID="sectionContainer"
+                style={OrderRequeststyle.sectionContainer}
+              >
+                <View
+                  testID="sectionTitleRow"
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Text
+                    testID="sectionTitle_2"
+                    style={OrderRequeststyle.sectionTitle_2}
+                  >
                     상품 선택하기
                   </Text>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     testID="searchIconButton"
                     style={OrderRequeststyle.searchIconContainer}
                     onPress={() => setIsSearchActive(!isSearchActive)}
                   >
-                    <Search 
-                      testID="searchIcon" 
-                      color="#0D326F" 
+                    <Search
+                      testID="searchIcon"
+                      color="#0D326F"
                       style={OrderRequeststyle.searchIconSize}
                     />
                   </TouchableOpacity>
                 </View>
                 {isSearchActive && (
-                  <View testID="searchContainer" style={OrderRequeststyle.searchContainer}>
-                    <Search 
-                      testID="searchIconInInput" 
-                      color="#64748b" 
+                  <View
+                    testID="searchContainer"
+                    style={OrderRequeststyle.searchContainer}
+                  >
+                    <Search
+                      testID="searchIconInInput"
+                      color="#64748b"
                       style={OrderRequeststyle.searchIconSize}
                     />
                     <TextInput
@@ -555,99 +724,149 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
                       autoFocus={true}
                     />
                     {searchText.length > 0 && (
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         testID="clearSearchButton"
                         style={OrderRequeststyle.searchIcon}
-                        onPress={() => setSearchText('')}
+                        onPress={() => setSearchText("")}
                       >
-                        <X 
-                          testID="clearIcon" 
-                          color="#64748b" 
+                        <X
+                          testID="clearIcon"
+                          color="#64748b"
                           style={OrderRequeststyle.searchIconSize}
                         />
                       </TouchableOpacity>
                     )}
                   </View>
                 )}
-                <View testID="headerContainer" style={OrderRequeststyle.headerContainer}>
-                  <Text testID="item_headerText" style={OrderRequeststyle.item_headerText}>
+                <View
+                  testID="headerContainer"
+                  style={OrderRequeststyle.headerContainer}
+                >
+                  <Text
+                    testID="item_headerText"
+                    style={OrderRequeststyle.item_headerText}
+                  >
                     상품명
                   </Text>
-                  <Text testID="price_headerText" style={OrderRequeststyle.price_headerText}>
+                  <Text
+                    testID="price_headerText"
+                    style={OrderRequeststyle.price_headerText}
+                  >
                     가격
                   </Text>
-                  <Text testID="whitespace" style={{ width: '10%' }}></Text>
+                  <Text testID="whitespace" style={{ width: "10%" }}></Text>
                 </View>
               </View>
             </View>
-            <View testID="listContainer" style={OrderRequeststyle.listContainer}>
+            <View
+              testID="listContainer"
+              style={OrderRequeststyle.listContainer}
+            >
               {displayProducts.map((product) => renderProductCard(product))}
             </View>
           </ScrollView>
-          <View testID="footerContainer" style={OrderRequeststyle.footerContainer}>
-            <Text testID="footerPriceText" style={OrderRequeststyle.footerPriceText}>
+          <View
+            testID="footerContainer"
+            style={OrderRequeststyle.footerContainer}
+          >
+            <Text
+              testID="footerPriceText"
+              style={OrderRequeststyle.footerPriceText}
+            >
               {selectedItems.length > 0
                 ? `총 발주금액:  ${f.formatPrice(totalPrice)}원`
-                : '총 발주금액 0원'}
+                : "총 발주금액 0원"}
             </Text>
             <TouchableOpacity
               testID="footerButton"
               style={[
                 OrderRequeststyle.footerButton,
-                selectedItems.length === 0 && OrderRequeststyle.footerButtonDisabled,
+                selectedItems.length === 0 &&
+                  OrderRequeststyle.footerButtonDisabled,
               ]}
               onPress={handleConfirmOrder}
               disabled={selectedItems.length === 0}
             >
-              <Text testID="footerButtonText" style={OrderRequeststyle.footerButtonText}>
+              <Text
+                testID="footerButtonText"
+                style={OrderRequeststyle.footerButtonText}
+              >
                 발주확인
               </Text>
             </TouchableOpacity>
           </View>
         </>
       ) : (
-        <ScrollView testID="confirmationContainer" style={{ flex: 1, backgroundColor: '#fff' }}>
-          <View testID="confirm_selectedItemsSection" style={OrderRequeststyle.confirm_selectedItemsSection}>
+        <ScrollView
+          testID="confirmationContainer"
+          style={{ flex: 1, backgroundColor: "#fff" }}
+        >
+          <View
+            testID="confirm_selectedItemsSection"
+            style={OrderRequeststyle.confirm_selectedItemsSection}
+          >
             <Text
               testID="confirm_sectionTitle"
-              style={[OrderRequeststyle.confirm_sectionTitle, { textAlign: 'center' }]}
+              style={[
+                OrderRequeststyle.confirm_sectionTitle,
+                { textAlign: "center" },
+              ]}
             >
               최종 발주 확인
             </Text>
             {sortedProducts
-              .filter(product => selectedItems.some(item => item.품목_id === product.품목_id))
-              .map(product => {
-                const item = selectedItems.find(item => item.품목_id === product.품목_id);
+              .filter((product) =>
+                selectedItems.some((item) => item.품목_id === product.품목_id),
+              )
+              .map((product) => {
+                const item = selectedItems.find(
+                  (item) => item.품목_id === product.품목_id,
+                );
                 if (!item) return null;
                 const itemTotal = item.quantity * parseFloat(item.입고단가);
                 return (
                   <View
                     testID="confirmationItemRow"
                     key={item.품목_id}
-                    style={[OrderRequeststyle.confirmationItemRow, { flexDirection: 'row', alignItems: 'center', paddingVertical: moderateScale(5) }]}
+                    style={[
+                      OrderRequeststyle.confirmationItemRow,
+                      {
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingVertical: moderateScale(5),
+                      },
+                    ]}
                   >
                     <Text
                       testID="confirm_selectItemName"
-                      style={[OrderRequeststyle.confirm_selectItemName, { flex: 2 }]}
+                      style={[
+                        OrderRequeststyle.confirm_selectItemName,
+                        { flex: 2 },
+                      ]}
                     >
                       {item.품목명}
                     </Text>
                     <Text
                       testID="confirm_unitText"
-                      style={[OrderRequeststyle.confirm_unitText, { flex: 1 , textAlign: 'center' }]}
+                      style={[
+                        OrderRequeststyle.confirm_unitText,
+                        { flex: 1, textAlign: "center" },
+                      ]}
                     >
                       {item.quantity}개
                     </Text>
                     <Text
                       testID="confirm_priceText"
-                      style={[OrderRequeststyle.confirm_priceText, { flex: 1, textAlign: 'right' }]}
+                      style={[
+                        OrderRequeststyle.confirm_priceText,
+                        { flex: 1, textAlign: "right" },
+                      ]}
                     >
                       {f.formatPrice(itemTotal)}원
                     </Text>
                   </View>
                 );
-              })
-            }
+              })}
             <View testID="totalRow" style={OrderRequeststyle.totalRow}>
               <Text testID="totalText" style={OrderRequeststyle.totalText}>
                 총 발주금액:
@@ -658,11 +877,17 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
             </View>
             <TouchableOpacity
               testID="order_request_Button"
-              style={[OrderRequeststyle.order_request_Button, orderSubmitted && { opacity: 0.5 }]}
+              style={[
+                OrderRequeststyle.order_request_Button,
+                orderSubmitted && { opacity: 0.5 },
+              ]}
               onPress={handleOrderSubmit}
               disabled={orderSubmitted}
             >
-              <Text testID="order_request_ButtonText" style={OrderRequeststyle.order_request_ButtonText}>
+              <Text
+                testID="order_request_ButtonText"
+                style={OrderRequeststyle.order_request_ButtonText}
+              >
                 발주요청하기
               </Text>
             </TouchableOpacity>
@@ -670,14 +895,20 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
               testID="order_request_Button"
               style={[
                 OrderRequeststyle.order_request_Button,
-                { backgroundColor: 'white' },
-                { borderColor: '#0D326F' },
+                { backgroundColor: "white" },
+                { borderColor: "#0D326F" },
                 { borderWidth: 1 },
                 { marginTop: moderateScale(5) },
               ]}
               onPress={() => setIsConfirmation(false)}
             >
-              <Text testID="order_request_ButtonText" style={[OrderRequeststyle.order_request_ButtonText, { color: '#0D326F' }]}>
+              <Text
+                testID="order_request_ButtonText"
+                style={[
+                  OrderRequeststyle.order_request_ButtonText,
+                  { color: "#0D326F" },
+                ]}
+              >
                 뒤로가기
               </Text>
             </TouchableOpacity>
@@ -697,7 +928,11 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
               발주 오류
             </Text>
             {errorMessages.map((msg, idx) => (
-              <Text key={idx} testID={`modalText_${idx}`} style={modalStyles.modalText}>
+              <Text
+                key={idx}
+                testID={`modalText_${idx}`}
+                style={modalStyles.modalText}
+              >
                 {msg}
               </Text>
             ))}
@@ -725,12 +960,21 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
             <Text testID="modalTitle_2" style={modalStyles.modalTitle}>
               발주 완료
             </Text>
-            <Text testID="modalText_Complete" style={[modalStyles.modalText, { marginBottom: moderateScale(-3) }]}>
-              모든 발주 요청이 {'\n'}성공적으로 전송되었습니다.
+            <Text
+              testID="modalText_Complete"
+              style={[
+                modalStyles.modalText,
+                { marginBottom: moderateScale(-3) },
+              ]}
+            >
+              모든 발주 요청이 {"\n"}성공적으로 전송되었습니다.
             </Text>
             <TouchableOpacity
               testID="closeButton_Complete"
-              style={[modalStyles.closeButton,{marginTop: moderateScale(10)}]}
+              style={[
+                modalStyles.closeButton,
+                { marginTop: moderateScale(10) },
+              ]}
               onPress={() => {
                 setOrderCompleteModalVisible(false);
                 onOrderComplete();
@@ -756,7 +1000,11 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
               발주 실패
             </Text>
             {orderFailureMessages.map((msg, idx) => (
-              <Text key={idx} testID={`modalText_failure_${idx}`} style={modalStyles.modalText}>
+              <Text
+                key={idx}
+                testID={`modalText_failure_${idx}`}
+                style={modalStyles.modalText}
+              >
                 {msg}
               </Text>
             ))}

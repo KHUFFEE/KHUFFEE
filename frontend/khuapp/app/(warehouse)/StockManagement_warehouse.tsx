@@ -5,7 +5,7 @@ import React, {
   forwardRef,
   useRef,
   useMemo,
-} from 'react';
+} from "react";
 import {
   View,
   Text,
@@ -19,10 +19,10 @@ import {
   StyleSheet,
   Dimensions,
   TextStyle,
-} from 'react-native';
-import { RN_API_URL } from '@env';
-import * as f from '../../src/components/ui/common/function';
-import { styles } from '../../src/components/ui/common/commonstyler';
+} from "react-native";
+import { RN_API_URL } from "@env";
+import * as f from "../../src/components/ui/common/function";
+import { styles } from "../../src/components/ui/common/commonstyler";
 import {
   inventoryStyles,
   toggleButtonStyles,
@@ -31,18 +31,21 @@ import {
   modalStyles,
   headerRowStyles,
   OrderRequeststyle,
-} from '../../src/styles/StockManagement_styles_warehouse';
-import { APIProduct } from '../../src/components/ui/common/types';
-import { Search, Minus, Plus, Trash2, X } from 'lucide-react-native';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
-import { RFValue } from 'react-native-responsive-fontsize';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+} from "../../src/styles/StockManagement_styles_warehouse";
+import { APIProduct } from "../../src/components/ui/common/types";
+import { Search, Minus, Plus, Trash2, X } from "lucide-react-native";
+import { moderateScale, scale, verticalScale } from "react-native-size-matters";
+import { RFValue } from "react-native-responsive-fontsize";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
-const { height: screenHeight } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get("window");
 
 const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
-  fontFamily: 'PretendardVariable',
-  fontWeight: customStyle.fontWeight ? customStyle.fontWeight : '400',
+  fontFamily: "PretendardVariable",
+  fontWeight: customStyle.fontWeight ? customStyle.fontWeight : "400",
   ...customStyle,
 });
 
@@ -68,7 +71,7 @@ interface InventoryProps {
 
 interface InventoryItemRowProps {
   item: InventoryItem;
-  inventoryType: 'daily' | 'monthly';
+  inventoryType: "daily" | "monthly";
   editMode: boolean;
   onValueChange: (품목_id: string, newValue: string) => void;
   onIncrement: (품목_id: string) => void;
@@ -93,13 +96,13 @@ const InventoryItemRow = forwardRef<
     index,
   } = props;
   const inventoryValue =
-    inventoryType === 'daily'
+    inventoryType === "daily"
       ? (item as MergedInventoryItem).매장_재고량
       : (item as MergedMonthInventoryItem).월말_재고량;
 
   // 로컬 상태: 사용자가 입력 중인 값을 관리
   const [localInput, setLocalInput] = useState<string>(
-    inventoryValue === 0 ? '' : f.formatPrice(inventoryValue)
+    inventoryValue === 0 ? "" : f.formatPrice(inventoryValue),
   );
   const [isFocused, setIsFocused] = useState(false);
 
@@ -107,9 +110,13 @@ const InventoryItemRow = forwardRef<
   useEffect(() => {
     if (!isFocused) {
       if (editMode) {
-        setLocalInput(inventoryValue === 0 ? "0" : f.formatPrice(inventoryValue));
+        setLocalInput(
+          inventoryValue === 0 ? "0" : f.formatPrice(inventoryValue),
+        );
       } else {
-        setLocalInput(inventoryValue === 0 ? '' : f.formatPrice(inventoryValue));
+        setLocalInput(
+          inventoryValue === 0 ? "" : f.formatPrice(inventoryValue),
+        );
       }
     }
   }, [inventoryValue, isFocused, editMode]);
@@ -119,29 +126,29 @@ const InventoryItemRow = forwardRef<
     ref,
     () => ({
       commit: () => {
-        const parsed = parseFloat(localInput.replace(/,/g, ''));
+        const parsed = parseFloat(localInput.replace(/,/g, ""));
         const numericValue = isNaN(parsed) ? 0 : parsed;
         // 부모의 상태만 업데이트. 이후 useEffect가 inventoryValue 변경에 따라 localInput을 업데이트함
         onValueChange(item.품목_id, numericValue.toString());
       },
     }),
-    [localInput, item.품목_id, onValueChange]
+    [localInput, item.품목_id, onValueChange],
   );
 
   return (
-    <View 
-      testID="itemContainer" 
+    <View
+      testID="itemContainer"
       style={[
         inventoryStyles.itemContainer,
-        index % 2 === 0 
-          ? { 
-              backgroundColor: '#ffffff',
-              borderColor: '#e2e8f0'
-            } 
-          : { 
-              backgroundColor: '#f5f8ff',
-              borderColor: '#d9e1f2'
+        index % 2 === 0
+          ? {
+              backgroundColor: "#ffffff",
+              borderColor: "#e2e8f0",
             }
+          : {
+              backgroundColor: "#f5f8ff",
+              borderColor: "#d9e1f2",
+            },
       ]}
     >
       <View
@@ -153,7 +160,10 @@ const InventoryItemRow = forwardRef<
         </Text>
 
         {editMode ? (
-          <View testID="controlContainer" style={editModeStyles.controlContainer}>
+          <View
+            testID="controlContainer"
+            style={editModeStyles.controlContainer}
+          >
             <View testID="inputContainer" style={editModeStyles.inputContainer}>
               <TouchableOpacity
                 testID="decrementButton"
@@ -171,28 +181,35 @@ const InventoryItemRow = forwardRef<
                 value={localInput}
                 onChangeText={(text) => {
                   // 현재 입력된 텍스트에서 콤마 제거
-                  const rawText = text.replace(/,/g, '');
+                  const rawText = text.replace(/,/g, "");
                   // 숫자로 파싱
                   const parsed = parseFloat(rawText);
                   // 숫자면 포맷 적용, 아니면 그대로 사용 (예: 빈 문자열)
-                  const formatted = isNaN(parsed) ? rawText : f.formatPrice(parsed);
+                  const formatted = isNaN(parsed)
+                    ? rawText
+                    : f.formatPrice(parsed);
                   setLocalInput(formatted);
-                  onValueChange(item.품목_id, isNaN(parsed) ? "0" : parsed.toString());
+                  onValueChange(
+                    item.품목_id,
+                    isNaN(parsed) ? "0" : parsed.toString(),
+                  );
                 }}
                 onFocus={() => {
                   setIsFocused(true);
                   if (localInput === "0") {
-                    setLocalInput('');
+                    setLocalInput("");
                   }
                 }}
                 onBlur={() => {
                   setIsFocused(false);
-                  const parsed = parseFloat(localInput.replace(/,/g, ''));
+                  const parsed = parseFloat(localInput.replace(/,/g, ""));
                   const numericValue = isNaN(parsed) ? 0 : parsed;
                   setLocalInput(
                     numericValue === 0
-                      ? (editMode ? "0" : '')
-                      : f.formatPrice(numericValue)
+                      ? editMode
+                        ? "0"
+                        : ""
+                      : f.formatPrice(numericValue),
                   );
                 }}
                 keyboardType="numeric"
@@ -222,12 +239,14 @@ const InventoryItemRow = forwardRef<
 const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [filteredData, setFilteredData] = useState<InventoryItem[]>([]);
-  const [inventoryType, setInventoryType] = useState<'daily' | 'monthly'>('daily');
+  const [inventoryType, setInventoryType] = useState<"daily" | "monthly">(
+    "daily",
+  );
   const [isMonthlyEditable, setIsMonthlyEditable] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<boolean>(false);
-  const [searchText, setSearchText] = useState<string>('');
+  const [searchText, setSearchText] = useState<string>("");
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -245,8 +264,8 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const getCurrentDateString = (): string => {
     const now = new Date();
     const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
     return `${year}.${month}.${day}`;
   };
 
@@ -254,11 +273,11 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     setInventoryData((prev) =>
       prev.map((item) =>
         item.품목_id === 품목_id
-          ? inventoryType === 'daily'
+          ? inventoryType === "daily"
             ? { ...item, 매장_재고량: parseFloat(newValue) || 0 }
             : { ...item, 월말_재고량: parseFloat(newValue) || 0 }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
@@ -266,22 +285,25 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     setInventoryData((prev) =>
       prev.map((item) => {
         if (item.품목_id !== 품목_id) return item;
-        
+
         // 증가할 단위 결정: 일별 재고는 출고단위, 월별 재고는 입고단위 사용
-        const incrementUnit = inventoryType === 'daily' 
-          ? item.출고단위 
-          : item.입고단위;
-        
-        return inventoryType === 'daily'
+        const incrementUnit =
+          inventoryType === "daily" ? item.출고단위 : item.입고단위;
+
+        return inventoryType === "daily"
           ? {
               ...item,
-              매장_재고량: ((item as MergedInventoryItem).매장_재고량 || 0) + incrementUnit,
+              매장_재고량:
+                ((item as MergedInventoryItem).매장_재고량 || 0) +
+                incrementUnit,
             }
           : {
               ...item,
-              월말_재고량: ((item as MergedMonthInventoryItem).월말_재고량 || 0) + incrementUnit,
+              월말_재고량:
+                ((item as MergedMonthInventoryItem).월말_재고량 || 0) +
+                incrementUnit,
             };
-      })
+      }),
     );
   };
 
@@ -289,28 +311,30 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     setInventoryData((prev) =>
       prev.map((item) => {
         if (item.품목_id !== 품목_id) return item;
-        
+
         // 감소할 단위 결정: 일별 재고는 출고단위, 월별 재고는 입고단위 사용
-        const decrementUnit = inventoryType === 'daily' 
-          ? item.출고단위 
-          : item.입고단위;
-        
-        if (inventoryType === 'daily') {
+        const decrementUnit =
+          inventoryType === "daily" ? item.출고단위 : item.입고단위;
+
+        if (inventoryType === "daily") {
           const currentValue = (item as MergedInventoryItem).매장_재고량 || 0;
           // 감소시킬 값이 현재 값보다 크면 0으로, 아니면 단위만큼 감소
-          return { 
-            ...item, 
-            매장_재고량: currentValue < decrementUnit ? 0 : currentValue - decrementUnit 
+          return {
+            ...item,
+            매장_재고량:
+              currentValue < decrementUnit ? 0 : currentValue - decrementUnit,
           };
         } else {
-          const currentValue = (item as MergedMonthInventoryItem).월말_재고량 || 0;
+          const currentValue =
+            (item as MergedMonthInventoryItem).월말_재고량 || 0;
           // 감소시킬 값이 현재 값보다 크면 0으로, 아니면 단위만큼 감소
-          return { 
-            ...item, 
-            월말_재고량: currentValue < decrementUnit ? 0 : currentValue - decrementUnit 
+          return {
+            ...item,
+            월말_재고량:
+              currentValue < decrementUnit ? 0 : currentValue - decrementUnit,
           };
         }
-      })
+      }),
     );
   };
 
@@ -318,11 +342,11 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     setInventoryData((prev) =>
       prev.map((item) =>
         item.품목_id === 품목_id
-          ? inventoryType === 'daily'
+          ? inventoryType === "daily"
             ? { ...item, 매장_재고량: 0 }
             : { ...item, 월말_재고량: 0 }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
@@ -333,19 +357,24 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
     const fetchItemsAndSuppliers = async () => {
       try {
-        const itemsResponse = await fetch(`${RN_API_URL}/api/suppliers/items/`, { signal });
+        const itemsResponse = await fetch(
+          `${RN_API_URL}/api/suppliers/items/`,
+          { signal },
+        );
         if (!itemsResponse.ok)
-          throw new Error('품목 데이터를 불러오는 중 오류 발생');
+          throw new Error("품목 데이터를 불러오는 중 오류 발생");
         const itemsJson = await itemsResponse.json();
         setItemsData(itemsJson);
 
-        const suppliersResponse = await fetch(`${RN_API_URL}/api/suppliers/`, { signal });
+        const suppliersResponse = await fetch(`${RN_API_URL}/api/suppliers/`, {
+          signal,
+        });
         if (!suppliersResponse.ok)
-          throw new Error('협력사 데이터를 불러오는 중 오류 발생');
+          throw new Error("협력사 데이터를 불러오는 중 오류 발생");
         const suppliersJson = await suppliersResponse.json();
         setSuppliersData(suppliersJson);
       } catch (err: any) {
-        if (err.name !== 'AbortError') {
+        if (err.name !== "AbortError") {
           setError(err.message);
         }
       }
@@ -368,15 +397,15 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     const fetchInventoryData = async () => {
       setLoading(true);
       try {
-        let invUrl = '';
-        if (inventoryType === 'daily') {
+        let invUrl = "";
+        if (inventoryType === "daily") {
           invUrl = `${RN_API_URL}/api/inventory/store/?매장_id=${storeId}`;
         } else {
           invUrl = `${RN_API_URL}/api/inventory/store_monthly/?매장_id=${storeId}`;
           // 월별 재고 편집 가능 여부 확인
           const editableResponse = await fetch(
             `${RN_API_URL}/api/inrre_monthly_editable/`,
-            { signal }
+            { signal },
           );
           if (editableResponse.ok) {
             const editableData = await editableResponse.json();
@@ -388,17 +417,17 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
         const invResponse = await fetch(invUrl, { signal });
         if (!invResponse.ok) {
-          throw new Error('재고 데이터를 불러오는 중 오류 발생');
+          throw new Error("재고 데이터를 불러오는 중 오류 발생");
         }
         const invData = await invResponse.json();
         const invArray =
-          inventoryType === 'daily' ? invData : invData.inventories;
+          inventoryType === "daily" ? invData : invData.inventories;
         const mergedData: InventoryItem[] = itemsData.map(
           (product: APIProduct) => {
             const matchingInv = invArray.find(
-              (inv: any) => inv.품목_id === product.품목_id
+              (inv: any) => inv.품목_id === product.품목_id,
             );
-            if (inventoryType === 'daily') {
+            if (inventoryType === "daily") {
               return {
                 ...product,
                 매장_id: storeId,
@@ -413,16 +442,16 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                 월말_재고량: matchingInv ? matchingInv.월말_재고량 : 0,
               } as MergedMonthInventoryItem;
             }
-          }
+          },
         );
         const sortedData = f.sortProductsBySupplierAndName(
           mergedData,
-          suppliersData
+          suppliersData,
         ) as InventoryItem[];
         setInventoryData(sortedData);
         setFilteredData(sortedData);
       } catch (err: any) {
-        if (err.name !== 'AbortError') {
+        if (err.name !== "AbortError") {
           setError(err.message);
         }
       } finally {
@@ -440,28 +469,26 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   // 카테고리 목록 생성 (카테고리 섹션용)
   const sortedSuppliers = useMemo(() => {
     // 협력사 데이터에서 협력사명만 추출하여 정렬
-    const suppliers = suppliersData.map(supplier => supplier.협력사명 || '');
-    suppliers.sort((a, b) => a.localeCompare(b, 'ko'));
+    const suppliers = suppliersData.map((supplier) => supplier.협력사명 || "");
+    suppliers.sort((a, b) => a.localeCompare(b, "ko"));
     return suppliers;
   }, [suppliersData]);
 
   // 기존 sortedCategories는 유지하되 사용하지 않음
   const sortedCategories = useMemo(() => {
     let categories = f.getUniqueCategories(inventoryData);
-    categories = categories.filter(category => category !== '전체');
-    categories.sort((a, b) => a.localeCompare(b, 'ko'));
+    categories = categories.filter((category) => category !== "전체");
+    categories.sort((a, b) => a.localeCompare(b, "ko"));
     return categories;
   }, [inventoryData]);
 
   // 카테고리 필터링 적용
   useEffect(() => {
-    if (searchText.trim() === '') {
+    if (searchText.trim() === "") {
       // 검색어가 없을 때는 협력사 필터링만 적용
       if (selectedCategory) {
         setFilteredData(
-          inventoryData.filter(item => 
-            item.협력사명 === selectedCategory
-          )
+          inventoryData.filter((item) => item.협력사명 === selectedCategory),
         );
       } else {
         // 협력사 필터가 없을 때는 모든 데이터 표시
@@ -471,17 +498,16 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
       // 검색어가 있으면 검색어 + 협력사 필터링 적용
       if (selectedCategory) {
         setFilteredData(
-          inventoryData.filter(item => 
-            item.협력사명 === selectedCategory &&
-            item.품목명.includes(searchText)
-          )
+          inventoryData.filter(
+            (item) =>
+              item.협력사명 === selectedCategory &&
+              item.품목명.includes(searchText),
+          ),
         );
       } else {
         // 검색어만 적용
         setFilteredData(
-          inventoryData.filter(item => 
-            item.품목명.includes(searchText)
-          )
+          inventoryData.filter((item) => item.품목명.includes(searchText)),
         );
       }
     }
@@ -508,15 +534,15 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
             매장_재고량: item.매장_재고량,
           };
           return fetch(`${RN_API_URL}/api/inventory/store_inventory_update/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           }).then((response) => {
             if (!response.ok) {
               throw new Error(`품목 ${item.품목명} 업데이트 실패`);
             }
           });
-        })
+        }),
       );
       setEditMode(false);
     } catch (err: any) {
@@ -542,16 +568,16 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
           return fetch(
             `${RN_API_URL}/api/inventory/store_monthend_inventory_update/`,
             {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
-            }
+            },
           ).then((response) => {
             if (!response.ok) {
               throw new Error(`품목 ${item.품목명} 월간 업데이트 실패`);
             }
           });
-        })
+        }),
       );
       setEditMode(false);
     } catch (err: any) {
@@ -561,7 +587,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     }
   };
 
-  const handleToggle = (type: 'daily' | 'monthly') => {
+  const handleToggle = (type: "daily" | "monthly") => {
     setEditMode(false);
     setInventoryType(type);
   };
@@ -615,16 +641,16 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
           testID="button"
           style={[
             toggleButtonStyles.button,
-            inventoryType === 'daily' && toggleButtonStyles.buttonActive,
+            inventoryType === "daily" && toggleButtonStyles.buttonActive,
             { marginRight: 1 },
           ]}
-          onPress={() => handleToggle('daily')}
+          onPress={() => handleToggle("daily")}
         >
           <Text
             testID="buttonText"
             style={[
               toggleButtonStyles.buttonText,
-              inventoryType === 'daily' && toggleButtonStyles.buttonTextActive,
+              inventoryType === "daily" && toggleButtonStyles.buttonTextActive,
             ]}
           >
             일별 재고
@@ -634,16 +660,17 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
           testID="button"
           style={[
             toggleButtonStyles.button,
-            inventoryType === 'monthly' && toggleButtonStyles.buttonActive,
+            inventoryType === "monthly" && toggleButtonStyles.buttonActive,
             { marginLeft: 1 },
           ]}
-          onPress={() => handleToggle('monthly')}
+          onPress={() => handleToggle("monthly")}
         >
           <Text
             testID="buttonText"
             style={[
               toggleButtonStyles.buttonText,
-              inventoryType === 'monthly' && toggleButtonStyles.buttonTextActive,
+              inventoryType === "monthly" &&
+                toggleButtonStyles.buttonTextActive,
             ]}
           >
             입고 재고
@@ -662,15 +689,16 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
           style={OrderRequeststyle.categoryList}
           contentContainerStyle={{
             flexGrow: 1,
-            justifyContent: 'flex-start',
-            alignItems: 'center',
+            justifyContent: "flex-start",
+            alignItems: "center",
           }}
         >
           <TouchableOpacity
             testID="categoryButton"
             style={[
               OrderRequeststyle.categoryButton,
-              selectedCategory === null && OrderRequeststyle.categoryButtonActive,
+              selectedCategory === null &&
+                OrderRequeststyle.categoryButtonActive,
             ]}
             onPress={() => setSelectedCategory(null)}
           >
@@ -678,7 +706,8 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               testID="categoryButtonText"
               style={[
                 OrderRequeststyle.categoryButtonText,
-                selectedCategory === null && OrderRequeststyle.categoryButtonTextActive,
+                selectedCategory === null &&
+                  OrderRequeststyle.categoryButtonTextActive,
               ]}
             >
               전체
@@ -690,7 +719,8 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               testID="categoryButton"
               style={[
                 OrderRequeststyle.categoryButton,
-                selectedCategory === supplier && OrderRequeststyle.categoryButtonActive,
+                selectedCategory === supplier &&
+                  OrderRequeststyle.categoryButtonActive,
               ]}
               onPress={() => setSelectedCategory(supplier)}
             >
@@ -698,7 +728,8 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                 testID="categoryButtonText"
                 style={[
                   OrderRequeststyle.categoryButtonText,
-                  selectedCategory === supplier && OrderRequeststyle.categoryButtonTextActive,
+                  selectedCategory === supplier &&
+                    OrderRequeststyle.categoryButtonTextActive,
                 ]}
               >
                 {supplier}
@@ -726,7 +757,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
           <TouchableOpacity
             testID="clearSearchButton"
             style={searchStyles.searchIcon}
-            onPress={() => setSearchText('')}
+            onPress={() => setSearchText("")}
           >
             <X color="#0A2A5E" style={searchStyles.searchIconSize} />
           </TouchableOpacity>
@@ -738,8 +769,11 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
         style={headerRowStyles.container}
       >
         <View style={headerRowStyles.rightContainer}>
-          {inventoryType === 'daily' ? (
-            <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
+          {inventoryType === "daily" ? (
+            <View
+              testID="buttonContainer"
+              style={headerRowStyles.buttonContainer}
+            >
               {editMode ? (
                 <TouchableOpacity
                   testID="smallButton"
@@ -759,7 +793,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                         : headerRowStyles.activeButtonText
                     }
                   >
-                    {saving ? '저장 중...' : '조정완료'}
+                    {saving ? "저장 중..." : "조정완료"}
                   </Text>
                 </TouchableOpacity>
               ) : (
@@ -775,7 +809,10 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               )}
             </View>
           ) : (
-            <View testID="buttonContainer" style={headerRowStyles.buttonContainer}>
+            <View
+              testID="buttonContainer"
+              style={headerRowStyles.buttonContainer}
+            >
               {editMode ? (
                 <TouchableOpacity
                   testID="smallButton"
@@ -795,7 +832,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                         : headerRowStyles.activeButtonText
                     }
                   >
-                    {saving ? '저장 중...' : '조정완료'}
+                    {saving ? "저장 중..." : "조정완료"}
                   </Text>
                 </TouchableOpacity>
               ) : (

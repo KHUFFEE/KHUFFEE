@@ -37,25 +37,25 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'rest_framework',
-    'corsheaders',
-    'accounts',
-    'analytics',
-    'inventory',
-    'orders',
-    'sales',
-    'suppliers',
-    'management',
+    "rest_framework",
+    "corsheaders",
+    "accounts",
+    "analytics",
+    "inventory",
+    "orders",
+    "sales",
+    "suppliers",
+    "management",
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # CORS 설정 추가
+    "corsheaders.middleware.CorsMiddleware",  # CORS 설정 추가
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -99,16 +99,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'khuffee',  # MySQL 데이터베이스 이름
-        'USER': 'root',  # MySQL 유저명
-        'PASSWORD': '9420',  # MySQL 비밀번호
-        'HOST': 'localhost',  # 로컬 개발이면 'localhost'
-        'PORT': '3306',  # 기본 MySQL 포트
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "khuffee",  # MySQL 데이터베이스 이름
+        "USER": "root",  # MySQL 유저명
+        "PASSWORD": "9420",  # MySQL 비밀번호
+        "HOST": "localhost",  # 로컬 개발이면 'localhost'
+        "PORT": "3306",  # 기본 MySQL 포트
+        "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
     }
 }
 

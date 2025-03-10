@@ -4,7 +4,7 @@ import {
   fetchWarehouseOutgoing,
   fetchItems,
   fetchSuppliers,
-  fetchWarehouseInventory
+  fetchWarehouseInventory,
 } from "../api/api";
 import "../styles/WarehouseOutgoing.css";
 import "../styles/table.css";
@@ -49,7 +49,7 @@ const WarehouseOutgoing = () => {
 
       const [itemsRes, suppliersRes] = await Promise.all([
         fetchItems(true),
-        fetchSuppliers()
+        fetchSuppliers(),
       ]);
       setItems(itemsRes);
       setSuppliers(suppliersRes);
@@ -68,7 +68,9 @@ const WarehouseOutgoing = () => {
         // new Date(prevYear, prevMonth, 0) → 전달의 마지막 일자
         const lastDay = new Date(prevYear, prevMonth, 0).getDate();
         const prevDateStr = `${prevYear}.${String(prevMonth).padStart(2, "0")}.${String(lastDay).padStart(2, "0")}`;
-        const invResponse = await fetchWarehouseInventory({ 기간: prevDateStr });
+        const invResponse = await fetchWarehouseInventory({
+          기간: prevDateStr,
+        });
         setPrevInventory(invResponse);
       }
 
@@ -89,7 +91,7 @@ const WarehouseOutgoing = () => {
       const initialData = await fetchWarehouseOutgoing({ page: 1 });
       let periods = [];
       if (initialData && initialData.orders) {
-        initialData.orders.forEach(record => {
+        initialData.orders.forEach((record) => {
           const parts = record.기간.split(".");
           if (parts.length >= 2) {
             periods.push(`${parts[0]}.${parts[1]}`);
@@ -103,17 +105,17 @@ const WarehouseOutgoing = () => {
         periodPromises.push(
           fetchWarehouseOutgoing({ page: p }).then((res) => {
             if (res.orders && res.orders.length > 0) {
-              return res.orders.map(order => {
+              return res.orders.map((order) => {
                 const parts = order.기간.split(".");
                 return parts.length >= 2 ? `${parts[0]}.${parts[1]}` : "";
               });
             }
             return [];
-          })
+          }),
         );
       }
       const results = await Promise.all(periodPromises);
-      const allPeriods = results.flat().filter(p => p !== "");
+      const allPeriods = results.flat().filter((p) => p !== "");
       const uniquePeriods = Array.from(new Set(allPeriods));
       // 내림차순 정렬 (최신 월 우선)
       uniquePeriods.sort((a, b) => {
@@ -158,7 +160,7 @@ const WarehouseOutgoing = () => {
   let tableRows = [];
   if (outgoingData && outgoingData.orders) {
     const grouped = {};
-    outgoingData.orders.forEach(record => {
+    outgoingData.orders.forEach((record) => {
       const itemId = record.품목_id;
       const parts = record.기간.split(".");
       const week = parts.length === 3 ? parts[2] : "0";
@@ -170,11 +172,11 @@ const WarehouseOutgoing = () => {
         grouped[itemId][weekKey] += Number(record.창고_출고량);
       }
     });
-    tableRows = Object.keys(grouped).map(itemId => {
-      const matchedItem = items.find(i => i.품목_id === itemId);
+    tableRows = Object.keys(grouped).map((itemId) => {
+      const matchedItem = items.find((i) => i.품목_id === itemId);
       const itemName = matchedItem ? matchedItem.품목명 : "N/A";
       const supplier = matchedItem
-        ? suppliers.find(s => s.협력사_id === matchedItem.협력사_id) || {}
+        ? suppliers.find((s) => s.협력사_id === matchedItem.협력사_id) || {}
         : {};
       const week1 = Number(grouped[itemId].week1) || 0;
       const week2 = Number(grouped[itemId].week2) || 0;
@@ -182,14 +184,14 @@ const WarehouseOutgoing = () => {
       const week4 = Number(grouped[itemId].week4) || 0;
       const week5 = Number(grouped[itemId].week5) || 0;
       const monthlyOutgoing = week1 + week2 + week3 + week4 + week5;
-      const unitPrice = matchedItem && matchedItem.입고단가 ? Number(matchedItem.입고단가) : 0;
+      const unitPrice =
+        matchedItem && matchedItem.입고단가 ? Number(matchedItem.입고단가) : 0;
       const monthlyAmount = monthlyOutgoing * unitPrice;
       // 전월 재고: prevInventory는 배열 형태이므로, 직접 find
-      const prevInvValue =
-        Array.isArray(prevInventory)
-          ? prevInventory.find(r => r.품목_id === itemId)?.창고_재고량 ?? "-"
-          : "-";
-      
+      const prevInvValue = Array.isArray(prevInventory)
+        ? (prevInventory.find((r) => r.품목_id === itemId)?.창고_재고량 ?? "-")
+        : "-";
+
       return {
         itemId,
         supplierName: supplier.협력사명 || "N/A",
@@ -206,7 +208,7 @@ const WarehouseOutgoing = () => {
         week4,
         week5,
         monthlyOutgoing,
-        monthlyAmount
+        monthlyAmount,
       };
     });
     // 협력사명, 품목명 기준 정렬
@@ -314,7 +316,9 @@ const WarehouseOutgoing = () => {
               </td>
               <td className="wg-inunit-col">{row.입고단위 || "-"}</td>
               <td className="wg-inunitprice-col">
-                {row.입고단위단가 ? Number(row.입고단위단가).toLocaleString() : "-"}
+                {row.입고단위단가
+                  ? Number(row.입고단위단가).toLocaleString()
+                  : "-"}
               </td>
               <td className="wg-previnv-col">
                 {row.prevInv !== undefined
@@ -339,10 +343,14 @@ const WarehouseOutgoing = () => {
                 {row.week5 ? Number(row.week5).toLocaleString() : "-"}
               </td>
               <td className="wg-month-col">
-                {row.monthlyOutgoing ? Number(row.monthlyOutgoing).toLocaleString() : "-"}
+                {row.monthlyOutgoing
+                  ? Number(row.monthlyOutgoing).toLocaleString()
+                  : "-"}
               </td>
               <td className="wg-month-col">
-                {row.monthlyAmount ? Number(row.monthlyAmount).toLocaleString() : "-"}
+                {row.monthlyAmount
+                  ? Number(row.monthlyAmount).toLocaleString()
+                  : "-"}
               </td>
             </tr>
           ))}

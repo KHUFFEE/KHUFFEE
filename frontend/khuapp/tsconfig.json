@@ -16,14 +16,6 @@
     },
     "types": ["node", "react-native-dotenv"]
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".env",
-    "src/types/env.d.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", ".env", "src/types/env.d.ts"],
+  "exclude": ["node_modules"]
 }
-

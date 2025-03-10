@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback  } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   fetchWarehouseInventory,
   fetchItems,
-  fetchSuppliers
+  fetchSuppliers,
 } from "../api/api";
 import "../styles/WarehouseInventory.css";
 import "../styles/table.css";
@@ -32,25 +32,28 @@ const WarehouseInventory = () => {
 
   // API 호출: "YYYY.MM.DD" 형식의 기간과 매장_id에 해당하는 데이터를 가져옴
   // manual 인자가 true일 때만 로딩 스피너가 발생
-  const fetchData = useCallback(async (params = {}, manual = false) => {
-    try {
-      if (manual) setLoading(true);
-      const period = params.기간; // 예: "2023.04.05"
-      const [inventoryRes, itemsRes, suppliersRes] = await Promise.all([
-        fetchWarehouseInventory({ 기간: period, 매장_id: selectedStore }),
-        fetchItems(true),
-        fetchSuppliers()
-      ]);
-      setInventoryData(inventoryRes);
-      setItems(itemsRes);
-      setSuppliers(suppliersRes);
-      if (manual) setLoading(false);
-    } catch (err) {
-      console.error("창고 재고 데이터 불러오기 실패:", err);
-      setError("데이터를 불러오는데 실패하였습니다.");
-      if (manual) setLoading(false);
-    }
-  }, [selectedStore]);
+  const fetchData = useCallback(
+    async (params = {}, manual = false) => {
+      try {
+        if (manual) setLoading(true);
+        const period = params.기간; // 예: "2023.04.05"
+        const [inventoryRes, itemsRes, suppliersRes] = await Promise.all([
+          fetchWarehouseInventory({ 기간: period, 매장_id: selectedStore }),
+          fetchItems(true),
+          fetchSuppliers(),
+        ]);
+        setInventoryData(inventoryRes);
+        setItems(itemsRes);
+        setSuppliers(suppliersRes);
+        if (manual) setLoading(false);
+      } catch (err) {
+        console.error("창고 재고 데이터 불러오기 실패:", err);
+        setError("데이터를 불러오는데 실패하였습니다.");
+        if (manual) setLoading(false);
+      }
+    },
+    [selectedStore],
+  );
 
   // 기간 옵션 재갱신 함수 (페이지 로드시와 최신 조회 버튼에서 사용)
   const refreshPeriods = async () => {
@@ -63,7 +66,7 @@ const WarehouseInventory = () => {
         return new Date(
           parseInt(parts[0], 10),
           parseInt(parts[1], 10) - 1,
-          parseInt(parts[2], 10)
+          parseInt(parts[2], 10),
         );
       });
       const minDate = new Date(Math.min(...dateObjs));
@@ -118,7 +121,9 @@ const WarehouseInventory = () => {
   // 선택된 년월에 따른 일(day) 옵션 생성 (해당 월의 총 일수)
   const [year, month] = selectedYearMonth.split(".");
   const daysInMonth =
-    year && month ? new Date(parseInt(year, 10), parseInt(month, 10), 0).getDate() : 31;
+    year && month
+      ? new Date(parseInt(year, 10), parseInt(month, 10), 0).getDate()
+      : 31;
   const dayOptions = [];
   for (let d = 1; d <= daysInMonth; d++) {
     dayOptions.push(d.toString().padStart(2, "0"));
@@ -172,7 +177,9 @@ const WarehouseInventory = () => {
       itemName = matchedItem.품목명;
       type = matchedItem.종류 || "";
       unitPrice = Number(matchedItem.입고단가);
-      const supplier = suppliers.find((s) => s.협력사_id === matchedItem.협력사_id);
+      const supplier = suppliers.find(
+        (s) => s.협력사_id === matchedItem.협력사_id,
+      );
       supplierName = supplier ? supplier.협력사명 : "N/A";
     }
     return {
@@ -214,7 +221,7 @@ const WarehouseInventory = () => {
       selectedDay,
       stores,
       selectedStore,
-      tableRows
+      tableRows,
     });
   };
 
@@ -228,7 +235,9 @@ const WarehouseInventory = () => {
         <div className="period-search">
           <div className="period-select-box">
             <div className="select-display">
-              {selectedYearMonth ? formatYMLabel(selectedYearMonth) : "년월 선택"}
+              {selectedYearMonth
+                ? formatYMLabel(selectedYearMonth)
+                : "년월 선택"}
             </div>
             <select
               className="custom-select"

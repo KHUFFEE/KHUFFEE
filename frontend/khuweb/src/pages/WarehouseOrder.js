@@ -87,12 +87,16 @@ const WarehouseOrder = () => {
         const prevDateStr = `${prevYear}.${String(prevMonth).padStart(2, "0")}.${String(prevLastDay).padStart(2, "0")}`;
 
         // 현 재고: 최신 기간이면 현재 날짜, 그렇지 않으면 선택된 달의 마지막 일자 사용
-        const selectedLastDay = new Date(numericYear, numericMonth, 0).getDate();
+        const selectedLastDay = new Date(
+          numericYear,
+          numericMonth,
+          0,
+        ).getDate();
         const selectedLastDayStr = `${numericYear}.${String(numericMonth).padStart(2, "0")}.${String(selectedLastDay).padStart(2, "0")}`;
         const selectedYM = `${numericYear}.${String(numericMonth).padStart(2, "0")}`;
         let latestYM = "";
         if (latestPeriod) {
-          const latestParts = latestPeriod.split('.');
+          const latestParts = latestPeriod.split(".");
           latestYM = `${latestParts[0]}.${latestParts[1].padStart(2, "0")}`;
         }
         let currentInvDateStr = selectedLastDayStr;
@@ -129,7 +133,9 @@ const WarehouseOrder = () => {
       if (manual) setLoading(true);
       const initialOrders = await fetchWarehouseOrders({ page: 1 });
       const totalPages =
-        initialOrders && initialOrders.total_pages ? initialOrders.total_pages : 1;
+        initialOrders && initialOrders.total_pages
+          ? initialOrders.total_pages
+          : 1;
       const periodPromises = [];
       for (let p = 1; p <= totalPages; p++) {
         periodPromises.push(
@@ -137,11 +143,11 @@ const WarehouseOrder = () => {
             if (res.orders && res.orders.length > 0) {
               return res.orders.map(
                 (order) =>
-                  `${order.기간}.${order.회차 ? order.회차.toString() : "1"}`
+                  `${order.기간}.${order.회차 ? order.회차.toString() : "1"}`,
               );
             }
             return [];
-          })
+          }),
         );
       }
       const results = await Promise.all(periodPromises);
@@ -264,7 +270,7 @@ const WarehouseOrder = () => {
   // 발주합계(부가세 별도): 모든 행의 발주금액 합계
   const totalOrderMoney = tableRows.reduce(
     (sum, row) => sum + calculateOrderMoney(row),
-    0
+    0,
   );
   // 발주합계(부가세 포함): 부가세 별도 합계 x 1.1
   const totalOrderMoneyWithTax = totalOrderMoney * 1.1;
@@ -279,9 +285,11 @@ const WarehouseOrder = () => {
     try {
       const statusList = await getTableStatusList();
       const warehouseOrderStatus = statusList.find(
-        (s) => s.테이블 === "창고_발주"
+        (s) => s.테이블 === "창고_발주",
       );
-      const currentStatus = warehouseOrderStatus ? warehouseOrderStatus.상태 : 1;
+      const currentStatus = warehouseOrderStatus
+        ? warehouseOrderStatus.상태
+        : 1;
       setManagerOrderRound(currentStatus);
     } catch (err) {
       console.error("회차 관리 조회 실패:", err);
@@ -320,9 +328,7 @@ const WarehouseOrder = () => {
               }
             }}
           >
-            <div className="select-display">
-              {displayPeriod || "기간 선택"}
-            </div>
+            <div className="select-display">{displayPeriod || "기간 선택"}</div>
             <select
               ref={selectRef}
               value={
@@ -350,7 +356,7 @@ const WarehouseOrder = () => {
                   const parts = dp.split(".");
                   const label = `${parts[0]}년 ${parts[1].padStart(
                     2,
-                    "0"
+                    "0",
                   )}월 ${parts[2]}회차`;
                   return (
                     <option key={dp} value={dp}>
@@ -398,10 +404,16 @@ const WarehouseOrder = () => {
             <th className="wo-currinv-col">현 재고</th>
             <th className="wo-sum-col">발주량</th>
             <th className="wo-ordermoney-col">발주금액</th>
-            <th className="wo-total-excl-col" rowSpan={tableRows.length > 0 ? tableRows.length : 1}>
+            <th
+              className="wo-total-excl-col"
+              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
+            >
               발주합계(부가세 별도)
             </th>
-            <th className="wo-total-incl-col" rowSpan={tableRows.length > 0 ? tableRows.length : 1}>
+            <th
+              className="wo-total-incl-col"
+              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
+            >
               발주합계(부가세 포함)
             </th>
           </tr>
@@ -465,7 +477,10 @@ const WarehouseOrder = () => {
               {managerOrderRound + 1}회차로 변경하려면 변경 버튼을 클릭해주세요.
             </p>
             <div className="order-popup-buttons">
-              <button className="popup-cancel" onClick={() => setShowPopup(false)}>
+              <button
+                className="popup-cancel"
+                onClick={() => setShowPopup(false)}
+              >
                 취소
               </button>
               <button className="popup-confirm" onClick={handleUpdateSession}>

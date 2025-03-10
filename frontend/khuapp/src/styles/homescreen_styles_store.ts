@@ -306,7 +306,8 @@ export const homescreenStyles = StyleSheet.create({
     letterSpacing: -0.5,
     flexShrink: 0,
     minWidth: wp('10%'),
-    flexWrap: 'nowrap',
+    flexWrap: 'wrap',
+    // minHeight: verticalScale(36),
   },
   
   monthlyTableCellHighlight: {
@@ -319,7 +320,8 @@ export const homescreenStyles = StyleSheet.create({
     flexShrink: 0,
     minWidth: wp('10%'),
     paddingHorizontal: moderateScale(2),
-    flexWrap: 'nowrap',
+    flexWrap: 'wrap',
+    minHeight: verticalScale(36),
     letterSpacing: -0.5,
   },
   

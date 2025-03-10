@@ -218,19 +218,19 @@ const BottomNavContent = ({
 }) => (
   <>
     <TouchableOpacity 
-      testID='inventoryButton'
+      testID='stockButton'
       style={[
         modernStyles.navButton,
-        activeView === 'inventory' && modernStyles.activeNavButton
+        activeView === 'stock' && modernStyles.activeNavButton
       ]} 
-      onPress={() => setActiveView('inventory')}
+      onPress={() => setActiveView('stock')}
     >
-      {renderIcon(Package, activeView === 'inventory')}
+      {renderIcon(Clipboard, activeView === 'stock')}
       <Text 
-        testID={activeView === 'inventory' ? "activeNavText" : "navText"} 
-        style={activeView === 'inventory' ? modernStyles.activeNavText : modernStyles.navText}
+        testID={activeView === 'stock' ? "activeNavText" : "navText"} 
+        style={activeView === 'stock' ? modernStyles.activeNavText : modernStyles.navText}
       >
-        입고관리
+        재고관리
       </Text>
     </TouchableOpacity>
     
@@ -248,23 +248,6 @@ const BottomNavContent = ({
         style={activeView === 'expiration' ? modernStyles.activeNavText : modernStyles.navText}
       >
         유통기한관리
-      </Text>
-    </TouchableOpacity>
-    
-    <TouchableOpacity 
-      testID='stockButton'
-      style={[
-        modernStyles.navButton,
-        activeView === 'stock' && modernStyles.activeNavButton
-      ]} 
-      onPress={() => setActiveView('stock')}
-    >
-      {renderIcon(Clipboard, activeView === 'stock')}
-      <Text 
-        testID={activeView === 'stock' ? "activeNavText" : "navText"} 
-        style={activeView === 'stock' ? modernStyles.activeNavText : modernStyles.navText}
-      >
-        재고관리
       </Text>
     </TouchableOpacity>
   </>

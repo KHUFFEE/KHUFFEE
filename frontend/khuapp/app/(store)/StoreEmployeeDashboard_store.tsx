@@ -41,19 +41,19 @@ const StoreEmployeeDashboard_store: React.FC<StoreEmployeeDashboardProps> = ({
     fetchStoreInfo();
   }, [storeName]);
 
-  // 품목 정보 조회
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const res = await fetch(`${RN_API_URL}/api/suppliers/items/`);
-        const data: APIProduct[] = await res.json();
-        setItems(data);
-      } catch (error) {
-        console.error('품목 정보 조회 오류:', error);
-      }
-    };
-    fetchItems();
-  }, []);
+  // // 품목 정보 조회
+  // useEffect(() => {
+  //   const fetchItems = async () => {
+  //     try {
+  //       const res = await fetch(`${RN_API_URL}/api/suppliers/items/`);
+  //       const data: APIProduct[] = await res.json();
+  //       setItems(data);
+  //     } catch (error) {
+  //       console.error('품목 정보 조회 오류:', error);
+  //     }
+  //   };
+  //   fetchItems();
+  // }, []);
 
   const renderView = () => {
     switch (activeView) {

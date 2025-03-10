@@ -674,13 +674,13 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                       style={[homescreenStyles.monthlyTableRow, index % 2 === 1 ? { backgroundColor: '#f8fafc' } : {}]}
                     >
                       <View testID="productColumn" style={homescreenStyles.productColumn}>
-                        <Text testID="monthlyTableCell" style={[homescreenStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
+                        <Text testID="monthlyTableCell" style={[homescreenStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={2} ellipsizeMode="tail">{product.품목명}</Text>
                       </View>
                       {currentMonthSortedWeeks.map(week => {
                         const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
                         return (
                           <View key={week} testID="weekColumn" style={homescreenStyles.weekColumn}>
-                            <Text testID="monthlyTableCell" style={homescreenStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">
+                            <Text testID="monthlyTableCell" style={homescreenStyles.monthlyTableCell} numberOfLines={2} ellipsizeMode="tail">
                               {weekData.수량 > 0 ? `${weekData.수량}` : '0'}
                             </Text>
                           </View>
@@ -721,13 +721,13 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                         style={[homescreenStyles.monthlyTableRow, index % 2 === 1 ? { backgroundColor: '#f8fafc' } : {}]}
                       >
                         <View testID="productColumn" style={homescreenStyles.productColumn}>
-                          <Text testID="monthlyTableCell" style={[homescreenStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
+                          <Text testID="monthlyTableCell" style={[homescreenStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={2} ellipsizeMode="tail">{product.품목명}</Text>
                         </View>
                         {lastMonthSortedWeeks.map(week => {
                           const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
                           return (
                             <View key={week} testID="weekColumn" style={homescreenStyles.weekColumn}>
-                              <Text testID="monthlyTableCell" style={homescreenStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">
+                              <Text testID="monthlyTableCell" style={homescreenStyles.monthlyTableCell} numberOfLines={2} ellipsizeMode="tail">
                                 {weekData.수량 > 0 ? `${weekData.수량}` : '0'}
                               </Text>
                             </View>

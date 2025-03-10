@@ -1071,20 +1071,20 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                     ]}
                   >
                     <View testID='productColumn' style={orderStatusStyles.productColumn}>
-                      <Text testID='monthlyTableCell' style={[orderStatusStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={1} ellipsizeMode="tail">{product.품목명}</Text>
+                      <Text testID='monthlyTableCell' style={[orderStatusStyles.monthlyTableCell, { textAlign: 'left' }]} numberOfLines={2} ellipsizeMode="tail">{product.품목명}</Text>
                     </View>
                     {sortedWeeks.map(week => {
                       const weekData = product.주차별[week] || { 수량: 0, 금액: 0 };
                       return (
                         <View testID='weekColumn' key={week} style={orderStatusStyles.weekColumn}>
-                          <Text testID='monthlyTableCell' style={orderStatusStyles.monthlyTableCell} numberOfLines={1} ellipsizeMode="tail">
+                          <Text testID='monthlyTableCell' style={orderStatusStyles.monthlyTableCell} numberOfLines={2} ellipsizeMode="tail">
                             {weekData.수량 > 0 ? `${weekData.수량}` : '-'}
                           </Text>
                         </View>
                       );
                     })}
                     <View testID='quantityColumn' style={orderStatusStyles.quantityColumn}>
-                      <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={1} ellipsizeMode="tail">{product.총수량}</Text>
+                      <Text testID='monthlyTableCellHighlight' style={orderStatusStyles.monthlyTableCellHighlight} numberOfLines={2} ellipsizeMode="tail">{product.총수량}</Text>
                     </View>
                   </View>
                 ))}

@@ -816,7 +816,8 @@ export const orderStatusStyles = StyleSheet.create({
     flexShrink: 0,
     minWidth: wp('10%'),
     // paddingHorizontal: moderateScale(2),
-    flexWrap: 'nowrap',
+    flexWrap: 'wrap',
+    // minHeight: verticalScale(36),
   },
   
   monthlyTableCellHighlight: {
@@ -828,7 +829,8 @@ export const orderStatusStyles = StyleSheet.create({
     flexShrink: 0,
     minWidth: wp('10%'),
     paddingHorizontal: moderateScale(2),
-    flexWrap: 'nowrap',
+    flexWrap: 'wrap',
+    // minHeight: verticalScale(36),
     letterSpacing: -0.8,
   },
   

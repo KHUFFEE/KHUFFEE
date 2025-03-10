@@ -41,18 +41,18 @@ const WarehouseEmployeeDashboard_warehouse: React.FC<WarehouseEmployeeDashboardP
   }, [storeName]);
 
   // 품목 정보 조회
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const res = await fetch(`${RN_API_URL}/api/suppliers/items/`);
-        const data: APIProduct[] = await res.json();
-        setItems(data);
-      } catch (error) {
-        console.error('품목 정보 조회 중 오류:', error);
-      }
-    };
-    fetchItems();
-  }, []);
+  // useEffect(() => {
+  //   const fetchItems = async () => {
+  //     try {
+  //       const res = await fetch(`${RN_API_URL}/api/suppliers/items/`);
+  //       const data: APIProduct[] = await res.json();
+  //       setItems(data);
+  //     } catch (error) {
+  //       console.error('품목 정보 조회 중 오류:', error);
+  //     }
+  //   };
+  //   fetchItems();
+  // }, []);
 
   // 현재 선택된 뷰에 따라 컴포넌트 렌더링
   const renderView = () => {

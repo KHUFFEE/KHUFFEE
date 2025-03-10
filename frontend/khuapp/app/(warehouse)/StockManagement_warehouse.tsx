@@ -422,6 +422,14 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   }, [storeId, inventoryType, itemsData, suppliersData]);
 
   // 카테고리 목록 생성 (카테고리 섹션용)
+  const sortedSuppliers = useMemo(() => {
+    // 협력사 데이터에서 협력사명만 추출하여 정렬
+    const suppliers = suppliersData.map(supplier => supplier.협력사명 || '');
+    suppliers.sort((a, b) => a.localeCompare(b, 'ko'));
+    return suppliers;
+  }, [suppliersData]);
+
+  // 기존 sortedCategories는 유지하되 사용하지 않음
   const sortedCategories = useMemo(() => {
     let categories = f.getUniqueCategories(inventoryData);
     categories = categories.filter(category => category !== '전체');
@@ -432,30 +440,34 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   // 카테고리 필터링 적용
   useEffect(() => {
     if (searchText.trim() === '') {
-      // 검색어가 없을 때는 카테고리 필터링만 적용
+      // 검색어가 없을 때는 협력사 필터링만 적용
       if (selectedCategory) {
-        const filtered = inventoryData.filter((item) => 
-          item.종류 === selectedCategory
+        setFilteredData(
+          inventoryData.filter(item => 
+            item.협력사명 === selectedCategory
+          )
         );
-        setFilteredData(filtered);
       } else {
+        // 협력사 필터가 없을 때는 모든 데이터 표시
         setFilteredData(inventoryData);
       }
     } else {
-      // 검색어와 카테고리 필터링 함께 적용
-      let filtered = inventoryData;
-      
+      // 검색어가 있으면 검색어 + 협력사 필터링 적용
       if (selectedCategory) {
-        filtered = filtered.filter((item) => 
-          item.종류 === selectedCategory
+        setFilteredData(
+          inventoryData.filter(item => 
+            item.협력사명 === selectedCategory &&
+            item.품목명.includes(searchText)
+          )
+        );
+      } else {
+        // 검색어만 적용
+        setFilteredData(
+          inventoryData.filter(item => 
+            item.품목명.includes(searchText)
+          )
         );
       }
-      
-      filtered = filtered.filter((item) =>
-        item.품목명.toLowerCase().includes(searchText.toLowerCase())
-      );
-      
-      setFilteredData(filtered);
     }
   }, [searchText, inventoryData, selectedCategory]);
 
@@ -625,7 +637,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
       <View testID="categorySection" style={OrderRequeststyle.categorySection}>
         <Text testID="sectionTitle" style={OrderRequeststyle.sectionTitle}>
-          상품 유형 선택
+          협력사 선택
         </Text>
         <ScrollView
           testID="categoryList"
@@ -656,24 +668,24 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               전체
             </Text>
           </TouchableOpacity>
-          {sortedCategories.map((cat, idx) => (
+          {sortedSuppliers.map((supplier, idx) => (
             <TouchableOpacity
               key={idx}
               testID="categoryButton"
               style={[
                 OrderRequeststyle.categoryButton,
-                selectedCategory === cat && OrderRequeststyle.categoryButtonActive,
+                selectedCategory === supplier && OrderRequeststyle.categoryButtonActive,
               ]}
-              onPress={() => setSelectedCategory(cat)}
+              onPress={() => setSelectedCategory(supplier)}
             >
               <Text
                 testID="categoryButtonText"
                 style={[
                   OrderRequeststyle.categoryButtonText,
-                  selectedCategory === cat && OrderRequeststyle.categoryButtonTextActive,
+                  selectedCategory === supplier && OrderRequeststyle.categoryButtonTextActive,
                 ]}
               >
-                {cat}
+                {supplier}
               </Text>
             </TouchableOpacity>
           ))}

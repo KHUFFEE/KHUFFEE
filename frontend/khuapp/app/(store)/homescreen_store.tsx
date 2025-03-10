@@ -681,7 +681,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                         return (
                           <View key={week} testID="weekColumn" style={homescreenStyles.weekColumn}>
                             <Text testID="monthlyTableCell" style={homescreenStyles.monthlyTableCell} numberOfLines={2} ellipsizeMode="tail">
-                              {weekData.수량 > 0 ? `${weekData.수량}` : '0'}
+                              {weekData.수량 > 0 ? `${weekData.수량}` : '-'}
                             </Text>
                           </View>
                         );
@@ -728,7 +728,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({ storeName, storeId }) => 
                           return (
                             <View key={week} testID="weekColumn" style={homescreenStyles.weekColumn}>
                               <Text testID="monthlyTableCell" style={homescreenStyles.monthlyTableCell} numberOfLines={2} ellipsizeMode="tail">
-                                {weekData.수량 > 0 ? `${weekData.수량}` : '0'}
+                                {weekData.수량 > 0 ? `${weekData.수량}` : '-'}
                               </Text>
                             </View>
                           );

@@ -4,6 +4,7 @@ import React, {
   useImperativeHandle,
   forwardRef,
   useRef,
+  useMemo,
 } from 'react';
 import {
   View,
@@ -14,6 +15,10 @@ import {
   TouchableOpacity,
   Modal,
   Button,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  TextStyle,
 } from 'react-native';
 import { RN_API_URL } from '@env';
 import * as f from '../../src/components/ui/common/function';
@@ -25,9 +30,21 @@ import {
   searchStyles,
   modalStyles,
   headerRowStyles,
-} from '../../src/styles/Inventory_styles_store';
+  OrderRequeststyle,
+} from '../../src/styles/StockManagement_styles_warehouse';
 import { APIProduct } from '../../src/components/ui/common/types';
 import { Search, Minus, Plus, Trash2, X } from 'lucide-react-native';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+
+const { height: screenHeight } = Dimensions.get('window');
+
+const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
+  fontFamily: 'PretendardVariable',
+  fontWeight: customStyle.fontWeight ? customStyle.fontWeight : '400',
+  ...customStyle,
+});
 
 // 일간 재고 타입
 export interface MergedInventoryItem extends APIProduct {
@@ -97,7 +114,6 @@ const InventoryItemRow = forwardRef<
     }
   }, [inventoryValue, isFocused, editMode]);
 
-
   // 외부에서 commit() 호출 시 현재 입력값을 파싱하여 업데이트
   useImperativeHandle(
     ref,
@@ -124,7 +140,7 @@ const InventoryItemRow = forwardRef<
             } 
           : { 
               backgroundColor: '#f5f8ff',
-              borderColor: '#d9e1f2'  // 배경색과 어울리는 테두리 색상
+              borderColor: '#d9e1f2'
             }
       ]}
     >
@@ -206,18 +222,21 @@ const InventoryItemRow = forwardRef<
 const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [filteredData, setFilteredData] = useState<InventoryItem[]>([]);
+  const [inventoryType, setInventoryType] = useState<'daily' | 'monthly'>('daily');
+  const [isMonthlyEditable, setIsMonthlyEditable] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<boolean>(false);
-  const [inventoryType, setInventoryType] = useState<'daily' | 'monthly'>(
-    'daily'
-  );
-  const [saving, setSaving] = useState<boolean>(false);
-  const [isMonthlyEditable, setIsMonthlyEditable] = useState<boolean>(true);
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // 각 InventoryItemRow의 ref를 저장할 객체
+  // 추가된 상태: 품목 데이터와 공급업체 데이터
+  const [itemsData, setItemsData] = useState<APIProduct[]>([]);
+  const [suppliersData, setSuppliersData] = useState<any[]>([]);
+
+  // rowRefs는 재고 항목 행 컴포넌트의 ref들을 저장
   const rowRefs = useRef<{
     [key: string]: React.RefObject<{ commit: () => void }>;
   }>({});
@@ -291,17 +310,154 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     );
   };
 
-  // 검색 필터 적용
+  // 첫번째 useEffect: 품목 데이터와 공급업체 데이터를 한 번만 호출
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const fetchItemsAndSuppliers = async () => {
+      try {
+        const itemsResponse = await fetch(`${RN_API_URL}/api/suppliers/items/`, { signal });
+        if (!itemsResponse.ok)
+          throw new Error('품목 데이터를 불러오는 중 오류 발생');
+        const itemsJson = await itemsResponse.json();
+        setItemsData(itemsJson);
+
+        const suppliersResponse = await fetch(`${RN_API_URL}/api/suppliers/`, { signal });
+        if (!suppliersResponse.ok)
+          throw new Error('협력사 데이터를 불러오는 중 오류 발생');
+        const suppliersJson = await suppliersResponse.json();
+        setSuppliersData(suppliersJson);
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          setError(err.message);
+        }
+      }
+    };
+
+    fetchItemsAndSuppliers();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  // 두번째 useEffect: 재고 데이터를 storeId, inventoryType, itemsData, suppliersData 변화 시 호출
+  useEffect(() => {
+    if (itemsData.length === 0 || suppliersData.length === 0) return;
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const fetchInventoryData = async () => {
+      setLoading(true);
+      try {
+        let invUrl = '';
+        if (inventoryType === 'daily') {
+          invUrl = `${RN_API_URL}/api/inventory/store/?매장_id=${storeId}`;
+        } else {
+          invUrl = `${RN_API_URL}/api/inventory/store_monthly/?매장_id=${storeId}`;
+          // 월별 재고 편집 가능 여부 확인
+          const editableResponse = await fetch(
+            `${RN_API_URL}/api/inrre_monthly_editable/`,
+            { signal }
+          );
+          if (editableResponse.ok) {
+            const editableData = await editableResponse.json();
+            setIsMonthlyEditable(editableData.editable);
+          } else {
+            setIsMonthlyEditable(false);
+          }
+        }
+
+        const invResponse = await fetch(invUrl, { signal });
+        if (!invResponse.ok) {
+          throw new Error('재고 데이터를 불러오는 중 오류 발생');
+        }
+        const invData = await invResponse.json();
+        const invArray =
+          inventoryType === 'daily' ? invData : invData.inventories;
+        const mergedData: InventoryItem[] = itemsData.map(
+          (product: APIProduct) => {
+            const matchingInv = invArray.find(
+              (inv: any) => inv.품목_id === product.품목_id
+            );
+            if (inventoryType === 'daily') {
+              return {
+                ...product,
+                매장_id: storeId,
+                기간: matchingInv ? matchingInv.기간 : getCurrentDateString(),
+                매장_재고량: matchingInv ? matchingInv.매장_재고량 : 0,
+              } as MergedInventoryItem;
+            } else {
+              return {
+                ...product,
+                매장_id: storeId,
+                기간: matchingInv ? matchingInv.기간 : getCurrentDateString(),
+                월말_재고량: matchingInv ? matchingInv.월말_재고량 : 0,
+              } as MergedMonthInventoryItem;
+            }
+          }
+        );
+        const sortedData = f.sortProductsBySupplierAndName(
+          mergedData,
+          suppliersData
+        ) as InventoryItem[];
+        setInventoryData(sortedData);
+        setFilteredData(sortedData);
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInventoryData();
+
+    return () => {
+      controller.abort();
+    };
+  }, [storeId, inventoryType, itemsData, suppliersData]);
+
+  // 카테고리 목록 생성 (카테고리 섹션용)
+  const sortedCategories = useMemo(() => {
+    let categories = f.getUniqueCategories(inventoryData);
+    categories = categories.filter(category => category !== '전체');
+    categories.sort((a, b) => a.localeCompare(b, 'ko'));
+    return categories;
+  }, [inventoryData]);
+
+  // 카테고리 필터링 적용
   useEffect(() => {
     if (searchText.trim() === '') {
-      setFilteredData(inventoryData);
+      // 검색어가 없을 때는 카테고리 필터링만 적용
+      if (selectedCategory) {
+        const filtered = inventoryData.filter((item) => 
+          item.종류 === selectedCategory
+        );
+        setFilteredData(filtered);
+      } else {
+        setFilteredData(inventoryData);
+      }
     } else {
-      const filtered = inventoryData.filter((item) =>
+      // 검색어와 카테고리 필터링 함께 적용
+      let filtered = inventoryData;
+      
+      if (selectedCategory) {
+        filtered = filtered.filter((item) => 
+          item.종류 === selectedCategory
+        );
+      }
+      
+      filtered = filtered.filter((item) =>
         item.품목명.toLowerCase().includes(searchText.toLowerCase())
       );
+      
       setFilteredData(filtered);
     }
-  }, [searchText, inventoryData]);
+  }, [searchText, inventoryData, selectedCategory]);
 
   // 모든 InventoryItemRow의 commit 메서드를 호출
   const commitAllRows = () => {
@@ -376,97 +532,6 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
       setSaving(false);
     }
   };
-
-  // AbortController를 사용하여 재고 유형 전환 시 진행 중인 네트워크 요청 취소
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-    setInventoryData([]);
-    setLoading(true);
-
-    if (inventoryType === 'monthly') {
-      fetch(`${RN_API_URL}/api/management/table_status_list/`, { signal })
-        .then((res) => res.json())
-        .then((data) => {
-          const monthlyTable = data.find(
-            (item: any) => item.테이블 === '매장_월말재고'
-          );
-          setIsMonthlyEditable(monthlyTable && monthlyTable.상태 === 1);
-        })
-        .catch((err) => {
-          if (err.name !== 'AbortError') {
-            setIsMonthlyEditable(false);
-          }
-        });
-    } else {
-      setIsMonthlyEditable(true);
-    }
-
-    const fetchData = async () => {
-      try {
-        const [invResponse, itemsData, suppliersData] = await Promise.all([
-          fetch(
-            inventoryType === 'daily'
-              ? `${RN_API_URL}/api/inventory/store/?매장_id=${storeId}`   //요기 수정함
-              : `${RN_API_URL}/api/inventory/store_monthend/?store_id=${storeId}`,
-            { signal }
-          ),
-          f.fetchApiItems(),
-          f.fetchSuppliers(),
-        ]);
-        if (!invResponse.ok) {
-          throw new Error(
-            inventoryType === 'daily'
-              ? '재고 데이터를 불러오지 못했습니다.'
-              : '월간 재고 데이터를 불러오지 못했습니다.'
-          );
-        }
-        const invData = await invResponse.json();
-        const invArray =
-          inventoryType === 'daily' ? invData : invData.inventories;
-        const mergedData: InventoryItem[] = itemsData.map(
-          (product: APIProduct) => {
-            const matchingInv = invArray.find(
-              (inv: any) => inv.품목_id === product.품목_id
-            );
-            if (inventoryType === 'daily') {
-              return {
-                ...product,
-                매장_id: storeId,
-                기간: matchingInv ? matchingInv.기간 : getCurrentDateString(),
-                매장_재고량: matchingInv ? matchingInv.매장_재고량 : 0,
-              } as MergedInventoryItem;
-            } else {
-              return {
-                ...product,
-                매장_id: storeId,
-                기간: matchingInv ? matchingInv.기간 : getCurrentDateString(),
-                월말_재고량: matchingInv ? matchingInv.월말_재고량 : 0,
-              } as MergedMonthInventoryItem;
-            }
-          }
-        );
-        const sortedData = f.sortProductsBySupplierAndName(
-          mergedData,
-          suppliersData
-        ) as InventoryItem[];
-        setInventoryData(sortedData);
-        setFilteredData(sortedData);
-      } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          setError(err.message);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      controller.abort();
-    };
-  }, [storeId, inventoryType]);
 
   const handleToggle = (type: 'daily' | 'monthly') => {
     setEditMode(false);
@@ -553,9 +618,66 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               inventoryType === 'monthly' && toggleButtonStyles.buttonTextActive,
             ]}
           >
-            월말 재고
+            입고 재고
           </Text>
         </TouchableOpacity>
+      </View>
+
+      <View testID="categorySection" style={OrderRequeststyle.categorySection}>
+        <Text testID="sectionTitle" style={OrderRequeststyle.sectionTitle}>
+          상품 유형 선택
+        </Text>
+        <ScrollView
+          testID="categoryList"
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={OrderRequeststyle.categoryList}
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+          }}
+        >
+          <TouchableOpacity
+            testID="categoryButton"
+            style={[
+              OrderRequeststyle.categoryButton,
+              selectedCategory === null && OrderRequeststyle.categoryButtonActive,
+            ]}
+            onPress={() => setSelectedCategory(null)}
+          >
+            <Text
+              testID="categoryButtonText"
+              style={[
+                OrderRequeststyle.categoryButtonText,
+                selectedCategory === null && OrderRequeststyle.categoryButtonTextActive,
+              ]}
+            >
+              전체
+            </Text>
+          </TouchableOpacity>
+          {sortedCategories.map((cat, idx) => (
+            <TouchableOpacity
+              key={idx}
+              testID="categoryButton"
+              style={[
+                OrderRequeststyle.categoryButton,
+                selectedCategory === cat && OrderRequeststyle.categoryButtonActive,
+              ]}
+              onPress={() => setSelectedCategory(cat)}
+            >
+              <Text
+                testID="categoryButtonText"
+                style={[
+                  OrderRequeststyle.categoryButtonText,
+                  selectedCategory === cat && OrderRequeststyle.categoryButtonTextActive,
+                ]}
+              >
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       <View testID="searchContainer" style={searchStyles.searchContainer}>

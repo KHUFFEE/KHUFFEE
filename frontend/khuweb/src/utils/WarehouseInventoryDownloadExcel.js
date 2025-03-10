@@ -22,9 +22,9 @@ export const warehouseInventoryDownloadExcel = ({
 
   // 데이터 생성: tableRows 배열에서 필요한 값을 추출
   const data = tableRows.map((row) => ({
-    "협력사": row.supplierName,
-    "품목명": row.itemName,
-    "재고량": row.inventory,
+    협력사: row.supplierName,
+    품목명: row.itemName,
+    재고량: row.inventory,
     "재고 금액": row.inventory * row.unitPrice,
   }));
 
@@ -60,10 +60,22 @@ export const warehouseInventoryDownloadExcel = ({
       if (!ws[addr]) ws[addr] = { t: "s", v: "" };
       ws[addr].s = ws[addr].s || {};
       ws[addr].s.border = {
-        top: r === titleMerge.s.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
-        bottom: r === titleMerge.e.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
-        left: c === titleMerge.s.c ? { style: "medium", color: { rgb: "000000" } } : undefined,
-        right: c === titleMerge.e.c ? { style: "medium", color: { rgb: "000000" } } : undefined,
+        top:
+          r === titleMerge.s.r
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
+        bottom:
+          r === titleMerge.e.r
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
+        left:
+          c === titleMerge.s.c
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
+        right:
+          c === titleMerge.e.c
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
       };
     }
   }
@@ -153,7 +165,10 @@ export const warehouseInventoryDownloadExcel = ({
         ws[amtCellAddr].t = "n";
         ws[amtCellAddr].z = "#,##0";
         ws[amtCellAddr].s = ws[amtCellAddr].s || {};
-        ws[amtCellAddr].s.alignment = { horizontal: "right", vertical: "center" };
+        ws[amtCellAddr].s.alignment = {
+          horizontal: "right",
+          vertical: "center",
+        };
       }
     }
   }

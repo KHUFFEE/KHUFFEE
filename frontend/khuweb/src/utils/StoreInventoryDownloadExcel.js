@@ -1,25 +1,31 @@
 import * as XLSX from "xlsx-js-style";
 
-export const storeInventoryDownloadExcel = ({ selectedYearMonth, selectedDay, stores, selectedStore, tableRows }) => {
+export const storeInventoryDownloadExcel = ({
+  selectedYearMonth,
+  selectedDay,
+  stores,
+  selectedStore,
+  tableRows,
+}) => {
   const [year, month] = selectedYearMonth.split(".");
   const day = selectedDay;
   const storeObj = stores.find((s) => s.매장_id === selectedStore);
   const storeName = storeObj ? storeObj.매장명 : "매장";
-  
+
   const now = new Date();
   const yyyyNow = now.getFullYear();
   const mmNow = (now.getMonth() + 1).toString().padStart(2, "0");
   const ddNow = now.getDate().toString().padStart(2, "0");
   const currentDateStr = `${yyyyNow}${mmNow}${ddNow}`;
-  
+
   const filename = `카페쿠피_${year}년_${month}월_${day}일_${storeName}_매장재고_관리자용_(${currentDateStr}).xlsx`;
   const sheetName = `${month}월 ${day}일 ${storeName} 재고`;
   const headerTitle = `카페 쿠피 ${month}월 ${day}일 ${storeName} 재고`;
 
   const data = tableRows.map((row) => ({
-    "협력사": row.supplierName,
-    "품목명": row.itemName,
-    "재고량": row.inventory,
+    협력사: row.supplierName,
+    품목명: row.itemName,
+    재고량: row.inventory,
     "재고 금액": row.inventory * row.unitPrice,
   }));
 
@@ -54,10 +60,22 @@ export const storeInventoryDownloadExcel = ({ selectedYearMonth, selectedDay, st
       if (!ws[addr]) ws[addr] = { t: "s", v: "" };
       if (!ws[addr].s) ws[addr].s = {};
       ws[addr].s.border = {
-        top: r === titleMerge.s.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
-        bottom: r === titleMerge.e.r ? { style: "medium", color: { rgb: "000000" } } : undefined,
-        left: c === titleMerge.s.c ? { style: "medium", color: { rgb: "000000" } } : undefined,
-        right: c === titleMerge.e.c ? { style: "medium", color: { rgb: "000000" } } : undefined,
+        top:
+          r === titleMerge.s.r
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
+        bottom:
+          r === titleMerge.e.r
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
+        left:
+          c === titleMerge.s.c
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
+        right:
+          c === titleMerge.e.c
+            ? { style: "medium", color: { rgb: "000000" } }
+            : undefined,
       };
     }
   }
@@ -72,8 +90,10 @@ export const storeInventoryDownloadExcel = ({ selectedYearMonth, selectedDay, st
         top: { style: "medium", color: { rgb: "000000" } },
         bottom: { style: "medium", color: { rgb: "000000" } },
       };
-      if (i === 0) borderObj.left = { style: "medium", color: { rgb: "000000" } };
-      if (i === headers.length - 1) borderObj.right = { style: "medium", color: { rgb: "000000" } };
+      if (i === 0)
+        borderObj.left = { style: "medium", color: { rgb: "000000" } };
+      if (i === headers.length - 1)
+        borderObj.right = { style: "medium", color: { rgb: "000000" } };
       ws[cellAddr].s.border = borderObj;
     }
   }
@@ -140,7 +160,10 @@ export const storeInventoryDownloadExcel = ({ selectedYearMonth, selectedDay, st
         ws[amtCellAddr].t = "n";
         ws[amtCellAddr].z = "#,##0";
         ws[amtCellAddr].s = ws[amtCellAddr].s || {};
-        ws[amtCellAddr].s.alignment = { horizontal: "right", vertical: "center" };
+        ws[amtCellAddr].s.alignment = {
+          horizontal: "right",
+          vertical: "center",
+        };
       }
     }
   }

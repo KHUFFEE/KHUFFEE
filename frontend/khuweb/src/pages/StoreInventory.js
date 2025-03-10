@@ -56,7 +56,7 @@ const StoreInventory = () => {
   const refreshPeriods = async () => {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/inventory/store/?range=first_last`
+        `${process.env.REACT_APP_API_URL}/api/inventory/store/?range=first_last`,
       );
       if (!response.ok) {
         throw new Error("Failed to fetch period range");
@@ -68,7 +68,7 @@ const StoreInventory = () => {
         return new Date(
           parseInt(parts[0], 10),
           parseInt(parts[1], 10) - 1,
-          parseInt(parts[2], 10)
+          parseInt(parts[2], 10),
         );
       };
       const minDate = parsePeriod(periodData.earliest_period);
@@ -109,11 +109,11 @@ const StoreInventory = () => {
       try {
         const res = await fetchStores();
         const filteredStores = res.filter(
-          (store) => store.매장_id !== "ST_101" && store.매장_id !== "ST_102"
+          (store) => store.매장_id !== "ST_101" && store.매장_id !== "ST_102",
         );
         setStores(filteredStores);
         const defaultStore = filteredStores.find(
-          (store) => store.매장_id === "ST_103"
+          (store) => store.매장_id === "ST_103",
         );
         if (defaultStore) {
           setSelectedStore("ST_103");
@@ -146,7 +146,9 @@ const StoreInventory = () => {
   // 선택된 년월에 따른 일(day) 옵션 생성
   const [year, month] = selectedYearMonth.split(".");
   const daysInMonth =
-    year && month ? new Date(parseInt(year, 10), parseInt(month, 10), 0).getDate() : 31;
+    year && month
+      ? new Date(parseInt(year, 10), parseInt(month, 10), 0).getDate()
+      : 31;
   const dayOptions = [];
   for (let d = 1; d <= daysInMonth; d++) {
     dayOptions.push(d.toString().padStart(2, "0"));
@@ -219,7 +221,13 @@ const StoreInventory = () => {
 
   // 엑셀 다운로드 함수는 별도의 유틸 파일로 분리하여 호출
   const handleExcelDownload = () => {
-    storeInventoryDownloadExcel({ selectedYearMonth, selectedDay, stores, selectedStore, tableRows });
+    storeInventoryDownloadExcel({
+      selectedYearMonth,
+      selectedDay,
+      stores,
+      selectedStore,
+      tableRows,
+    });
   };
 
   if (loading) return <LoadingSpinner />;
@@ -267,7 +275,9 @@ const StoreInventory = () => {
           {/* 년/월 선택 */}
           <div className="period-select-box">
             <div className="select-display">
-              {selectedYearMonth ? formatYMLabel(selectedYearMonth) : "년월 선택"}
+              {selectedYearMonth
+                ? formatYMLabel(selectedYearMonth)
+                : "년월 선택"}
             </div>
             <select
               className="custom-select"

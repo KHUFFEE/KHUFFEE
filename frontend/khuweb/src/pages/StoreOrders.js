@@ -10,7 +10,7 @@ import {
   updateTableStatus,
   fetchWarehouseInventory,
   createStoreOrder, // backend의 StoreOrderCreateView 대응
-  deleteStoreOrder // 추가: store_order_delete API 함수
+  deleteStoreOrder, // 추가: store_order_delete API 함수
 } from "../api/api";
 import "../styles/StoreOrders.css";
 import "../styles/table.css";
@@ -181,7 +181,7 @@ const StoreOrders = () => {
         const sunday = getWeekSunday(
           Number(selectedYear),
           Number(selectedMonth),
-          Number(selectedWeek)
+          Number(selectedWeek),
         );
         computedWarehouseDate = formatDate(sunday);
       }
@@ -244,7 +244,9 @@ const StoreOrders = () => {
     try {
       const initialOrders = await fetchOrders({ page: 1 });
       const totalPages =
-        initialOrders && initialOrders.total_pages ? initialOrders.total_pages : 1;
+        initialOrders && initialOrders.total_pages
+          ? initialOrders.total_pages
+          : 1;
       const periodPromises = [];
       for (let p = 1; p <= totalPages; p++) {
         periodPromises.push(
@@ -252,11 +254,11 @@ const StoreOrders = () => {
             if (res.orders && res.orders.length > 0) {
               return res.orders.map(
                 (order) =>
-                  `${order.기간}.${order.회차 ? order.회차.toString() : "1"}`
+                  `${order.기간}.${order.회차 ? order.회차.toString() : "1"}`,
               );
             }
             return [];
-          })
+          }),
         );
       }
       const results = await Promise.all(periodPromises);
@@ -315,28 +317,32 @@ const StoreOrders = () => {
         return (
           <>
             중앙
-            <br />도서관
+            <br />
+            도서관
           </>
         );
       case "예술디자인대":
         return (
           <>
             예술
-            <br />디자인대
+            <br />
+            디자인대
           </>
         );
       case "멀티미디어관":
         return (
           <>
             멀티
-            <br />미디어관
+            <br />
+            미디어관
           </>
         );
       case "제2기숙사":
         return (
           <>
             제2
-            <br />기숙사
+            <br />
+            기숙사
           </>
         );
       default:
@@ -366,7 +372,14 @@ const StoreOrders = () => {
     } else {
       setOrderTableStatus(null);
     }
-  }, [ordersData, selectedYear, selectedMonth, selectedWeek, selectedRound, isLatestPeriodFlag]);
+  }, [
+    ordersData,
+    selectedYear,
+    selectedMonth,
+    selectedWeek,
+    selectedRound,
+    isLatestPeriodFlag,
+  ]);
 
   const getDisplayPeriodText = () => {
     if (isFreeInput) {
@@ -402,7 +415,9 @@ const StoreOrders = () => {
   const orderItemIds = Object.keys(ordersByItem);
   const tableRowsFromOrders = orderItemIds.map((itemId) => {
     const matchedItem = items.find((item) => item.품목_id === itemId);
-    const supplier = matchedItem ? suppliers.find((s) => s.협력사_id === matchedItem.협력사_id) : {};
+    const supplier = matchedItem
+      ? suppliers.find((s) => s.협력사_id === matchedItem.협력사_id)
+      : {};
     return {
       itemId,
       supplierName: supplier ? supplier.협력사명 : "N/A",
@@ -412,10 +427,11 @@ const StoreOrders = () => {
     };
   });
   const activeItemsNotInOrders = items.filter(
-    (item) => item.활성화 && !orderItemIds.includes(item.품목_id)
+    (item) => item.활성화 && !orderItemIds.includes(item.품목_id),
   );
   const tableRowsFromActive = activeItemsNotInOrders.map((item) => {
-    const supplier = suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
+    const supplier =
+      suppliers.find((s) => s.협력사_id === item.협력사_id) || {};
     return {
       itemId: item.품목_id,
       supplierName: supplier.협력사명 || "N/A",
@@ -477,17 +493,15 @@ const StoreOrders = () => {
     sortedTableRows.reduce((sum, row) => {
       const val = getCellValue(row, store.매장_id);
       return sum + (val ? Number(val) : 0);
-    }, 0)
+    }, 0),
   );
-  const grandTotal = sortedTableRows.reduce((sum, row) => sum + getRowSum(row), 0);
+  const grandTotal = sortedTableRows.reduce(
+    (sum, row) => sum + getRowSum(row),
+    0,
+  );
 
   const formatNumber = (num) => {
-    if (
-      num === "" ||
-      num === undefined ||
-      num === null ||
-      Number(num) === 0
-    )
+    if (num === "" || num === undefined || num === null || Number(num) === 0)
       return "-";
     return Number(num).toLocaleString();
   };
@@ -496,7 +510,10 @@ const StoreOrders = () => {
   const getDifference = (row) => {
     const warehouseVal =
       warehouseData && warehouseData.length > 0
-        ? Number(warehouseData.filter((record) => record.품목_id === row.itemId)[0]?.창고_재고량 || 0)
+        ? Number(
+            warehouseData.filter((record) => record.품목_id === row.itemId)[0]
+              ?.창고_재고량 || 0,
+          )
         : 0;
     const rowSum = getRowSum(row);
     return warehouseVal - rowSum;
@@ -555,7 +572,7 @@ const StoreOrders = () => {
           기간: newPeriod,
           회차: Number(round),
           매장_발주량: order.매장_발주량,
-        })
+        }),
       );
       const results = await Promise.allSettled(updates);
       const rejected = results.filter((r) => r.status === "rejected");
@@ -584,7 +601,7 @@ const StoreOrders = () => {
             품목_id: order.품목_id,
             기간: order.기간,
             회차: order.회차,
-          })
+          }),
         );
         await Promise.all(deletePromises);
         if (isEditMode) setIsEditMode(false);
@@ -600,8 +617,6 @@ const StoreOrders = () => {
     }
     setLoading(false);
   };
-  
-  
 
   const handleCloseButtonClick = async () => {
     try {
@@ -640,7 +655,8 @@ const StoreOrders = () => {
       for (const itemId in editedOrders) {
         for (const storeId in editedOrders[itemId]) {
           const newValue = editedOrders[itemId][storeId];
-          const originalVal = tableRows.find((row) => row.itemId === itemId)?.orders[storeId];
+          const originalVal = tableRows.find((row) => row.itemId === itemId)
+            ?.orders[storeId];
           if (newValue === "" || Number(newValue) === 0) {
             if (originalVal === 0 || originalVal === "") continue;
           } else if (newValue === originalVal) continue;
@@ -655,7 +671,10 @@ const StoreOrders = () => {
         }
       }
       await Promise.all(updates);
-      fetchData({ 기간: ordersData?.current_period || "", 회차: selectedRound });
+      fetchData({
+        기간: ordersData?.current_period || "",
+        회차: selectedRound,
+      });
       setIsEditMode(false);
     } catch (err) {
       console.error("주문 수정 실패:", err);
@@ -692,13 +711,17 @@ const StoreOrders = () => {
   const years = [];
   let minYear = currentYear;
   if (distinctPeriods.length > 0) {
-    const yearsFromDP = distinctPeriods.map((dp) => parseInt(dp.split(".")[0], 10));
+    const yearsFromDP = distinctPeriods.map((dp) =>
+      parseInt(dp.split(".")[0], 10),
+    );
     minYear = Math.min(...yearsFromDP);
   }
   for (let y = minYear; y <= currentYear; y++) {
     years.push(y);
   }
-  const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, "0"));
+  const months = Array.from({ length: 12 }, (_, i) =>
+    (i + 1).toString().padStart(2, "0"),
+  );
   const weeks = ["1", "2", "3", "4", "5"];
   const rounds = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
@@ -706,7 +729,8 @@ const StoreOrders = () => {
   let statusMessage = "";
   if (
     latestPeriodValue &&
-    `${selectedYear}.${selectedMonth}` === latestPeriodValue.split(".").slice(0, 2).join(".") &&
+    `${selectedYear}.${selectedMonth}` ===
+      latestPeriodValue.split(".").slice(0, 2).join(".") &&
     orderTableStatus !== null
   ) {
     if (orderTableStatus === 1) {
@@ -759,8 +783,12 @@ const StoreOrders = () => {
             >
               {distinctPeriods
                 .sort((a, b) => {
-                  const [yearA, monthA, weekA, roundA] = a.split(".").map(Number);
-                  const [yearB, monthB, weekB, roundB] = b.split(".").map(Number);
+                  const [yearA, monthA, weekA, roundA] = a
+                    .split(".")
+                    .map(Number);
+                  const [yearB, monthB, weekB, roundB] = b
+                    .split(".")
+                    .map(Number);
                   if (yearA !== yearB) return yearB - yearA;
                   if (monthA !== monthB) return monthB - monthA;
                   if (weekA !== weekB) return weekB - weekA;
@@ -804,17 +832,24 @@ const StoreOrders = () => {
             최신 조회
           </button>
           {latestPeriodValue &&
-          `${selectedYear}.${selectedMonth}` === latestPeriodValue.split(".").slice(0, 2).join(".") &&
-          orderTableStatus !== null && (
-            <div className="status-message" style={{ whiteSpace: "pre-wrap" }}>
-              {statusMessage}
-            </div>
-          )}
+            `${selectedYear}.${selectedMonth}` ===
+              latestPeriodValue.split(".").slice(0, 2).join(".") &&
+            orderTableStatus !== null && (
+              <div
+                className="status-message"
+                style={{ whiteSpace: "pre-wrap" }}
+              >
+                {statusMessage}
+              </div>
+            )}
         </div>
         <div className="store-action-buttons">
           {isEditMode ? (
             <>
-              <button className="delete-button" onClick={() => setDeleteModalVisible(true)}>
+              <button
+                className="delete-button"
+                onClick={() => setDeleteModalVisible(true)}
+              >
                 현재 회차 삭제
               </button>
               <button
@@ -823,7 +858,10 @@ const StoreOrders = () => {
               >
                 기간 수정
               </button>
-              <button className="edit-confirm-button" onClick={handleEditSubmit}>
+              <button
+                className="edit-confirm-button"
+                onClick={handleEditSubmit}
+              >
                 수정완료
               </button>
               <button className="edit-button" onClick={handleEditToggle}>
@@ -834,7 +872,10 @@ const StoreOrders = () => {
             <>
               {isLatestPeriodFlag &&
                 (orderTableStatus === 0 ? (
-                  <button className="session-button" onClick={() => setOpenModalVisible(true)}>
+                  <button
+                    className="session-button"
+                    onClick={() => setOpenModalVisible(true)}
+                  >
                     발주 오픈하기
                   </button>
                 ) : (
@@ -916,14 +957,27 @@ const StoreOrders = () => {
                       inputMode="numeric"
                       pattern="[0-9]*"
                       value={
-                        editedOrders[row.itemId] && editedOrders[row.itemId][store.매장_id] !== undefined
-                          ? formatInputValue(editedOrders[row.itemId][store.매장_id])
+                        editedOrders[row.itemId] &&
+                        editedOrders[row.itemId][store.매장_id] !== undefined
+                          ? formatInputValue(
+                              editedOrders[row.itemId][store.매장_id],
+                            )
                           : ""
                       }
                       onChange={(e) => {
-                        const valueWithoutCommas = e.target.value.replace(/,/g, "");
-                        const numericValue = valueWithoutCommas.replace(/\D/g, "");
-                        handleOrderChange(row.itemId, store.매장_id, numericValue);
+                        const valueWithoutCommas = e.target.value.replace(
+                          /,/g,
+                          "",
+                        );
+                        const numericValue = valueWithoutCommas.replace(
+                          /\D/g,
+                          "",
+                        );
+                        handleOrderChange(
+                          row.itemId,
+                          store.매장_id,
+                          numericValue,
+                        );
                       }}
                       style={{ textAlign: "right" }}
                     />
@@ -934,14 +988,20 @@ const StoreOrders = () => {
                   )}
                 </td>
               ))}
-              <td className={`so-warehouse-col ${getDifference(row) < 0 ? "negative-difference" : ""}`}>
+              <td
+                className={`so-warehouse-col ${getDifference(row) < 0 ? "negative-difference" : ""}`}
+              >
                 {formatNumber(
                   warehouseData && warehouseData.length > 0
-                    ? warehouseData.filter((record) => record.품목_id === row.itemId)[0]?.창고_재고량 || 0
-                    : 0
+                    ? warehouseData.filter(
+                        (record) => record.품목_id === row.itemId,
+                      )[0]?.창고_재고량 || 0
+                    : 0,
                 )}
               </td>
-              <td className={`so-sum-col ${getDifference(row) < 0 ? "negative-difference" : ""}`}>
+              <td
+                className={`so-sum-col ${getDifference(row) < 0 ? "negative-difference" : ""}`}
+              >
                 {getRowSum(row) === 0 ? "-" : formatNumber(getRowSum(row))}
               </td>
             </tr>
@@ -950,7 +1010,11 @@ const StoreOrders = () => {
         <tfoot>
           <tr>
             <td className="so-number-col"></td>
-            <td className="so-supplier-col" colSpan="2" style={{ textAlign: "center" }}>
+            <td
+              className="so-supplier-col"
+              colSpan="2"
+              style={{ textAlign: "center" }}
+            >
               합계
             </td>
             {orderedStores.map((store, idx) => (
@@ -963,14 +1027,14 @@ const StoreOrders = () => {
                 ? formatNumber(
                     sortedTableRows.reduce((sum, row) => {
                       const matchingRecords = warehouseData.filter(
-                        (record) => record.품목_id === row.itemId
+                        (record) => record.품목_id === row.itemId,
                       );
                       const value =
                         matchingRecords.length > 0
                           ? Number(matchingRecords[0].창고_재고량 || 0)
                           : 0;
                       return sum + value;
-                    }, 0)
+                    }, 0),
                   )
                 : "-"}
             </td>
@@ -1129,10 +1193,16 @@ const StoreOrders = () => {
               </div>
             </div>
             <div className="sime-popup-buttons">
-              <button className="popup-cancel" onClick={() => setOpenModalVisible(false)}>
+              <button
+                className="popup-cancel"
+                onClick={() => setOpenModalVisible(false)}
+              >
                 취소
               </button>
-              <button className="popup-confirm" onClick={handleOpenModalConfirm}>
+              <button
+                className="popup-confirm"
+                onClick={handleOpenModalConfirm}
+              >
                 오픈
               </button>
             </div>
@@ -1288,10 +1358,16 @@ const StoreOrders = () => {
               </div>
             </div>
             <div className="sime-popup-buttons">
-              <button className="popup-cancel" onClick={() => setEditPeriodModalVisible(false)}>
+              <button
+                className="popup-cancel"
+                onClick={() => setEditPeriodModalVisible(false)}
+              >
                 취소
               </button>
-              <button className="popup-confirm" onClick={handlePeriodEditConfirm}>
+              <button
+                className="popup-confirm"
+                onClick={handlePeriodEditConfirm}
+              >
                 확인
               </button>
             </div>
@@ -1303,11 +1379,12 @@ const StoreOrders = () => {
         <div className="sime-popup">
           <div className="sime-popup-content">
             <h3>!! 주의 !!</h3>
-            <p>
-              확인 버튼을 누르면 현재 회차 발주가 마감됩니다.
-            </p>
+            <p>확인 버튼을 누르면 현재 회차 발주가 마감됩니다.</p>
             <div className="sime-popup-buttons">
-              <button className="popup-cancel" onClick={() => setCloseModalVisible(false)}>
+              <button
+                className="popup-cancel"
+                onClick={() => setCloseModalVisible(false)}
+              >
                 취소
               </button>
               <button
@@ -1328,11 +1405,12 @@ const StoreOrders = () => {
         <div className="sime-popup">
           <div className="sime-popup-content">
             <h3>!! 주의 !!</h3>
-            <p>
-              확인 버튼을 누르면 현재 회차 데이터가 영구히 삭제됩니다.
-            </p>
+            <p>확인 버튼을 누르면 현재 회차 데이터가 영구히 삭제됩니다.</p>
             <div className="sime-popup-buttons">
-              <button className="popup-cancel" onClick={() => setDeleteModalVisible(false)}>
+              <button
+                className="popup-cancel"
+                onClick={() => setDeleteModalVisible(false)}
+              >
                 취소
               </button>
               <button className="popup-confirm" onClick={handleDeleteConfirm}>

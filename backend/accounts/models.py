@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Store(models.Model):
     매장_id = models.CharField(max_length=20, primary_key=True)
     매장명 = models.CharField(max_length=255)

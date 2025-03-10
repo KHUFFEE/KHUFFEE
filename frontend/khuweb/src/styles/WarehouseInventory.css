@@ -1,38 +1,38 @@
 /* 기본 컨테이너 */
 .wi-container {
-    padding: 0;
-    max-width: 1250px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    text-align: left;
+  padding: 0;
+  max-width: 1250px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  text-align: left;
 }
 
 /* 열 너비: StoreOrders와 동일 */
 .wi-number-col {
-    width: 5px;
-    text-align: center;
+  width: 5px;
+  text-align: center;
 }
 
 .wi-supplier-col {
-    width: 80px;
-    text-align: left;
+  width: 80px;
+  text-align: left;
 }
 
 .wi-item-col {
-    width: 170px;
-    text-align: left;
+  width: 170px;
+  text-align: left;
 }
 
 .wi-sum-col {
-    width: 60px;
-    text-align: right;
+  width: 60px;
+  text-align: right;
 }
 .wi-cost-col {
-    width: 50px;
-    text-align: right;
+  width: 50px;
+  text-align: right;
 }
 
 .warehouse-action-buttons {
-    display: flex;
-    gap: 10px;
-  }
+  display: flex;
+  gap: 10px;
+}

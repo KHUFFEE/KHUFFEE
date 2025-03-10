@@ -1,6 +1,12 @@
 // frontend/khuweb/src/App.js
 import React, { useState, useEffect } from "react";
-import { Routes, Route, NavLink, useNavigate, useLocation } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  NavLink,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import Home from "./pages/Home";
 import Orders from "./pages/StoreOrders";
 import Item from "./pages/Item";
@@ -17,15 +23,15 @@ import WarehouseOutgoing from "./pages/WarehouseOutgoing";
 import WarehouseOrder from "./pages/WarehouseOrder";
 
 // React Icons
-import { 
-  FaHome, 
-  FaThLarge, 
-  FaStore, 
-  FaWarehouse, 
-  FaChevronUp, 
+import {
+  FaHome,
+  FaThLarge,
+  FaStore,
+  FaWarehouse,
+  FaChevronUp,
   FaChevronDown,
   FaMoon,
-  FaSun
+  FaSun,
 } from "react-icons/fa";
 
 // CSS
@@ -87,7 +93,11 @@ function App() {
             <div className="header-buttons">
               {/* 다크모드 토글 버튼 */}
               <button className="dark-mode-btn" onClick={handleToggleDarkMode}>
-                {darkMode ? <FaSun className="menu-icon" /> : <FaMoon className="menu-icon" />}
+                {darkMode ? (
+                  <FaSun className="menu-icon" />
+                ) : (
+                  <FaMoon className="menu-icon" />
+                )}
               </button>
               <button className="logout-btn" onClick={handleLogout}>
                 로그아웃
@@ -131,27 +141,25 @@ function App() {
                       <NavLink
                         to="/integration/item"
                         onClick={() => handleNavLinkClick("/integration/item")}
-                        className={({ isActive }) =>
-                          isActive ? "active" : ""
-                        }
+                        className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         제품 관리
                       </NavLink>
                       <NavLink
                         to="/integration/suppliers"
-                        onClick={() => handleNavLinkClick("/integration/suppliers")}
-                        className={({ isActive }) =>
-                          isActive ? "active" : ""
+                        onClick={() =>
+                          handleNavLinkClick("/integration/suppliers")
                         }
+                        className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         협력사 관리
                       </NavLink>
                       <NavLink
                         to="/integration/inventorylog"
-                        onClick={() => handleNavLinkClick("/integration/inventorylog")}
-                        className={({ isActive }) =>
-                          isActive ? "active" : ""
+                        onClick={() =>
+                          handleNavLinkClick("/integration/inventorylog")
                         }
+                        className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         관리 대장
                       </NavLink>
@@ -187,7 +195,9 @@ function App() {
                       {/* 추가: 월말 재고 탭 */}
                       <NavLink
                         to="/store/inventory_monthend"
-                        onClick={() => handleNavLinkClick("/store/inventory_monthend")}
+                        onClick={() =>
+                          handleNavLinkClick("/store/inventory_monthend")
+                        }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         월말 재고
@@ -223,14 +233,18 @@ function App() {
                     <div className="submenu">
                       <NavLink
                         to="/warehouse/inventory"
-                        onClick={() => handleNavLinkClick("/warehouse/inventory")}
+                        onClick={() =>
+                          handleNavLinkClick("/warehouse/inventory")
+                        }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         일별 재고
                       </NavLink>
                       <NavLink
                         to="/warehouse/expiration"
-                        onClick={() => handleNavLinkClick("/warehouse/expiration")}
+                        onClick={() =>
+                          handleNavLinkClick("/warehouse/expiration")
+                        }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         유통기한 관리
@@ -244,14 +258,18 @@ function App() {
                       </NavLink>
                       <NavLink
                         to="/warehouse/incoming"
-                        onClick={() => handleNavLinkClick("/warehouse/incoming")}
+                        onClick={() =>
+                          handleNavLinkClick("/warehouse/incoming")
+                        }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         입고
                       </NavLink>
                       <NavLink
                         to="/warehouse/outgoing"
-                        onClick={() => handleNavLinkClick("/warehouse/outgoing")}
+                        onClick={() =>
+                          handleNavLinkClick("/warehouse/outgoing")
+                        }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         출고
@@ -259,24 +277,45 @@ function App() {
                     </div>
                   )}
                 </div>
-
               </nav>
             </aside>
             <main className="app-main">
               <Routes>
-                <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+                <Route
+                  path="/login"
+                  element={<Login setIsLoggedIn={setIsLoggedIn} />}
+                />
                 <Route path="/" element={<Home />} />
                 <Route path="/store/inventory" element={<StoreInventory />} />
                 {/* 월말 재고 페이지 라우트 */}
-                <Route path="/store/inventory_monthend" element={<StoreInventoryMonthEnd />} />
+                <Route
+                  path="/store/inventory_monthend"
+                  element={<StoreInventoryMonthEnd />}
+                />
                 <Route path="/store/orders" element={<Orders />} />
                 <Route path="/integration/suppliers" element={<Suppliers />} />
-                <Route path="/integration/inventorylog" element={<InventoryLog />} />
+                <Route
+                  path="/integration/inventorylog"
+                  element={<InventoryLog />}
+                />
                 <Route path="/integration/item" element={<Item />} />
-                <Route path="/warehouse/inventory" element={<WarehouseInventory />} />
-                <Route path="/warehouse/expiration" element={<WarehouseExpiration />} /> {/* 추가된 유통기한 관리 라우트 */}
-                <Route path="/warehouse/incoming" element={<WarehouseIncoming />} />
-                <Route path="/warehouse/outgoing" element={<WarehouseOutgoing />} />
+                <Route
+                  path="/warehouse/inventory"
+                  element={<WarehouseInventory />}
+                />
+                <Route
+                  path="/warehouse/expiration"
+                  element={<WarehouseExpiration />}
+                />{" "}
+                {/* 추가된 유통기한 관리 라우트 */}
+                <Route
+                  path="/warehouse/incoming"
+                  element={<WarehouseIncoming />}
+                />
+                <Route
+                  path="/warehouse/outgoing"
+                  element={<WarehouseOutgoing />}
+                />
                 <Route path="/warehouse/orders" element={<WarehouseOrder />} />
               </Routes>
             </main>

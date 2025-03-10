@@ -111,7 +111,7 @@ const WarehouseOutgoing = () => {
               });
             }
             return [];
-          }),
+          })
         );
       }
       const results = await Promise.all(periodPromises);
@@ -307,8 +307,12 @@ const WarehouseOutgoing = () => {
           {tableRows.map((row, index) => (
             <tr key={row.itemId}>
               <td className="wg-number-col">{index + 1}</td>
-              <td className="wg-supplier-col">{row.supplierName}</td>
-              <td className="wg-item-col">{row.itemName}</td>
+              <td className="wg-supplier-col">
+                <span className="wg-supplier-col">{row.supplierName}</span>
+              </td>
+              <td className="wg-item-col">
+                <span className="wg-item-col">{row.itemName}</span>
+              </td>
               <td className="wg-spec-col">{row.규격 || "-"}</td>
               <td className="wg-unit-col">{row.단위 || "-"}</td>
               <td className="wg-price-col">

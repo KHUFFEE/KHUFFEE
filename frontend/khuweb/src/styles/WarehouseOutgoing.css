@@ -4,29 +4,77 @@
   margin: 0 auto;
   font-family: Arial, sans-serif;
   text-align: left;
+  position: relative;
+}
+
+.nowrap {
+  white-space: nowrap;
 }
 
 .wg-number-col {
-  width: 5px;
+  width: 12px;
   text-align: center;
 }
 
 .wg-supplier-col {
-  width: 80px;
+  width: 200px;
   text-align: left;
 }
 
 .wg-item-col {
-  width: 170px;
+  width: 400px;
   text-align: left;
 }
 
-.wg-sum-col {
-  width: 60px;
+.wg-spec-col {
+  word-break: break-all;
+  width: 400px; /* 이 값을 원하는 너비(예: 20px)로 줄여주세요 */
+  text-align: left;
+}
+
+.big-table th.wg-price-col,
+.big-table td.wg-price-col,
+.big-table th.wg-inunit-col,
+.big-table td.wg-inunit-col,
+.big-table th.wg-inunitprice-col,
+.big-table td.wg-inunitprice-col,
+.big-table th.wg-previnv-col,
+.big-table td.wg-previnv-col,
+.big-table th.wg-week-col,
+.big-table td.wg-week-col,
+.big-table th.wg-month-col,
+.big-table td.wg-month-col,
+.big-table th.wg-sum-col,
+.big-table td.wg-sum-col,
+.big-table th.wg-cost-col,
+.big-table td.wg-cost-col {
+  min-width: 50px;
+}
+
+/* 셀 값 오른쪽 정렬 스타일 */
+.wg-inunit-col,
+.wg-inunitprice-col,
+.wg-previnv-col,
+.wg-week-col,
+.wg-month-col,
+.wg-sum-col,
+.wg-cost-col {
+  text-align: right;
+}
+.wg-price-col {
   text-align: right;
 }
 
-.wg-cost-col {
-  width: 50px;
-  text-align: right;
-}
+/* ───────────────────────────────────────────── */
+/* 강조: 1주차 ~ 5주차 출고 열 스타일 */
+/* ───────────────────────────────────────────── */
+
+/* .big-table th.wg-week-col,
+.big-table td.wg-week-col {
+  background-color: rgba(139, 0, 0, 0.215);
+  transition: background-color 0.3s ease;
+} 
+
+.big-table td.wg-week-col:hover {
+  background-color: rgba(68, 83, 130, 0.2);
+}  */

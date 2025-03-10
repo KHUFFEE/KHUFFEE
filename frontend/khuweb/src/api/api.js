@@ -1,7 +1,7 @@
 export const fetchItems = async (all = false) => {
   const query = all ? "?all=true" : "";
   const response = await fetch(
-    `${process.env.REACT_APP_API_URL}/api/suppliers/items/${query}`,
+    `${process.env.REACT_APP_API_URL}/api/suppliers/items/${query}`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch items");
@@ -11,7 +11,7 @@ export const fetchItems = async (all = false) => {
 
 export const fetchSuppliers = async () => {
   const response = await fetch(
-    `${process.env.REACT_APP_API_URL}/api/suppliers/`,
+    `${process.env.REACT_APP_API_URL}/api/suppliers/`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch suppliers");
@@ -28,7 +28,7 @@ export const addSupplier = async (supplierName) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ 협력사명: supplierName }),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to add supplier");
@@ -45,7 +45,7 @@ export const deleteSuppliers = async (supplierNames) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ names: supplierNames }),
-    },
+    }
   );
 
   if (!response.ok) {
@@ -64,7 +64,7 @@ export const addItem = async (newItem) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(newItem),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to add item");
@@ -81,7 +81,7 @@ export const deleteItems = async (payload) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to delete items");
@@ -98,7 +98,7 @@ export const updateItem = async (itemData) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(itemData),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to update item");
@@ -137,7 +137,7 @@ export const createStoreOrder = async (orderData) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(orderData),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to create store order");
@@ -148,7 +148,7 @@ export const createStoreOrder = async (orderData) => {
 /* 추가: 매장 목록 불러오기 (StoreListView 활용) */
 export const fetchStores = async () => {
   const response = await fetch(
-    `${process.env.REACT_APP_API_URL}/api/accounts/stores/`,
+    `${process.env.REACT_APP_API_URL}/api/accounts/stores/`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch stores");
@@ -165,7 +165,7 @@ export const updateStoreOrder = async (orderData) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(orderData),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to update store order");
@@ -227,7 +227,7 @@ export const updateStoreMonthEndInventory = async (data) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    },
+    }
   );
 
   if (!response.ok) {
@@ -247,7 +247,7 @@ export const updateTableStatus = async (data) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    },
+    }
   );
 
   if (!response.ok) {
@@ -260,7 +260,7 @@ export const updateTableStatus = async (data) => {
 // 상태 관리(상태_관리 테이블) GET 함수
 export const getTableStatusList = async () => {
   const response = await fetch(
-    `${process.env.REACT_APP_API_URL}/api/management/table_status_list/`,
+    `${process.env.REACT_APP_API_URL}/api/management/table_status_list/`
   );
 
   if (!response.ok) {
@@ -280,7 +280,7 @@ export const createWarehouseOrder = async (orderData) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(orderData),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to create warehouse order");
@@ -317,7 +317,7 @@ export const updateWarehouseOrder = async (orderData) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(orderData),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to update warehouse order");
@@ -335,7 +335,7 @@ export const createWarehouseOutgoing = async (data) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to create warehouse outgoing record");
@@ -374,7 +374,7 @@ export const updateWarehouseOutgoing = async (data) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to update warehouse outgoing record");
@@ -391,7 +391,7 @@ export const deleteStoreOrder = async (payload) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to delete store order");
@@ -408,10 +408,67 @@ export const updateWarehouseInventory = async (data) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    },
+    }
   );
   if (!response.ok) {
     throw new Error("Failed to update warehouse inventory");
+  }
+  return await response.json();
+};
+
+// 창고 입고 생성 API 호출 함수
+export const createWarehouseIncoming = async (incomingData) => {
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/orders/warehouse_incoming_create/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(incomingData),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to create warehouse incoming record");
+  }
+  return await response.json();
+};
+
+// 창고 입고 조회 API 호출 함수
+export const fetchWarehouseIncoming = async (params) => {
+  let url = `${process.env.REACT_APP_API_URL}/api/orders/warehouse_incoming_list/?`;
+  if (params.기간) {
+    url += `기간=${params.기간}`;
+  } else {
+    url += `page=${params.page || 1}`;
+  }
+  if (params.store_id) {
+    url += `&store_id=${params.store_id}`;
+  }
+  if (params.order) {
+    url += `&order=${params.order}`;
+  }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch warehouse incoming records");
+  }
+  return await response.json();
+};
+
+// 창고 입고 수정 API 호출 함수
+export const updateWarehouseIncoming = async (incomingData) => {
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/orders/warehouse_incoming_update/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(incomingData),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to update warehouse incoming record");
   }
   return await response.json();
 };

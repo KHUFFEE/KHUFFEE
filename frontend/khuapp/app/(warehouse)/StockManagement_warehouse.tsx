@@ -264,21 +264,24 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
   const handleIncrement = (품목_id: string) => {
     setInventoryData((prev) =>
-      prev.map((item) =>
-        item.품목_id === 품목_id
-          ? inventoryType === 'daily'
-            ? {
-                ...item,
-                매장_재고량:
-                  ((item as MergedInventoryItem).매장_재고량 || 0) + 1,
-              }
-            : {
-                ...item,
-                월말_재고량:
-                  ((item as MergedMonthInventoryItem).월말_재고량 || 0) + 1,
-              }
-          : item
-      )
+      prev.map((item) => {
+        if (item.품목_id !== 품목_id) return item;
+        
+        // 증가할 단위 결정: 일별 재고는 출고단위, 월별 재고는 입고단위 사용
+        const incrementUnit = inventoryType === 'daily' 
+          ? item.출고단위 
+          : item.입고단위;
+        
+        return inventoryType === 'daily'
+          ? {
+              ...item,
+              매장_재고량: ((item as MergedInventoryItem).매장_재고량 || 0) + incrementUnit,
+            }
+          : {
+              ...item,
+              월말_재고량: ((item as MergedMonthInventoryItem).월말_재고량 || 0) + incrementUnit,
+            };
+      })
     );
   };
 
@@ -286,13 +289,26 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     setInventoryData((prev) =>
       prev.map((item) => {
         if (item.품목_id !== 품목_id) return item;
+        
+        // 감소할 단위 결정: 일별 재고는 출고단위, 월별 재고는 입고단위 사용
+        const decrementUnit = inventoryType === 'daily' 
+          ? item.출고단위 
+          : item.입고단위;
+        
         if (inventoryType === 'daily') {
           const currentValue = (item as MergedInventoryItem).매장_재고량 || 0;
-          return { ...item, 매장_재고량: Math.max(0, currentValue - 1) };
+          // 감소시킬 값이 현재 값보다 크면 0으로, 아니면 단위만큼 감소
+          return { 
+            ...item, 
+            매장_재고량: currentValue < decrementUnit ? 0 : currentValue - decrementUnit 
+          };
         } else {
-          const currentValue =
-            (item as MergedMonthInventoryItem).월말_재고량 || 0;
-          return { ...item, 월말_재고량: Math.max(0, currentValue - 1) };
+          const currentValue = (item as MergedMonthInventoryItem).월말_재고량 || 0;
+          // 감소시킬 값이 현재 값보다 크면 0으로, 아니면 단위만큼 감소
+          return { 
+            ...item, 
+            월말_재고량: currentValue < decrementUnit ? 0 : currentValue - decrementUnit 
+          };
         }
       })
     );

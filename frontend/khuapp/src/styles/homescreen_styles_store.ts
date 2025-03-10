@@ -148,11 +148,12 @@ export const homescreenStyles = StyleSheet.create({
     color: '#888888',
     textAlign: 'right',
     alignSelf: 'flex-end',
-    marginRight: moderateScale(15),
-    marginTop: verticalScale(8),
+    // marginRight: moderateScale(15),
+    // marginTop: verticalScale(8),
     marginBottom: verticalScale(10),
     position: 'relative',
-    left: moderateScale(30),
+    left: wp(4),
+    
   },
   
   // 차트와 데이터를 감싸는 부모 컨테이너

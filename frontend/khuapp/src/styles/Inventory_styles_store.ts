@@ -240,7 +240,7 @@ export const headerRowStyles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: moderateScale(10),
+    // gap: moderateScale(10),
   },
   smallButton: {
     backgroundColor: "#f8fafc",
@@ -305,6 +305,28 @@ export const headerRowStyles = StyleSheet.create({
     color: "#ffffff",
     fontSize: RFValue(11),
     fontWeight: "400",
+  },
+  cancelButton: {
+    backgroundColor: "#f8fafc",
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: verticalScale(5),
+    borderRadius: moderateScale(8),
+    borderWidth: 1,
+    borderColor: "#e53e3e",
+    shadowColor: "#e53e3e",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
+    elevation: 2,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: moderateScale(10),
+  },
+  cancelButtonText: {
+    ...commonTextStyle,
+    color: "#e53e3e",
+    fontSize: RFValue(11),
+    fontWeight: "500",
   },
 });
 

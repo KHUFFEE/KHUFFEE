@@ -413,6 +413,12 @@ export const OrderRequeststyle = StyleSheet.create({
     color: "#fff",
     fontSize: RFValue(13),
   },
+  orderDisabledMessage: {
+    ...commonTextStyle,
+    color: "#e53e3e",
+    fontSize: RFValue(15),
+    fontWeight: "700",
+  },
   confirm_selectedItemsSection: {
     ...commonTextStyle,
     paddingVertical: moderateScale(20),

@@ -1,34 +1,11 @@
 /* 기본 컨테이너 */
 .si-container {
   padding: 0;
-  max-width: 1250px;
+  max-width: 95%;
   margin: 0 auto;
   font-family: Arial, sans-serif;
   text-align: left;
 }
-
-/* 테이블 스타일 (WarehouseInventory와 동일하게 60% 너비 등 적용) */
-.si-table {
-  width: 60%; /* WarehouseInventory와 동일 */
-  margin: 20px 0;
-  border-collapse: separate;
-  border-spacing: 0 1px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-}
-
-.si-table th {
-  font-weight: bold;
-  text-align: center;
-  padding: 12px;
-}
-
-.si-table th,
-.si-table td {
-  border: 1px solid #ddd;
-  padding: 12px;
-}
-
 /* 열 너비: WarehouseInventory와 동일 */
 .si-number-col {
   width: 5px;
@@ -52,45 +29,6 @@
 
 .si-cost-col {
   width: 50px;
-  text-align: right;
-}
-
-.si-table thead {
-  position: sticky;
-  top: -20px;
-  z-index: 2;
-  background-color: #cf8888;
-}
-
-.si-table tbody tr {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease;
-}
-
-.si-table tbody tr:hover {
-  transform: translateY(-4px);
-}
-
-.si-table tfoot tr {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease;
-}
-
-.si-table tfoot tr:hover {
-  transform: translateY(-4px);
-}
-
-.si-table td input {
-  width: 100%;
-  box-sizing: border-box;
-  border: none;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  font-size: inherit;
-  line-height: inherit;
   text-align: right;
 }
 

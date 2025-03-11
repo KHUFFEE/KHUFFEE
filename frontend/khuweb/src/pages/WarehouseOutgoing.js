@@ -1,10 +1,11 @@
-// frontend/khuweb/src/pages/WarehouseOutgoing.js
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import {
   fetchWarehouseOutgoing,
   fetchItems,
   fetchSuppliers,
   fetchWarehouseInventory,
+  updateWarehouseOutgoing,
 } from "../api/api";
 import "../styles/WarehouseOutgoing.css";
 import "../styles/table.css";
@@ -26,6 +27,11 @@ const WarehouseOutgoing = () => {
   // 드롭다운 관련
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const selectRef = useRef(null);
+
+  // ----------------------- 수정(편집) 모드 상태 -----------------------
+  // 수정 대상은 1주차 ~ 5주차 출고량 열
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedOutgoing, setEditedOutgoing] = useState({});
 
   // ----------------------- 데이터 조회 함수 -----------------------
   // params.기간이 있으면 "YYYY.MM" 형식이며, 해당 월의 1~5주차 범위를 전달
@@ -73,7 +79,6 @@ const WarehouseOutgoing = () => {
         });
         setPrevInventory(invResponse);
       }
-
       if (manual) setLoading(false);
       return data;
     } catch (err) {
@@ -119,10 +124,10 @@ const WarehouseOutgoing = () => {
       const uniquePeriods = Array.from(new Set(allPeriods));
       // 내림차순 정렬 (최신 월 우선)
       uniquePeriods.sort((a, b) => {
-        const [yearA, monthA] = a.split(".").map(Number);
-        const [yearB, monthB] = b.split(".").map(Number);
-        if (yearA !== yearB) return yearB - yearA;
-        return monthB - monthA;
+        const [yA, mA] = a.split(".").map(Number);
+        const [yB, mB] = b.split(".").map(Number);
+        if (yA !== yB) return yB - yA;
+        return mB - mA;
       });
       setDistinctPeriods(uniquePeriods);
       if (uniquePeriods.length > 0) {
@@ -163,6 +168,7 @@ const WarehouseOutgoing = () => {
     outgoingData.orders.forEach((record) => {
       const itemId = record.품목_id;
       const parts = record.기간.split(".");
+      // parts[2] represents the week number
       const week = parts.length === 3 ? parts[2] : "0";
       if (!grouped[itemId]) {
         grouped[itemId] = { week1: 0, week2: 0, week3: 0, week4: 0, week5: 0 };
@@ -196,6 +202,7 @@ const WarehouseOutgoing = () => {
         itemId,
         supplierName: supplier.협력사명 || "N/A",
         itemName,
+        종류: matchedItem ? matchedItem.종류 : "",
         규격: matchedItem ? matchedItem.규격 : "",
         입고단가: matchedItem ? matchedItem.입고단가 : "",
         입고단위:
@@ -213,13 +220,91 @@ const WarehouseOutgoing = () => {
         monthlyAmount,
       };
     });
-    // 협력사명, 품목명 기준 정렬
+    // 협력사명, 종류, 품목명 기준 오름차순 정렬
     tableRows.sort((a, b) => {
       const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
       if (cmpSupplier !== 0) return cmpSupplier;
+      const cmpType = a.종류.localeCompare(b.종류);
+      if (cmpType !== 0) return cmpType;
       return a.itemName.localeCompare(b.itemName);
     });
   }
+
+  // ----------------------- 헬퍼 함수 -----------------------
+  const formatInputValue = (value) => {
+    if (value === "" || value === undefined || value === null) return "";
+    const num = Number(value);
+    if (!isNaN(num)) return num.toLocaleString();
+    return value;
+  };
+
+  // ----------------------- 수정 모드 핸들러 -----------------------
+  const handleEditToggle = () => {
+    if (!isEditMode) {
+      // 초기값 설정: 각 행의 1~5주차 출고량
+      const init = {};
+      tableRows.forEach((row) => {
+        init[row.itemId] = {
+          week1: row.week1,
+          week2: row.week2,
+          week3: row.week3,
+          week4: row.week4,
+          week5: row.week5,
+        };
+      });
+      setEditedOutgoing(init);
+    }
+    setIsEditMode(!isEditMode);
+  };
+
+  const handleOutgoingChange = (itemId, weekKey, value) => {
+    const valueWithoutCommas = value.replace(/,/g, "");
+    const numericValue = valueWithoutCommas.replace(/\D/g, "");
+    setEditedOutgoing((prev) => ({
+      ...prev,
+      [itemId]: {
+        ...prev[itemId],
+        [weekKey]: numericValue,
+      },
+    }));
+  };
+
+  const handleEditSubmit = async () => {
+    try {
+      const updates = [];
+      // 기본 매장 ID로 가정 (예: "ST_102")
+      const defaultStoreId = "ST_102";
+      const currentPeriod = selectedPeriod; // "YYYY.MM" format; 각 주차 is appended below.
+      tableRows.forEach((row) => {
+        const edited = editedOutgoing[row.itemId];
+        if (!edited) return;
+        ["week1", "week2", "week3", "week4", "week5"].forEach(
+          (weekKey, index) => {
+            const original = row[weekKey];
+            const newValue = edited[weekKey];
+            if (Number(newValue) !== Number(original)) {
+              // Construct period as "YYYY.MM.(weekNumber)"
+              const periodForUpdate = `${currentPeriod}.${index + 1}`;
+              const payload = {
+                매장_id: defaultStoreId,
+                품목_id: row.itemId,
+                기간: periodForUpdate,
+                회차: 1,
+                창고_출고량: Number(newValue),
+              };
+              updates.push(updateWarehouseOutgoing(payload));
+            }
+          }
+        );
+      });
+      await Promise.all(updates);
+      await fetchData({ 기간: selectedPeriod }, false);
+      setIsEditMode(false);
+    } catch (err) {
+      console.error("수정 실패:", err);
+      alert("수정에 실패하였습니다.");
+    }
+  };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
@@ -229,14 +314,18 @@ const WarehouseOutgoing = () => {
       <h2 className="title">창고 출고 관리</h2>
       <div className="period-controls">
         <div className="period-search">
-          {/* 기간 선택 드롭다운 (년/월) */}
+          {/* 기간 선택 드롭다운 (년/월) – 수정 모드일 때는 흐릿하게 표시 및 클릭 불가 */}
           <div
             className="period-select-box"
             onClick={() => {
-              if (selectRef.current) {
+              if (!isEditMode && selectRef.current) {
                 selectRef.current.focus();
                 setIsDropdownOpen(true);
               }
+            }}
+            style={{
+              pointerEvents: isEditMode ? "none" : "auto",
+              opacity: isEditMode ? 0.5 : 1,
             }}
           >
             <div className="select-display">{displayPeriod}</div>
@@ -278,9 +367,45 @@ const WarehouseOutgoing = () => {
               </svg>
             </span>
           </div>
-          <button className="reset-button" onClick={() => handleReset(true)}>
+          {/* 최신 조회 버튼 – 수정 모드일 때는 disabled 및 흐릿하게 표시 */}
+          <button
+            className="reset-button"
+            onClick={() => handleReset(true)}
+            disabled={isEditMode}
+            style={{ opacity: isEditMode ? 0.5 : 1 }}
+          >
             최신 조회
           </button>
+        </div>
+        <div className="warehouse-action-buttons">
+          {/* 수정 모드일 때는 다운로드 버튼을 숨김 */}
+          {!isEditMode && (
+            <button
+              className="download-button"
+              onClick={() => {
+                /* Excel 다운로드 처리 */
+              }}
+            >
+              Excel 다운로드
+            </button>
+          )}
+          {isEditMode ? (
+            <>
+              <button
+                className="edit-confirm-button"
+                onClick={handleEditSubmit}
+              >
+                수정완료
+              </button>
+              <button className="edit-button" onClick={handleEditToggle}>
+                취소
+              </button>
+            </>
+          ) : (
+            <button className="edit-button" onClick={handleEditToggle}>
+              수정
+            </button>
+          )}
         </div>
       </div>
       <hr className="divider" />
@@ -292,13 +417,12 @@ const WarehouseOutgoing = () => {
             <th className="wg-item-col nowrap">품목명</th>
             <th className="wg-spec-col nowrap">규격</th>
             <th className="wg-price-col nowrap">입고단가</th>
-            <th className="wg-inunit-col nowrap">입고단위</th>
             <th className="wg-inunitprice-col">
               입고단위
               <br />
               단가
             </th>
-            <th className="wg-previnv-col nowrap">전월 재고</th>
+            <th className="wg-previnv-col nowrap">전월재고</th>
             <th className="wg-week-col">
               1주차
               <br />
@@ -325,11 +449,13 @@ const WarehouseOutgoing = () => {
               출고
             </th>
             <th className="wg-month-col">
-              월<br />
+              월
+              <br />
               출고량
             </th>
             <th className="wg-month-col">
-              월<br />
+              월
+              <br />
               출고금액
             </th>
           </tr>
@@ -350,9 +476,6 @@ const WarehouseOutgoing = () => {
               <td className="wg-price-col">
                 {row.입고단가 ? Number(row.입고단가).toLocaleString() : "-"}
               </td>
-              <td className="wg-inunit-col">
-                {row.입고단위 ? Number(row.입고단위).toLocaleString() : "-"}
-              </td>
               <td className="wg-inunitprice-col">
                 {row.입고단위단가
                   ? Number(row.입고단위단가).toLocaleString()
@@ -366,19 +489,119 @@ const WarehouseOutgoing = () => {
                   : "-"}
               </td>
               <td className="wg-week-col">
-                {row.week1 ? Number(row.week1).toLocaleString() : "-"}
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      editedOutgoing[row.itemId] &&
+                      editedOutgoing[row.itemId].week1 !== undefined
+                        ? formatInputValue(editedOutgoing[row.itemId].week1)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleOutgoingChange(row.itemId, "week1", e.target.value)
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                ) : row.week1 ? (
+                  Number(row.week1).toLocaleString()
+                ) : (
+                  "-"
+                )}
               </td>
               <td className="wg-week-col">
-                {row.week2 ? Number(row.week2).toLocaleString() : "-"}
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      editedOutgoing[row.itemId] &&
+                      editedOutgoing[row.itemId].week2 !== undefined
+                        ? formatInputValue(editedOutgoing[row.itemId].week2)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleOutgoingChange(row.itemId, "week2", e.target.value)
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                ) : row.week2 ? (
+                  Number(row.week2).toLocaleString()
+                ) : (
+                  "-"
+                )}
               </td>
               <td className="wg-week-col">
-                {row.week3 ? Number(row.week3).toLocaleString() : "-"}
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      editedOutgoing[row.itemId] &&
+                      editedOutgoing[row.itemId].week3 !== undefined
+                        ? formatInputValue(editedOutgoing[row.itemId].week3)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleOutgoingChange(row.itemId, "week3", e.target.value)
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                ) : row.week3 ? (
+                  Number(row.week3).toLocaleString()
+                ) : (
+                  "-"
+                )}
               </td>
               <td className="wg-week-col">
-                {row.week4 ? Number(row.week4).toLocaleString() : "-"}
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      editedOutgoing[row.itemId] &&
+                      editedOutgoing[row.itemId].week4 !== undefined
+                        ? formatInputValue(editedOutgoing[row.itemId].week4)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleOutgoingChange(row.itemId, "week4", e.target.value)
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                ) : row.week4 ? (
+                  Number(row.week4).toLocaleString()
+                ) : (
+                  "-"
+                )}
               </td>
               <td className="wg-week-col">
-                {row.week5 ? Number(row.week5).toLocaleString() : "-"}
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      editedOutgoing[row.itemId] &&
+                      editedOutgoing[row.itemId].week5 !== undefined
+                        ? formatInputValue(editedOutgoing[row.itemId].week5)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleOutgoingChange(row.itemId, "week5", e.target.value)
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                ) : row.week5 ? (
+                  Number(row.week5).toLocaleString()
+                ) : (
+                  "-"
+                )}
               </td>
               <td className="wg-month-col">
                 {row.monthlyOutgoing

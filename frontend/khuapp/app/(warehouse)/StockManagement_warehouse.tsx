@@ -674,13 +674,18 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     setIsConfirmation(true);
   };
 
-  // 최종 저장 처리 함수
+  // 최종 저장 처리 함수 수정
   const handleFinalSave = async () => {
     setSaving(true);
     try {
       if (inventoryType === "daily") {
+        // 0이 아닌 값만 필터링
+        const nonZeroItems = (itemsToSave as MergedInventoryItem[]).filter(
+          (item) => item.창고_재고량 !== 0
+        );
+
         await Promise.all(
-          (itemsToSave as MergedInventoryItem[]).map((item) => {
+          nonZeroItems.map((item) => {
             const payload = {
               매장_id: storeId,
               품목_id: item.품목_id,
@@ -703,8 +708,13 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
         );
       } else {
         const period = getPeriodStringForMonthly();
+        // 0이 아닌 값만 필터링
+        const nonZeroItems = (itemsToSave as MergedMonthInventoryItem[]).filter(
+          (item) => item.창고_입고량 !== 0
+        );
+
         await Promise.all(
-          (itemsToSave as MergedMonthInventoryItem[]).map((item) => {
+          nonZeroItems.map((item) => {
             const payload = {
               매장_id: storeId,
               품목_id: item.품목_id,
@@ -746,6 +756,70 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const handleToggle = (type: "daily" | "monthly") => {
     setEditMode(false);
     setInventoryType(type);
+  };
+
+  // editMode 취소 처리 함수 추가
+  const handleCancelEdit = () => {
+    setEditMode(false);
+    // 원래 데이터로 복원하기 위해 데이터를 다시 불러옴
+    if (itemsData.length > 0 && suppliersData.length > 0) {
+      const controller = new AbortController();
+      const today = getCurrentDateString();
+
+      if (inventoryType === "daily") {
+        // 일간 재고의 경우, API를 통해 데이터를 다시 가져옴
+        const invUrl = `${RN_API_URL}/api/inventory/warehouse/?매장_id=${storeId}&기간=${today}`;
+
+        fetch(invUrl)
+          .then((response) => {
+            if (!response.ok)
+              throw new Error("재고 데이터를 불러오는 중 오류 발생");
+            return response.json();
+          })
+          .then((invData) => {
+            const mergedData: InventoryItem[] = itemsData.map(
+              (product: APIProduct) => {
+                const matchingInv = invData.find(
+                  (inv: any) => inv.품목_id === product.품목_id
+                );
+                return {
+                  ...product,
+                  매장_id: storeId,
+                  기간: today,
+                  창고_재고량: matchingInv ? matchingInv.창고_재고량 : 0,
+                } as MergedInventoryItem;
+              }
+            );
+            const sortedData = f.sortProductsBySupplierAndName(
+              mergedData,
+              suppliersData
+            ) as InventoryItem[];
+            setInventoryData(sortedData);
+            setFilteredData(sortedData);
+          })
+          .catch((err) => {
+            if (err.name !== "AbortError") {
+              setError(err.message);
+            }
+          });
+      } else {
+        // 월간 재고인 경우, 모든 값 0으로 초기화
+        const mergedData: InventoryItem[] = itemsData.map(
+          (product: APIProduct) => ({
+            ...product,
+            매장_id: storeId,
+            기간: today,
+            창고_입고량: 0,
+          })
+        );
+        const sortedData = f.sortProductsBySupplierAndName(
+          mergedData,
+          suppliersData
+        ) as InventoryItem[];
+        setInventoryData(sortedData);
+        setFilteredData(sortedData);
+      }
+    }
   };
 
   if (loading) {
@@ -937,27 +1011,41 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                   style={headerRowStyles.buttonContainer}
                 >
                   {editMode ? (
-                    <TouchableOpacity
-                      testID="smallButton"
-                      style={
-                        saving
-                          ? headerRowStyles.disabledButton
-                          : headerRowStyles.activeButton
-                      }
-                      onPress={handleGlobalSave}
-                      disabled={saving}
-                    >
-                      <Text
-                        testID="buttonText"
+                    <>
+                      <TouchableOpacity
+                        testID="cancelButton"
+                        style={headerRowStyles.cancelButton}
+                        onPress={handleCancelEdit}
+                      >
+                        <Text
+                          testID="cancelButtonText"
+                          style={headerRowStyles.cancelButtonText}
+                        >
+                          취소
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        testID="smallButton"
                         style={
                           saving
-                            ? headerRowStyles.disabledButtonText
-                            : headerRowStyles.activeButtonText
+                            ? headerRowStyles.disabledButton
+                            : headerRowStyles.activeButton
                         }
+                        onPress={handleGlobalSave}
+                        disabled={saving}
                       >
-                        {saving ? "저장 중..." : "조정완료"}
-                      </Text>
-                    </TouchableOpacity>
+                        <Text
+                          testID="buttonText"
+                          style={
+                            saving
+                              ? headerRowStyles.disabledButtonText
+                              : headerRowStyles.activeButtonText
+                          }
+                        >
+                          {saving ? "저장 중..." : "조정완료"}
+                        </Text>
+                      </TouchableOpacity>
+                    </>
                   ) : (
                     <TouchableOpacity
                       testID="smallButton"
@@ -979,27 +1067,41 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                   style={headerRowStyles.buttonContainer}
                 >
                   {editMode ? (
-                    <TouchableOpacity
-                      testID="smallButton"
-                      style={
-                        saving
-                          ? headerRowStyles.disabledButton
-                          : headerRowStyles.activeButton
-                      }
-                      onPress={handleMonthlySave}
-                      disabled={saving}
-                    >
-                      <Text
-                        testID="buttonText"
+                    <>
+                      <TouchableOpacity
+                        testID="cancelButton"
+                        style={headerRowStyles.cancelButton}
+                        onPress={handleCancelEdit}
+                      >
+                        <Text
+                          testID="cancelButtonText"
+                          style={headerRowStyles.cancelButtonText}
+                        >
+                          취소
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        testID="smallButton"
                         style={
                           saving
-                            ? headerRowStyles.disabledButtonText
-                            : headerRowStyles.activeButtonText
+                            ? headerRowStyles.disabledButton
+                            : headerRowStyles.activeButton
                         }
+                        onPress={handleMonthlySave}
+                        disabled={saving}
                       >
-                        {saving ? "저장 중..." : "조정완료"}
-                      </Text>
-                    </TouchableOpacity>
+                        <Text
+                          testID="buttonText"
+                          style={
+                            saving
+                              ? headerRowStyles.disabledButtonText
+                              : headerRowStyles.activeButtonText
+                          }
+                        >
+                          {saving ? "저장 중..." : "조정완료"}
+                        </Text>
+                      </TouchableOpacity>
+                    </>
                   ) : (
                     <TouchableOpacity
                       testID="smallButton"
@@ -1118,7 +1220,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                       { flex: 1, textAlign: "center" },
                     ]}
                   >
-                    {stockValue}개
+                    {f.formatPrice(stockValue)}개
                   </Text>
                 </View>
               );

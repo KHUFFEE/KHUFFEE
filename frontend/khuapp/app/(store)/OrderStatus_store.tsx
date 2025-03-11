@@ -38,7 +38,6 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import RNPickerSelect from "react-native-picker-select";
 import { styles } from "../../src/components/ui/common/commonstyler";
 
 // 결합된 주문 데이터 타입 (StoreOrderData와 APIProduct의 속성을 모두 포함)
@@ -262,7 +261,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
     [week: string]: CombinedOrderData[];
   }>({});
   const [weeklyTotals, setWeeklyTotals] = useState<{ [week: string]: number }>(
-    {},
+    {}
   );
   const [sortedWeeks, setSortedWeeks] = useState<string[]>([]);
   const [productSummary, setProductSummary] = useState<
@@ -277,11 +276,11 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
 
   const detailTotalCost = detailGroupOrders.reduce(
     (sum, order) => sum + (order.totalCost || 0),
-    0,
+    0
   );
   const monthlyDetailTotalCost = monthlyDetailOrders.reduce(
     (sum, order) => sum + (order.totalCost || 0),
-    0,
+    0
   );
 
   const flatListRef = useRef<FlatList<any>>(null);
@@ -291,7 +290,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
   const sortOrders = (orders: CombinedOrderData[], order: "asc" | "desc") => {
     let sorted = f.sortProductsBySupplierAndName(
       orders as APIProduct[],
-      allItems,
+      allItems
     ) as CombinedOrderData[];
     return order === "desc" ? sorted.reverse() : sorted;
   };
@@ -299,7 +298,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
   // 연도 범위 계산 함수: 최대 연도부터 내림차순으로 3개의 연도 추가
   const getYearRange = (
     orders: CombinedOrderData[],
-    minYear: number = 2023,
+    minYear: number = 2023
   ): string[] => {
     const years = orders.map((order) => parseInt(order.기간.split(".")[0]));
     const maxYear = Math.max(...years, minYear);
@@ -320,7 +319,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
   const fetchOrders = async (
     page: number,
     order: "asc" | "desc",
-    forceFetch: boolean = false,
+    forceFetch: boolean = false
   ) => {
     if (!storeId) return;
     setLoading(true);
@@ -552,7 +551,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
 
       // 마지막 날짜를 API에서 가져옴
       fetch(
-        `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&order=desc&page=1`,
+        `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}&order=desc&page=1`
       )
         .then((response) => {
           if (!response.ok) {
@@ -584,7 +583,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
           });
 
           return fetch(
-            `${RN_API_URL}/api/orders/store_order_list/?${params.toString()}`,
+            `${RN_API_URL}/api/orders/store_order_list/?${params.toString()}`
           );
         })
         .then((response) => {
@@ -627,7 +626,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
 
     // 매장_발주량이 0보다 큰 주문만 필터링
     const filteredOrders = orders.filter(
-      (order) => (order.매장_발주량 || 0) > 0,
+      (order) => (order.매장_발주량 || 0) > 0
     );
 
     // 필터링된 주문이 없으면 모달을 열지 않음
@@ -657,11 +656,11 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
   const openMonthlyDetailModal = (
     year: string,
     month: string,
-    monthlyOrders: CombinedOrderData[],
+    monthlyOrders: CombinedOrderData[]
   ) => {
     // 매장_발주량이 0보다 큰 주문만 필터링
     const filteredMonthlyOrders = monthlyOrders.filter(
-      (order) => (order.매장_발주량 || 0) > 0,
+      (order) => (order.매장_발주량 || 0) > 0
     );
 
     // 필터링된 주문이 없으면 모달을 열지 않음
@@ -718,10 +717,10 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
     const sortedWeeks = allWeeks.sort((a, b) => parseInt(a) - parseInt(b));
 
     const productsForSorting: CombinedOrderData[] = Object.entries(
-      productSummaryMap,
+      productSummaryMap
     ).map(([품목_id, data]) => {
       const originalOrder = filteredMonthlyOrders.find(
-        (order) => order.품목_id === 품목_id,
+        (order) => order.품목_id === 품목_id
       );
       return {
         품목_id,
@@ -736,11 +735,11 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
 
     const sortedProductsData = sortOrders(productsForSorting, "asc");
     const sortedProducts = sortedProductsData.map(
-      (product) => productSummaryMap[product.품목_id],
+      (product) => productSummaryMap[product.품목_id]
     );
     const monthlyTotal = Object.values(weeklyTotals).reduce(
       (sum, total) => sum + total,
-      0,
+      0
     );
 
     setMonthlyDetailOrders(filteredMonthlyOrders);
@@ -779,7 +778,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
     const fetchAllItems = async () => {
       try {
         const response = await fetch(
-          `${RN_API_URL}/api/suppliers/items/?all=True`,
+          `${RN_API_URL}/api/suppliers/items/?all=True`
         );
         if (response.ok) {
           const data = await response.json();
@@ -931,7 +930,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
               return weeks.some((week) => {
                 const ordersInWeek = weeksObj[week];
                 return ordersInWeek.some(
-                  (order: CombinedOrderData) => (order.매장_발주량 || 0) > 0,
+                  (order: CombinedOrderData) => (order.매장_발주량 || 0) > 0
                 );
               });
             });
@@ -954,8 +953,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                   const weeksWithNonZeroOrders = sortedWeeks.filter((w) => {
                     const ordersInWeek = weeksObj[w];
                     return ordersInWeek.some(
-                      (order: CombinedOrderData) =>
-                        (order.매장_발주량 || 0) > 0,
+                      (order: CombinedOrderData) => (order.매장_발주량 || 0) > 0
                     );
                   });
 
@@ -969,29 +967,29 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                       const ordersInWeek = weeksObj[w];
                       // 발주량이 0보다 큰 주문만 필터링하여 총액 계산
                       const filteredOrdersInWeek = ordersInWeek.filter(
-                        (o: CombinedOrderData) => (o.매장_발주량 || 0) > 0,
+                        (o: CombinedOrderData) => (o.매장_발주량 || 0) > 0
                       );
                       return (
                         monthSum +
                         filteredOrdersInWeek.reduce(
                           (weekSum: number, o: CombinedOrderData) =>
                             weekSum + (o.totalCost || 0),
-                          0,
+                          0
                         )
                       );
                     },
-                    0,
+                    0
                   );
 
                   // 발주량이 0보다 큰 주문만 모아서 월별 상세보기에 전달
                   const allMonthOrders = sortedWeeks.reduce(
                     (allOrders: CombinedOrderData[], week) => {
                       const filteredOrders = weeksObj[week].filter(
-                        (o: CombinedOrderData) => (o.매장_발주량 || 0) > 0,
+                        (o: CombinedOrderData) => (o.매장_발주량 || 0) > 0
                       );
                       return [...allOrders, ...filteredOrders];
                     },
-                    [],
+                    []
                   );
 
                   return (
@@ -1036,7 +1034,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                               openMonthlyDetailModal(
                                 year,
                                 month,
-                                allMonthOrders,
+                                allMonthOrders
                               )
                             }
                           >
@@ -1052,12 +1050,12 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                       {sortedWeeks.map((week) => {
                         const ordersSorted = sortOrders(
                           weeksObj[week],
-                          sortOrder,
+                          sortOrder
                         );
 
                         // 매장_발주량이 0보다 큰 주문이 있는지 확인
                         const hasNonZeroOrders = ordersSorted.some(
-                          (order) => (order.매장_발주량 || 0) > 0,
+                          (order) => (order.매장_발주량 || 0) > 0
                         );
 
                         // 모든 주문의 매장_발주량이 0이면 weekContainer를 표시하지 않음
@@ -1067,7 +1065,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
 
                         // 매장_발주량이 0보다 큰 주문만 필터링
                         const filteredOrders = ordersSorted.filter(
-                          (order) => (order.매장_발주량 || 0) > 0,
+                          (order) => (order.매장_발주량 || 0) > 0
                         );
                         const ordersAsc = sortOrders(filteredOrders, "asc");
                         const firstOrder = ordersAsc[0];
@@ -1075,7 +1073,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                         const weekTotalCost = filteredOrders.reduce(
                           (sum: number, o: CombinedOrderData) =>
                             sum + (o.totalCost || 0),
-                          0,
+                          0
                         );
 
                         return (
@@ -1133,7 +1131,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                                 onPress={() =>
                                   openDetailModal(
                                     `${year}.${month}.${week}`,
-                                    weeksObj[week],
+                                    weeksObj[week]
                                   )
                                 }
                               >

@@ -528,8 +528,10 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const showErrorModal = (items: APIProduct[]) => {
     setErrorItems(items);
 
-    const unitType = inventoryType === "daily" ? "출고단위" : "입고단위";
-    let modalText = `다음 상품들의 ${unitType}가 맞지 않습니다:\n\n`;
+    const unitType = inventoryType === "daily" ? "출고개수" : "입고개수";
+    let modalText = `⚠️ 숫자가 맞지 않아요! ⚠️\n\n`;
+
+    modalText += `다음 상품들의 숫자를 확인해 주세요:\n\n`;
 
     items.forEach((item) => {
       const unitValue =
@@ -547,10 +549,23 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               ) as MergedMonthInventoryItem
             ).창고_입고량;
 
-      modalText += `• ${item.품목명}: ${unitType} ${unitValue}, 현재값 ${stockValue}\n`;
+      // 더 간단한 형식으로 표시
+      modalText += `🔹 ${item.품목명}\n`;
+      modalText += `   → 기준 개수: ${unitValue}개\n`;
+      modalText += `   → 현재 개수: ${stockValue}개\n\n`;
     });
 
-    modalText += `\n위 상품들은 ${unitType}의 배수가 아니어서 조정완료를 할 수 없습니다. 그래도 진행하시겠습니까?`;
+    if (items.length === 1) {
+      modalText += `이 상품은 ${unitType}에 맞지 않아요.\n`;
+      modalText += `${unitType}는 ${items[0].출고단위}개씩 맞춰야 해요.\n\n`;
+    } else {
+      modalText += `위 상품들은 ${unitType}에 맞지 않아요.\n`;
+      modalText += `각 상품의 기준 개수에 맞춰야 해요.\n\n`;
+    }
+
+    modalText += `그래도 저장할까요?\n`;
+    modalText += `• 예 = 이대로 저장하기\n`;
+    modalText += `• 아니요 = 돌아가서 고치기`;
 
     setErrorModalText(modalText);
     setErrorModalVisible(true);

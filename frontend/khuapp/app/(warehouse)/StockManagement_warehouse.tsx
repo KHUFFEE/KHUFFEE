@@ -235,6 +235,13 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const [itemsData, setItemsData] = useState<APIProduct[]>([]);
   const [suppliersData, setSuppliersData] = useState<any[]>([]);
 
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorItems, setErrorItems] = useState<APIProduct[]>([]);
+  const [errorModalText, setErrorModalText] = useState("");
+  const [pendingSaveAction, setPendingSaveAction] = useState<
+    (() => Promise<void>) | null
+  >(null);
+
   const rowRefs = useRef<{
     [key: string]: React.RefObject<{ commit: () => void }>;
   }>({});
@@ -490,9 +497,127 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     });
   };
 
+  // 단위 검사 함수 수정 - 모든 불일치 상품을 배열로 반환
+  const checkUnitCompliance = (): {
+    isCompliant: boolean;
+    nonCompliantItems: APIProduct[];
+  } => {
+    const nonCompliantItems: APIProduct[] = [];
+
+    // 모든 재고 항목을 검사하고 불일치하는 항목을 배열에 추가
+    inventoryData.forEach((item) => {
+      if (inventoryType === "daily") {
+        const stockValue = (item as MergedInventoryItem).창고_재고량;
+        // 출고단위로 나누어 떨어지는지 확인
+        if (stockValue % item.출고단위 !== 0) {
+          nonCompliantItems.push(item);
+        }
+      } else {
+        const stockValue = (item as MergedMonthInventoryItem).창고_입고량;
+        // 입고단위로 나누어 떨어지는지 확인
+        if (stockValue % item.입고단위 !== 0) {
+          nonCompliantItems.push(item);
+        }
+      }
+    });
+
+    return { isCompliant: nonCompliantItems.length === 0, nonCompliantItems };
+  };
+
+  // 에러 모달을 표시하는 함수 수정 - 여러 상품 정보 표시
+  const showErrorModal = (items: APIProduct[]) => {
+    setErrorItems(items);
+
+    const unitType = inventoryType === "daily" ? "출고단위" : "입고단위";
+    let modalText = `다음 상품들의 ${unitType}가 맞지 않습니다:\n\n`;
+
+    items.forEach((item) => {
+      const unitValue =
+        inventoryType === "daily" ? item.출고단위 : item.입고단위;
+      const stockValue =
+        inventoryType === "daily"
+          ? (
+              inventoryData.find(
+                (i) => i.품목_id === item.품목_id
+              ) as MergedInventoryItem
+            ).창고_재고량
+          : (
+              inventoryData.find(
+                (i) => i.품목_id === item.품목_id
+              ) as MergedMonthInventoryItem
+            ).창고_입고량;
+
+      modalText += `• ${item.품목명}: ${unitType} ${unitValue}, 현재값 ${stockValue}\n`;
+    });
+
+    modalText += `\n위 상품들은 ${unitType}의 배수가 아니어서 조정완료를 할 수 없습니다. 그래도 진행하시겠습니까?`;
+
+    setErrorModalText(modalText);
+    setErrorModalVisible(true);
+  };
+
+  // 모달에서 '예' 버튼을 눌렀을 때 실행할 함수
+  const handleConfirmError = () => {
+    setErrorModalVisible(false);
+    if (pendingSaveAction) {
+      pendingSaveAction();
+      setPendingSaveAction(null);
+    }
+  };
+
+  // 모달에서 '아니요' 버튼을 눌렀을 때 실행할 함수
+  const handleCancelError = () => {
+    setErrorModalVisible(false);
+    setPendingSaveAction(null);
+  };
+
   // 일간 재고 -> warehouse_inventory_update/ 엔드포인트로 POST 요청
   const handleGlobalSave = async () => {
     commitAllRows();
+
+    // 단위 검사 - 모든 불일치 항목 확인
+    const { isCompliant, nonCompliantItems } = checkUnitCompliance();
+
+    if (!isCompliant && nonCompliantItems.length > 0) {
+      // 단위에 맞지 않는 경우 에러 모달 표시
+      showErrorModal(nonCompliantItems);
+      // 저장 액션을 보관하여 사용자가 확인 시 실행할 수 있도록 함
+      setPendingSaveAction(() => async () => {
+        setSaving(true);
+        try {
+          await Promise.all(
+            (inventoryData as MergedInventoryItem[]).map((item) => {
+              const payload = {
+                매장_id: storeId,
+                품목_id: item.품목_id,
+                기간: getCurrentDateString(),
+                창고_재고량: parseInt(item.창고_재고량.toString(), 10),
+              };
+              return fetch(
+                `${RN_API_URL}/api/inventory/warehouse_inventory_update/`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                }
+              ).then((response) => {
+                if (!response.ok) {
+                  throw new Error(`품목 ${item.품목명} 업데이트 실패`);
+                }
+              });
+            })
+          );
+          setEditMode(false);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setSaving(false);
+        }
+      });
+      return;
+    }
+
+    // 단위에 문제가 없으면 바로 저장 진행
     setSaving(true);
     try {
       await Promise.all(
@@ -526,10 +651,53 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   };
 
   // 월간 재고 -> warehouse_incoming_update/ 엔드포인트로 POST 요청
-  // 여기서는 기간을 "년도.월.주" 형식으로 계산하여 사용하며,
-  // 모든 아이템의 재고량이 0이어도 post 요청을 실행합니다.
   const handleMonthlySave = async () => {
     commitAllRows();
+
+    // 단위 검사 - 모든 불일치 항목 확인
+    const { isCompliant, nonCompliantItems } = checkUnitCompliance();
+
+    if (!isCompliant && nonCompliantItems.length > 0) {
+      // 단위에 맞지 않는 경우 에러 모달 표시
+      showErrorModal(nonCompliantItems);
+      // 저장 액션을 보관하여 사용자가 확인 시 실행할 수 있도록 함
+      setPendingSaveAction(() => async () => {
+        setSaving(true);
+        try {
+          const period = getPeriodStringForMonthly();
+          await Promise.all(
+            (inventoryData as MergedMonthInventoryItem[]).map((item) => {
+              const payload = {
+                매장_id: storeId,
+                품목_id: item.품목_id,
+                기간: period,
+                창고_입고량: parseInt(item.창고_입고량.toString(), 10),
+              };
+              return fetch(
+                `${RN_API_URL}/api/orders/warehouse_incoming_update/`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                }
+              ).then((response) => {
+                if (!response.ok) {
+                  throw new Error(`품목 ${item.품목명} 월간 업데이트 실패`);
+                }
+              });
+            })
+          );
+          setEditMode(false);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setSaving(false);
+        }
+      });
+      return;
+    }
+
+    // 단위에 문제가 없으면 바로 저장 진행
     setSaving(true);
     try {
       const period = getPeriodStringForMonthly();
@@ -866,6 +1034,37 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
           );
         }}
       />
+
+      {/* 오류 모달 추가 */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={errorModalVisible}
+        onRequestClose={() => setErrorModalVisible(false)}
+      >
+        <View style={modalStyles.overlay}>
+          <View style={modalStyles.errorModalContainer}>
+            <Text style={modalStyles.errorTitle}>단위 오류</Text>
+            <ScrollView style={{ maxHeight: screenHeight * 0.4 }}>
+              <Text style={modalStyles.errorText}>{errorModalText}</Text>
+            </ScrollView>
+            <View style={modalStyles.buttonContainer}>
+              <TouchableOpacity
+                style={modalStyles.cancelButton}
+                onPress={handleCancelError}
+              >
+                <Text style={modalStyles.cancelButtonText}>아니요</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={modalStyles.confirmButton}
+                onPress={handleConfirmError}
+              >
+                <Text style={modalStyles.buttonText}>예</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -26,6 +26,13 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../app/(login)/index";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
+import { RN_API_URL } from "@env";
+
+// 테이블 상태 인터페이스 정의
+interface TableStatus {
+  테이블: string;
+  상태: number;
+}
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -47,6 +54,36 @@ const Layout_store: React.FC<LayoutProps> = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   // 로그아웃 확인 모달 상태
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
+  // 테이블 상태 관리
+  const [tableStatuses, setTableStatuses] = useState<TableStatus[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // 최초 1회만 API 호출하여 테이블 상태 가져오기
+  useEffect(() => {
+    const fetchTableStatuses = async () => {
+      try {
+        const response = await fetch(
+          `${RN_API_URL}/api/management/table_status_list/`
+        );
+        if (!response.ok) {
+          throw new Error("테이블 상태를 가져오는데 실패했습니다.");
+        }
+        const data = await response.json();
+        setTableStatuses(data);
+        setIsInitialized(true);
+
+        // 테이블 상태를 AsyncStorage에도 저장
+        await AsyncStorage.setItem("tableStatuses", JSON.stringify(data));
+      } catch (error) {
+        console.error("테이블 상태 불러오기 오류:", error);
+      }
+    };
+
+    // 초기화 되지 않은 경우에만 API 호출
+    if (!isInitialized) {
+      fetchTableStatuses();
+    }
+  }, [isInitialized]);
 
   // 설정 모달 열기/닫기
   const openSettingsModal = () => setIsSettingsModalOpen(true);
@@ -67,6 +104,8 @@ const Layout_store: React.FC<LayoutProps> = ({
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("token"); // 인증 토큰 삭제
+      await AsyncStorage.removeItem("tableStatuses"); // 테이블 상태 삭제
+      setIsInitialized(false); // 초기화 상태 리셋
       setShowConfirmLogout(false);
 
       // 로그인 화면으로 이동 (네비게이션 스택 리셋)
@@ -110,6 +149,7 @@ const Layout_store: React.FC<LayoutProps> = ({
           <HeaderContent
             storeName={storeName}
             openSettingsModal={openSettingsModal}
+            tableStatuses={tableStatuses}
           />
         </View>
       ) : (
@@ -120,6 +160,7 @@ const Layout_store: React.FC<LayoutProps> = ({
           <HeaderContent
             storeName={storeName}
             openSettingsModal={openSettingsModal}
+            tableStatuses={tableStatuses}
           />
         </LinearGradient>
       )}
@@ -265,36 +306,70 @@ const Layout_store: React.FC<LayoutProps> = ({
 const HeaderContent = ({
   storeName,
   openSettingsModal,
+  tableStatuses,
 }: {
   storeName: string;
   openSettingsModal: () => void;
-}) => (
-  <View
-    style={{
-      flexDirection: "row",
-      width: "100%",
-      alignItems: "center",
-      justifyContent: "space-between",
-    }}
-  >
-    <Text
-      testID="storeNameText"
-      style={modernStyles.storeNameText}
-      numberOfLines={1}
-      ellipsizeMode="tail"
+  tableStatuses: TableStatus[];
+}) => {
+  // 테이블 상태 확인 함수
+  const getTableStatus = (tableName: string): number => {
+    const table = tableStatuses.find((status) => status.테이블 === tableName);
+    return table ? table.상태 : 1; // 기본값은 1(파란색)
+  };
+
+  // 매장_발주 상태
+  const orderStatus = getTableStatus("매장_발주");
+  // 매장_월말재고 상태
+  const inventoryStatus = getTableStatus("매장_월말재고");
+
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
     >
-      {storeName}
-    </Text>
-    <TouchableOpacity
-      testID="settingsButton"
-      onPress={openSettingsModal}
-      style={modernStyles.settingsButton}
-      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-    >
-      <Settings size={24} color="#0D326F" strokeWidth={2} />
-    </TouchableOpacity>
-  </View>
-);
+      <Text
+        testID="storeNameText"
+        style={modernStyles.storeNameText}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
+        {storeName}
+      </Text>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        {/* 발주 아이콘 */}
+        <ShoppingCart
+          size={22}
+          color={orderStatus === 0 ? "#e53e3e" : "#0D326F"}
+          strokeWidth={2}
+          style={{ marginRight: 16 }}
+        />
+
+        {/* 재고 아이콘 */}
+        <Clipboard
+          size={22}
+          color={inventoryStatus === 0 ? "#e53e3e" : "#0D326F"}
+          strokeWidth={2}
+          style={{ marginRight: 16 }}
+        />
+
+        {/* 설정 버튼 */}
+        <TouchableOpacity
+          testID="settingsButton"
+          onPress={openSettingsModal}
+          style={modernStyles.settingsButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Settings size={24} color="#0D326F" strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
 // 하단 네비게이션 컨텐츠 컴포넌트
 const BottomNavContent = ({

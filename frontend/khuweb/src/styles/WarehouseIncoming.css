@@ -1,6 +1,6 @@
 .wc-container {
   padding: 0;
-  max-width: 1250px;
+  max-width: 99%;
   margin: 0 auto;
   font-family: Arial, sans-serif;
   text-align: left;
@@ -12,40 +12,70 @@
 }
 
 .wc-number-col {
-  width: 12px;
+  width: 1px;
   text-align: center;
+  vertical-align: middle;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 .wc-supplier-col {
-  width: 140px;
+  width: 1px;
   text-align: left;
 }
 
 .wc-item-col {
-  width: 460px;
+  max-width: 200px;
   text-align: left;
 }
 
 .wc-spec-col {
   word-break: break-all;
-  width: 300px;
+  width: 50px;
   text-align: left;
 }
 
-.big-table th.wc-price-col,
+.big-table td.wc-supplier-col,
+.big-table td.wc-item-col,
+.big-table td.wc-spec-col,
+.big-table td.wc-order-qty-col,
+.big-table td.wc-order-amount-col,
+.big-table td.wc-order-sum-ex-col,
+.big-table td.wc-order-sum-inc-col,
 .big-table td.wc-price-col,
-.big-table th.wc-inunitprice-col,
 .big-table td.wc-inunitprice-col,
+.big-table td.wc-previnv-col,
+.big-table td.wc-week-col,
+.big-table td.wc-month-col,
+.big-table td.wc-sum-col,
+.big-table td.wc-cost-col {
+  font-size: 15px;
+  min-width: 47px;
+}
+
+.big-table th.wc-supplier-col,
+.big-table th.wc-item-col,
+.big-table th.wc-spec-col,
+.big-table th.wc-order-qty-col,
+.big-table th.wc-order-amount-col,
+.big-table th.wc-order-sum-ex-col,
+.big-table th.wc-order-sum-inc-col,
+.big-table th.wc-price-col,
+.big-table th.wc-inunitprice-col,
 .big-table th.wc-previnv-col,
 .big-table th.wc-week-col,
-.big-table td.wc-week-col,
 .big-table th.wc-month-col,
-.big-table td.wc-month-col,
 .big-table th.wc-sum-col,
-.big-table td.wc-sum-col,
-.big-table th.wc-cost-col,
-.big-table td.wc-cost-col {
-  min-width: 55px;
+.big-table th.wc-cost-col {
+  min-width: 47px;
+  vertical-align: middle;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.big-table td.wc-spec-col {
+  line-height: 1.6;
+  font-size: 12px;
 }
 
 /* 셀 값 오른쪽 정렬 스타일 */
@@ -65,10 +95,10 @@
 /* ───────────────────────────────────────────── */
 /* 강조: 1주차 ~ 5주차 입고 열 스타일 */
 /* ───────────────────────────────────────────── */
-/* .big-table td.wc-week-col:nth-of-type(8) {
+.big-table td.wc-week-col:nth-of-type(8) {
   border-left: 2px solid #8b000062;
 }
 
 .big-table td.wc-week-col:nth-of-type(12) {
   border-right: 2px solid #8b000062;
-}  */
+}

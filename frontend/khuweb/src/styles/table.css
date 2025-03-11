@@ -144,3 +144,12 @@
 .wg-spec-cell::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera에서 스크롤바 숨김 */
 }
+
+/* 수정 열 호버 */
+.small-table td.si-sum-col:hover,
+.small-table td.wi-sum-col:hover,
+.big-table td.sime-order-col:hover,
+.big-table td.so-order-col:hover,
+.big-table td.wg-week-col:hover {
+  background-color: rgba(139, 0, 0, 0.08);
+}

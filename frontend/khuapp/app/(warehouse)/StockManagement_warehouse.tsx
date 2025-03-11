@@ -143,6 +143,18 @@ const InventoryItemRow = forwardRef<
       >
         <Text testID="name_itemText" style={inventoryStyles.name_itemText}>
           {item.품목명}
+          {"\n"}
+          <Text
+            style={{
+              fontSize: RFValue(10),
+              color: "#2e7d32",
+              fontWeight: "500",
+            }}
+          >
+            {inventoryType === "daily"
+              ? `출고단위: ${item.출고단위}개`
+              : `입고단위: ${item.입고단위}개`}
+          </Text>
         </Text>
         {editMode ? (
           <View

@@ -1,6 +1,6 @@
 .wg-container {
   padding: 0;
-  max-width: 1250px;
+  max-width: 96%;
   margin: 0 auto;
   font-family: Arial, sans-serif;
   text-align: left;
@@ -45,7 +45,21 @@
 .big-table td.wg-sum-col,
 .big-table th.wg-cost-col,
 .big-table td.wg-cost-col {
-  min-width: 55px;
+  min-width: 60px;
+}
+
+.big-table th.wg-number-col,
+.big-table th.wg-supplier-col,
+.big-table th.wg-item-col,
+.big-table th.wg-spec-col,
+.big-table th.wg-price-col,
+.big-table th.wg-inunitprice-col,
+.big-table th.wg-previnv-col,
+.big-table th.wg-week-col,
+.big-table th.wg-month-col,
+.big-table th.wg-sum-col,
+.big-table th.wg-cost-col {
+  font-size: 15px;
 }
 
 /* 셀 값 오른쪽 정렬 스타일 */

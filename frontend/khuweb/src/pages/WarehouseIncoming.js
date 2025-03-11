@@ -203,6 +203,7 @@ const WarehouseIncoming = () => {
         itemId,
         supplierName: supplier.협력사명 || "N/A",
         itemName,
+        종류: matchedItem ? matchedItem.종류 : "", // 종류 필드 추가
         규격: matchedItem ? matchedItem.규격 : "",
         입고단가: matchedItem ? matchedItem.입고단가 : "",
         입고단위:
@@ -220,16 +221,17 @@ const WarehouseIncoming = () => {
         monthlyAmount,
       };
     });
-    // 협력사명, 품목명 기준 정렬
+    // 협력사명, 종류, 품목명 기준 오름차순 정렬
     tableRows.sort((a, b) => {
       const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
       if (cmpSupplier !== 0) return cmpSupplier;
+      const cmpType = a.종류.localeCompare(b.종류);
+      if (cmpType !== 0) return cmpType;
       return a.itemName.localeCompare(b.itemName);
     });
   }
 
   // ----------------------- 헬퍼 함수 -----------------------
-
   const formatInputValue = (value) => {
     if (value === "" || value === undefined || value === null) return "";
     const num = Number(value);
@@ -273,7 +275,7 @@ const WarehouseIncoming = () => {
       const updates = [];
       // 기본 매장 ID로 가정 (예: "ST_102")
       const defaultStoreId = "ST_102";
-      const currentPeriod = selectedPeriod; // "YYYY.MM" format; 각 주차 is appended below.
+      const currentPeriod = selectedPeriod; // "YYYY.MM" format; 각 주차는 뒤에 붙임.
       tableRows.forEach((row) => {
         const edited = editedIncoming[row.itemId];
         if (!edited) return;
@@ -282,7 +284,7 @@ const WarehouseIncoming = () => {
             const original = row[weekKey];
             const newValue = edited[weekKey];
             if (Number(newValue) !== Number(original)) {
-              // Construct period as "YYYY.MM.(weekNumber)"
+              // "YYYY.MM.(주차)" 형식의 기간 구성
               const periodForUpdate = `${currentPeriod}.${index + 1}`;
               const payload = {
                 매장_id: defaultStoreId,
@@ -457,6 +459,18 @@ const WarehouseIncoming = () => {
               <br />
               입고금액
             </th>
+            <th className="wc-order-qty-col">발주량</th>
+            <th className="wc-order-amount-col">발주금액</th>
+            <th className="wc-order-sum-ex-col">
+              발주합계
+              <br />
+              부가세x
+            </th>
+            <th className="wc-order-sum-inc-col">
+              발주합계
+              <br />
+              부가세o
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -612,6 +626,10 @@ const WarehouseIncoming = () => {
                   ? Number(row.monthlyAmount).toLocaleString()
                   : "-"}
               </td>
+              <td className="wc-order-qty-col">-</td>
+              <td className="wc-order-amount-col">-</td>
+              <td className="wc-order-sum-ex-col">-</td>
+              <td className="wc-order-sum-inc-col">-</td>
             </tr>
           ))}
         </tbody>

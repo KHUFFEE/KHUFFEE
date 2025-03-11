@@ -1,17 +1,3 @@
-/* 기본 컨테이너 */
-.store-orders-container {
-  padding: 0;
-  max-width: 1250px;
-  margin: 0 auto;
-  font-family: Arial, sans-serif;
-  text-align: left;
-}
-
-.store-orders-container p {
-  margin: 10px 0 20px;
-  font-size: 16px;
-}
-
 .sime-number-col {
   width: 12px;
   text-align: center;

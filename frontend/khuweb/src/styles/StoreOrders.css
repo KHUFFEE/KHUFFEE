@@ -1,7 +1,7 @@
 /* 기본 컨테이너 */
 .store-orders-container {
   padding: 0;
-  max-width: 1250px;
+  max-width: 96%;
   margin: 0 auto;
   font-family: Arial, sans-serif;
   text-align: left;

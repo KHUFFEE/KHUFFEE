@@ -202,6 +202,7 @@ const WarehouseOutgoing = () => {
         itemId,
         supplierName: supplier.협력사명 || "N/A",
         itemName,
+        종류: matchedItem ? matchedItem.종류 : "",
         규격: matchedItem ? matchedItem.규격 : "",
         입고단가: matchedItem ? matchedItem.입고단가 : "",
         입고단위:
@@ -219,16 +220,17 @@ const WarehouseOutgoing = () => {
         monthlyAmount,
       };
     });
-    // 협력사명, 품목명 기준 정렬
+    // 협력사명, 종류, 품목명 기준 오름차순 정렬
     tableRows.sort((a, b) => {
       const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
       if (cmpSupplier !== 0) return cmpSupplier;
+      const cmpType = a.종류.localeCompare(b.종류);
+      if (cmpType !== 0) return cmpType;
       return a.itemName.localeCompare(b.itemName);
     });
   }
 
   // ----------------------- 헬퍼 함수 -----------------------
-
   const formatInputValue = (value) => {
     if (value === "" || value === undefined || value === null) return "";
     const num = Number(value);

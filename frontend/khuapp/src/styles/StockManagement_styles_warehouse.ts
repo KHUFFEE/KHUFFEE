@@ -177,6 +177,7 @@ export const inventoryStyles = StyleSheet.create({
     // height: hp(3)
   },
 });
+
 export const toggleButtonStyles = StyleSheet.create({
   container: {
     flexDirection: "row",
@@ -1081,5 +1082,116 @@ export const OrderRequeststyle = StyleSheet.create({
   searchIconContainer: {
     marginRight: moderateScale(8),
     borderRadius: moderateScale(20),
+  },
+});
+
+export const confirmationStyles = StyleSheet.create({
+  confirm_selectedItemsSection: {
+    ...commonTextStyle,
+    paddingVertical: moderateScale(20),
+    paddingHorizontal: moderateScale(16),
+    backgroundColor: "#ffffff",
+  },
+  confirm_sectionTitle: {
+    ...commonTextStyle,
+    fontSize: RFValue(22),
+    fontWeight: "700",
+    color: "#0D326F",
+    width: "100%",
+    textAlign: "center",
+    borderBottomWidth: 2,
+    borderBottomColor: "#e2e8f0",
+    paddingBottom: moderateScale(5),
+  },
+  confirmationItemRow: {
+    ...commonTextStyle,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: moderateScale(6),
+    paddingHorizontal: moderateScale(10),
+    borderBottomWidth: 1,
+    borderColor: "#e2e8f0",
+    width: "100%",
+    height: hp(5),
+    backgroundColor: "#ffffff",
+  },
+  confirm_selectItemName: {
+    ...commonTextStyle,
+    flex: 3,
+    fontSize: RFValue(16),
+    color: "#1e293b",
+    width: "100%",
+  },
+  confirm_unitText: {
+    ...commonTextStyle,
+    flex: 0.7,
+    fontSize: RFValue(15),
+    color: "#0D326F",
+  },
+  confirm_priceText: {
+    ...commonTextStyle,
+    fontSize: RFValue(16),
+  },
+  totalRow: {
+    ...commonTextStyle,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: moderateScale(15),
+    borderTopWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  totalText: {
+    ...commonTextStyle,
+    color: "#0D326F",
+    fontSize: RFValue(17),
+    fontWeight: "700",
+  },
+  saveButton: {
+    ...commonTextStyle,
+    backgroundColor: "#0D326F",
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(20),
+    borderRadius: 25,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  saveButtonText: {
+    ...commonTextStyle,
+    color: "white",
+    fontSize: RFValue(16),
+    fontWeight: "700",
+  },
+  backButton: {
+    ...commonTextStyle,
+    backgroundColor: "white",
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(20),
+    borderRadius: 25,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    borderColor: "#0D326F",
+    borderWidth: 1,
+    marginTop: moderateScale(5),
+  },
+  backButtonText: {
+    ...commonTextStyle,
+    color: "#0D326F",
+    fontSize: RFValue(16),
+    fontWeight: "600",
   },
 });

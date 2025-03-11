@@ -41,6 +41,13 @@ interface LayoutProps {
   setActiveView: (view: ViewType) => void;
 }
 
+interface BottomNavContentProps {
+  activeView: ViewType;
+  setActiveView: (view: ViewType) => void;
+  renderIcon: (IconComponent: any, isActive: boolean) => React.ReactNode;
+  fetchTableStatuses: () => Promise<void>;
+}
+
 const Layout_store: React.FC<LayoutProps> = ({
   children,
   storeName,
@@ -58,27 +65,28 @@ const Layout_store: React.FC<LayoutProps> = ({
   const [tableStatuses, setTableStatuses] = useState<TableStatus[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // 최초 1회만 API 호출하여 테이블 상태 가져오기
-  useEffect(() => {
-    const fetchTableStatuses = async () => {
-      try {
-        const response = await fetch(
-          `${RN_API_URL}/api/management/table_status_list/`
-        );
-        if (!response.ok) {
-          throw new Error("테이블 상태를 가져오는데 실패했습니다.");
-        }
-        const data = await response.json();
-        setTableStatuses(data);
-        setIsInitialized(true);
-
-        // 테이블 상태를 AsyncStorage에도 저장
-        await AsyncStorage.setItem("tableStatuses", JSON.stringify(data));
-      } catch (error) {
-        console.error("테이블 상태 불러오기 오류:", error);
+  // fetchTableStatuses 함수를 useEffect 밖으로 분리
+  const fetchTableStatuses = async () => {
+    try {
+      const response = await fetch(
+        `${RN_API_URL}/api/management/table_status_list/`
+      );
+      if (!response.ok) {
+        throw new Error("테이블 상태를 가져오는데 실패했습니다.");
       }
-    };
+      const data = await response.json();
+      setTableStatuses(data);
+      setIsInitialized(true);
 
+      // 테이블 상태를 AsyncStorage에도 저장
+      await AsyncStorage.setItem("tableStatuses", JSON.stringify(data));
+    } catch (error) {
+      console.error("테이블 상태 불러오기 오류:", error);
+    }
+  };
+
+  // 최초 1회 API 호출
+  useEffect(() => {
     // 초기화 되지 않은 경우에만 API 호출
     if (!isInitialized) {
       fetchTableStatuses();
@@ -187,6 +195,7 @@ const Layout_store: React.FC<LayoutProps> = ({
             activeView={activeView}
             setActiveView={setActiveView}
             renderIcon={renderIcon}
+            fetchTableStatuses={fetchTableStatuses}
           />
         </View>
       ) : (
@@ -198,6 +207,7 @@ const Layout_store: React.FC<LayoutProps> = ({
             activeView={activeView}
             setActiveView={setActiveView}
             renderIcon={renderIcon}
+            fetchTableStatuses={fetchTableStatuses}
           />
         </LinearGradient>
       )}
@@ -376,96 +386,103 @@ const BottomNavContent = ({
   activeView,
   setActiveView,
   renderIcon,
-}: {
-  activeView: ViewType;
-  setActiveView: (view: ViewType) => void;
-  renderIcon: (IconComponent: any, isActive: boolean) => React.ReactNode;
-}) => (
-  <>
-    <TouchableOpacity
-      testID="homeButton"
-      style={[
-        modernStyles.navButton,
-        activeView === "home" && modernStyles.activeNavButton,
-      ]}
-      onPress={() => setActiveView("home")}
-    >
-      {renderIcon(Home, activeView === "home")}
-      <Text
-        testID={activeView === "home" ? "activeNavText" : "navText"}
-        style={
-          activeView === "home"
-            ? modernStyles.activeNavText
-            : modernStyles.navText
-        }
-      >
-        홈
-      </Text>
-    </TouchableOpacity>
+  fetchTableStatuses,
+}: BottomNavContentProps) => {
+  // 화면 전환 시 테이블 상태 업데이트 함수
+  const handleViewChange = (view: ViewType) => {
+    // 먼저 API를 호출하여 테이블 상태를 업데이트
+    fetchTableStatuses();
+    // 화면 전환
+    setActiveView(view);
+  };
 
-    <TouchableOpacity
-      testID="orderRequestButton"
-      style={[
-        modernStyles.navButton,
-        activeView === "order-request" && modernStyles.activeNavButton,
-      ]}
-      onPress={() => setActiveView("order-request")}
-    >
-      {renderIcon(ShoppingCart, activeView === "order-request")}
-      <Text
-        testID={activeView === "order-request" ? "activeNavText" : "navText"}
-        style={
-          activeView === "order-request"
-            ? modernStyles.activeNavText
-            : modernStyles.navText
-        }
+  return (
+    <>
+      <TouchableOpacity
+        testID="homeButton"
+        style={[
+          modernStyles.navButton,
+          activeView === "home" && modernStyles.activeNavButton,
+        ]}
+        onPress={() => handleViewChange("home")}
       >
-        발주 요청
-      </Text>
-    </TouchableOpacity>
+        {renderIcon(Home, activeView === "home")}
+        <Text
+          testID={activeView === "home" ? "activeNavText" : "navText"}
+          style={
+            activeView === "home"
+              ? modernStyles.activeNavText
+              : modernStyles.navText
+          }
+        >
+          홈
+        </Text>
+      </TouchableOpacity>
 
-    <TouchableOpacity
-      testID="orderStatusButton"
-      style={[
-        modernStyles.navButton,
-        activeView === "order-status" && modernStyles.activeNavButton,
-      ]}
-      onPress={() => setActiveView("order-status")}
-    >
-      {renderIcon(Receipt, activeView === "order-status")}
-      <Text
-        testID={activeView === "order-status" ? "activeNavText" : "navText"}
-        style={
-          activeView === "order-status"
-            ? modernStyles.activeNavText
-            : modernStyles.navText
-        }
+      <TouchableOpacity
+        testID="orderRequestButton"
+        style={[
+          modernStyles.navButton,
+          activeView === "order-request" && modernStyles.activeNavButton,
+        ]}
+        onPress={() => handleViewChange("order-request")}
       >
-        발주 내역
-      </Text>
-    </TouchableOpacity>
+        {renderIcon(ShoppingCart, activeView === "order-request")}
+        <Text
+          testID={activeView === "order-request" ? "activeNavText" : "navText"}
+          style={
+            activeView === "order-request"
+              ? modernStyles.activeNavText
+              : modernStyles.navText
+          }
+        >
+          발주 요청
+        </Text>
+      </TouchableOpacity>
 
-    <TouchableOpacity
-      testID="inventoryButton"
-      style={[
-        modernStyles.navButton,
-        activeView === "inventory" && modernStyles.activeNavButton,
-      ]}
-      onPress={() => setActiveView("inventory")}
-    >
-      {renderIcon(Clipboard, activeView === "inventory")}
-      <Text
-        testID={activeView === "inventory" ? "activeNavText" : "navText"}
-        style={
-          activeView === "inventory"
-            ? modernStyles.activeNavText
-            : modernStyles.navText
-        }
+      <TouchableOpacity
+        testID="orderStatusButton"
+        style={[
+          modernStyles.navButton,
+          activeView === "order-status" && modernStyles.activeNavButton,
+        ]}
+        onPress={() => handleViewChange("order-status")}
       >
-        재고 관리
-      </Text>
-    </TouchableOpacity>
-  </>
-);
+        {renderIcon(Receipt, activeView === "order-status")}
+        <Text
+          testID={activeView === "order-status" ? "activeNavText" : "navText"}
+          style={
+            activeView === "order-status"
+              ? modernStyles.activeNavText
+              : modernStyles.navText
+          }
+        >
+          발주 내역
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        testID="inventoryButton"
+        style={[
+          modernStyles.navButton,
+          activeView === "inventory" && modernStyles.activeNavButton,
+        ]}
+        onPress={() => handleViewChange("inventory")}
+      >
+        {renderIcon(Clipboard, activeView === "inventory")}
+        <Text
+          testID={activeView === "inventory" ? "activeNavText" : "navText"}
+          style={
+            activeView === "inventory"
+              ? modernStyles.activeNavText
+              : modernStyles.navText
+          }
+        >
+          재고 관리
+        </Text>
+      </TouchableOpacity>
+    </>
+  );
+};
 
 export default Layout_store;

@@ -48,7 +48,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
   const [orderFailureModalVisible, setOrderFailureModalVisible] =
     useState<boolean>(false);
   const [orderFailureMessages, setOrderFailureMessages] = useState<string[]>(
-    [],
+    []
   );
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
@@ -101,7 +101,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
       if (!storeId) return;
       await AsyncStorage.setItem(
         getFavoritesKey(storeId),
-        JSON.stringify(newFavorites),
+        JSON.stringify(newFavorites)
       );
       setFavorites(newFavorites);
     } catch (e) {
@@ -138,7 +138,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
       try {
         if (!storeId) return;
         const response = await fetch(
-          `${RN_API_URL}/api/inventory/store/?매장_id=${storeId}`,
+          `${RN_API_URL}/api/inventory/store/?매장_id=${storeId}`
         );
         if (!response.ok)
           throw new Error("재고 데이터를 불러오는 중 오류 발생");
@@ -157,12 +157,12 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
     const fetchTableStatus = async () => {
       try {
         const response = await fetch(
-          `${RN_API_URL}/api/management/table_status_list/`,
+          `${RN_API_URL}/api/management/table_status_list/`
         );
         if (!response.ok) throw new Error("테이블 상태 목록 불러오기 오류");
         const data = await response.json();
         const storeOrderStatus = data.find(
-          (item: any) => item.테이블 === "매장_발주",
+          (item: any) => item.테이블 === "매장_발주"
         );
         setOrderEnabled(storeOrderStatus && storeOrderStatus.상태 === 1);
       } catch (error) {
@@ -180,7 +180,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
     let products = f.getFilteredProducts(apiItems, selectedCategory);
     if (isSearchActive && searchText.trim().length > 0) {
       products = products.filter((product) =>
-        product.품목명.toLowerCase().includes(searchText.toLowerCase()),
+        product.품목명.toLowerCase().includes(searchText.toLowerCase())
       );
     }
     products.sort((a, b) => {
@@ -205,7 +205,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
   let displayProducts = sortedProducts;
   if (isSearchActive && searchText.trim().length > 0) {
     displayProducts = sortedProducts.filter((product) =>
-      product.품목명.toLowerCase().includes(searchText.toLowerCase()),
+      product.품목명.toLowerCase().includes(searchText.toLowerCase())
     );
   }
 
@@ -225,7 +225,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
     const updatedItems = f.updateCustomQuantityUtil(
       selectedItems,
       productId,
-      text,
+      text
     );
     setSelectedItems(updatedItems);
   };
@@ -262,7 +262,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
     }
     try {
       const ordersResponse = await fetch(
-        `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}`,
+        `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}`
       );
       if (!ordersResponse.ok) throw new Error("주문 목록 불러오기 실패");
       const ordersData = await ordersResponse.json();
@@ -270,7 +270,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
       // 각 주문별로 개별 POST 요청 실행 (추가 방식)
       const updatePromises = ordersData.orders.map(async (order: any) => {
         const selectedItem = selectedItems.find(
-          (item) => item.품목_id === order.품목_id,
+          (item) => item.품목_id === order.품목_id
         );
         if (selectedItem) {
           const payload = {
@@ -288,7 +288,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
                 ...payload,
                 app: "true",
               }),
-            },
+            }
           );
           if (!updateResponse.ok) {
             const errorData = await updateResponse.json();
@@ -301,7 +301,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
 
       // 모든 요청 완료 후, null이 아닌 결과만 필터링하여 첫 번째 주문 업데이트 결과를 onNewOrder에 전달합니다.
       const updatedOrders = (await Promise.all(updatePromises)).filter(
-        (res) => res !== null,
+        (res) => res !== null
       );
       onNewOrder(updatedOrders[0]);
       setOrderCompleteModalVisible(true);
@@ -345,7 +345,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
 
   const renderProductCard = (product: APIProduct) => {
     const selected = selectedItems.find(
-      (item) => item.품목_id === product.품목_id,
+      (item) => item.품목_id === product.품목_id
     );
     const cardStyle = selected
       ? [OrderRequeststyle.selectItemCard, OrderRequeststyle.selectedItemCard]
@@ -400,7 +400,7 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
                   style={OrderRequeststyle.price_unit_Text}
                 >
                   {f.formatPrice(
-                    parseFloat(product.입고단가) * product.출고단위,
+                    parseFloat(product.입고단가) * product.출고단위
                   )}
                   원
                 </Text>
@@ -769,31 +769,52 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
             testID="footerContainer"
             style={OrderRequeststyle.footerContainer}
           >
-            <Text
-              testID="footerPriceText"
-              style={OrderRequeststyle.footerPriceText}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+              }}
             >
-              {selectedItems.length > 0
-                ? `총 발주금액:  ${f.formatPrice(totalPrice)}원`
-                : "총 발주금액 0원"}
-            </Text>
-            <TouchableOpacity
-              testID="footerButton"
-              style={[
-                OrderRequeststyle.footerButton,
-                selectedItems.length === 0 &&
-                  OrderRequeststyle.footerButtonDisabled,
-              ]}
-              onPress={handleConfirmOrder}
-              disabled={selectedItems.length === 0}
-            >
-              <Text
-                testID="footerButtonText"
-                style={OrderRequeststyle.footerButtonText}
+              <View style={{ flexDirection: "column" }}>
+                {orderEnabled ? (
+                  <Text
+                    testID="footerPriceText"
+                    style={OrderRequeststyle.footerPriceText}
+                  >
+                    {selectedItems.length > 0
+                      ? `총 발주금액:  ${f.formatPrice(totalPrice)}원`
+                      : "총 발주금액 0원"}
+                  </Text>
+                ) : (
+                  <Text
+                    testID="orderDisabledMessage"
+                    style={OrderRequeststyle.orderDisabledMessage}
+                  >
+                    현재 발주 가능 기간이 아닙니다
+                  </Text>
+                )}
+              </View>
+
+              <TouchableOpacity
+                testID="footerButton"
+                style={[
+                  OrderRequeststyle.footerButton,
+                  (selectedItems.length === 0 || !orderEnabled) &&
+                    OrderRequeststyle.footerButtonDisabled,
+                ]}
+                onPress={handleConfirmOrder}
+                disabled={selectedItems.length === 0 || !orderEnabled}
               >
-                발주확인
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  testID="footerButtonText"
+                  style={OrderRequeststyle.footerButtonText}
+                >
+                  발주확인
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </>
       ) : (
@@ -816,11 +837,11 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
             </Text>
             {sortedProducts
               .filter((product) =>
-                selectedItems.some((item) => item.품목_id === product.품목_id),
+                selectedItems.some((item) => item.품목_id === product.품목_id)
               )
               .map((product) => {
                 const item = selectedItems.find(
-                  (item) => item.품목_id === product.품목_id,
+                  (item) => item.품목_id === product.품목_id
                 );
                 if (!item) return null;
                 const itemTotal = item.quantity * parseFloat(item.입고단가);

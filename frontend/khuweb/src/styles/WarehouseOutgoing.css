@@ -28,18 +28,15 @@
 
 .wg-spec-col {
   word-break: break-all;
-  width: 400px; /* 이 값을 원하는 너비(예: 20px)로 줄여주세요 */
+  width: 300px;
   text-align: left;
 }
 
 .big-table th.wg-price-col,
 .big-table td.wg-price-col,
-.big-table th.wg-inunit-col,
-.big-table td.wg-inunit-col,
 .big-table th.wg-inunitprice-col,
 .big-table td.wg-inunitprice-col,
 .big-table th.wg-previnv-col,
-.big-table td.wg-previnv-col,
 .big-table th.wg-week-col,
 .big-table td.wg-week-col,
 .big-table th.wg-month-col,
@@ -48,11 +45,14 @@
 .big-table td.wg-sum-col,
 .big-table th.wg-cost-col,
 .big-table td.wg-cost-col {
-  min-width: 50px;
+  min-width: 55px;
 }
 
 /* 셀 값 오른쪽 정렬 스타일 */
-.wg-inunit-col,
+.wg-price-col {
+  text-align: right;
+}
+
 .wg-inunitprice-col,
 .wg-previnv-col,
 .wg-week-col,
@@ -61,26 +61,17 @@
 .wg-cost-col {
   text-align: right;
 }
-.wg-price-col {
-  text-align: right;
-}
 
 /* ───────────────────────────────────────────── */
 /* 강조: 1주차 ~ 5주차 출고 열 스타일 */
 /* ───────────────────────────────────────────── */
 
 /* 1주차 출고 열 - 왼쪽 테두리 추가 */
-
-.big-table td.wg-week-col:nth-of-type(9) {
+.big-table td.wg-week-col:nth-of-type(8) {
   border-left: 2px solid #8b000062;
 }
 
 /* 5주차 출고 열 - 오른쪽 테두리 추가 */
-
-.big-table td.wg-week-col:nth-of-type(13) {
+.big-table td.wg-week-col:nth-of-type(12) {
   border-right: 2px solid #8b000062;
-}
-
-.big-table td.wg-week-col:hover {
-  background-color: rgba(139, 0, 0, 0.08);
 }

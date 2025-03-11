@@ -85,9 +85,9 @@ body {
   border-radius: 8px; /* 라운드 처리 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 
-  width: 180px; /* 여유 있는 너비 */
+  width: 170px; /* 여유 있는 너비 */
   margin-left: 20px;
-  margin-right: 20px;
+  margin-right: 12px;
   margin-bottom: 20px;
   padding: 20px 10px; /* 상하 여백 늘리고 좌우 줄임 */
 
@@ -223,7 +223,7 @@ body {
   margin-right: 20px; /* 우측 여백 */
   margin-bottom: 20px; /* 바닥 여백 */
   background-color: #ffffff;
-  border-radius: 5px;
+  border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   overflow-y: auto; /* 내용이 길면 스크롤 */
   padding: 20px; /* 콘텐츠 내부 여백 */

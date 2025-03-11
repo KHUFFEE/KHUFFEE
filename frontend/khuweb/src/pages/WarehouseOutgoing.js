@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import {
   fetchWarehouseOutgoing,
@@ -227,11 +228,6 @@ const WarehouseOutgoing = () => {
   }
 
   // ----------------------- 헬퍼 함수 -----------------------
-  const formatNumber = (num) => {
-    if (num === "" || num === undefined || num === null || Number(num) === 0)
-      return "-";
-    return Number(num).toLocaleString();
-  };
 
   const formatInputValue = (value) => {
     if (value === "" || value === undefined || value === null) return "";
@@ -300,7 +296,7 @@ const WarehouseOutgoing = () => {
         );
       });
       await Promise.all(updates);
-      await fetchData({ 기간: selectedPeriod }, true);
+      await fetchData({ 기간: selectedPeriod }, false);
       setIsEditMode(false);
     } catch (err) {
       console.error("수정 실패:", err);
@@ -419,20 +415,47 @@ const WarehouseOutgoing = () => {
             <th className="wg-item-col nowrap">품목명</th>
             <th className="wg-spec-col nowrap">규격</th>
             <th className="wg-price-col nowrap">입고단가</th>
-            <th className="wg-inunit-col nowrap">입고단위</th>
             <th className="wg-inunitprice-col">
               입고단위
               <br />
               단가
             </th>
-            <th className="wg-previnv-col nowrap">전월 재고</th>
-            <th className="wg-week-col">1주차 출고</th>
-            <th className="wg-week-col">2주차 출고</th>
-            <th className="wg-week-col">3주차 출고</th>
-            <th className="wg-week-col">4주차 출고</th>
-            <th className="wg-week-col">5주차 출고</th>
-            <th className="wg-month-col">월 출고량</th>
-            <th className="wg-month-col">월 출고금액</th>
+            <th className="wg-previnv-col nowrap">전월재고</th>
+            <th className="wg-week-col">
+              1주차
+              <br />
+              출고
+            </th>
+            <th className="wg-week-col">
+              2주차
+              <br />
+              출고
+            </th>
+            <th className="wg-week-col">
+              3주차
+              <br />
+              출고
+            </th>
+            <th className="wg-week-col">
+              4주차
+              <br />
+              출고
+            </th>
+            <th className="wg-week-col">
+              5주차
+              <br />
+              출고
+            </th>
+            <th className="wg-month-col">
+              월
+              <br />
+              출고량
+            </th>
+            <th className="wg-month-col">
+              월
+              <br />
+              출고금액
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -450,9 +473,6 @@ const WarehouseOutgoing = () => {
               </td>
               <td className="wg-price-col">
                 {row.입고단가 ? Number(row.입고단가).toLocaleString() : "-"}
-              </td>
-              <td className="wg-inunit-col">
-                {row.입고단위 ? Number(row.입고단위).toLocaleString() : "-"}
               </td>
               <td className="wg-inunitprice-col">
                 {row.입고단위단가

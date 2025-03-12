@@ -21,12 +21,61 @@
   text-align: left;
 }
 
+.wo-spec-col {
+  width: 100px;
+  text-align: left;
+}
+
+.wo-price-col {
+  width: 80px;
+  text-align: right;
+}
+
+.wo-inunitprice-col {
+  width: 80px;
+  text-align: right;
+}
+
+.wo-previnv-col {
+  width: 80px;
+  text-align: right;
+}
+
+.wo-currinv-col {
+  width: 80px;
+  text-align: right;
+}
+
+.wo-currentinv-money-col {
+  width: 100px;
+  text-align: right;
+}
+
 .wo-sum-col {
   width: 60px;
   text-align: right;
 }
 
-.wo-cost-col {
-  width: 50px;
+.wo-ordermoney-col {
+  width: 100px;
+  text-align: right;
+}
+
+.wo-total-excl-col {
+  width: 120px;
+  text-align: right;
+}
+
+.wo-total-incl-col {
+  width: 120px;
+  text-align: right;
+}
+
+.wo-prev-month1-col,
+.wo-prev-month2-col,
+.wo-prev-month3-col,
+.wo-monthly-output-col,
+.wo-monthly-outputmoney-col {
+  width: 100px;
   text-align: right;
 }

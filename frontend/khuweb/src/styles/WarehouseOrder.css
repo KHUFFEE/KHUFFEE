@@ -1,81 +1,86 @@
 .wo-container {
   padding: 0;
-  max-width: 100%;
+  max-width: 99%;
   margin: 0 auto;
   font-family: Arial, sans-serif;
   text-align: left;
 }
 
 .wo-number-col {
-  width: 5px;
+  width: 1px;
   text-align: center;
+  vertical-align: middle;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 .wo-supplier-col {
-  width: 80px;
+  width: 1px;
   text-align: left;
 }
 
 .wo-item-col {
-  width: 170px;
+  width: 200px;
   text-align: left;
 }
 
 .wo-spec-col {
-  width: 100px;
+  word-break: break-all;
+  width: 50px;
   text-align: left;
 }
 
-.wo-price-col {
-  width: 80px;
-  text-align: right;
+.big-table td.wo-spec-col {
+  line-height: 1.6;
+  font-size: 12px;
 }
 
-.wo-inunitprice-col {
-  width: 80px;
-  text-align: right;
+/* td 요소에 적용할 스타일 */
+.big-table td.wo-prev-month1-col,
+.big-table td.wo-prev-month2-col,
+.big-table td.wo-prev-month3-col,
+.big-table td.wo-monthly-output-col,
+.big-table td.wo-monthly-outputmoney-col,
+.big-table td.wo-price-col,
+.big-table td.wo-inunitprice-col,
+.big-table td.wo-previnv-col,
+.big-table td.wo-currinv-col,
+.big-table td.wo-currentinv-money-col,
+.big-table td.wo-sum-col,
+.big-table td.wo-ordermoney-col,
+.big-table td.wo-total-excl-col,
+.big-table td.wo-total-incl-col {
+  font-size: 15px;
+  min-width: 47px;
 }
 
-.wo-previnv-col {
-  width: 80px;
-  text-align: right;
+/* th 요소에 적용할 스타일 */
+.big-table th.wo-supplier-col,
+.big-table th.wo-item-col,
+.big-table th.wo-spec-col,
+.big-table th.wo-prev-month1-col,
+.big-table th.wo-prev-month2-col,
+.big-table th.wo-prev-month3-col,
+.big-table th.wo-monthly-output-col,
+.big-table th.wo-monthly-outputmoney-col,
+.big-table th.wo-price-col,
+.big-table th.wo-inunitprice-col,
+.big-table th.wo-previnv-col,
+.big-table th.wo-currinv-col,
+.big-table th.wo-currentinv-money-col,
+.big-table th.wo-sum-col,
+.big-table th.wo-ordermoney-col,
+.big-table th.wo-total-excl-col,
+.big-table th.wo-total-incl-col {
+  min-width: 47px;
+  vertical-align: middle;
+  font-size: 13px;
+  line-height: 1.2;
 }
 
-.wo-currinv-col {
-  width: 80px;
-  text-align: right;
-}
-
-.wo-currentinv-money-col {
-  width: 100px;
-  text-align: right;
-}
-
+.wo-price-col,
+.wo-inunitprice-col,
+.wo-previnv-col,
 .wo-sum-col {
-  width: 60px;
-  text-align: right;
-}
-
-.wo-ordermoney-col {
-  width: 100px;
-  text-align: right;
-}
-
-.wo-total-excl-col {
-  width: 120px;
-  text-align: right;
-}
-
-.wo-total-incl-col {
-  width: 120px;
-  text-align: right;
-}
-
-.wo-prev-month1-col,
-.wo-prev-month2-col,
-.wo-prev-month3-col,
-.wo-monthly-output-col,
-.wo-monthly-outputmoney-col {
-  width: 100px;
   text-align: right;
 }

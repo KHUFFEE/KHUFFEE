@@ -238,6 +238,13 @@ const WarehouseOutgoing = () => {
     return value;
   };
 
+  // 새로운 총합계 포매팅 함수 (합계가 0이면 "-" 표시)
+  const formatNumber = (num) => {
+    if (num === "" || num === undefined || num === null || Number(num) === 0)
+      return "-";
+    return Number(num).toLocaleString();
+  };
+
   // ----------------------- 수정 모드 핸들러 -----------------------
   const handleEditToggle = () => {
     if (!isEditMode) {
@@ -305,6 +312,40 @@ const WarehouseOutgoing = () => {
       alert("수정에 실패하였습니다.");
     }
   };
+
+  // ----------------------- 합계 계산 -----------------------
+  const totalPrevinv = tableRows.reduce(
+    (sum, row) => sum + (typeof row.prevInv === "number" ? row.prevInv : 0),
+    0
+  );
+  const totalWeek1 = tableRows.reduce(
+    (sum, row) => sum + Number(row.week1 || 0),
+    0
+  );
+  const totalWeek2 = tableRows.reduce(
+    (sum, row) => sum + Number(row.week2 || 0),
+    0
+  );
+  const totalWeek3 = tableRows.reduce(
+    (sum, row) => sum + Number(row.week3 || 0),
+    0
+  );
+  const totalWeek4 = tableRows.reduce(
+    (sum, row) => sum + Number(row.week4 || 0),
+    0
+  );
+  const totalWeek5 = tableRows.reduce(
+    (sum, row) => sum + Number(row.week5 || 0),
+    0
+  );
+  const totalMonthlyOutgoing = tableRows.reduce(
+    (sum, row) => sum + Number(row.monthlyOutgoing || 0),
+    0
+  );
+  const totalMonthlyAmount = tableRows.reduce(
+    (sum, row) => sum + Number(row.monthlyAmount || 0),
+    0
+  );
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
@@ -616,6 +657,47 @@ const WarehouseOutgoing = () => {
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr>
+            {/* No. 열: 빈셀 */}
+            <td className="wg-number-col"></td>
+            {/* 협력사, 품목명, 규격, 입고단가, 입고단위 단가 병합 */}
+            <td
+              className="wg-supplier-col"
+              colSpan="5"
+              style={{ textAlign: "center" }}
+            >
+              합계
+            </td>
+            {/* 전월재고 */}
+            <td className="wg-previnv-col">
+              {totalPrevinv ? formatNumber(totalPrevinv) : "-"}
+            </td>
+            {/* 1주차 ~ 5주차 출고 */}
+            <td className="wg-week-col">
+              {totalWeek1 ? formatNumber(totalWeek1) : "-"}
+            </td>
+            <td className="wg-week-col">
+              {totalWeek2 ? formatNumber(totalWeek2) : "-"}
+            </td>
+            <td className="wg-week-col">
+              {totalWeek3 ? formatNumber(totalWeek3) : "-"}
+            </td>
+            <td className="wg-week-col">
+              {totalWeek4 ? formatNumber(totalWeek4) : "-"}
+            </td>
+            <td className="wg-week-col">
+              {totalWeek5 ? formatNumber(totalWeek5) : "-"}
+            </td>
+            {/* 월 출고량, 월 출고금액 */}
+            <td className="wg-month-col">
+              {totalMonthlyOutgoing ? formatNumber(totalMonthlyOutgoing) : "-"}
+            </td>
+            <td className="wg-month-col">
+              {totalMonthlyAmount ? formatNumber(totalMonthlyAmount) : "-"}
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );

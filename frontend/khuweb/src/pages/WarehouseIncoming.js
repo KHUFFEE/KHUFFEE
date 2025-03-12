@@ -347,6 +347,48 @@ const WarehouseIncoming = () => {
     }
   };
 
+  // ----------------------- 합계 계산 -----------------------
+  const totalPrevInv = tableRows.reduce(
+    (sum, row) => sum + Number(row.prevInv || 0),
+    0
+  );
+  const totalWeek1 = tableRows.reduce(
+    (sum, row) => sum + Number(row.week1 || 0),
+    0
+  );
+  const totalWeek2 = tableRows.reduce(
+    (sum, row) => sum + Number(row.week2 || 0),
+    0
+  );
+  const totalWeek3 = tableRows.reduce(
+    (sum, row) => sum + Number(row.week3 || 0),
+    0
+  );
+  const totalWeek4 = tableRows.reduce(
+    (sum, row) => sum + Number(row.week4 || 0),
+    0
+  );
+  const totalWeek5 = tableRows.reduce(
+    (sum, row) => sum + Number(row.week5 || 0),
+    0
+  );
+  const totalMonthlyIncoming = tableRows.reduce(
+    (sum, row) => sum + Number(row.monthlyIncoming || 0),
+    0
+  );
+  const totalMonthlyAmount = tableRows.reduce(
+    (sum, row) => sum + Number(row.monthlyAmount || 0),
+    0
+  );
+  const totalOrderAmount = tableRows.reduce(
+    (sum, row) => sum + Number(row.orderAmount || 0),
+    0
+  );
+  const totalOrderMoney = tableRows.reduce(
+    (sum, row) => sum + calculateOrderMoney(row),
+    0
+  );
+
   if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
 
@@ -498,13 +540,7 @@ const WarehouseIncoming = () => {
               <br />
               입고금액
             </th>
-            <th
-              className={`wc-order-qty-col ${
-                Number((rowDiff) => rowDiff) /* placeholder */ // 아래에서 개별 row 처리
-              }`}
-            >
-              발주량
-            </th>
+            <th className="wc-order-qty-col">발주량</th>
             <th className="wc-order-amount-col">발주금액</th>
             <th className="wc-order-sum-ex-col">
               발주합계
@@ -698,11 +734,7 @@ const WarehouseIncoming = () => {
                     ? Number(row.monthlyAmount).toLocaleString()
                     : "-"}
                 </td>
-                <td
-                  className={`wc-order-qty-col ${
-                    hasNegativeDiff ? "negative-difference" : ""
-                  }`}
-                >
+                <td className="wc-order-qty-col">
                   {formatNumber(row.orderAmount)}
                 </td>
                 <td className="wc-order-amount-col">
@@ -732,6 +764,57 @@ const WarehouseIncoming = () => {
             );
           })}
         </tbody>
+        <tfoot>
+          <tr>
+            {/* No. 열: 빈셀 */}
+            <td className="wc-number-col"></td>
+            {/* 협력사, 품목명, 규격, 입고단가, 입고단위 단가 병합 (colSpan=5) */}
+            <td
+              className="wc-supplier-col"
+              colSpan="5"
+              style={{ textAlign: "center" }}
+            >
+              합계
+            </td>
+            {/* 전월재고: 빈셀 */}
+            <td className="wc-previnv-col">
+              {totalPrevInv ? formatNumber(totalPrevInv) : "-"}
+            </td>
+            {/* 1주차 ~ 5주차 입고 */}
+            <td className="wc-week-col">
+              {totalWeek1 ? formatNumber(totalWeek1) : "-"}
+            </td>
+            <td className="wc-week-col">
+              {totalWeek2 ? formatNumber(totalWeek2) : "-"}
+            </td>
+            <td className="wc-week-col">
+              {totalWeek3 ? formatNumber(totalWeek3) : "-"}
+            </td>
+            <td className="wc-week-col">
+              {totalWeek4 ? formatNumber(totalWeek4) : "-"}
+            </td>
+            <td className="wc-week-col">
+              {totalWeek5 ? formatNumber(totalWeek5) : "-"}
+            </td>
+            {/* 월 입고량, 월 입고금액 */}
+            <td className="wc-month-col">
+              {totalMonthlyIncoming ? formatNumber(totalMonthlyIncoming) : "-"}
+            </td>
+            <td className="wc-month-col">
+              {totalMonthlyAmount ? formatNumber(totalMonthlyAmount) : "-"}
+            </td>
+            {/* 발주량, 발주금액 */}
+            <td className="wc-order-qty-col">
+              {totalOrderAmount ? formatNumber(totalOrderAmount) : "-"}
+            </td>
+            <td className="wc-order-amount-col">
+              {totalOrderMoney ? formatNumber(totalOrderMoney) : "-"}
+            </td>
+            {/* 발주합계 부가세x, 발주합계 부가세o: 빈셀 */}
+            <td className="wc-order-sum-ex-col"></td>
+            <td className="wc-order-sum-inc-col"></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );

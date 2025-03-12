@@ -328,9 +328,41 @@ const WarehouseOrder = () => {
     const m1 = m;
     const m2 = m + 1 > 12 ? m + 1 - 12 : m + 1;
     const m3 = m + 2 > 12 ? m + 2 - 12 : m + 2;
-    prevYearHeaders = [`전년도 ${m1}월`, `전년도 ${m2}월`, `전년도 ${m3}월`];
+    prevYearHeaders = [
+      <>
+        전년도
+        <br />
+        {m1}월
+      </>,
+      <>
+        전년도
+        <br />
+        {m2}월
+      </>,
+      <>
+        전년도
+        <br />
+        {m3}월
+      </>,
+    ];
   } else {
-    prevYearHeaders = ["전년도 ?월", "전년도 ?월", "전년도 ?월"];
+    prevYearHeaders = [
+      <>
+        전년도
+        <br />
+        ?월
+      </>,
+      <>
+        전년도
+        <br />
+        ?월
+      </>,
+      <>
+        전년도
+        <br />
+        ?월
+      </>,
+    ];
   }
 
   if (loading) return <LoadingSpinner />;
@@ -420,53 +452,48 @@ const WarehouseOrder = () => {
             <th className="wo-item-col">품목명</th>
             <th className="wo-spec-col">규격</th>
             <th className="wo-price-col">입고단가</th>
-            <th className="wo-inunitprice-col">입고단위단가</th>
+            <th className="wo-inunitprice-col">
+              입고단위
+              <br />
+              단가
+            </th>
             <th className="wo-previnv-col">전월재고</th>
             <th className="wo-currinv-col">현재고</th>
-            <th className="wo-currentinv-money-col">현재고 금액</th>
+            <th className="wo-currentinv-money-col">
+              현재고
+              <br />
+              금액
+            </th>
             <th className="wo-sum-col">발주량</th>
             <th className="wo-ordermoney-col">발주금액</th>
             <th
               className="wo-total-excl-col"
               rowSpan={tableRows.length > 0 ? tableRows.length : 1}
             >
-              발주합계 부가세x
+              발주합계
+              <br />
+              부가세x
             </th>
             <th
               className="wo-total-incl-col"
               rowSpan={tableRows.length > 0 ? tableRows.length : 1}
             >
-              발주합계 부가세o
+              발주합계
+              <br />
+              부가세o
             </th>
-            <th
-              className="wo-prev-month1-col"
-              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-            >
-              {prevYearHeaders[0]}
+            <th className="wo-prev-month1-col">{prevYearHeaders[0]}</th>
+            <th className="wo-prev-month2-col">{prevYearHeaders[1]}</th>
+            <th className="wo-prev-month3-col">{prevYearHeaders[2]}</th>
+            <th className="wo-monthly-output-col">
+              월
+              <br />
+              출고량
             </th>
-            <th
-              className="wo-prev-month2-col"
-              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-            >
-              {prevYearHeaders[1]}
-            </th>
-            <th
-              className="wo-prev-month3-col"
-              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-            >
-              {prevYearHeaders[2]}
-            </th>
-            <th
-              className="wo-monthly-output-col"
-              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-            >
-              월 출고량
-            </th>
-            <th
-              className="wo-monthly-outputmoney-col"
-              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-            >
-              월 출고 금액
+            <th className="wo-monthly-outputmoney-col">
+              월
+              <br />
+              출고금액
             </th>
           </tr>
         </thead>
@@ -475,12 +502,14 @@ const WarehouseOrder = () => {
             <tr key={row.itemId}>
               <td className="wo-number-col">{index + 1}</td>
               <td className="wo-supplier-col">
-                <div className="supplier-cell">{row.supplierName}</div>
+                <div className="wo-supplier-cell">{row.supplierName}</div>
               </td>
               <td className="wo-item-col">
-                <div className="item-cell">{row.itemName}</div>
+                <div className="wo-item-cell">{row.itemName}</div>
               </td>
-              <td className="wo-spec-col">{row.규격 || "-"}</td>
+              <td className="wo-spec-col">
+                <div className="wo-spec-cell">{row.규격 || "-"}</div>
+              </td>
               <td className="wo-price-col">
                 {row.입고단가 ? formatNumber(row.입고단가) : "-"}
               </td>
@@ -516,38 +545,13 @@ const WarehouseOrder = () => {
                   >
                     {formatNumber(totalOrderMoneyWithTax)}
                   </td>
-                  <td
-                    className="wo-prev-month1-col"
-                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-                  >
-                    -
-                  </td>
-                  <td
-                    className="wo-prev-month2-col"
-                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-                  >
-                    -
-                  </td>
-                  <td
-                    className="wo-prev-month3-col"
-                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-                  >
-                    -
-                  </td>
-                  <td
-                    className="wo-monthly-output-col"
-                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-                  >
-                    -
-                  </td>
-                  <td
-                    className="wo-monthly-outputmoney-col"
-                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-                  >
-                    -
-                  </td>
                 </>
               )}
+              <td className="wo-prev-month1-col">-</td>
+              <td className="wo-prev-month2-col">-</td>
+              <td className="wo-prev-month3-col">-</td>
+              <td className="wo-monthly-output-col">-</td>
+              <td className="wo-monthly-outputmoney-col">-</td>
             </tr>
           ))}
         </tbody>

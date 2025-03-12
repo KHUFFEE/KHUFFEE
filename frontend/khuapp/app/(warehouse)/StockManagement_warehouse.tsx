@@ -143,14 +143,16 @@ const InventoryItemRow = forwardRef<
         testID="inventory_selectItemRowContainer"
         style={inventoryStyles.inventory_selectItemRowContainer}
       >
-        <Text testID="name_itemText" style={inventoryStyles.name_itemText}>
+        <Text
+          testID="name_itemText"
+          style={[inventoryStyles.name_itemText, { lineHeight: RFValue(17) }]}
+        >
           {item.품목명}
           {"\n"}
           <Text
             style={{
-              fontSize: RFValue(10),
-              color: "#2e7d32",
-              fontWeight: "500",
+              fontSize: RFValue(12),
+              color: "#3A9D23",
             }}
           >
             {inventoryType === "daily"
@@ -248,6 +250,8 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
   const [itemsData, setItemsData] = useState<APIProduct[]>([]);
   const [suppliersData, setSuppliersData] = useState<any[]>([]);
+  const [tableStatus, setTableStatus] = useState<number>(1);
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(false);
 
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorItems, setErrorItems] = useState<APIProduct[]>([]);
@@ -269,6 +273,29 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
     return `${year}.${month}.${day}`;
+  };
+
+  // 테이블 상태를 가져오는 함수 추가
+  const fetchTableStatus = async () => {
+    try {
+      const response = await fetch(
+        `${RN_API_URL}/api/management/table_status_list/`
+      );
+      if (!response.ok) throw new Error("테이블 상태를 불러오는 중 오류 발생");
+
+      const statusData = await response.json();
+      const warehouseInventoryStatus = statusData.find(
+        (item: any) => item.테이블 === "창고_재고"
+      );
+
+      if (warehouseInventoryStatus) {
+        setTableStatus(warehouseInventoryStatus.상태);
+      }
+    } catch (err: any) {
+      console.error("테이블 상태 조회 오류:", err.message);
+      // 오류 시 기본값 1로 설정 (기존 로직 사용)
+      setTableStatus(1);
+    }
   };
 
   // 월간 재고 저장 시 사용할 기간 문자열을 "년도.월.주" 형식으로 계산
@@ -365,77 +392,68 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     );
   };
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
+  // 통합된 데이터 로딩 함수
+  const loadAllData = async () => {
+    // 중복 호출 방지
+    if (isDataLoading) return;
 
-    const fetchItemsAndSuppliers = async () => {
-      try {
-        const itemsResponse = await fetch(
-          `${RN_API_URL}/api/suppliers/items/`,
-          { signal }
-        );
-        if (!itemsResponse.ok)
-          throw new Error("품목 데이터를 불러오는 중 오류 발생");
-        const itemsJson = await itemsResponse.json();
-        setItemsData(itemsJson);
+    setIsDataLoading(true);
+    setLoading(true);
 
-        const suppliersResponse = await fetch(`${RN_API_URL}/api/suppliers/`, {
-          signal,
-        });
-        if (!suppliersResponse.ok)
-          throw new Error("협력사 데이터를 불러오는 중 오류 발생");
-        const suppliersJson = await suppliersResponse.json();
-        setSuppliersData(suppliersJson);
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          setError(err.message);
-        }
-      }
-    };
+    try {
+      // 1. 품목 데이터와 협력사 데이터 로딩
+      const [itemsResponse, suppliersResponse] = await Promise.all([
+        fetch(`${RN_API_URL}/api/suppliers/items/`),
+        fetch(`${RN_API_URL}/api/suppliers/`),
+      ]);
 
-    fetchItemsAndSuppliers();
-    return () => {
-      controller.abort();
-    };
-  }, []);
+      if (!itemsResponse.ok)
+        throw new Error("품목 데이터를 불러오는 중 오류 발생");
+      if (!suppliersResponse.ok)
+        throw new Error("협력사 데이터를 불러오는 중 오류 발생");
 
-  useEffect(() => {
-    if (itemsData.length === 0 || suppliersData.length === 0) return;
-    const controller = new AbortController();
-    const signal = controller.signal;
+      const itemsJson = await itemsResponse.json();
+      const suppliersJson = await suppliersResponse.json();
 
-    const fetchInventoryData = async () => {
-      setLoading(true);
-      try {
-        const today = getCurrentDateString();
-        if (inventoryType === "monthly") {
-          // 월간 재고인 경우, API 호출 없이 itemsData 기반으로 모든 창고_입고량을 0으로 설정
-          const mergedData: InventoryItem[] = itemsData.map(
+      setItemsData(itemsJson);
+      setSuppliersData(suppliersJson);
+
+      // 2. 일별재고 경우에만 테이블 상태 및 재고 데이터 로딩
+      const today = getCurrentDateString();
+
+      if (inventoryType === "daily") {
+        // 테이블 상태 로딩
+        await fetchTableStatus();
+
+        // 테이블 상태에 따라 재고 데이터 처리
+        if (tableStatus === 0) {
+          // 상태가 0이면 모든 재고량을 0으로 설정
+          const mergedData: InventoryItem[] = itemsJson.map(
             (product: APIProduct) => ({
               ...product,
               매장_id: storeId,
-              기간: today, // fetch 시에는 기존과 동일하게 설정 (POST 시에 새 기간 사용)
-              창고_입고량: 0,
+              기간: today,
+              창고_재고량: 0,
             })
           );
           const sortedData = f.sortProductsBySupplierAndName(
             mergedData,
-            suppliersData
+            suppliersJson
           ) as InventoryItem[];
           setInventoryData(sortedData);
           setFilteredData(sortedData);
         } else {
-          // 일간 재고의 경우, API를 통해 데이터를 가져와 매칭
+          // 상태가 1이면 API를 통해 데이터 가져오기
           const invUrl = `${RN_API_URL}/api/inventory/warehouse/?매장_id=${storeId}&기간=${today}`;
-          const invResponse = await fetch(invUrl, { signal });
+          const invResponse = await fetch(invUrl);
+
           if (!invResponse.ok)
             throw new Error("재고 데이터를 불러오는 중 오류 발생");
+
           const invData = await invResponse.json();
-          const invArray = invData;
-          const mergedData: InventoryItem[] = itemsData.map(
+          const mergedData: InventoryItem[] = itemsJson.map(
             (product: APIProduct) => {
-              const matchingInv = invArray.find(
+              const matchingInv = invData.find(
                 (inv: any) => inv.품목_id === product.품목_id
               );
               return {
@@ -448,25 +466,41 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
           );
           const sortedData = f.sortProductsBySupplierAndName(
             mergedData,
-            suppliersData
+            suppliersJson
           ) as InventoryItem[];
           setInventoryData(sortedData);
           setFilteredData(sortedData);
         }
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          setError(err.message);
-        }
-      } finally {
-        setLoading(false);
+      } else {
+        // 월간 재고인 경우, 모든 창고_입고량을 0으로 설정
+        const mergedData: InventoryItem[] = itemsJson.map(
+          (product: APIProduct) => ({
+            ...product,
+            매장_id: storeId,
+            기간: today,
+            창고_입고량: 0,
+          })
+        );
+        const sortedData = f.sortProductsBySupplierAndName(
+          mergedData,
+          suppliersJson
+        ) as InventoryItem[];
+        setInventoryData(sortedData);
+        setFilteredData(sortedData);
       }
-    };
+    } catch (err: any) {
+      console.error("데이터 로딩 오류:", err.message);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+      setIsDataLoading(false);
+    }
+  };
 
-    fetchInventoryData();
-    return () => {
-      controller.abort();
-    };
-  }, [storeId, inventoryType, itemsData, suppliersData]);
+  // 초기 데이터 로딩과 inventoryType 변경 시 데이터 로딩
+  useEffect(() => {
+    loadAllData();
+  }, [inventoryType, storeId]);
 
   const sortedSuppliers = useMemo(() => {
     const suppliers = suppliersData.map((supplier) => supplier.협력사명 || "");
@@ -544,14 +578,14 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const showErrorModal = (items: APIProduct[]) => {
     setErrorItems(items);
 
-    const unitType = inventoryType === "daily" ? "출고개수" : "입고개수";
-    let modalText = `⚠️ 숫자가 맞지 않아요! ⚠️\n\n`;
-
-    modalText += `다음 상품들의 숫자를 확인해 주세요:\n\n`;
+    const unitType = inventoryType === "daily" ? "출고수량" : "입고수량";
+    const unitLabel = inventoryType === "daily" ? "출고단위" : "입고단위";
+    let modalText = `상품의 ${unitLabel}를 확인해 주세요\n`;
 
     items.forEach((item) => {
       const unitValue =
         inventoryType === "daily" ? item.출고단위 : item.입고단위;
+
       const stockValue =
         inventoryType === "daily"
           ? (
@@ -565,23 +599,25 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               ) as MergedMonthInventoryItem
             ).창고_입고량;
 
-      // 더 간단한 형식으로 표시
+      // 숫자에 마커(##) 추가하여 나중에 색상 처리가 가능하도록 함
       modalText += `🔹 ${item.품목명}\n`;
-      modalText += `   → 기준 개수: ${unitValue}개\n`;
-      modalText += `   → 현재 개수: ${stockValue}개\n\n`;
+      modalText += `   → 기준 ${unitLabel}: ##${unitValue}##개\n`;
+      modalText += `   → 현재 입력 수량: ##${stockValue}##개\n`;
     });
 
     if (items.length === 1) {
-      modalText += `이 상품은 ${unitType}에 맞지 않아요.\n`;
-      modalText += `${unitType}는 ${items[0].출고단위}개씩 맞춰야 해요.\n\n`;
+      const unitValue =
+        inventoryType === "daily" ? items[0].출고단위 : items[0].입고단위;
+      modalText += `${unitType}이 ${unitLabel}와 맞지 않습니다.\n`;
+      modalText += `${unitType}은 ##${unitValue}##개 단위로 맞춰야 합니다.\n`;
     } else {
-      modalText += `위 상품들은 ${unitType}에 맞지 않아요.\n`;
-      modalText += `각 상품의 기준 개수에 맞춰야 해요.\n\n`;
+      modalText += `⚠️ 위 상품들은 ${unitType}이 각 ${unitLabel}와 맞지 않습니다.\n`;
+      modalText += `각 상품의 기준 단위에 맞게 수량을 조정해 주세요.\n\n`;
     }
 
-    modalText += `그래도 저장할까요?\n`;
+    modalText += `💡 그래도 저장할까요?\n`;
     modalText += `• 예 = 이대로 저장하기\n`;
-    modalText += `• 아니요 = 돌아가서 고치기`;
+    modalText += `• 아니오 = 돌아가서 수정하기`;
 
     setErrorModalText(modalText);
     setErrorModalVisible(true);
@@ -679,13 +715,33 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     setSaving(true);
     try {
       if (inventoryType === "daily") {
-        // 0이 아닌 값만 필터링
-        const nonZeroItems = (itemsToSave as MergedInventoryItem[]).filter(
-          (item) => item.창고_재고량 !== 0
-        );
+        // 테이블 상태가 0이면 상태를 1로 업데이트
+        if (tableStatus === 0) {
+          const updateStatusPayload = {
+            테이블: "창고_재고",
+            상태: 1,
+          };
 
+          const statusResponse = await fetch(
+            `${RN_API_URL}/api/management/table_status_update/`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(updateStatusPayload),
+            }
+          );
+
+          if (!statusResponse.ok) {
+            throw new Error("테이블 상태 업데이트 실패");
+          }
+
+          // 로컬 상태 업데이트
+          setTableStatus(1);
+        }
+
+        // 모든 아이템에 대해 POST 요청 (0인 값도 포함)
         await Promise.all(
-          nonZeroItems.map((item) => {
+          (itemsToSave as MergedInventoryItem[]).map((item) => {
             const payload = {
               매장_id: storeId,
               품목_id: item.품목_id,
@@ -708,7 +764,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
         );
       } else {
         const period = getPeriodStringForMonthly();
-        // 0이 아닌 값만 필터링
+        // 0이 아닌 값만 필터링 (입고 재고는 요청대로 변경하지 않음)
         const nonZeroItems = (itemsToSave as MergedMonthInventoryItem[]).filter(
           (item) => item.창고_입고량 !== 0
         );
@@ -754,72 +810,19 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   };
 
   const handleToggle = (type: "daily" | "monthly") => {
+    // 이미 같은 타입이면 중복 처리하지 않음
+    if (inventoryType === type) return;
+
     setEditMode(false);
     setInventoryType(type);
+    // loadAllData()는 여기서 직접 호출하지 않음 - useEffect에서 처리됨
   };
 
-  // editMode 취소 처리 함수 추가
+  // editMode 취소 처리 함수 수정
   const handleCancelEdit = () => {
     setEditMode(false);
-    // 원래 데이터로 복원하기 위해 데이터를 다시 불러옴
-    if (itemsData.length > 0 && suppliersData.length > 0) {
-      const controller = new AbortController();
-      const today = getCurrentDateString();
-
-      if (inventoryType === "daily") {
-        // 일간 재고의 경우, API를 통해 데이터를 다시 가져옴
-        const invUrl = `${RN_API_URL}/api/inventory/warehouse/?매장_id=${storeId}&기간=${today}`;
-
-        fetch(invUrl)
-          .then((response) => {
-            if (!response.ok)
-              throw new Error("재고 데이터를 불러오는 중 오류 발생");
-            return response.json();
-          })
-          .then((invData) => {
-            const mergedData: InventoryItem[] = itemsData.map(
-              (product: APIProduct) => {
-                const matchingInv = invData.find(
-                  (inv: any) => inv.품목_id === product.품목_id
-                );
-                return {
-                  ...product,
-                  매장_id: storeId,
-                  기간: today,
-                  창고_재고량: matchingInv ? matchingInv.창고_재고량 : 0,
-                } as MergedInventoryItem;
-              }
-            );
-            const sortedData = f.sortProductsBySupplierAndName(
-              mergedData,
-              suppliersData
-            ) as InventoryItem[];
-            setInventoryData(sortedData);
-            setFilteredData(sortedData);
-          })
-          .catch((err) => {
-            if (err.name !== "AbortError") {
-              setError(err.message);
-            }
-          });
-      } else {
-        // 월간 재고인 경우, 모든 값 0으로 초기화
-        const mergedData: InventoryItem[] = itemsData.map(
-          (product: APIProduct) => ({
-            ...product,
-            매장_id: storeId,
-            기간: today,
-            창고_입고량: 0,
-          })
-        );
-        const sortedData = f.sortProductsBySupplierAndName(
-          mergedData,
-          suppliersData
-        ) as InventoryItem[];
-        setInventoryData(sortedData);
-        setFilteredData(sortedData);
-      }
-    }
+    // 데이터 다시 로딩
+    loadAllData();
   };
 
   if (loading) {
@@ -977,7 +980,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
           <View testID="searchContainer" style={searchStyles.searchContainer}>
             <Search
-              testID="searchIconInInput"
+              testID="searchIconSize"
               color="#0A2A5E"
               style={searchStyles.searchIconSize}
             />
@@ -1266,24 +1269,72 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
         visible={errorModalVisible}
         onRequestClose={() => setErrorModalVisible(false)}
       >
-        <View style={modalStyles.overlay}>
-          <View style={modalStyles.errorModalContainer}>
-            <Text style={modalStyles.errorTitle}>단위 오류</Text>
-            <ScrollView style={{ maxHeight: screenHeight * 0.4 }}>
-              <Text style={modalStyles.errorText}>{errorModalText}</Text>
+        <View testID="overlay" style={modalStyles.overlay}>
+          <View
+            testID="errorModalContainer"
+            style={modalStyles.errorModalContainer}
+          >
+            <Text testID="errorTitle" style={modalStyles.errorTitle}>
+              ⚠️ 단위 확인 필요 ⚠️
+            </Text>
+            <ScrollView
+              testID="errorText"
+              style={{
+                maxHeight: screenHeight * 0.4,
+                width: "100%",
+                // paddingHorizontal: moderateScale(10),
+              }}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* 텍스트 부분을 마커(##)로 분할하여 숫자 부분에 색상 적용 */}
+              <Text testID="errorText" style={modalStyles.errorText}>
+                {errorModalText.split(/##(.*?)##/).map((part, index) => {
+                  // 홀수 인덱스는 ## 사이의 내용(강조할 숫자)
+                  return index % 2 === 1 ? (
+                    <Text
+                      key={index}
+                      style={{
+                        color: "#e53e3e",
+                        fontWeight: "700",
+                        backgroundColor: "#fff5f5",
+                        paddingVertical: 1,
+                        paddingHorizontal: 6,
+                        borderRadius: 4,
+                        overflow: "hidden",
+                        borderWidth: 0.5,
+                        borderColor: "#fed7d7",
+                        marginHorizontal: 2,
+                      }}
+                    >
+                      {part}
+                    </Text>
+                  ) : (
+                    part
+                  );
+                })}
+              </Text>
             </ScrollView>
-            <View style={modalStyles.buttonContainer}>
+            <View testID="buttonContainer" style={modalStyles.buttonContainer}>
               <TouchableOpacity
+                testID="cancelButton"
                 style={modalStyles.cancelButton}
                 onPress={handleCancelError}
               >
-                <Text style={modalStyles.cancelButtonText}>아니요</Text>
+                <Text
+                  testID="cancelButtonText"
+                  style={modalStyles.cancelButtonText}
+                >
+                  아니오
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
+                testID="confirmButton"
                 style={modalStyles.confirmButton}
                 onPress={handleConfirmError}
               >
-                <Text style={modalStyles.buttonText}>예</Text>
+                <Text testID="buttonText" style={modalStyles.buttonText}>
+                  예
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

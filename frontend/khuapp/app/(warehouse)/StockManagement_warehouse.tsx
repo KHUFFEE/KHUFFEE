@@ -248,6 +248,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
   const [itemsData, setItemsData] = useState<APIProduct[]>([]);
   const [suppliersData, setSuppliersData] = useState<any[]>([]);
+  const [tableStatus, setTableStatus] = useState<number>(1);
 
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorItems, setErrorItems] = useState<APIProduct[]>([]);
@@ -269,6 +270,29 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
     return `${year}.${month}.${day}`;
+  };
+
+  // 테이블 상태를 가져오는 함수 추가
+  const fetchTableStatus = async () => {
+    try {
+      const response = await fetch(
+        `${RN_API_URL}/api/management/table_status_list/`
+      );
+      if (!response.ok) throw new Error("테이블 상태를 불러오는 중 오류 발생");
+
+      const statusData = await response.json();
+      const warehouseInventoryStatus = statusData.find(
+        (item: any) => item.테이블 === "창고_재고"
+      );
+
+      if (warehouseInventoryStatus) {
+        setTableStatus(warehouseInventoryStatus.상태);
+      }
+    } catch (err: any) {
+      console.error("테이블 상태 조회 오류:", err.message);
+      // 오류 시 기본값 1로 설정 (기존 로직 사용)
+      setTableStatus(1);
+    }
   };
 
   // 월간 재고 저장 시 사용할 기간 문자열을 "년도.월.주" 형식으로 계산
@@ -371,6 +395,11 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
     const fetchItemsAndSuppliers = async () => {
       try {
+        // 테이블 상태 가져오기 (일별 재고의 경우에만)
+        if (inventoryType === "daily") {
+          await fetchTableStatus();
+        }
+
         const itemsResponse = await fetch(
           `${RN_API_URL}/api/suppliers/items/`,
           { signal }
@@ -398,7 +427,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [inventoryType]);
 
   useEffect(() => {
     if (itemsData.length === 0 || suppliersData.length === 0) return;
@@ -426,32 +455,51 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
           setInventoryData(sortedData);
           setFilteredData(sortedData);
         } else {
-          // 일간 재고의 경우, API를 통해 데이터를 가져와 매칭
-          const invUrl = `${RN_API_URL}/api/inventory/warehouse/?매장_id=${storeId}&기간=${today}`;
-          const invResponse = await fetch(invUrl, { signal });
-          if (!invResponse.ok)
-            throw new Error("재고 데이터를 불러오는 중 오류 발생");
-          const invData = await invResponse.json();
-          const invArray = invData;
-          const mergedData: InventoryItem[] = itemsData.map(
-            (product: APIProduct) => {
-              const matchingInv = invArray.find(
-                (inv: any) => inv.품목_id === product.품목_id
-              );
-              return {
+          // 일간 재고의 경우, 테이블 상태에 따라 처리
+          if (tableStatus === 0) {
+            // 상태값이 0이면 itemsData에서 모든 재고량을 0으로 설정
+            const mergedData: InventoryItem[] = itemsData.map(
+              (product: APIProduct) => ({
                 ...product,
                 매장_id: storeId,
                 기간: today,
-                창고_재고량: matchingInv ? matchingInv.창고_재고량 : 0,
-              } as MergedInventoryItem;
-            }
-          );
-          const sortedData = f.sortProductsBySupplierAndName(
-            mergedData,
-            suppliersData
-          ) as InventoryItem[];
-          setInventoryData(sortedData);
-          setFilteredData(sortedData);
+                창고_재고량: 0,
+              })
+            );
+            const sortedData = f.sortProductsBySupplierAndName(
+              mergedData,
+              suppliersData
+            ) as InventoryItem[];
+            setInventoryData(sortedData);
+            setFilteredData(sortedData);
+          } else {
+            // 상태값이 1이면 기존 로직대로 API를 통해 데이터를 가져와 매칭
+            const invUrl = `${RN_API_URL}/api/inventory/warehouse/?매장_id=${storeId}&기간=${today}`;
+            const invResponse = await fetch(invUrl, { signal });
+            if (!invResponse.ok)
+              throw new Error("재고 데이터를 불러오는 중 오류 발생");
+            const invData = await invResponse.json();
+            const invArray = invData;
+            const mergedData: InventoryItem[] = itemsData.map(
+              (product: APIProduct) => {
+                const matchingInv = invArray.find(
+                  (inv: any) => inv.품목_id === product.품목_id
+                );
+                return {
+                  ...product,
+                  매장_id: storeId,
+                  기간: today,
+                  창고_재고량: matchingInv ? matchingInv.창고_재고량 : 0,
+                } as MergedInventoryItem;
+              }
+            );
+            const sortedData = f.sortProductsBySupplierAndName(
+              mergedData,
+              suppliersData
+            ) as InventoryItem[];
+            setInventoryData(sortedData);
+            setFilteredData(sortedData);
+          }
         }
       } catch (err: any) {
         if (err.name !== "AbortError") {
@@ -466,7 +514,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     return () => {
       controller.abort();
     };
-  }, [storeId, inventoryType, itemsData, suppliersData]);
+  }, [storeId, inventoryType, itemsData, suppliersData, tableStatus]);
 
   const sortedSuppliers = useMemo(() => {
     const suppliers = suppliersData.map((supplier) => supplier.협력사명 || "");
@@ -679,13 +727,33 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     setSaving(true);
     try {
       if (inventoryType === "daily") {
-        // 0이 아닌 값만 필터링
-        const nonZeroItems = (itemsToSave as MergedInventoryItem[]).filter(
-          (item) => item.창고_재고량 !== 0
-        );
+        // 테이블 상태가 0이면 상태를 1로 업데이트
+        if (tableStatus === 0) {
+          const updateStatusPayload = {
+            테이블: "창고_재고",
+            상태: 1,
+          };
 
+          const statusResponse = await fetch(
+            `${RN_API_URL}/api/management/table_status_update/`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(updateStatusPayload),
+            }
+          );
+
+          if (!statusResponse.ok) {
+            throw new Error("테이블 상태 업데이트 실패");
+          }
+
+          // 로컬 상태 업데이트
+          setTableStatus(1);
+        }
+
+        // 모든 아이템에 대해 POST 요청 (0인 값도 포함)
         await Promise.all(
-          nonZeroItems.map((item) => {
+          (itemsToSave as MergedInventoryItem[]).map((item) => {
             const payload = {
               매장_id: storeId,
               품목_id: item.품목_id,
@@ -708,7 +776,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
         );
       } else {
         const period = getPeriodStringForMonthly();
-        // 0이 아닌 값만 필터링
+        // 0이 아닌 값만 필터링 (입고 재고는 요청대로 변경하지 않음)
         const nonZeroItems = (itemsToSave as MergedMonthInventoryItem[]).filter(
           (item) => item.창고_입고량 !== 0
         );
@@ -977,7 +1045,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
           <View testID="searchContainer" style={searchStyles.searchContainer}>
             <Search
-              testID="searchIconInInput"
+              testID="searchIconSize"
               color="#0A2A5E"
               style={searchStyles.searchIconSize}
             />

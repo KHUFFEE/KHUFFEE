@@ -349,6 +349,51 @@ export const modalStyles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
   },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    width: "85%",
+    backgroundColor: "white",
+    borderRadius: moderateScale(15),
+    padding: moderateScale(25),
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalTitle: {
+    marginBottom: moderateScale(15),
+    textAlign: "center",
+    fontSize: RFValue(18),
+    fontWeight: "700",
+    color: "#0D326F",
+    borderBottomWidth: 2,
+    borderBottomColor: "#e2e8f0",
+    paddingBottom: moderateScale(8),
+    width: "100%",
+  },
+  closeButton: {
+    backgroundColor: "#0D326F",
+    borderRadius: moderateScale(10),
+    paddingVertical: moderateScale(10),
+    paddingHorizontal: moderateScale(30),
+    elevation: 2,
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: RFValue(14),
+  },
 });
 
 export const searchStyles = StyleSheet.create({

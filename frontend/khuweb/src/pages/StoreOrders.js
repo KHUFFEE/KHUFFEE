@@ -870,8 +870,8 @@ const StoreOrders = () => {
             </>
           ) : showDownloadOptions ? (
             <>
-              {orderTableStatus &&
-                (orderTableStatus.isOpen ? (
+              {orderTableStatus !== null &&
+                (orderTableStatus === 1 ? (
                   <button
                     className="status-close-button"
                     onClick={() => setCloseModalVisible(true)}
@@ -916,8 +916,8 @@ const StoreOrders = () => {
             </>
           ) : (
             <>
-              {orderTableStatus &&
-                (orderTableStatus.isOpen ? (
+              {orderTableStatus !== null &&
+                (orderTableStatus === 1 ? (
                   <button
                     className="status-close-button"
                     onClick={() => setCloseModalVisible(true)}

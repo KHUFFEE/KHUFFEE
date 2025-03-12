@@ -109,8 +109,9 @@ const InventoryItemRow = forwardRef<
           inventoryValue === 0 ? "0" : f.formatPrice(inventoryValue)
         );
       } else {
+        // 테이블 상태가 0일 때 항상 빈 문자열 대신 "0"을 표시하도록 수정
         setLocalInput(
-          inventoryValue === 0 ? "" : f.formatPrice(inventoryValue)
+          inventoryValue === 0 ? "0" : f.formatPrice(inventoryValue)
         );
       }
     }
@@ -206,7 +207,7 @@ const InventoryItemRow = forwardRef<
                     numericValue === 0
                       ? editMode
                         ? "0"
-                        : ""
+                        : "0" // 여기를 빈 문자열("") 대신 "0"으로 수정
                       : f.formatPrice(numericValue)
                   );
                 }}
@@ -226,7 +227,7 @@ const InventoryItemRow = forwardRef<
           </View>
         ) : (
           <Text testID="unit_itemText" style={inventoryStyles.unit_itemText}>
-            {f.formatPrice(inventoryValue)}
+            {inventoryValue === 0 ? "0" : f.formatPrice(inventoryValue)}
           </Text>
         )}
       </View>
@@ -424,11 +425,33 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
       const today = getCurrentDateString();
 
       if (inventoryType === "daily") {
-        // 테이블 상태 로딩
+        // 테이블 상태 로딩 - 비동기 처리 수정
         await fetchTableStatus();
 
+        // 여기서 최신 tableStatus 값을 직접 가져오기 위해 상태 변수를 직접 사용하지 않고
+        // 다시 테이블 상태를 확인
+        let currentTableStatus = tableStatus;
+
+        try {
+          const statusResponse = await fetch(
+            `${RN_API_URL}/api/management/table_status_list/`
+          );
+          if (statusResponse.ok) {
+            const statusData = await statusResponse.json();
+            const warehouseInventoryStatus = statusData.find(
+              (item: any) => item.테이블 === "창고_재고"
+            );
+
+            if (warehouseInventoryStatus) {
+              currentTableStatus = warehouseInventoryStatus.상태;
+            }
+          }
+        } catch (err) {
+          console.error("테이블 상태 재확인 오류:", err);
+        }
+
         // 테이블 상태에 따라 재고 데이터 처리
-        if (tableStatus === 0) {
+        if (currentTableStatus === 0) {
           // 상태가 0이면 모든 재고량을 0으로 설정
           const mergedData: InventoryItem[] = itemsJson.map(
             (product: APIProduct) => ({

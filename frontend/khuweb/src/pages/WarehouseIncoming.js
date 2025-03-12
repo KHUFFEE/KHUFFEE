@@ -6,6 +6,7 @@ import {
   fetchSuppliers,
   fetchWarehouseInventory,
   updateWarehouseIncoming,
+  fetchWarehouseOrders, // 추가: 발주량 조회를 위한 API 함수
 } from "../api/api";
 import "../styles/WarehouseIncoming.css";
 import "../styles/table.css";
@@ -17,6 +18,7 @@ const WarehouseIncoming = () => {
   const [items, setItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [prevInventory, setPrevInventory] = useState(null);
+  const [ordersGrouped, setOrdersGrouped] = useState({}); // 발주 데이터를 품목별로 그룹화한 결과
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -28,24 +30,22 @@ const WarehouseIncoming = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const selectRef = useRef(null);
 
-  // ----------------------- 수정(편집) 모드 상태 -----------------------
-  // 수정 대상은 1주차 ~ 5주차 입고량 열
+  // 수정(편집) 모드 상태 (입고 수정)
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedIncoming, setEditedIncoming] = useState({});
 
   // ----------------------- 데이터 조회 함수 -----------------------
-  // params.기간이 있으면 "YYYY.MM" 형식이며, 해당 월의 1~5주차 범위를 전달
+  // params.기간: "YYYY.MM" 형식이며, 해당 월의 1~5주차 범위를 조회
   const fetchData = async (params = { page: 1 }, manual = false) => {
     try {
       if (manual) setLoading(true);
       let queryParams = "";
       if (params.기간) {
-        // 선택된 월(YYYY.MM) 기준으로 1주차부터 5주차까지 범위 조회
+        // 창고 입고는 해당 월의 1주차부터 5주차까지 조회
         queryParams = `기간=${params.기간}.1~${params.기간}.5`;
       } else {
         queryParams = `page=${params.page || 1}`;
       }
-      // API 엔드포인트를 입고 관련 URL로 수정
       const url = `${process.env.REACT_APP_API_URL}/api/orders/warehouse_incoming_list/?${queryParams}`;
       const response = await fetch(url);
       if (!response.ok) {
@@ -61,7 +61,7 @@ const WarehouseIncoming = () => {
       setItems(itemsRes);
       setSuppliers(suppliersRes);
 
-      // 선택된 기간이 있으면, 전달의 마지막 일자를 기준으로 창고 재고 데이터를 조회
+      // 전월 재고 조회: 선택된 기간의 전달 마지막 일자를 기준으로 함
       if (params.기간) {
         const [year, month] = params.기간.split(".").map(Number);
         let prevYear, prevMonth;
@@ -72,7 +72,6 @@ const WarehouseIncoming = () => {
           prevYear = year;
           prevMonth = month - 1;
         }
-        // new Date(prevYear, prevMonth, 0) → 전달의 마지막 일자
         const lastDay = new Date(prevYear, prevMonth, 0).getDate();
         const prevDateStr = `${prevYear}.${String(prevMonth).padStart(2, "0")}.${String(lastDay).padStart(2, "0")}`;
         const invResponse = await fetchWarehouseInventory({
@@ -80,6 +79,23 @@ const WarehouseIncoming = () => {
         });
         setPrevInventory(invResponse);
       }
+
+      // ----------------------- 발주 데이터 조회 및 그룹화 -----------------------
+      // 월 기준으로 창고 발주 데이터를 가져오고, 여러 회차가 있으면 합산하여 품목별로 그룹화
+      if (params.기간) {
+        const ordersRes = await fetchWarehouseOrders({ 기간: params.기간 });
+        let groupedOrders = {};
+        if (ordersRes && ordersRes.orders) {
+          ordersRes.orders.forEach((order) => {
+            const itemId = order.품목_id;
+            groupedOrders[itemId] =
+              (groupedOrders[itemId] || 0) + Number(order.창고_발주량);
+          });
+        }
+        setOrdersGrouped(groupedOrders);
+      }
+      // --------------------------------------------------------------------
+
       if (manual) setLoading(false);
       return data;
     } catch (err) {
@@ -90,7 +106,7 @@ const WarehouseIncoming = () => {
     }
   };
 
-  // distinctPeriods 조회: 창고_입고의 기간 정보(YYYY.MM.N)에서 회차를 제외한 "YYYY.MM"만 추출하여 중복 제거
+  // distinctPeriods 조회: 창고 입고의 기간 정보(YYYY.MM.N)에서 회차를 제외한 "YYYY.MM"만 추출하여 중복 제거
   const handleReset = async (manual = false) => {
     try {
       if (manual) setLoading(true);
@@ -161,6 +177,13 @@ const WarehouseIncoming = () => {
     ? `${selectedPeriod.split(".")[0]}년 ${selectedPeriod.split(".")[1]}월`
     : "기간 선택";
 
+  // ----------------------- 헬퍼 함수 -----------------------
+  const formatNumber = (num) => {
+    if (num === "" || num === undefined || num === null || Number(num) === 0)
+      return "-";
+    return Number(num).toLocaleString();
+  };
+
   // ----------------------- 테이블 데이터 구성 -----------------------
   // 창고 입고 데이터(incomingData.orders)를 품목별로 그룹화하여 각 주차(1~5주차) 입고량 집계
   let tableRows = [];
@@ -169,7 +192,7 @@ const WarehouseIncoming = () => {
     incomingData.orders.forEach((record) => {
       const itemId = record.품목_id;
       const parts = record.기간.split(".");
-      // parts[2] represents the week number
+      // parts[2] represents the 주차 (1~5)
       const week = parts.length === 3 ? parts[2] : "0";
       if (!grouped[itemId]) {
         grouped[itemId] = { week1: 0, week2: 0, week3: 0, week4: 0, week5: 0 };
@@ -194,16 +217,17 @@ const WarehouseIncoming = () => {
       const unitPrice =
         matchedItem && matchedItem.입고단가 ? Number(matchedItem.입고단가) : 0;
       const monthlyAmount = monthlyIncoming * unitPrice;
-      // 전월 재고: prevInventory는 배열 형태이므로, 직접 find
+      // 전월 재고: prevInventory가 배열 형태이면 해당 품목의 창고 재고량 조회
       const prevInvValue = Array.isArray(prevInventory)
         ? (prevInventory.find((r) => r.품목_id === itemId)?.창고_재고량 ?? "-")
         : "-";
-
+      // fetchWarehouseOrders로 그룹화한 발주량 적용 (여러 회차의 발주량 합산)
+      const orderAmount = ordersGrouped[itemId] || 0;
       return {
         itemId,
         supplierName: supplier.협력사명 || "N/A",
         itemName,
-        종류: matchedItem ? matchedItem.종류 : "", // 종류 필드 추가
+        종류: matchedItem ? matchedItem.종류 : "",
         규격: matchedItem ? matchedItem.규격 : "",
         입고단가: matchedItem ? matchedItem.입고단가 : "",
         입고단위:
@@ -219,9 +243,10 @@ const WarehouseIncoming = () => {
         week5,
         monthlyIncoming,
         monthlyAmount,
+        orderAmount,
       };
     });
-    // 협력사명, 종류, 품목명 기준 오름차순 정렬
+    // 협력사명, 종류, 품목명을 기준으로 오름차순 정렬
     tableRows.sort((a, b) => {
       const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
       if (cmpSupplier !== 0) return cmpSupplier;
@@ -231,13 +256,20 @@ const WarehouseIncoming = () => {
     });
   }
 
-  // ----------------------- 헬퍼 함수 -----------------------
-  const formatInputValue = (value) => {
-    if (value === "" || value === undefined || value === null) return "";
-    const num = Number(value);
-    if (!isNaN(num)) return num.toLocaleString();
-    return value;
+  // 발주금액: 각 행에서 (발주량 x 입고단가)
+  const calculateOrderMoney = (row) => {
+    const orderAmount = Number(row.orderAmount);
+    const price = Number(row.입고단가) || 0;
+    return orderAmount * price;
   };
+
+  // 발주합계(부가세 별도): 모든 행의 발주금액 합계
+  const totalOrderMoney = tableRows.reduce(
+    (sum, row) => sum + calculateOrderMoney(row),
+    0
+  );
+  // 발주합계(부가세 포함): 부가세 별도 합계 x 1.1
+  const totalOrderMoneyWithTax = totalOrderMoney * 1.1;
 
   // ----------------------- 수정 모드 핸들러 -----------------------
   const handleEditToggle = () => {
@@ -273,9 +305,9 @@ const WarehouseIncoming = () => {
   const handleEditSubmit = async () => {
     try {
       const updates = [];
-      // 기본 매장 ID로 가정 (예: "ST_102")
+      // 기본 매장 ID (예: "ST_102")
       const defaultStoreId = "ST_102";
-      const currentPeriod = selectedPeriod; // "YYYY.MM" format; 각 주차는 뒤에 붙임.
+      const currentPeriod = selectedPeriod; // "YYYY.MM" 형식; 주차는 뒤에 붙임
       tableRows.forEach((row) => {
         const edited = editedIncoming[row.itemId];
         if (!edited) return;
@@ -315,7 +347,7 @@ const WarehouseIncoming = () => {
       <h2 className="title">창고 입고 관리</h2>
       <div className="period-controls">
         <div className="period-search">
-          {/* 기간 선택 드롭다운 (년/월) – 수정 모드일 때는 흐릿하게 표시 및 클릭 불가 */}
+          {/* 기간 선택 드롭다운 (년/월) – 수정 모드일 때는 클릭 불가 */}
           <div
             className="period-select-box"
             onClick={() => {
@@ -368,7 +400,6 @@ const WarehouseIncoming = () => {
               </svg>
             </span>
           </div>
-          {/* 최신 조회 버튼 – 수정 모드일 때는 disabled 및 흐릿하게 표시 */}
           <button
             className="reset-button"
             onClick={() => handleReset(true)}
@@ -379,7 +410,7 @@ const WarehouseIncoming = () => {
           </button>
         </div>
         <div className="warehouse-action-buttons">
-          {/* 수정 모드일 때는 다운로드 버튼을 숨김 */}
+          {/* 수정 모드일 때는 Excel 다운로드 버튼 숨김 */}
           {!isEditMode && (
             <button
               className="download-button"
@@ -461,12 +492,18 @@ const WarehouseIncoming = () => {
             </th>
             <th className="wc-order-qty-col">발주량</th>
             <th className="wc-order-amount-col">발주금액</th>
-            <th className="wc-order-sum-ex-col">
+            <th
+              className="wc-order-sum-ex-col"
+              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
+            >
               발주합계
               <br />
               부가세x
             </th>
-            <th className="wc-order-sum-inc-col">
+            <th
+              className="wc-order-sum-inc-col"
+              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
+            >
               발주합계
               <br />
               부가세o
@@ -510,7 +547,7 @@ const WarehouseIncoming = () => {
                     value={
                       editedIncoming[row.itemId] &&
                       editedIncoming[row.itemId].week1 !== undefined
-                        ? formatInputValue(editedIncoming[row.itemId].week1)
+                        ? formatNumber(editedIncoming[row.itemId].week1)
                         : ""
                     }
                     onChange={(e) =>
@@ -533,7 +570,7 @@ const WarehouseIncoming = () => {
                     value={
                       editedIncoming[row.itemId] &&
                       editedIncoming[row.itemId].week2 !== undefined
-                        ? formatInputValue(editedIncoming[row.itemId].week2)
+                        ? formatNumber(editedIncoming[row.itemId].week2)
                         : ""
                     }
                     onChange={(e) =>
@@ -556,7 +593,7 @@ const WarehouseIncoming = () => {
                     value={
                       editedIncoming[row.itemId] &&
                       editedIncoming[row.itemId].week3 !== undefined
-                        ? formatInputValue(editedIncoming[row.itemId].week3)
+                        ? formatNumber(editedIncoming[row.itemId].week3)
                         : ""
                     }
                     onChange={(e) =>
@@ -579,7 +616,7 @@ const WarehouseIncoming = () => {
                     value={
                       editedIncoming[row.itemId] &&
                       editedIncoming[row.itemId].week4 !== undefined
-                        ? formatInputValue(editedIncoming[row.itemId].week4)
+                        ? formatNumber(editedIncoming[row.itemId].week4)
                         : ""
                     }
                     onChange={(e) =>
@@ -602,7 +639,7 @@ const WarehouseIncoming = () => {
                     value={
                       editedIncoming[row.itemId] &&
                       editedIncoming[row.itemId].week5 !== undefined
-                        ? formatInputValue(editedIncoming[row.itemId].week5)
+                        ? formatNumber(editedIncoming[row.itemId].week5)
                         : ""
                     }
                     onChange={(e) =>
@@ -626,10 +663,28 @@ const WarehouseIncoming = () => {
                   ? Number(row.monthlyAmount).toLocaleString()
                   : "-"}
               </td>
-              <td className="wc-order-qty-col">-</td>
-              <td className="wc-order-amount-col">-</td>
-              <td className="wc-order-sum-ex-col">-</td>
-              <td className="wc-order-sum-inc-col">-</td>
+              <td className="wc-order-qty-col">
+                {formatNumber(row.orderAmount)}
+              </td>
+              <td className="wc-order-amount-col">
+                {formatNumber(calculateOrderMoney(row))}
+              </td>
+              {index === 0 && (
+                <>
+                  <td
+                    className="wc-order-sum-ex-col"
+                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
+                  >
+                    {formatNumber(totalOrderMoney)}
+                  </td>
+                  <td
+                    className="wc-order-sum-inc-col"
+                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
+                  >
+                    {formatNumber(totalOrderMoneyWithTax)}
+                  </td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>

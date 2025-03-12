@@ -102,3 +102,54 @@
 .big-table td.wc-week-col:nth-of-type(12) {
   border-right: 2px solid #8b000062;
 }
+
+/* 발주량 - 입고 */
+.wc-order-qty-col.negative-difference {
+  background-color: rgba(139, 0, 0, 0.215);
+  transition: background-color 0.3s ease;
+}
+
+.wc-month-col.negative-difference {
+  background-color: rgba(139, 0, 0, 0.215);
+  transition: background-color 0.3s ease;
+}
+
+/* ───────────────────────────────────────────── */
+/* 발주합계 열(부가세 별도/포함) 세로 병합 스타일 */
+/* ───────────────────────────────────────────── */
+.big-table {
+  border-collapse: separate;
+}
+
+/* 세로 병합된 셀 기본 스타일 */
+.big-table td.wc-order-sum-ex-col,
+.big-table td.wc-order-sum-inc-col {
+  vertical-align: middle !important;
+  text-align: right !important;
+  padding: 12px !important;
+  background-color: #fff !important;
+  position: relative;
+  border: 1px solid #ddd;
+  box-shadow: none !important;
+  outline: none;
+}
+
+/* 세로 병합된 셀 hover 효과 제거 */
+.big-table td.wc-order-sum-ex-col:hover,
+.big-table td.wc-order-sum-inc-col:hover {
+  background-color: #fff !important;
+  color: inherit !important;
+  cursor: default !important;
+}
+
+/* 짝수 행 배경색 무시 */
+.big-table tbody tr:nth-child(even) td.wc-order-sum-ex-col,
+.big-table tbody tr:nth-child(even) td.wc-order-sum-inc-col {
+  background-color: #fff !important;
+}
+
+/* 행 hover 효과 무시 */
+.big-table tbody tr:hover td.wc-order-sum-ex-col,
+.big-table tbody tr:hover td.wc-order-sum-inc-col {
+  transform: none !important;
+}

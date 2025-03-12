@@ -117,9 +117,6 @@
 /* ───────────────────────────────────────────── */
 /* 발주합계 열(부가세 별도/포함) 세로 병합 스타일 */
 /* ───────────────────────────────────────────── */
-.big-table {
-  border-collapse: separate;
-}
 
 /* 세로 병합된 셀 기본 스타일 */
 .big-table td.wc-order-sum-ex-col,
@@ -132,24 +129,4 @@
   border: 1px solid #ddd;
   box-shadow: none !important;
   outline: none;
-}
-
-/* 세로 병합된 셀 hover 효과 제거 */
-.big-table td.wc-order-sum-ex-col:hover,
-.big-table td.wc-order-sum-inc-col:hover {
-  background-color: #fff !important;
-  color: inherit !important;
-  cursor: default !important;
-}
-
-/* 짝수 행 배경색 무시 */
-.big-table tbody tr:nth-child(even) td.wc-order-sum-ex-col,
-.big-table tbody tr:nth-child(even) td.wc-order-sum-inc-col {
-  background-color: #fff !important;
-}
-
-/* 행 hover 효과 무시 */
-.big-table tbody tr:hover td.wc-order-sum-ex-col,
-.big-table tbody tr:hover td.wc-order-sum-inc-col {
-  transform: none !important;
 }

@@ -148,9 +148,8 @@ const InventoryItemRow = forwardRef<
           {"\n"}
           <Text
             style={{
-              fontSize: RFValue(10),
-              color: "#2e7d32",
-              fontWeight: "500",
+              fontSize: RFValue(12),
+              color: "#3A9D23",
             }}
           >
             {inventoryType === "daily"

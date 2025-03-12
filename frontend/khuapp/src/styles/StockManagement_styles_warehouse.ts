@@ -759,8 +759,9 @@ export const OrderRequeststyle = StyleSheet.create({
   categorySection: {
     ...commonTextStyle,
     backgroundColor: "#ffffff",
-    paddingVertical: moderateScale(15),
-    marginBottom: moderateScale(15),
+    paddingVertical: moderateScale(5),
+    marginBottom: moderateScale(0),
+    marginTop: moderateScale(5),
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#e2e8f0",

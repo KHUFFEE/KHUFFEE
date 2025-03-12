@@ -734,7 +734,9 @@ const WarehouseIncoming = () => {
                     ? Number(row.monthlyAmount).toLocaleString()
                     : "-"}
                 </td>
-                <td className="wc-order-qty-col">
+                <td
+                  className={`wc-order-qty-col ${hasNegativeDiff ? "negative-difference" : ""}`}
+                >
                   {formatNumber(row.orderAmount)}
                 </td>
                 <td className="wc-order-amount-col">

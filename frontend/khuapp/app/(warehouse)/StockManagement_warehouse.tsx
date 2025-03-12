@@ -109,8 +109,9 @@ const InventoryItemRow = forwardRef<
           inventoryValue === 0 ? "0" : f.formatPrice(inventoryValue)
         );
       } else {
+        // 테이블 상태가 0일 때 항상 빈 문자열 대신 "0"을 표시하도록 수정
         setLocalInput(
-          inventoryValue === 0 ? "" : f.formatPrice(inventoryValue)
+          inventoryValue === 0 ? "0" : f.formatPrice(inventoryValue)
         );
       }
     }
@@ -206,7 +207,7 @@ const InventoryItemRow = forwardRef<
                     numericValue === 0
                       ? editMode
                         ? "0"
-                        : ""
+                        : "0" // 여기를 빈 문자열("") 대신 "0"으로 수정
                       : f.formatPrice(numericValue)
                   );
                 }}
@@ -226,7 +227,7 @@ const InventoryItemRow = forwardRef<
           </View>
         ) : (
           <Text testID="unit_itemText" style={inventoryStyles.unit_itemText}>
-            {f.formatPrice(inventoryValue)}
+            {inventoryValue === 0 ? "0" : f.formatPrice(inventoryValue)}
           </Text>
         )}
       </View>
@@ -261,6 +262,8 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   >(null);
   const [isConfirmation, setIsConfirmation] = useState(false);
   const [itemsToSave, setItemsToSave] = useState<InventoryItem[]>([]);
+  const [saveCompleteModalVisible, setSaveCompleteModalVisible] =
+    useState<boolean>(false);
 
   const rowRefs = useRef<{
     [key: string]: React.RefObject<{ commit: () => void }>;
@@ -290,11 +293,14 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
       if (warehouseInventoryStatus) {
         setTableStatus(warehouseInventoryStatus.상태);
+        return warehouseInventoryStatus.상태; // 상태값 반환
       }
+      return 1; // 기본값 반환
     } catch (err: any) {
       console.error("테이블 상태 조회 오류:", err.message);
       // 오류 시 기본값 1로 설정 (기존 로직 사용)
       setTableStatus(1);
+      return 1; // 오류 시 기본값 반환
     }
   };
 
@@ -422,11 +428,11 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
       const today = getCurrentDateString();
 
       if (inventoryType === "daily") {
-        // 테이블 상태 로딩
-        await fetchTableStatus();
+        // 테이블 상태 로딩 - API 요청은 한 번만 수행
+        const currentTableStatus = await fetchTableStatus();
 
         // 테이블 상태에 따라 재고 데이터 처리
-        if (tableStatus === 0) {
+        if (currentTableStatus === 0) {
           // 상태가 0이면 모든 재고량을 0으로 설정
           const mergedData: InventoryItem[] = itemsJson.map(
             (product: APIProduct) => ({
@@ -794,14 +800,19 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
       }
       setEditMode(false);
       setIsConfirmation(false);
-      // 성공 메시지 출력 또는 다른 처리를 할 수 있음
-      Alert.alert("성공", "재고 정보가 저장되었습니다.");
+      // Alert.alert 대신 저장 완료 모달 표시
+      setSaveCompleteModalVisible(true);
     } catch (err: any) {
       setError(err.message);
       Alert.alert("오류", `저장 중 오류가 발생했습니다: ${err.message}`);
     } finally {
       setSaving(false);
     }
+  };
+
+  // 저장 완료 모달 닫기 함수
+  const handleCloseCompleteModal = () => {
+    setSaveCompleteModalVisible(false);
   };
 
   // 뒤로 가기 처리 함수
@@ -1188,46 +1199,54 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                 ? "일별 재고 최종 확인"
                 : "입고 재고 최종 확인"}
             </Text>
-            {sortByCategory(itemsToSave).map((item) => {
-              const stockValue =
-                inventoryType === "daily"
-                  ? (item as MergedInventoryItem).창고_재고량
-                  : (item as MergedMonthInventoryItem).창고_입고량;
+            {
+              // 입고재고의 경우 창고_입고량이 0인 상품은 필터링하여 표시하지 않음
+              (inventoryType === "daily"
+                ? sortByCategory(itemsToSave)
+                : sortByCategory(itemsToSave).filter(
+                    (item) => (item as MergedMonthInventoryItem).창고_입고량 > 0
+                  )
+              ).map((item) => {
+                const stockValue =
+                  inventoryType === "daily"
+                    ? (item as MergedInventoryItem).창고_재고량
+                    : (item as MergedMonthInventoryItem).창고_입고량;
 
-              return (
-                <View
-                  testID="confirmationItemRow"
-                  key={item.품목_id}
-                  style={[
-                    confirmationStyles.confirmationItemRow,
-                    {
-                      flexDirection: "row",
-                      alignItems: "center",
-                      paddingVertical: moderateScale(5),
-                    },
-                  ]}
-                >
-                  <Text
-                    testID="confirm_selectItemName"
+                return (
+                  <View
+                    testID="confirmationItemRow"
+                    key={item.품목_id}
                     style={[
-                      confirmationStyles.confirm_selectItemName,
-                      { flex: 2 },
+                      confirmationStyles.confirmationItemRow,
+                      {
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingVertical: moderateScale(5),
+                      },
                     ]}
                   >
-                    {item.품목명}
-                  </Text>
-                  <Text
-                    testID="confirm_unitText"
-                    style={[
-                      confirmationStyles.confirm_unitText,
-                      { flex: 1, textAlign: "center" },
-                    ]}
-                  >
-                    {f.formatPrice(stockValue)}개
-                  </Text>
-                </View>
-              );
-            })}
+                    <Text
+                      testID="confirm_selectItemName"
+                      style={[
+                        confirmationStyles.confirm_selectItemName,
+                        { flex: 2 },
+                      ]}
+                    >
+                      {item.품목명}
+                    </Text>
+                    <Text
+                      testID="confirm_unitText"
+                      style={[
+                        confirmationStyles.confirm_unitText,
+                        { flex: 1, textAlign: "center" },
+                      ]}
+                    >
+                      {f.formatPrice(stockValue)}개
+                    </Text>
+                  </View>
+                );
+              })
+            }
 
             <TouchableOpacity
               testID="saveButton"
@@ -1282,7 +1301,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               style={{
                 maxHeight: screenHeight * 0.4,
                 width: "100%",
-                // paddingHorizontal: moderateScale(10),
+                paddingHorizontal: moderateScale(10),
               }}
               showsVerticalScrollIndicator={false}
             >
@@ -1337,6 +1356,46 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 저장 완료 모달 추가 */}
+      <Modal
+        testID="saveCompleteModal"
+        visible={saveCompleteModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseCompleteModal}
+      >
+        <View testID="modalCenteredView_2" style={modalStyles.centeredView}>
+          <View testID="modalView_2" style={modalStyles.modalView}>
+            <Text testID="modalTitle_2" style={modalStyles.modalTitle}>
+              저장 완료
+            </Text>
+            <Text
+              testID="modalText_Complete"
+              style={[
+                modalStyles.modalText,
+                { marginBottom: moderateScale(-3) },
+              ]}
+            >
+              {inventoryType === "daily"
+                ? "일별재고가 성공적으로\n저장되었습니다."
+                : "입고재고가 성공적으로\n저장되었습니다."}
+            </Text>
+            <TouchableOpacity
+              testID="closeButton_Complete"
+              style={[
+                modalStyles.closeButton,
+                { marginTop: moderateScale(10) },
+              ]}
+              onPress={handleCloseCompleteModal}
+            >
+              <Text testID="textStyle_Complete" style={modalStyles.textStyle}>
+                확인
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

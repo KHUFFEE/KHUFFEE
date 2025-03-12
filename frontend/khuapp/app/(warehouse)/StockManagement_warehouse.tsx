@@ -308,7 +308,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const getPeriodStringForMonthly = (): string => {
     const today = new Date();
     const year = today.getFullYear();
-    const month = today.getMonth() + 1; // 앞에 0 없이
+    const month = String(today.getMonth() + 1).padStart(2, "0"); // 월을 두 자리로 표현 (예: 3 -> 03)
     // 해당 월의 첫 번째 월요일 찾기
     let firstMonday = new Date(year, today.getMonth(), 1);
     while (firstMonday.getDay() !== 1) {

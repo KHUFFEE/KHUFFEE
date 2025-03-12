@@ -261,6 +261,8 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   >(null);
   const [isConfirmation, setIsConfirmation] = useState(false);
   const [itemsToSave, setItemsToSave] = useState<InventoryItem[]>([]);
+  const [saveCompleteModalVisible, setSaveCompleteModalVisible] =
+    useState<boolean>(false);
 
   const rowRefs = useRef<{
     [key: string]: React.RefObject<{ commit: () => void }>;
@@ -794,14 +796,19 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
       }
       setEditMode(false);
       setIsConfirmation(false);
-      // 성공 메시지 출력 또는 다른 처리를 할 수 있음
-      Alert.alert("성공", "재고 정보가 저장되었습니다.");
+      // Alert.alert 대신 저장 완료 모달 표시
+      setSaveCompleteModalVisible(true);
     } catch (err: any) {
       setError(err.message);
       Alert.alert("오류", `저장 중 오류가 발생했습니다: ${err.message}`);
     } finally {
       setSaving(false);
     }
+  };
+
+  // 저장 완료 모달 닫기 함수
+  const handleCloseCompleteModal = () => {
+    setSaveCompleteModalVisible(false);
   };
 
   // 뒤로 가기 처리 함수
@@ -1282,7 +1289,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               style={{
                 maxHeight: screenHeight * 0.4,
                 width: "100%",
-                // paddingHorizontal: moderateScale(10),
+                paddingHorizontal: moderateScale(10),
               }}
               showsVerticalScrollIndicator={false}
             >
@@ -1337,6 +1344,46 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 저장 완료 모달 추가 */}
+      <Modal
+        testID="saveCompleteModal"
+        visible={saveCompleteModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseCompleteModal}
+      >
+        <View testID="modalCenteredView_2" style={modalStyles.centeredView}>
+          <View testID="modalView_2" style={modalStyles.modalView}>
+            <Text testID="modalTitle_2" style={modalStyles.modalTitle}>
+              저장 완료
+            </Text>
+            <Text
+              testID="modalText_Complete"
+              style={[
+                modalStyles.modalText,
+                { marginBottom: moderateScale(-3) },
+              ]}
+            >
+              {inventoryType === "daily"
+                ? "일별재고가 성공적으로\n저장되었습니다."
+                : "입고재고가 성공적으로\n저장되었습니다."}
+            </Text>
+            <TouchableOpacity
+              testID="closeButton_Complete"
+              style={[
+                modalStyles.closeButton,
+                { marginTop: moderateScale(10) },
+              ]}
+              onPress={handleCloseCompleteModal}
+            >
+              <Text testID="textStyle_Complete" style={modalStyles.textStyle}>
+                확인
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

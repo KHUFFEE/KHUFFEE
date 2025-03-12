@@ -25,7 +25,7 @@
 }
 
 .wc-item-col {
-  max-width: 200px;
+  width: 200px;
   text-align: left;
 }
 
@@ -121,6 +121,7 @@
 /* 세로 병합된 셀 기본 스타일 */
 .big-table td.wc-order-sum-ex-col,
 .big-table td.wc-order-sum-inc-col {
+  z-index: 1;
   vertical-align: middle !important;
   text-align: right !important;
   padding: 12px !important;

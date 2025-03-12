@@ -249,6 +249,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const [itemsData, setItemsData] = useState<APIProduct[]>([]);
   const [suppliersData, setSuppliersData] = useState<any[]>([]);
   const [tableStatus, setTableStatus] = useState<number>(1);
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(false);
 
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorItems, setErrorItems] = useState<APIProduct[]>([]);
@@ -389,132 +390,115 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     );
   };
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
+  // 통합된 데이터 로딩 함수
+  const loadAllData = async () => {
+    // 중복 호출 방지
+    if (isDataLoading) return;
 
-    const fetchItemsAndSuppliers = async () => {
-      try {
-        // 테이블 상태 가져오기 (일별 재고의 경우에만)
-        if (inventoryType === "daily") {
-          await fetchTableStatus();
-        }
+    setIsDataLoading(true);
+    setLoading(true);
 
-        const itemsResponse = await fetch(
-          `${RN_API_URL}/api/suppliers/items/`,
-          { signal }
-        );
-        if (!itemsResponse.ok)
-          throw new Error("품목 데이터를 불러오는 중 오류 발생");
-        const itemsJson = await itemsResponse.json();
-        setItemsData(itemsJson);
+    try {
+      // 1. 품목 데이터와 협력사 데이터 로딩
+      const [itemsResponse, suppliersResponse] = await Promise.all([
+        fetch(`${RN_API_URL}/api/suppliers/items/`),
+        fetch(`${RN_API_URL}/api/suppliers/`),
+      ]);
 
-        const suppliersResponse = await fetch(`${RN_API_URL}/api/suppliers/`, {
-          signal,
-        });
-        if (!suppliersResponse.ok)
-          throw new Error("협력사 데이터를 불러오는 중 오류 발생");
-        const suppliersJson = await suppliersResponse.json();
-        setSuppliersData(suppliersJson);
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          setError(err.message);
-        }
-      }
-    };
+      if (!itemsResponse.ok)
+        throw new Error("품목 데이터를 불러오는 중 오류 발생");
+      if (!suppliersResponse.ok)
+        throw new Error("협력사 데이터를 불러오는 중 오류 발생");
 
-    fetchItemsAndSuppliers();
-    return () => {
-      controller.abort();
-    };
-  }, [inventoryType]);
+      const itemsJson = await itemsResponse.json();
+      const suppliersJson = await suppliersResponse.json();
 
-  useEffect(() => {
-    if (itemsData.length === 0 || suppliersData.length === 0) return;
-    const controller = new AbortController();
-    const signal = controller.signal;
+      setItemsData(itemsJson);
+      setSuppliersData(suppliersJson);
 
-    const fetchInventoryData = async () => {
-      setLoading(true);
-      try {
-        const today = getCurrentDateString();
-        if (inventoryType === "monthly") {
-          // 월간 재고인 경우, API 호출 없이 itemsData 기반으로 모든 창고_입고량을 0으로 설정
-          const mergedData: InventoryItem[] = itemsData.map(
+      // 2. 일별재고 경우에만 테이블 상태 및 재고 데이터 로딩
+      const today = getCurrentDateString();
+
+      if (inventoryType === "daily") {
+        // 테이블 상태 로딩
+        await fetchTableStatus();
+
+        // 테이블 상태에 따라 재고 데이터 처리
+        if (tableStatus === 0) {
+          // 상태가 0이면 모든 재고량을 0으로 설정
+          const mergedData: InventoryItem[] = itemsJson.map(
             (product: APIProduct) => ({
               ...product,
               매장_id: storeId,
-              기간: today, // fetch 시에는 기존과 동일하게 설정 (POST 시에 새 기간 사용)
-              창고_입고량: 0,
+              기간: today,
+              창고_재고량: 0,
             })
           );
           const sortedData = f.sortProductsBySupplierAndName(
             mergedData,
-            suppliersData
+            suppliersJson
           ) as InventoryItem[];
           setInventoryData(sortedData);
           setFilteredData(sortedData);
         } else {
-          // 일간 재고의 경우, 테이블 상태에 따라 처리
-          if (tableStatus === 0) {
-            // 상태값이 0이면 itemsData에서 모든 재고량을 0으로 설정
-            const mergedData: InventoryItem[] = itemsData.map(
-              (product: APIProduct) => ({
+          // 상태가 1이면 API를 통해 데이터 가져오기
+          const invUrl = `${RN_API_URL}/api/inventory/warehouse/?매장_id=${storeId}&기간=${today}`;
+          const invResponse = await fetch(invUrl);
+
+          if (!invResponse.ok)
+            throw new Error("재고 데이터를 불러오는 중 오류 발생");
+
+          const invData = await invResponse.json();
+          const mergedData: InventoryItem[] = itemsJson.map(
+            (product: APIProduct) => {
+              const matchingInv = invData.find(
+                (inv: any) => inv.품목_id === product.품목_id
+              );
+              return {
                 ...product,
                 매장_id: storeId,
                 기간: today,
-                창고_재고량: 0,
-              })
-            );
-            const sortedData = f.sortProductsBySupplierAndName(
-              mergedData,
-              suppliersData
-            ) as InventoryItem[];
-            setInventoryData(sortedData);
-            setFilteredData(sortedData);
-          } else {
-            // 상태값이 1이면 기존 로직대로 API를 통해 데이터를 가져와 매칭
-            const invUrl = `${RN_API_URL}/api/inventory/warehouse/?매장_id=${storeId}&기간=${today}`;
-            const invResponse = await fetch(invUrl, { signal });
-            if (!invResponse.ok)
-              throw new Error("재고 데이터를 불러오는 중 오류 발생");
-            const invData = await invResponse.json();
-            const invArray = invData;
-            const mergedData: InventoryItem[] = itemsData.map(
-              (product: APIProduct) => {
-                const matchingInv = invArray.find(
-                  (inv: any) => inv.품목_id === product.품목_id
-                );
-                return {
-                  ...product,
-                  매장_id: storeId,
-                  기간: today,
-                  창고_재고량: matchingInv ? matchingInv.창고_재고량 : 0,
-                } as MergedInventoryItem;
-              }
-            );
-            const sortedData = f.sortProductsBySupplierAndName(
-              mergedData,
-              suppliersData
-            ) as InventoryItem[];
-            setInventoryData(sortedData);
-            setFilteredData(sortedData);
-          }
+                창고_재고량: matchingInv ? matchingInv.창고_재고량 : 0,
+              } as MergedInventoryItem;
+            }
+          );
+          const sortedData = f.sortProductsBySupplierAndName(
+            mergedData,
+            suppliersJson
+          ) as InventoryItem[];
+          setInventoryData(sortedData);
+          setFilteredData(sortedData);
         }
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          setError(err.message);
-        }
-      } finally {
-        setLoading(false);
+      } else {
+        // 월간 재고인 경우, 모든 창고_입고량을 0으로 설정
+        const mergedData: InventoryItem[] = itemsJson.map(
+          (product: APIProduct) => ({
+            ...product,
+            매장_id: storeId,
+            기간: today,
+            창고_입고량: 0,
+          })
+        );
+        const sortedData = f.sortProductsBySupplierAndName(
+          mergedData,
+          suppliersJson
+        ) as InventoryItem[];
+        setInventoryData(sortedData);
+        setFilteredData(sortedData);
       }
-    };
+    } catch (err: any) {
+      console.error("데이터 로딩 오류:", err.message);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+      setIsDataLoading(false);
+    }
+  };
 
-    fetchInventoryData();
-    return () => {
-      controller.abort();
-    };
-  }, [storeId, inventoryType, itemsData, suppliersData, tableStatus]);
+  // 초기 데이터 로딩과 inventoryType 변경 시 데이터 로딩
+  useEffect(() => {
+    loadAllData();
+  }, [inventoryType, storeId]);
 
   const sortedSuppliers = useMemo(() => {
     const suppliers = suppliersData.map((supplier) => supplier.협력사명 || "");
@@ -822,72 +806,19 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   };
 
   const handleToggle = (type: "daily" | "monthly") => {
+    // 이미 같은 타입이면 중복 처리하지 않음
+    if (inventoryType === type) return;
+
     setEditMode(false);
     setInventoryType(type);
+    // loadAllData()는 여기서 직접 호출하지 않음 - useEffect에서 처리됨
   };
 
-  // editMode 취소 처리 함수 추가
+  // editMode 취소 처리 함수 수정
   const handleCancelEdit = () => {
     setEditMode(false);
-    // 원래 데이터로 복원하기 위해 데이터를 다시 불러옴
-    if (itemsData.length > 0 && suppliersData.length > 0) {
-      const controller = new AbortController();
-      const today = getCurrentDateString();
-
-      if (inventoryType === "daily") {
-        // 일간 재고의 경우, API를 통해 데이터를 다시 가져옴
-        const invUrl = `${RN_API_URL}/api/inventory/warehouse/?매장_id=${storeId}&기간=${today}`;
-
-        fetch(invUrl)
-          .then((response) => {
-            if (!response.ok)
-              throw new Error("재고 데이터를 불러오는 중 오류 발생");
-            return response.json();
-          })
-          .then((invData) => {
-            const mergedData: InventoryItem[] = itemsData.map(
-              (product: APIProduct) => {
-                const matchingInv = invData.find(
-                  (inv: any) => inv.품목_id === product.품목_id
-                );
-                return {
-                  ...product,
-                  매장_id: storeId,
-                  기간: today,
-                  창고_재고량: matchingInv ? matchingInv.창고_재고량 : 0,
-                } as MergedInventoryItem;
-              }
-            );
-            const sortedData = f.sortProductsBySupplierAndName(
-              mergedData,
-              suppliersData
-            ) as InventoryItem[];
-            setInventoryData(sortedData);
-            setFilteredData(sortedData);
-          })
-          .catch((err) => {
-            if (err.name !== "AbortError") {
-              setError(err.message);
-            }
-          });
-      } else {
-        // 월간 재고인 경우, 모든 값 0으로 초기화
-        const mergedData: InventoryItem[] = itemsData.map(
-          (product: APIProduct) => ({
-            ...product,
-            매장_id: storeId,
-            기간: today,
-            창고_입고량: 0,
-          })
-        );
-        const sortedData = f.sortProductsBySupplierAndName(
-          mergedData,
-          suppliersData
-        ) as InventoryItem[];
-        setInventoryData(sortedData);
-        setFilteredData(sortedData);
-      }
-    }
+    // 데이터 다시 로딩
+    loadAllData();
   };
 
   if (loading) {

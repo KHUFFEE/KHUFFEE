@@ -293,11 +293,14 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
       if (warehouseInventoryStatus) {
         setTableStatus(warehouseInventoryStatus.상태);
+        return warehouseInventoryStatus.상태; // 상태값 반환
       }
+      return 1; // 기본값 반환
     } catch (err: any) {
       console.error("테이블 상태 조회 오류:", err.message);
       // 오류 시 기본값 1로 설정 (기존 로직 사용)
       setTableStatus(1);
+      return 1; // 오류 시 기본값 반환
     }
   };
 
@@ -425,30 +428,8 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
       const today = getCurrentDateString();
 
       if (inventoryType === "daily") {
-        // 테이블 상태 로딩 - 비동기 처리 수정
-        await fetchTableStatus();
-
-        // 여기서 최신 tableStatus 값을 직접 가져오기 위해 상태 변수를 직접 사용하지 않고
-        // 다시 테이블 상태를 확인
-        let currentTableStatus = tableStatus;
-
-        try {
-          const statusResponse = await fetch(
-            `${RN_API_URL}/api/management/table_status_list/`
-          );
-          if (statusResponse.ok) {
-            const statusData = await statusResponse.json();
-            const warehouseInventoryStatus = statusData.find(
-              (item: any) => item.테이블 === "창고_재고"
-            );
-
-            if (warehouseInventoryStatus) {
-              currentTableStatus = warehouseInventoryStatus.상태;
-            }
-          }
-        } catch (err) {
-          console.error("테이블 상태 재확인 오류:", err);
-        }
+        // 테이블 상태 로딩 - API 요청은 한 번만 수행
+        const currentTableStatus = await fetchTableStatus();
 
         // 테이블 상태에 따라 재고 데이터 처리
         if (currentTableStatus === 0) {

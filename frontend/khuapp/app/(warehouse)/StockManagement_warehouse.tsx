@@ -143,7 +143,10 @@ const InventoryItemRow = forwardRef<
         testID="inventory_selectItemRowContainer"
         style={inventoryStyles.inventory_selectItemRowContainer}
       >
-        <Text testID="name_itemText" style={inventoryStyles.name_itemText}>
+        <Text
+          testID="name_itemText"
+          style={[inventoryStyles.name_itemText, { lineHeight: RFValue(17) }]}
+        >
           {item.품목명}
           {"\n"}
           <Text
@@ -575,14 +578,14 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const showErrorModal = (items: APIProduct[]) => {
     setErrorItems(items);
 
-    const unitType = inventoryType === "daily" ? "출고개수" : "입고개수";
-    let modalText = `⚠️ 숫자가 맞지 않아요! ⚠️\n\n`;
-
-    modalText += `다음 상품들의 숫자를 확인해 주세요:\n\n`;
+    const unitType = inventoryType === "daily" ? "출고수량" : "입고수량";
+    const unitLabel = inventoryType === "daily" ? "출고단위" : "입고단위";
+    let modalText = `상품의 ${unitLabel}를 확인해 주세요\n`;
 
     items.forEach((item) => {
       const unitValue =
         inventoryType === "daily" ? item.출고단위 : item.입고단위;
+
       const stockValue =
         inventoryType === "daily"
           ? (
@@ -596,23 +599,25 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               ) as MergedMonthInventoryItem
             ).창고_입고량;
 
-      // 더 간단한 형식으로 표시
+      // 숫자에 마커(##) 추가하여 나중에 색상 처리가 가능하도록 함
       modalText += `🔹 ${item.품목명}\n`;
-      modalText += `   → 기준 개수: ${unitValue}개\n`;
-      modalText += `   → 현재 개수: ${stockValue}개\n\n`;
+      modalText += `   → 기준 ${unitLabel}: ##${unitValue}##개\n`;
+      modalText += `   → 현재 입력 수량: ##${stockValue}##개\n`;
     });
 
     if (items.length === 1) {
-      modalText += `이 상품은 ${unitType}에 맞지 않아요.\n`;
-      modalText += `${unitType}는 ${items[0].출고단위}개씩 맞춰야 해요.\n\n`;
+      const unitValue =
+        inventoryType === "daily" ? items[0].출고단위 : items[0].입고단위;
+      modalText += `${unitType}이 ${unitLabel}와 맞지 않습니다.\n`;
+      modalText += `${unitType}은 ##${unitValue}##개 단위로 맞춰야 합니다.\n`;
     } else {
-      modalText += `위 상품들은 ${unitType}에 맞지 않아요.\n`;
-      modalText += `각 상품의 기준 개수에 맞춰야 해요.\n\n`;
+      modalText += `⚠️ 위 상품들은 ${unitType}이 각 ${unitLabel}와 맞지 않습니다.\n`;
+      modalText += `각 상품의 기준 단위에 맞게 수량을 조정해 주세요.\n\n`;
     }
 
-    modalText += `그래도 저장할까요?\n`;
+    modalText += `💡 그래도 저장할까요?\n`;
     modalText += `• 예 = 이대로 저장하기\n`;
-    modalText += `• 아니요 = 돌아가서 고치기`;
+    modalText += `• 아니오 = 돌아가서 수정하기`;
 
     setErrorModalText(modalText);
     setErrorModalVisible(true);
@@ -1264,24 +1269,72 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
         visible={errorModalVisible}
         onRequestClose={() => setErrorModalVisible(false)}
       >
-        <View style={modalStyles.overlay}>
-          <View style={modalStyles.errorModalContainer}>
-            <Text style={modalStyles.errorTitle}>단위 오류</Text>
-            <ScrollView style={{ maxHeight: screenHeight * 0.4 }}>
-              <Text style={modalStyles.errorText}>{errorModalText}</Text>
+        <View testID="overlay" style={modalStyles.overlay}>
+          <View
+            testID="errorModalContainer"
+            style={modalStyles.errorModalContainer}
+          >
+            <Text testID="errorTitle" style={modalStyles.errorTitle}>
+              ⚠️ 단위 확인 필요 ⚠️
+            </Text>
+            <ScrollView
+              testID="errorText"
+              style={{
+                maxHeight: screenHeight * 0.4,
+                width: "100%",
+                // paddingHorizontal: moderateScale(10),
+              }}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* 텍스트 부분을 마커(##)로 분할하여 숫자 부분에 색상 적용 */}
+              <Text testID="errorText" style={modalStyles.errorText}>
+                {errorModalText.split(/##(.*?)##/).map((part, index) => {
+                  // 홀수 인덱스는 ## 사이의 내용(강조할 숫자)
+                  return index % 2 === 1 ? (
+                    <Text
+                      key={index}
+                      style={{
+                        color: "#e53e3e",
+                        fontWeight: "700",
+                        backgroundColor: "#fff5f5",
+                        paddingVertical: 1,
+                        paddingHorizontal: 6,
+                        borderRadius: 4,
+                        overflow: "hidden",
+                        borderWidth: 0.5,
+                        borderColor: "#fed7d7",
+                        marginHorizontal: 2,
+                      }}
+                    >
+                      {part}
+                    </Text>
+                  ) : (
+                    part
+                  );
+                })}
+              </Text>
             </ScrollView>
-            <View style={modalStyles.buttonContainer}>
+            <View testID="buttonContainer" style={modalStyles.buttonContainer}>
               <TouchableOpacity
+                testID="cancelButton"
                 style={modalStyles.cancelButton}
                 onPress={handleCancelError}
               >
-                <Text style={modalStyles.cancelButtonText}>아니요</Text>
+                <Text
+                  testID="cancelButtonText"
+                  style={modalStyles.cancelButtonText}
+                >
+                  아니오
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
+                testID="confirmButton"
                 style={modalStyles.confirmButton}
                 onPress={handleConfirmError}
               >
-                <Text style={modalStyles.buttonText}>예</Text>
+                <Text testID="buttonText" style={modalStyles.buttonText}>
+                  예
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

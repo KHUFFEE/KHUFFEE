@@ -4,7 +4,6 @@
   margin: 0 auto;
   font-family: Arial, sans-serif;
   text-align: left;
-  position: relative;
 }
 
 .nowrap {
@@ -25,7 +24,7 @@
 }
 
 .wc-item-col {
-  max-width: 200px;
+  width: 200px;
   text-align: left;
 }
 
@@ -79,10 +78,7 @@
 }
 
 /* 셀 값 오른쪽 정렬 스타일 */
-.wc-price-col {
-  text-align: right;
-}
-
+.wc-price-col,
 .wc-inunitprice-col,
 .wc-previnv-col,
 .wc-week-col,
@@ -95,11 +91,11 @@
 /* ───────────────────────────────────────────── */
 /* 강조: 1주차 ~ 5주차 입고 열 스타일 */
 /* ───────────────────────────────────────────── */
-.big-table td.wc-week-col:nth-of-type(8) {
+.big-table tbody td.wc-week-col:nth-of-type(8) {
   border-left: 2px solid #8b000062;
 }
 
-.big-table td.wc-week-col:nth-of-type(12) {
+.big-table tbody td.wc-week-col:nth-of-type(12) {
   border-right: 2px solid #8b000062;
 }
 
@@ -121,6 +117,7 @@
 /* 세로 병합된 셀 기본 스타일 */
 .big-table td.wc-order-sum-ex-col,
 .big-table td.wc-order-sum-inc-col {
+  z-index: 1;
   vertical-align: middle !important;
   text-align: right !important;
   padding: 12px !important;

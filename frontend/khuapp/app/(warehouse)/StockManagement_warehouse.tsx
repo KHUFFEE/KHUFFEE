@@ -1195,46 +1195,54 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                 ? "일별 재고 최종 확인"
                 : "입고 재고 최종 확인"}
             </Text>
-            {sortByCategory(itemsToSave).map((item) => {
-              const stockValue =
-                inventoryType === "daily"
-                  ? (item as MergedInventoryItem).창고_재고량
-                  : (item as MergedMonthInventoryItem).창고_입고량;
+            {
+              // 입고재고의 경우 창고_입고량이 0인 상품은 필터링하여 표시하지 않음
+              (inventoryType === "daily"
+                ? sortByCategory(itemsToSave)
+                : sortByCategory(itemsToSave).filter(
+                    (item) => (item as MergedMonthInventoryItem).창고_입고량 > 0
+                  )
+              ).map((item) => {
+                const stockValue =
+                  inventoryType === "daily"
+                    ? (item as MergedInventoryItem).창고_재고량
+                    : (item as MergedMonthInventoryItem).창고_입고량;
 
-              return (
-                <View
-                  testID="confirmationItemRow"
-                  key={item.품목_id}
-                  style={[
-                    confirmationStyles.confirmationItemRow,
-                    {
-                      flexDirection: "row",
-                      alignItems: "center",
-                      paddingVertical: moderateScale(5),
-                    },
-                  ]}
-                >
-                  <Text
-                    testID="confirm_selectItemName"
+                return (
+                  <View
+                    testID="confirmationItemRow"
+                    key={item.품목_id}
                     style={[
-                      confirmationStyles.confirm_selectItemName,
-                      { flex: 2 },
+                      confirmationStyles.confirmationItemRow,
+                      {
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingVertical: moderateScale(5),
+                      },
                     ]}
                   >
-                    {item.품목명}
-                  </Text>
-                  <Text
-                    testID="confirm_unitText"
-                    style={[
-                      confirmationStyles.confirm_unitText,
-                      { flex: 1, textAlign: "center" },
-                    ]}
-                  >
-                    {f.formatPrice(stockValue)}개
-                  </Text>
-                </View>
-              );
-            })}
+                    <Text
+                      testID="confirm_selectItemName"
+                      style={[
+                        confirmationStyles.confirm_selectItemName,
+                        { flex: 2 },
+                      ]}
+                    >
+                      {item.품목명}
+                    </Text>
+                    <Text
+                      testID="confirm_unitText"
+                      style={[
+                        confirmationStyles.confirm_unitText,
+                        { flex: 1, textAlign: "center" },
+                      ]}
+                    >
+                      {f.formatPrice(stockValue)}개
+                    </Text>
+                  </View>
+                );
+              })
+            }
 
             <TouchableOpacity
               testID="saveButton"

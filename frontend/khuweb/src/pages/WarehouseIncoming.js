@@ -498,7 +498,13 @@ const WarehouseIncoming = () => {
               <br />
               입고금액
             </th>
-            <th className="wc-order-qty-col">발주량</th>
+            <th
+              className={`wc-order-qty-col ${
+                Number((rowDiff) => rowDiff) /* placeholder */ // 아래에서 개별 row 처리
+              }`}
+            >
+              발주량
+            </th>
             <th className="wc-order-amount-col">발주금액</th>
             <th className="wc-order-sum-ex-col">
               발주합계
@@ -517,6 +523,9 @@ const WarehouseIncoming = () => {
             const isFirstRowOfGroup =
               index === 0 ||
               row.supplierName !== tableRows[index - 1].supplierName;
+            // 발주량과 월 입고량 차이가 0이 아닐 경우 negative-difference 클래스 적용
+            const hasNegativeDiff =
+              Number(row.orderAmount) - Number(row.monthlyIncoming) !== 0;
             return (
               <tr key={row.itemId}>
                 <td className="wc-number-col">{index + 1}</td>
@@ -689,7 +698,11 @@ const WarehouseIncoming = () => {
                     ? Number(row.monthlyAmount).toLocaleString()
                     : "-"}
                 </td>
-                <td className="wc-order-qty-col">
+                <td
+                  className={`wc-order-qty-col ${
+                    hasNegativeDiff ? "negative-difference" : ""
+                  }`}
+                >
                   {formatNumber(row.orderAmount)}
                 </td>
                 <td className="wc-order-amount-col">

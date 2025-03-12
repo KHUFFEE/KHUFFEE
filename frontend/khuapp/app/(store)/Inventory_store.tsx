@@ -28,6 +28,7 @@ import {
 } from "../../src/styles/Inventory_styles_store";
 import { APIProduct } from "../../src/components/ui/common/types";
 import { Search, Minus, Plus, Trash2, X } from "lucide-react-native";
+import { moderateScale } from "react-native-size-matters";
 
 // 일간 재고 타입
 export interface MergedInventoryItem extends APIProduct {
@@ -229,6 +230,8 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const [isMonthlyEditable, setIsMonthlyEditable] = useState<boolean>(true);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
+  const [saveCompleteModalVisible, setSaveCompleteModalVisible] =
+    useState<boolean>(false);
 
   // 각 InventoryItemRow의 ref를 저장할 객체
   const rowRefs = useRef<{
@@ -348,6 +351,8 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
         })
       );
       setEditMode(false);
+      // 저장 성공 시 모달 표시
+      setSaveCompleteModalVisible(true);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -383,11 +388,18 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
         })
       );
       setEditMode(false);
+      // 저장 성공 시 모달 표시
+      setSaveCompleteModalVisible(true);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setSaving(false);
     }
+  };
+
+  // 저장 완료 모달 닫기 함수
+  const handleCloseCompleteModal = () => {
+    setSaveCompleteModalVisible(false);
   };
 
   // AbortController를 사용하여 재고 유형 전환 시 진행 중인 네트워크 요청 취소
@@ -841,6 +853,46 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
           );
         }}
       />
+
+      {/* 저장 완료 모달 추가 */}
+      <Modal
+        testID="saveCompleteModal"
+        visible={saveCompleteModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseCompleteModal}
+      >
+        <View testID="modalCenteredView_2" style={modalStyles.centeredView}>
+          <View testID="modalView_2" style={modalStyles.modalView}>
+            <Text testID="modalTitle_2" style={modalStyles.modalTitle}>
+              저장 완료
+            </Text>
+            <Text
+              testID="modalText_Complete"
+              style={[
+                modalStyles.modalText,
+                { marginBottom: moderateScale(-3) },
+              ]}
+            >
+              {inventoryType === "daily"
+                ? "일별재고가 성공적으로\n저장되었습니다."
+                : "월말재고가 성공적으로\n저장되었습니다."}
+            </Text>
+            <TouchableOpacity
+              testID="closeButton_Complete"
+              style={[
+                modalStyles.closeButton,
+                { marginTop: moderateScale(10) },
+              ]}
+              onPress={handleCloseCompleteModal}
+            >
+              <Text testID="textStyle_Complete" style={modalStyles.textStyle}>
+                확인
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

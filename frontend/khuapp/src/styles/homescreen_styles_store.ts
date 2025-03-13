@@ -29,6 +29,23 @@ export const homescreenStyles = StyleSheet.create({
     paddingBottom: moderateScale(0),
   },
 
+  loading_Container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+
+  loading_Text: {
+    ...commonTextStyle,
+    marginTop: moderateScale(3),
+    fontSize: RFValue(16),
+    fontWeight: "600",
+    left: moderateScale(5),
+    color: "#00000080",
+    alignItems: "center",
+  },
+
   header: {
     // marginBottom: verticalScale(20),
     alignItems: "center",

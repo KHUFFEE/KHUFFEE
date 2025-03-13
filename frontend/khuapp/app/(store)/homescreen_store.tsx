@@ -6,6 +6,7 @@ import {
   Dimensions,
   TouchableOpacity,
   useWindowDimensions,
+  ActivityIndicator,
 } from "react-native";
 import { homescreenStyles } from "../../src/styles/homescreen_styles_store";
 import {
@@ -42,7 +43,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
     CombinedOrderData[]
   >([]);
   const [lastMonthOrders, setLastMonthOrders] = useState<CombinedOrderData[]>(
-    [],
+    []
   );
 
   // 현재 월 데이터 처리 상태
@@ -73,7 +74,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
     [week: string]: number;
   }>({});
   const [lastMonthSortedWeeks, setLastMonthSortedWeeks] = useState<string[]>(
-    [],
+    []
   );
   const [lastMonthProductSummary, setLastMonthProductSummary] = useState<
     Array<{
@@ -100,7 +101,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const isLandscape = windowWidth > windowHeight;
   const [orientation, setOrientation] = useState(
-    isLandscape ? "landscape" : "portrait",
+    isLandscape ? "landscape" : "portrait"
   );
 
   // 화면 방향 변경 감지 효과
@@ -167,7 +168,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
   // 제품 정렬 함수
   const sortOrders = (
     orders: CombinedOrderData[],
-    order: "asc" | "desc" = "asc",
+    order: "asc" | "desc" = "asc"
   ) => {
     const sorted = orders.sort((a, b) => {
       if (a.협력사명 && b.협력사명) {
@@ -189,7 +190,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
     try {
       // 모든 품목 정보 가져오기
       const itemsResponse = await fetch(
-        `${RN_API_URL}/api/suppliers/items/?all=True`,
+        `${RN_API_URL}/api/suppliers/items/?all=True`
       );
       if (itemsResponse.ok) {
         const itemsData = await itemsResponse.json();
@@ -231,7 +232,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
 
           const currentMonthCombined = currentMonthOrdersData.map((o) => {
             const foundItem = itemsData.find(
-              (it: APIProduct) => it.품목_id === o.품목_id,
+              (it: APIProduct) => it.품목_id === o.품목_id
             );
             const unitPrice = foundItem ? parseFloat(foundItem.입고단가) : 0;
             const qty = o.매장_발주량 || 0;
@@ -256,7 +257,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
               setCurrentMonthWeeklyTotals,
               setCurrentMonthSortedWeeks,
               setCurrentMonthProductSummary,
-              setCurrentMonthTotal,
+              setCurrentMonthTotal
             );
           }
         } else {
@@ -270,7 +271,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
 
           const lastMonthCombined = lastMonthOrdersData.map((o) => {
             const foundItem = itemsData.find(
-              (it: APIProduct) => it.품목_id === o.품목_id,
+              (it: APIProduct) => it.품목_id === o.품목_id
             );
             const unitPrice = foundItem ? parseFloat(foundItem.입고단가) : 0;
             const qty = o.매장_발주량 || 0;
@@ -295,7 +296,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
               setLastMonthWeeklyTotals,
               setLastMonthSortedWeeks,
               setLastMonthProductSummary,
-              setLastMonthTotal,
+              setLastMonthTotal
             );
           }
         } else {
@@ -333,7 +334,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
         }>
       >
     >,
-    setMonthlyTotal: React.Dispatch<React.SetStateAction<number>>,
+    setMonthlyTotal: React.Dispatch<React.SetStateAction<number>>
   ) => {
     const weeklyData: { [week: string]: CombinedOrderData[] } = {};
     const productSummaryMap: {
@@ -393,10 +394,10 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
     });
 
     const productsForSorting: CombinedOrderData[] = Object.entries(
-      productSummaryMap,
+      productSummaryMap
     ).map(([품목_id, data]) => {
       const originalOrder = monthlyOrders.find(
-        (order) => order.품목_id === 품목_id,
+        (order) => order.품목_id === 품목_id
       );
       return {
         품목_id,
@@ -411,11 +412,11 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
 
     const sortedProductsData = sortOrders(productsForSorting, "asc");
     const sortedProducts = sortedProductsData.map(
-      (product) => productSummaryMap[product.품목_id],
+      (product) => productSummaryMap[product.품목_id]
     );
     const monthlyTotal = Object.values(weeklyTotals).reduce(
       (sum, total) => sum + total,
-      0,
+      0
     );
 
     setWeeklyData(weeklyData);
@@ -444,10 +445,10 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
   // 차트 데이터 준비: 주차별 금액이 0인 경우 해당 주차는 제외
   const prepareChartData = (
     weeklyTotals: { [week: string]: number },
-    sortedWeeks: string[],
+    sortedWeeks: string[]
   ) => {
     const filteredWeeks = sortedWeeks.filter(
-      (week) => (weeklyTotals[week] || 0) > 0,
+      (week) => (weeklyTotals[week] || 0) > 0
     );
     return {
       labels: filteredWeeks.map((week) => `${week}주`),
@@ -463,26 +464,26 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
   const prepareCombinedChartData = (
     currentMonthWeeklyTotals: { [week: string]: number },
     lastMonthWeeklyTotals: { [week: string]: number },
-    sortedWeeks: string[],
+    sortedWeeks: string[]
   ) => {
     // 각 월에서 금액이 0이 아닌 주차를 별도로 필터링
     const filteredLastMonthWeeks = sortedWeeks.filter(
-      (week) => (lastMonthWeeklyTotals[week] || 0) > 0,
+      (week) => (lastMonthWeeklyTotals[week] || 0) > 0
     );
     const filteredCurrentMonthWeeks = sortedWeeks.filter(
-      (week) => (currentMonthWeeklyTotals[week] || 0) > 0,
+      (week) => (currentMonthWeeklyTotals[week] || 0) > 0
     );
 
     const lastMonthLabels = filteredLastMonthWeeks.map((week) => `${week}주`);
     const currentMonthLabels = filteredCurrentMonthWeeks.map(
-      (week) => `${week}주`,
+      (week) => `${week}주`
     );
 
     const lastMonthData = filteredLastMonthWeeks.map(
-      (week) => (lastMonthWeeklyTotals[week] || 0) / 10000,
+      (week) => (lastMonthWeeklyTotals[week] || 0) / 10000
     );
     const currentMonthData = filteredCurrentMonthWeeks.map(
-      (week) => (currentMonthWeeklyTotals[week] || 0) / 10000,
+      (week) => (currentMonthWeeklyTotals[week] || 0) / 10000
     );
 
     // 디바이스 스케일에 따른 레이블 크기 조정
@@ -591,19 +592,25 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
 
   return (
     <View testID="container" style={homescreenStyles.container}>
-      <View testID="header" style={homescreenStyles.header}>
-        <Text testID="title" style={homescreenStyles.title}>
-          발주 현황 요약
-        </Text>
-      </View>
-
-      <ScrollView>
-        {loading ? (
-          <Text testID="loadingText" style={homescreenStyles.loadingText}>
-            데이터를 불러오는 중입니다...
+      {loading ? (
+        <View
+          testID="loading_Container"
+          style={homescreenStyles.loading_Container}
+        >
+          <ActivityIndicator size="large" color="#0D326F80" />
+          <Text testID="loading_Text" style={homescreenStyles.loading_Text}>
+            로딩 중...
           </Text>
-        ) : (
-          <>
+        </View>
+      ) : (
+        <>
+          <View testID="header" style={homescreenStyles.header}>
+            <Text testID="title" style={homescreenStyles.title}>
+              발주 현황 요약
+            </Text>
+          </View>
+
+          <ScrollView>
             {/* 주차별 발주 금액 차트 (이번달 & 저번달) */}
             <View
               testID="sectionContainer"
@@ -621,10 +628,10 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
               ) : (
                 <>
                   {Object.values(currentMonthWeeklyTotals).every(
-                    (value) => value === 0,
+                    (value) => value === 0
                   ) &&
                   Object.values(lastMonthWeeklyTotals).every(
-                    (value) => value === 0,
+                    (value) => value === 0
                   ) ? (
                     <Text
                       testID="noDataText"
@@ -648,17 +655,17 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                           data={prepareCombinedChartData(
                             currentMonthWeeklyTotals,
                             lastMonthWeeklyTotals,
-                            currentMonthSortedWeeks,
+                            currentMonthSortedWeeks
                           )}
                           width={chartDimensions.width}
                           height={hp(22)}
                           barWidth={wp(6.5)}
                           spacing={chartDimensions.spacing}
                           initialSpacing={moderateScale(
-                            2 * deviceScale.spacingScale,
+                            2 * deviceScale.spacingScale
                           )}
                           endSpacing={moderateScale(
-                            25 * deviceScale.spacingScale,
+                            25 * deviceScale.spacingScale
                           )}
                           noOfSections={5}
                           barBorderRadius={4}
@@ -671,7 +678,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                           // 가로선 위치 오른쪽으로 이동
                           horizontalRulesStyle={{
                             paddingLeft: moderateScale(
-                              0 * deviceScale.spacingScale,
+                              0 * deviceScale.spacingScale
                             ),
                           }}
                           // X축·Y축 스타일
@@ -750,7 +757,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                             new Set([
                               ...lastMonthSortedWeeks,
                               ...currentMonthSortedWeeks,
-                            ]),
+                            ])
                           )
                             .sort()
                             .map((week, index) => (
@@ -792,7 +799,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                                     ]}
                                   >
                                     {f.formatPrice(
-                                      lastMonthWeeklyTotals[week] || 0,
+                                      lastMonthWeeklyTotals[week] || 0
                                     )}
                                     원
                                   </Text>
@@ -815,7 +822,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                                     ]}
                                   >
                                     {f.formatPrice(
-                                      currentMonthWeeklyTotals[week] || 0,
+                                      currentMonthWeeklyTotals[week] || 0
                                     )}
                                     원
                                   </Text>
@@ -940,7 +947,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                               >
                                 {currentMonthTotal > lastMonthTotal ? "+" : ""}
                                 {f.formatPrice(
-                                  currentMonthTotal - lastMonthTotal,
+                                  currentMonthTotal - lastMonthTotal
                                 )}
                                 원
                               </Text>
@@ -1013,8 +1020,8 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                   {currentMonthProductSummary
                     .filter((product) =>
                       Object.values(product.주차별).some(
-                        (weekData) => weekData.수량 > 0,
-                      ),
+                        (weekData) => weekData.수량 > 0
+                      )
                     )
                     .map((product, index) => (
                       <View
@@ -1179,9 +1186,9 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                 </>
               )}
             </View>
-          </>
-        )}
-      </ScrollView>
+          </ScrollView>
+        </>
+      )}
     </View>
   );
 };

@@ -923,7 +923,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
             const monthsObj = groupedByYearMonthWeek[year];
             const sortedMonths = sortKeys(Object.keys(monthsObj));
 
-            // 이 연도에 매장_발주량이 0보다 큰 주문이 있는지 확인
+            // 매장_발주량이 0보다 큰 주문이 있는지 확인
             const hasNonZeroOrdersInYear = sortedMonths.some((month) => {
               const weeksObj = monthsObj[month];
               const weeks = Object.keys(weeksObj);
@@ -1157,33 +1157,34 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
           }}
           ListFooterComponent={
             !isPeriodSearch && hasMore ? (
-              <TouchableOpacity
-                testID="loadMoreButton"
-                style={orderStatusStyles.loadMoreButton}
-                onPress={async () => {
-                  const currentOffset = scrollOffset.current;
-                  await fetchOrders(currentPage, sortOrder);
-                  setCurrentPage((prev) => prev + 1);
-                  setTimeout(() => {
-                    flatListRef.current?.scrollToOffset({
-                      offset: currentOffset,
-                      animated: false,
-                    });
-                  }, 100);
-                }}
-                disabled={loading}
-              >
-                {loading ? (
+              loading ? (
+                <View style={orderStatusStyles.loadingMoreContainer}>
                   <ActivityIndicator size="small" color="#0D326F" />
-                ) : (
+                </View>
+              ) : (
+                <TouchableOpacity
+                  testID="loadMoreButton"
+                  style={orderStatusStyles.loadMoreButton}
+                  onPress={async () => {
+                    const currentOffset = scrollOffset.current;
+                    await fetchOrders(currentPage, sortOrder);
+                    setCurrentPage((prev) => prev + 1);
+                    setTimeout(() => {
+                      flatListRef.current?.scrollToOffset({
+                        offset: currentOffset,
+                        animated: false,
+                      });
+                    }, 100);
+                  }}
+                >
                   <Text
                     testID="loadMoreButtonText"
                     style={orderStatusStyles.loadMoreButtonText}
                   >
                     더 불러오기
                   </Text>
-                )}
-              </TouchableOpacity>
+                </TouchableOpacity>
+              )
             ) : null
           }
         />

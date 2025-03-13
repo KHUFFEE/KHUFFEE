@@ -90,7 +90,7 @@ const WarehouseOrder = () => {
         const selectedLastDay = new Date(
           numericYear,
           numericMonth,
-          0,
+          0
         ).getDate();
         const selectedLastDayStr = `${numericYear}.${String(numericMonth).padStart(2, "0")}.${String(selectedLastDay).padStart(2, "0")}`;
         const selectedYM = `${numericYear}.${String(numericMonth).padStart(2, "0")}`;
@@ -143,11 +143,11 @@ const WarehouseOrder = () => {
             if (res.orders && res.orders.length > 0) {
               return res.orders.map(
                 (order) =>
-                  `${order.기간}.${order.회차 ? order.회차.toString() : "1"}`,
+                  `${order.기간}.${order.회차 ? order.회차.toString() : "1"}`
               );
             }
             return [];
-          }),
+          })
         );
       }
       const results = await Promise.all(periodPromises);
@@ -219,7 +219,8 @@ const WarehouseOrder = () => {
     });
   }
 
-  // 그룹화된 데이터를 바탕으로 각 행(품목) 정보 구성 (품목명, 협력사, 규격, 단위, 입고단가, 입고단위, 입고단위단가, 전월 재고, 현 재고 포함)
+  // 그룹화된 데이터를 바탕으로 각 행(품목) 정보 구성
+  // (품목명, 협력사, 규격, 입고단가, 입고단위단가, 전월 재고, 현재고 포함)
   const tableRows = Object.keys(groupedOrders).map((itemId) => {
     const matchedItem = items.find((i) => i.품목_id === itemId);
     const itemName = matchedItem ? matchedItem.품목명 : "N/A";
@@ -237,9 +238,9 @@ const WarehouseOrder = () => {
       orderAmount: groupedOrders[itemId] || 0,
       unitPrice: matchedItem ? Number(matchedItem.입고단가) : 0,
       규격: matchedItem ? matchedItem.규격 : "",
-      단위: matchedItem ? matchedItem.단위 : "",
+      // 단위, 입고단위 삭제됨
       입고단가: matchedItem ? matchedItem.입고단가 : "",
-      입고단위: matchedItem ? matchedItem.입고단위 : "",
+      // 입고단위단가는 그대로 유지
       입고단위단가: matchedItem ? matchedItem.입고단위단가 : "",
       prevInv: prevRecord ? prevRecord.창고_재고량 : "-",
       currInv: currRecord ? currRecord.창고_재고량 : "-",
@@ -267,10 +268,20 @@ const WarehouseOrder = () => {
     return orderAmount * price;
   };
 
+  // 현재고 금액: 각 행에서 (입고단가 x 현재고)
+  const calculateCurrentInvMoney = (row) => {
+    const currInv = Number(row.currInv);
+    const price = Number(row.입고단가) || 0;
+    if (!isNaN(currInv)) {
+      return currInv * price;
+    }
+    return 0;
+  };
+
   // 발주합계(부가세 별도): 모든 행의 발주금액 합계
   const totalOrderMoney = tableRows.reduce(
     (sum, row) => sum + calculateOrderMoney(row),
-    0,
+    0
   );
   // 발주합계(부가세 포함): 부가세 별도 합계 x 1.1
   const totalOrderMoneyWithTax = totalOrderMoney * 1.1;
@@ -285,7 +296,7 @@ const WarehouseOrder = () => {
     try {
       const statusList = await getTableStatusList();
       const warehouseOrderStatus = statusList.find(
-        (s) => s.테이블 === "창고_발주",
+        (s) => s.테이블 === "창고_발주"
       );
       const currentStatus = warehouseOrderStatus
         ? warehouseOrderStatus.상태
@@ -310,12 +321,56 @@ const WarehouseOrder = () => {
     }
   };
 
+  // 현재 선택된 월(selectedMonth)을 기준으로 전년도 월 헤더 계산
+  let prevYearHeaders = [];
+  if (selectedMonth) {
+    const m = Number(selectedMonth);
+    const m1 = m;
+    const m2 = m + 1 > 12 ? m + 1 - 12 : m + 1;
+    const m3 = m + 2 > 12 ? m + 2 - 12 : m + 2;
+    prevYearHeaders = [
+      <>
+        전년도
+        <br />
+        {m1}월
+      </>,
+      <>
+        전년도
+        <br />
+        {m2}월
+      </>,
+      <>
+        전년도
+        <br />
+        {m3}월
+      </>,
+    ];
+  } else {
+    prevYearHeaders = [
+      <>
+        전년도
+        <br />
+        ?월
+      </>,
+      <>
+        전년도
+        <br />
+        ?월
+      </>,
+      <>
+        전년도
+        <br />
+        ?월
+      </>,
+    ];
+  }
+
   if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
 
   return (
     <div className="wo-container">
-      <h2 className="title">창고 발주 취합서</h2>
+      <h2 className="title">창고 발주 관리</h2>
       <div className="period-controls">
         <div className="period-search">
           {/* 기간 선택 드롭다운 (년/월/회차) */}
@@ -356,7 +411,7 @@ const WarehouseOrder = () => {
                   const parts = dp.split(".");
                   const label = `${parts[0]}년 ${parts[1].padStart(
                     2,
-                    "0",
+                    "0"
                   )}월 ${parts[2]}회차`;
                   return (
                     <option key={dp} value={dp}>
@@ -396,25 +451,49 @@ const WarehouseOrder = () => {
             <th className="wo-supplier-col">협력사</th>
             <th className="wo-item-col">품목명</th>
             <th className="wo-spec-col">규격</th>
-            <th className="wo-unit-col">단위</th>
             <th className="wo-price-col">입고단가</th>
-            <th className="wo-inunit-col">입고단위</th>
-            <th className="wo-inunitprice-col">입고단위단가</th>
-            <th className="wo-previnv-col">전월 재고</th>
-            <th className="wo-currinv-col">현 재고</th>
+            <th className="wo-inunitprice-col">
+              입고단위
+              <br />
+              단가
+            </th>
+            <th className="wo-previnv-col">전월재고</th>
+            <th className="wo-currinv-col">현재고</th>
+            <th className="wo-currentinv-money-col">
+              현재고
+              <br />
+              금액
+            </th>
             <th className="wo-sum-col">발주량</th>
             <th className="wo-ordermoney-col">발주금액</th>
             <th
               className="wo-total-excl-col"
               rowSpan={tableRows.length > 0 ? tableRows.length : 1}
             >
-              발주합계(부가세 별도)
+              발주합계
+              <br />
+              부가세x
             </th>
             <th
               className="wo-total-incl-col"
               rowSpan={tableRows.length > 0 ? tableRows.length : 1}
             >
-              발주합계(부가세 포함)
+              발주합계
+              <br />
+              부가세o
+            </th>
+            <th className="wo-prev-month1-col">{prevYearHeaders[0]}</th>
+            <th className="wo-prev-month2-col">{prevYearHeaders[1]}</th>
+            <th className="wo-prev-month3-col">{prevYearHeaders[2]}</th>
+            <th className="wo-monthly-output-col">
+              월
+              <br />
+              출고량
+            </th>
+            <th className="wo-monthly-outputmoney-col">
+              월
+              <br />
+              출고금액
             </th>
           </tr>
         </thead>
@@ -423,17 +502,17 @@ const WarehouseOrder = () => {
             <tr key={row.itemId}>
               <td className="wo-number-col">{index + 1}</td>
               <td className="wo-supplier-col">
-                <div className="supplier-cell">{row.supplierName}</div>
+                <div className="wo-supplier-cell">{row.supplierName}</div>
               </td>
               <td className="wo-item-col">
-                <div className="item-cell">{row.itemName}</div>
+                <div className="wo-item-cell">{row.itemName}</div>
               </td>
-              <td className="wo-spec-col">{row.규격 || "-"}</td>
-              <td className="wo-unit-col">{row.단위 || "-"}</td>
+              <td className="wo-spec-col">
+                <div className="wo-spec-cell">{row.규격 || "-"}</div>
+              </td>
               <td className="wo-price-col">
                 {row.입고단가 ? formatNumber(row.입고단가) : "-"}
               </td>
-              <td className="wo-inunit-col">{row.입고단위 || "-"}</td>
               <td className="wo-inunitprice-col">
                 {row.입고단위단가 ? formatNumber(row.입고단위단가) : "-"}
               </td>
@@ -442,6 +521,11 @@ const WarehouseOrder = () => {
               </td>
               <td className="wo-currinv-col">
                 {row.currInv !== "-" ? formatNumber(row.currInv) : "-"}
+              </td>
+              <td className="wo-currentinv-money-col">
+                {row.currInv !== "-" && row.입고단가
+                  ? formatNumber(calculateCurrentInvMoney(row))
+                  : "-"}
               </td>
               <td className="wo-sum-col">{formatNumber(row.orderAmount)}</td>
               <td className="wo-ordermoney-col">
@@ -463,6 +547,11 @@ const WarehouseOrder = () => {
                   </td>
                 </>
               )}
+              <td className="wo-prev-month1-col">-</td>
+              <td className="wo-prev-month2-col">-</td>
+              <td className="wo-prev-month3-col">-</td>
+              <td className="wo-monthly-output-col">-</td>
+              <td className="wo-monthly-outputmoney-col">-</td>
             </tr>
           ))}
         </tbody>

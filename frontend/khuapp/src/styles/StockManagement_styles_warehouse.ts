@@ -341,7 +341,7 @@ export const modalStyles = StyleSheet.create({
     alignItems: "center",
   },
   modalContainer: {
-    width: "80%",
+    width: wp("80%"),
     backgroundColor: "#fff",
     padding: moderateScale(20),
     borderRadius: moderateScale(10),
@@ -349,8 +349,9 @@ export const modalStyles = StyleSheet.create({
   },
   modalText: {
     marginBottom: moderateScale(20),
-    fontSize: 16,
+    fontSize: RFValue(16),
     textAlign: "center",
+    lineHeight: RFValue(22),
   },
   centeredView: {
     flex: 1,
@@ -359,7 +360,7 @@ export const modalStyles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalView: {
-    width: "85%",
+    width: wp("85%"),
     backgroundColor: "white",
     borderRadius: moderateScale(15),
     padding: moderateScale(25),
@@ -385,20 +386,23 @@ export const modalStyles = StyleSheet.create({
     width: "100%",
   },
   closeButton: {
+    ...commonTextStyle,
     backgroundColor: "#0D326F",
     borderRadius: moderateScale(10),
     paddingVertical: moderateScale(10),
     paddingHorizontal: moderateScale(30),
     elevation: 2,
+    marginTop: moderateScale(20),
   },
   textStyle: {
+    ...commonTextStyle,
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
     fontSize: RFValue(14),
   },
   errorModalContainer: {
-    width: "85%",
+    width: wp("85%"),
     backgroundColor: "#fff",
     padding: moderateScale(25),
     paddingTop: moderateScale(20),
@@ -440,7 +444,7 @@ export const modalStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    marginTop: moderateScale(5),
+    marginTop: moderateScale(20),
   },
   confirmButton: {
     backgroundColor: "#0D326F",
@@ -448,7 +452,7 @@ export const modalStyles = StyleSheet.create({
     paddingHorizontal: moderateScale(25),
     borderRadius: moderateScale(10),
     marginHorizontal: moderateScale(5),
-    minWidth: "43%",
+    minWidth: wp("43%"),
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
@@ -467,7 +471,7 @@ export const modalStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e2e8f0",
     marginHorizontal: moderateScale(5),
-    minWidth: "43%",
+    minWidth: wp("43%"),
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {

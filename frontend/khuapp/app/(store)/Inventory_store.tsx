@@ -884,10 +884,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
             </Text>
             <TouchableOpacity
               testID="closeButton_Complete"
-              style={[
-                modalStyles.closeButton,
-                { marginTop: moderateScale(10) },
-              ]}
+              style={[modalStyles.closeButton, { marginTop: moderateScale(5) }]}
               onPress={handleCloseCompleteModal}
             >
               <Text testID="textStyle_Complete" style={modalStyles.textStyle}>

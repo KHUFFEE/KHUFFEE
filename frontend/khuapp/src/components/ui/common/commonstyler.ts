@@ -1284,14 +1284,15 @@ export const modernStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: moderateScale(16),
+    // paddingHorizontal: moderateScale(16),
     // paddingVertical: moderateScale(6),
     borderBottomWidth: 2,
     // borderTopWidth: 2,
     borderBottomColor: "rgba(139, 0, 0, 0.1)",
     // borderTopColor: 'rgba(139, 0, 0, 0.1)',
     width: "100%",
-    paddingRight: moderateScale(8), // 오른쪽 패딩 줄임
+    // paddingRight: moderateScale(8), // 오른쪽 패딩 줄임
+    paddingLeft: moderateScale(12),
   },
   storeNameText: {
     ...commonTextStyle,

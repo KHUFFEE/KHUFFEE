@@ -858,7 +858,7 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                               testID="amountCell"
                               style={[
                                 homescreenStyles.amountCell,
-                                { flex: 1.2 },
+                                { flex: 1.2, paddingRight: moderateScale(0) },
                               ]}
                             >
                               <Text

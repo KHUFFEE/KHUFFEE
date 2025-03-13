@@ -1232,21 +1232,19 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                       flex: 1,
                       flexDirection: "row",
                       alignItems: "center",
+                      justifyContent: "space-between",
                     }}
                   >
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text
-                        testID="modalOrderName"
-                        style={orderStatusStyles.modalOrderName}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                      >
-                        {order.품목명}
-                      </Text>
-                    </View>
+                    <Text
+                      testID="modalOrderName"
+                      style={orderStatusStyles.modalOrderName}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {order.품목명}
+                    </Text>
                     <View
                       style={{
-                        marginLeft: "auto",
                         flexDirection: "row",
                         alignItems: "center",
                       }}

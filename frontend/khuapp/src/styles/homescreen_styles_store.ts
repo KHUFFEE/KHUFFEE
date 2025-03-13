@@ -35,9 +35,8 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   title: {
-    ...commonTextStyle({
-      fontWeight: "600",
-    }),
+    ...commonTextStyle,
+    fontWeight: "600",
     fontSize: RFValue(18),
     color: "#0D326F",
     marginVertical: verticalScale(8),
@@ -87,9 +86,8 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   sectionTitle: {
-    ...commonTextStyle({
-      fontWeight: "600",
-    }),
+    ...commonTextStyle,
+    fontWeight: "600",
     fontSize: RFValue(15),
     color: "#0D326F",
     backgroundColor: "#f8fafc",
@@ -193,18 +191,16 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   comparisonLabel: {
-    ...commonTextStyle({
-      fontWeight: "500",
-    }),
+    ...commonTextStyle,
+    fontWeight: "500",
     fontSize: RFValue(12),
     color: "#64748b",
     // marginBottom: verticalScale(4),
   },
 
   comparisonValue: {
-    ...commonTextStyle({
-      fontWeight: "500",
-    }),
+    ...commonTextStyle,
+    fontWeight: "500",
     fontSize: RFValue(13),
     color: "#0D326F",
   },
@@ -238,9 +234,8 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   headerButtonText: {
-    ...commonTextStyle({
-      fontWeight: "500",
-    }),
+    ...commonTextStyle,
+    fontWeight: "500",
     fontSize: RFValue(12),
     color: "#64748b",
   },
@@ -278,9 +273,8 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   monthlyTableHeaderText: {
-    ...commonTextStyle({
-      fontWeight: "600",
-    }),
+    ...commonTextStyle,
+    fontWeight: "600",
     fontSize: RFValue(13),
     color: "#FFFFFF",
     textAlign: "center",
@@ -302,7 +296,7 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   monthlyTableCell: {
-    ...commonTextStyle(),
+    ...commonTextStyle,
     fontSize: RFValue(13),
     color: "#1e293b",
     textAlign: "center",
@@ -314,9 +308,8 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   monthlyTableCellHighlight: {
-    ...commonTextStyle({
-      fontWeight: "600",
-    }),
+    ...commonTextStyle,
+    fontWeight: "600",
     fontSize: RFValue(13),
     color: "#0D326F",
     textAlign: "center",
@@ -363,9 +356,8 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   summaryTitle: {
-    ...commonTextStyle({
-      fontWeight: "600",
-    }),
+    ...commonTextStyle,
+    fontWeight: "600",
     fontSize: RFValue(17),
     color: "#0D326F",
     marginBottom: moderateScale(14),
@@ -384,24 +376,23 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   summaryLabel: {
-    ...commonTextStyle({
-      // fontWeight: '500',
-    }),
+    ...commonTextStyle,
+    // fontWeight: '500',
     fontSize: RFValue(14),
     // color: '#64748b',
     textAlign: "center",
   },
 
   summaryValue: {
-    ...commonTextStyle({
-      // fontWeight: '600',
-    }),
+    ...commonTextStyle,
+    // fontWeight: '600',
     fontSize: RFValue(14),
     color: "#0D326F",
     textAlign: "right",
   },
 
   summaryTotal: {
+    ...commonTextStyle,
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: moderateScale(14),
@@ -412,18 +403,16 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   summaryTotalLabel: {
-    ...commonTextStyle({
-      fontWeight: "600",
-    }),
+    ...commonTextStyle,
+    fontWeight: "600",
     fontSize: RFValue(14),
     color: "#0D326F",
     textAlign: "left",
   },
 
   summaryTotalValue: {
-    ...commonTextStyle({
-      fontWeight: "500",
-    }),
+    ...commonTextStyle,
+    fontWeight: "500",
     fontSize: RFValue(15),
     color: "#0D326F",
     textAlign: "right",
@@ -439,9 +428,8 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   summaryHeaderText: {
-    ...commonTextStyle({
-      fontWeight: "600",
-    }),
+    ...commonTextStyle,
+    fontWeight: "600",
     fontSize: RFValue(15),
     color: "#0D326F",
     textAlign: "center",
@@ -503,9 +491,8 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   tableHeaderText: {
-    ...commonTextStyle({
-      fontWeight: "600",
-    }),
+    ...commonTextStyle,
+    fontWeight: "600",
     fontSize: RFValue(14),
     color: "#0D326F",
     textAlign: "right",
@@ -551,9 +538,8 @@ export const dateRangeStyles = StyleSheet.create({
   },
 
   modalTitle: {
-    ...commonTextStyle({
-      fontWeight: "600",
-    }),
+    ...commonTextStyle,
+    fontWeight: "600",
     fontSize: RFValue(18),
     color: "#0D326F",
   },
@@ -563,7 +549,7 @@ export const dateRangeStyles = StyleSheet.create({
   },
 
   closeButtonText: {
-    ...commonTextStyle(),
+    ...commonTextStyle,
     fontSize: RFValue(20),
     color: "#666",
   },
@@ -590,13 +576,13 @@ export const dateRangeStyles = StyleSheet.create({
   },
 
   presetButtonText: {
-    ...commonTextStyle(),
+    ...commonTextStyle,
     fontSize: RFValue(14),
     color: "#000",
   },
 
   activePresetButtonText: {
-    ...commonTextStyle(),
+    ...commonTextStyle,
     color: "#0D326F",
   },
 
@@ -610,9 +596,8 @@ export const dateRangeStyles = StyleSheet.create({
   },
 
   searchButtonText: {
-    ...commonTextStyle({
-      fontWeight: "600",
-    }),
+    ...commonTextStyle,
+    fontWeight: "600",
     color: "white",
     fontSize: RFValue(16),
   },

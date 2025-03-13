@@ -322,7 +322,6 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
     forceFetch: boolean = false
   ) => {
     if (!storeId) return;
-    setLoading(true);
     if (forceFetch || !isPeriodSearch) {
       try {
         // 먼저 current_period를 가져오기 위한 API 호출
@@ -336,7 +335,6 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
         const currentPeriodResponse = await fetch(currentPeriodUrl);
         if (!currentPeriodResponse.ok) {
           console.error("현재 기간 조회 실패");
-          setLoading(false);
           return;
         }
 
@@ -345,7 +343,6 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
 
         if (!currentPeriod) {
           console.error("현재 기간 정보를 받아오지 못했습니다");
-          setLoading(false);
           return;
         }
 
@@ -396,11 +393,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
         }
       } catch (error) {
         console.error("발주 내역 조회 중 오류:", error);
-      } finally {
-        setLoading(false);
       }
-    } else {
-      setLoading(false);
     }
   };
 
@@ -803,9 +796,14 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
       setLoading(true);
       setIsPeriodSearch(false);
       (async () => {
-        await fetchOrders(1, "desc");
-        setCurrentPage(2);
-        setLoading(false);
+        try {
+          await fetchOrders(1, "desc");
+          setCurrentPage(2);
+        } catch (error) {
+          console.error("초기 데이터 로딩 중 오류:", error);
+        } finally {
+          setLoading(false);
+        }
       })();
     }
   }, [storeId, itemsLoaded]);
@@ -923,7 +921,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
             const monthsObj = groupedByYearMonthWeek[year];
             const sortedMonths = sortKeys(Object.keys(monthsObj));
 
-            // 이 연도에 매장_발주량이 0보다 큰 주문이 있는지 확인
+            // 매장_발주량이 0보다 큰 주문이 있는지 확인
             const hasNonZeroOrdersInYear = sortedMonths.some((month) => {
               const weeksObj = monthsObj[month];
               const weeks = Object.keys(weeksObj);
@@ -1157,33 +1155,41 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
           }}
           ListFooterComponent={
             !isPeriodSearch && hasMore ? (
-              <TouchableOpacity
-                testID="loadMoreButton"
-                style={orderStatusStyles.loadMoreButton}
-                onPress={async () => {
-                  const currentOffset = scrollOffset.current;
-                  await fetchOrders(currentPage, sortOrder);
-                  setCurrentPage((prev) => prev + 1);
-                  setTimeout(() => {
-                    flatListRef.current?.scrollToOffset({
-                      offset: currentOffset,
-                      animated: false,
-                    });
-                  }, 100);
-                }}
-                disabled={loading}
-              >
-                {loading ? (
+              loading ? (
+                <View style={orderStatusStyles.loadingMoreContainer}>
                   <ActivityIndicator size="small" color="#0D326F" />
-                ) : (
+                </View>
+              ) : (
+                <TouchableOpacity
+                  testID="loadMoreButton"
+                  style={orderStatusStyles.loadMoreButton}
+                  onPress={async () => {
+                    const currentOffset = scrollOffset.current;
+                    setLoading(true); // 로딩 상태를 즉시 true로 설정
+                    try {
+                      await fetchOrders(currentPage, sortOrder);
+                      setCurrentPage((prev) => prev + 1);
+                    } catch (error) {
+                      console.error("더 불러오기 중 오류 발생:", error);
+                    } finally {
+                      setLoading(false); // 작업 완료 후 로딩 상태를 false로 변경
+                      setTimeout(() => {
+                        flatListRef.current?.scrollToOffset({
+                          offset: currentOffset,
+                          animated: false,
+                        });
+                      }, 100);
+                    }
+                  }}
+                >
                   <Text
                     testID="loadMoreButtonText"
                     style={orderStatusStyles.loadMoreButtonText}
                   >
                     더 불러오기
                   </Text>
-                )}
-              </TouchableOpacity>
+                </TouchableOpacity>
+              )
             ) : null
           }
         />
@@ -1227,43 +1233,34 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                   testID="modalOrderItem"
                   style={orderStatusStyles.modalOrderItem}
                 >
+                  <Text
+                    testID="modalOrderName"
+                    style={orderStatusStyles.modalOrderName}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                  >
+                    {order.품목명}
+                  </Text>
                   <View
                     style={{
-                      flex: 1,
                       flexDirection: "row",
                       alignItems: "center",
+                      justifyContent: "flex-end",
+                      minWidth: wp("35%"),
                     }}
                   >
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text
-                        testID="modalOrderName"
-                        style={orderStatusStyles.modalOrderName}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                      >
-                        {order.품목명}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        marginLeft: "auto",
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
+                    <Text
+                      testID="modalOrderQuantity"
+                      style={orderStatusStyles.modalOrderQuantity}
                     >
-                      <Text
-                        testID="modalOrderQuantity"
-                        style={orderStatusStyles.modalOrderQuantity}
-                      >
-                        {order.매장_발주량}개
-                      </Text>
-                      <Text
-                        testID="modalOrderPrice"
-                        style={orderStatusStyles.modalOrderPrice}
-                      >
-                        {f.formatPrice(order.totalCost || 0)}원
-                      </Text>
-                    </View>
+                      {order.매장_발주량}개
+                    </Text>
+                    <Text
+                      testID="modalOrderPrice"
+                      style={orderStatusStyles.modalOrderPrice}
+                    >
+                      {f.formatPrice(order.totalCost || 0)}원
+                    </Text>
                   </View>
                 </View>
               ))}

@@ -32,6 +32,7 @@ import {
   OrderRequeststyle,
   confirmationStyles,
 } from "../../src/styles/StockManagement_styles_warehouse";
+
 import { APIProduct } from "../../src/components/ui/common/types";
 import { Search, Minus, Plus, Trash2, X } from "lucide-react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
@@ -1377,7 +1378,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               testID="modalText_Complete"
               style={[
                 modalStyles.modalText,
-                { marginBottom: moderateScale(-3) },
+                { marginBottom: moderateScale(-3), height: wp(7) },
               ]}
             >
               {inventoryType === "daily"

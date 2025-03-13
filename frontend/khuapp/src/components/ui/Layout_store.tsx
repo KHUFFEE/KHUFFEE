@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Platform,
   Animated,
+  StatusBar,
 } from "react-native";
 import {
   Settings,
@@ -28,6 +29,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { RN_API_URL } from "@env";
 import { scale, verticalScale, moderateScale } from "react-native-size-matters";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // 테이블 상태 인터페이스 정의
 interface TableStatus {
@@ -57,6 +59,7 @@ const Layout_store: React.FC<LayoutProps> = ({
 }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList, "Main">>();
+  const insets = useSafeAreaInsets(); // SafeArea 인셋 값 가져오기
 
   // 설정 모달 상태
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -145,7 +148,10 @@ const Layout_store: React.FC<LayoutProps> = ({
           testID="headerContainer"
           style={[
             modernStyles.headerContainer,
-            { backgroundColor: "rgba(255, 255, 255, 0.9)" },
+            {
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              paddingTop: insets.top > 0 ? insets.top : moderateScale(10), // 노치가 있는 기기는 insets.top 사용, 없으면 기본 패딩
+            },
           ]}
         >
           <BlurView
@@ -166,7 +172,15 @@ const Layout_store: React.FC<LayoutProps> = ({
         <LinearGradient
           testID="headerContainer"
           colors={["#ffffff", "#f8f9fa"]}
-          style={modernStyles.headerContainer}
+          style={[
+            modernStyles.headerContainer,
+            {
+              paddingTop:
+                insets.top > 0
+                  ? insets.top
+                  : StatusBar.currentHeight || moderateScale(10),
+            },
+          ]}
         >
           <HeaderContent
             storeName={storeName}
@@ -187,7 +201,11 @@ const Layout_store: React.FC<LayoutProps> = ({
           testID="bottomNavContainer"
           style={[
             modernStyles.bottomNavContainer,
-            { backgroundColor: "rgba(255, 255, 255, 0.9)" },
+            {
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              paddingBottom:
+                insets.bottom > 0 ? insets.bottom : moderateScale(10), // 홈 인디케이터가 있는 기기는 insets.bottom 사용
+            },
           ]}
         >
           <BlurView
@@ -209,7 +227,13 @@ const Layout_store: React.FC<LayoutProps> = ({
         <LinearGradient
           testID="bottomNavContainer"
           colors={["#f8f9fa", "#ffffff"]}
-          style={modernStyles.bottomNavContainer}
+          style={[
+            modernStyles.bottomNavContainer,
+            {
+              paddingBottom:
+                insets.bottom > 0 ? insets.bottom : moderateScale(10),
+            },
+          ]}
         >
           <BottomNavContent
             activeView={activeView}

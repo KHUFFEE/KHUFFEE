@@ -518,6 +518,7 @@ export const homescreenStyles = StyleSheet.create({
   tableFooter: {
     backgroundColor: "#E6EFF9",
     borderTopWidth: 1,
+    paddingHorizontal: moderateScale(0),
     borderTopColor: "#CBD5E1",
   },
 });

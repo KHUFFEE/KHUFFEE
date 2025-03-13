@@ -109,6 +109,12 @@ export const orderStatusStyles = StyleSheet.create({
     alignItems: "center",
   },
 
+  loadingMoreContainer: {
+    padding: moderateScale(12),
+    alignItems: "center",
+    marginBottom: verticalScale(8),
+  },
+
   emptyContainer: {
     flex: 1,
     justifyContent: "center",

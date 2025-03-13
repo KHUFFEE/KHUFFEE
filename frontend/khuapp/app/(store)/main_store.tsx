@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native";
+import { StatusBar } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "../(login)/index";
 import StoreEmployeeDashboard_store from "./StoreEmployeeDashboard_store";
 import { styles } from "../../src/components/ui/common/commonstyler";
 import Layout_store from "../../src/components/ui/Layout_store";
 import { ViewType } from "../../src/components/ui/common/types";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function StoreDashboardScreen() {
   const route = useRoute();
@@ -15,18 +16,29 @@ export default function StoreDashboardScreen() {
   const [activeView, setActiveView] = useState<ViewType>("home");
 
   return (
-    <SafeAreaView testID="dashboardContainer" style={styles.dashboardContainer}>
-      <Layout_store
-        storeName={storeName}
-        activeView={activeView}
-        setActiveView={setActiveView}
+    <SafeAreaProvider>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent={true}
+      />
+      <SafeAreaView
+        testID="dashboardContainer"
+        style={styles.dashboardContainer}
+        edges={["right", "left"]} // top과 bottom은 Layout에서 처리하도록 제외
       >
-        <StoreEmployeeDashboard_store
+        <Layout_store
           storeName={storeName}
           activeView={activeView}
           setActiveView={setActiveView}
-        />
-      </Layout_store>
-    </SafeAreaView>
+        >
+          <StoreEmployeeDashboard_store
+            storeName={storeName}
+            activeView={activeView}
+            setActiveView={setActiveView}
+          />
+        </Layout_store>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }

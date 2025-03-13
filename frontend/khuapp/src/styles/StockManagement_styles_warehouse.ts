@@ -88,7 +88,7 @@ export const inventoryStyles = StyleSheet.create({
     // marginBottom: moderateScale(2),
     padding: moderateScale(15),
     paddingBottom: moderateScale(0),
-    paddingTop: moderateScale(0),
+    paddingTop: moderateScale(3),
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

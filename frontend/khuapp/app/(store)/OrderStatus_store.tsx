@@ -1227,41 +1227,32 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                   testID="modalOrderItem"
                   style={orderStatusStyles.modalOrderItem}
                 >
+                  <Text
+                    testID="modalOrderName"
+                    style={orderStatusStyles.modalOrderName}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {order.품목명}
+                  </Text>
                   <View
                     style={{
-                      flex: 1,
                       flexDirection: "row",
                       alignItems: "center",
-                      justifyContent: "space-between",
                     }}
                   >
                     <Text
-                      testID="modalOrderName"
-                      style={orderStatusStyles.modalOrderName}
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
+                      testID="modalOrderQuantity"
+                      style={orderStatusStyles.modalOrderQuantity}
                     >
-                      {order.품목명}
+                      {order.매장_발주량}개
                     </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
+                    <Text
+                      testID="modalOrderPrice"
+                      style={orderStatusStyles.modalOrderPrice}
                     >
-                      <Text
-                        testID="modalOrderQuantity"
-                        style={orderStatusStyles.modalOrderQuantity}
-                      >
-                        {order.매장_발주량}개
-                      </Text>
-                      <Text
-                        testID="modalOrderPrice"
-                        style={orderStatusStyles.modalOrderPrice}
-                      >
-                        {f.formatPrice(order.totalCost || 0)}원
-                      </Text>
-                    </View>
+                      {f.formatPrice(order.totalCost || 0)}원
+                    </Text>
                   </View>
                 </View>
               ))}

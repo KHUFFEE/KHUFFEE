@@ -856,7 +856,10 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                             </Text>
                             <View
                               testID="amountCell"
-                              style={[homescreenStyles.amountCell, { flex: 1 }]}
+                              style={[
+                                homescreenStyles.amountCell,
+                                { flex: 1.2 },
+                              ]}
                             >
                               <Text
                                 testID="summaryTotalValue"
@@ -873,8 +876,11 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                               </Text>
                             </View>
                             <View
-                              testID="amountCell"
-                              style={[homescreenStyles.amountCell, { flex: 1 }]}
+                              testID="너지"
+                              style={[
+                                homescreenStyles.amountCell,
+                                { flex: 1.2 },
+                              ]}
                             >
                               <Text
                                 testID="summaryTotalValue"

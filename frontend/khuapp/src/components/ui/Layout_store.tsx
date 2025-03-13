@@ -27,6 +27,7 @@ import { RootStackParamList } from "../../../app/(login)/index";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { RN_API_URL } from "@env";
+import { scale, verticalScale, moderateScale } from "react-native-size-matters";
 
 // 테이블 상태 인터페이스 정의
 interface TableStatus {
@@ -339,7 +340,8 @@ const HeaderContent = ({
         flexDirection: "row",
         width: "100%",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "flex-start",
+        paddingHorizontal: 4,
       }}
     >
       <Text
@@ -350,33 +352,32 @@ const HeaderContent = ({
       >
         {storeName}
       </Text>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        {/* 발주 아이콘 */}
-        <ShoppingCart
-          size={22}
-          color={orderStatus === 0 ? "#e53e3e" : "#0D326F"}
-          strokeWidth={2}
-          style={{ marginRight: 16 }}
-        />
 
-        {/* 재고 아이콘 */}
-        <Clipboard
-          size={22}
-          color={inventoryStatus === 0 ? "#e53e3e" : "#0D326F"}
-          strokeWidth={2}
-          style={{ marginRight: 16 }}
-        />
+      {/* 발주 아이콘 */}
+      <ShoppingCart
+        size={22}
+        color={orderStatus === 0 ? "#e53e3e" : "#0D326F"}
+        strokeWidth={2}
+        style={{ marginRight: moderateScale(4) }}
+      />
 
-        {/* 설정 버튼 */}
-        <TouchableOpacity
-          testID="settingsButton"
-          onPress={openSettingsModal}
-          style={modernStyles.settingsButton}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Settings size={24} color="#0D326F" strokeWidth={2} />
-        </TouchableOpacity>
-      </View>
+      {/* 재고 아이콘 */}
+      <Clipboard
+        size={22}
+        color={inventoryStatus === 0 ? "#e53e3e" : "#0D326F"}
+        strokeWidth={2}
+        style={{ marginRight: 4 }}
+      />
+
+      {/* 설정 버튼 */}
+      <TouchableOpacity
+        testID="settingsButton"
+        onPress={openSettingsModal}
+        style={[modernStyles.settingsButton, { marginLeft: "auto" }]}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Settings size={24} color="#0D326F" strokeWidth={2} />
+      </TouchableOpacity>
     </View>
   );
 };

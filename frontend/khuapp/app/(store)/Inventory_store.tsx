@@ -29,6 +29,10 @@ import {
 import { APIProduct } from "../../src/components/ui/common/types";
 import { Search, Minus, Plus, Trash2, X } from "lucide-react-native";
 import { moderateScale } from "react-native-size-matters";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 // 일간 재고 타입
 export interface MergedInventoryItem extends APIProduct {
@@ -871,7 +875,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               testID="modalText_Complete"
               style={[
                 modalStyles.modalText,
-                { marginBottom: moderateScale(-3) },
+                { marginBottom: moderateScale(-3), height: hp(7) },
               ]}
             >
               {inventoryType === "daily"

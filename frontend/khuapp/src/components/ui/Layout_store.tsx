@@ -130,6 +130,7 @@ const Layout_store: React.FC<LayoutProps> = ({
   // 아이콘 렌더링 함수
   const renderIcon = (IconComponent: any, isActive: boolean) => (
     <IconComponent
+      testID="icon"
       size={22}
       color={isActive ? "#8B0000" : "#64748b"}
       strokeWidth={isActive ? 2.5 : 1.5}
@@ -137,7 +138,7 @@ const Layout_store: React.FC<LayoutProps> = ({
   );
 
   return (
-    <View style={styles.dashboardContainer}>
+    <View style={styles.dashboardContainer} testID="dashboardContainer">
       {/* 상단 헤더 - 블러 효과와 그라데이션 적용 */}
       {Platform.OS === "ios" ? (
         <View
@@ -163,6 +164,7 @@ const Layout_store: React.FC<LayoutProps> = ({
         </View>
       ) : (
         <LinearGradient
+          testID="headerContainer"
           colors={["#ffffff", "#f8f9fa"]}
           style={modernStyles.headerContainer}
         >
@@ -175,17 +177,21 @@ const Layout_store: React.FC<LayoutProps> = ({
       )}
 
       {/* 메인 콘텐츠 영역 */}
-      <View style={styles.mainContent}>{children}</View>
+      <View style={styles.mainContent} testID="mainContent">
+        {children}
+      </View>
 
       {/* 하단 네비게이션 바 - 모던한 디자인 적용 */}
       {Platform.OS === "ios" ? (
         <View
+          testID="bottomNavContainer"
           style={[
             modernStyles.bottomNavContainer,
             { backgroundColor: "rgba(255, 255, 255, 0.9)" },
           ]}
         >
           <BlurView
+            testID="blurViewBottom"
             intensity={80}
             tint="light"
             style={[StyleSheet.absoluteFill]}
@@ -201,6 +207,7 @@ const Layout_store: React.FC<LayoutProps> = ({
         </View>
       ) : (
         <LinearGradient
+          testID="bottomNavContainer"
           colors={["#f8f9fa", "#ffffff"]}
           style={modernStyles.bottomNavContainer}
         >
@@ -219,16 +226,18 @@ const Layout_store: React.FC<LayoutProps> = ({
         transparent={true}
         animationType="fade"
         onRequestClose={closeSettingsModal}
+        testID="settingsModal"
       >
-        <View style={modernStyles.modalOverlay}>
-          <View style={modernStyles.modalContainer}>
-            <View style={modernStyles.modalHeader}>
+        <View style={modernStyles.modalOverlay} testID="modalOverlay">
+          <View style={modernStyles.modalContainer} testID="modalContainer">
+            <View style={modernStyles.modalHeader} testID="modalHeader">
               <Text testID="modalTitle" style={modernStyles.modalTitle}>
                 설정
               </Text>
               <TouchableOpacity
                 onPress={closeSettingsModal}
                 style={modernStyles.closeButton}
+                testID="closeButton"
               >
                 <X size={20} color="#64748b" />
               </TouchableOpacity>
@@ -237,6 +246,7 @@ const Layout_store: React.FC<LayoutProps> = ({
             <TouchableOpacity
               style={modernStyles.modalOption}
               onPress={handleSettings}
+              testID="modalOption"
             >
               <User size={20} color="#0D326F" />
               <Text
@@ -250,6 +260,7 @@ const Layout_store: React.FC<LayoutProps> = ({
             <TouchableOpacity
               style={modernStyles.modalOption}
               onPress={handleLogoutRequest}
+              testID="modalOption"
             >
               <LogOut size={20} color="#8B0000" />
               <Text
@@ -269,9 +280,10 @@ const Layout_store: React.FC<LayoutProps> = ({
         transparent={true}
         animationType="fade"
         onRequestClose={() => setShowConfirmLogout(false)}
+        testID="confirmModal"
       >
-        <View style={modernStyles.modalOverlay}>
-          <View style={modernStyles.confirmContainer}>
+        <View style={modernStyles.modalOverlay} testID="confirmModalOverlay">
+          <View style={modernStyles.confirmContainer} testID="confirmContainer">
             <Text testID="confirmTitle" style={modernStyles.confirmTitle}>
               로그아웃
             </Text>
@@ -279,11 +291,15 @@ const Layout_store: React.FC<LayoutProps> = ({
               정말 로그아웃할까요?
             </Text>
 
-            <View style={modernStyles.confirmButtonsContainer}>
+            <View
+              style={modernStyles.confirmButtonsContainer}
+              testID="confirmButtonsContainer"
+            >
               {/* 닫기 버튼 */}
               <TouchableOpacity
                 style={modernStyles.cancelButton}
                 onPress={() => setShowConfirmLogout(false)}
+                testID="cancelButton"
               >
                 <Text
                   testID="cancelButtonText"
@@ -297,6 +313,7 @@ const Layout_store: React.FC<LayoutProps> = ({
               <TouchableOpacity
                 style={modernStyles.logoutButton}
                 onPress={handleLogout}
+                testID="logoutButton"
               >
                 <Text
                   testID="logoutButtonText"
@@ -342,7 +359,7 @@ const HeaderContent = ({
         width: "100%",
         alignItems: "center",
         justifyContent: "flex-start",
-        paddingHorizontal: moderateScale(4),
+        // paddingHorizontal: moderateScale(4),
       }}
     >
       <Text
@@ -356,7 +373,8 @@ const HeaderContent = ({
 
       {/* 발주 아이콘 */}
       <ShoppingCart
-        size={22}
+        testID="shoppingCartIcon"
+        size={moderateScale(17)}
         color={orderStatus === 0 ? "#e53e3e" : "#0D326F"}
         strokeWidth={2}
         style={{ marginRight: moderateScale(4) }}
@@ -364,10 +382,11 @@ const HeaderContent = ({
 
       {/* 재고 아이콘 */}
       <Clipboard
-        size={22}
+        testID="clipboardIcon"
+        size={moderateScale(17)}
         color={inventoryStatus === 0 ? "#e53e3e" : "#0D326F"}
         strokeWidth={2}
-        style={{ marginRight: 4 }}
+        style={{ marginRight: moderateScale(4) }}
       />
 
       {/* 설정 버튼 */}
@@ -377,7 +396,12 @@ const HeaderContent = ({
         style={[modernStyles.settingsButton, { marginLeft: "auto" }]}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <Settings size={24} color="#0D326F" strokeWidth={2} />
+        <Settings
+          testID="settingsIcon"
+          size={moderateScale(22)}
+          color="#0D326F"
+          strokeWidth={2}
+        />
       </TouchableOpacity>
     </View>
   );

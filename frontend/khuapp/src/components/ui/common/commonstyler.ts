@@ -1294,12 +1294,12 @@ export const modernStyles = StyleSheet.create({
     paddingRight: moderateScale(8), // 오른쪽 패딩 줄임
   },
   storeNameText: {
+    ...commonTextStyle,
     fontSize: RFValue(18),
     fontWeight: "600",
     color: "#1e293b",
-    flex: 0.3,
-    marginRight: moderateScale(5),
-    ...commonTextStyle,
+    flex: 0.25,
+    // marginRight: moderateScale(5),
   },
   settingsButton: {
     padding: moderateScale(8),

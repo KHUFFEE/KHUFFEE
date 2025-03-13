@@ -336,12 +336,13 @@ const HeaderContent = ({
 
   return (
     <View
+      testID="headerContent"
       style={{
         flexDirection: "row",
         width: "100%",
         alignItems: "center",
         justifyContent: "flex-start",
-        paddingHorizontal: 4,
+        paddingHorizontal: moderateScale(4),
       }}
     >
       <Text

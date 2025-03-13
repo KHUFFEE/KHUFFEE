@@ -338,7 +338,7 @@ export const modalStyles = StyleSheet.create({
     alignItems: "center",
   },
   modalContainer: {
-    width: "80%",
+    width: wp("80%"),
     backgroundColor: "#fff",
     padding: moderateScale(20),
     borderRadius: moderateScale(10),
@@ -346,8 +346,9 @@ export const modalStyles = StyleSheet.create({
   },
   modalText: {
     marginBottom: moderateScale(20),
-    fontSize: 16,
+    fontSize: RFValue(16),
     textAlign: "center",
+    lineHeight: RFValue(22),
   },
   centeredView: {
     flex: 1,
@@ -356,7 +357,7 @@ export const modalStyles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalView: {
-    width: "85%",
+    width: wp("85%"),
     backgroundColor: "white",
     borderRadius: moderateScale(15),
     padding: moderateScale(25),
@@ -369,6 +370,7 @@ export const modalStyles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    minHeight: hp("25%"),
   },
   modalTitle: {
     marginBottom: moderateScale(15),
@@ -387,6 +389,7 @@ export const modalStyles = StyleSheet.create({
     paddingVertical: moderateScale(10),
     paddingHorizontal: moderateScale(30),
     elevation: 2,
+    marginTop: moderateScale(20),
   },
   textStyle: {
     color: "white",

@@ -81,11 +81,11 @@
 /* ───────────────────────────────────────────── */
 
 /* 1주차 출고 열 - 왼쪽 테두리 추가 */
-.big-table tbody td.wg-week-col:nth-of-type(8) {
+.big-table td.wg-week-col:nth-of-type(8) {
   border-left: 2px solid #8b000062;
 }
 
 /* 5주차 출고 열 - 오른쪽 테두리 추가 */
-.big-table tbody td.wg-week-col:nth-of-type(12) {
+.big-table td.wg-week-col:nth-of-type(12) {
   border-right: 2px solid #8b000062;
 }

@@ -400,16 +400,15 @@ export const orderStatusStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingVertical: moderateScale(8),
-    paddingTop: moderateScale(8),
+    // paddingVertical: moderateScale(8),
+    // paddingTop: moderateScale(8),
     paddingHorizontal: moderateScale(10),
     borderBottomWidth: 1,
     borderColor: "#e2e8f0",
     width: "100%",
     backgroundColor: "#ffffff",
-    marginBottom: moderateScale(6),
-    minHeight: verticalScale(40),
-    height: "auto",
+    // marginBottom: moderateScale(6),
+    height: verticalScale(40),
   },
 
   modalOrderName: {
@@ -420,9 +419,10 @@ export const orderStatusStyles = StyleSheet.create({
     paddingRight: moderateScale(5),
     letterSpacing: -0.3,
     textAlignVertical: "center",
-    lineHeight: RFValue(20),
+    lineHeight: RFValue(16),
     flexWrap: "wrap",
-    marginRight: moderateScale(10),
+    alignSelf: "center",
+    paddingVertical: 0,
   },
 
   modalOrderDate: {
@@ -435,12 +435,14 @@ export const orderStatusStyles = StyleSheet.create({
   modalOrderQuantity: {
     ...commonTextStyle,
     fontSize: RFValue(14),
-    textAlign: "center",
+    textAlign: "right",
     paddingHorizontal: moderateScale(2),
     minWidth: wp("15%"),
     flexShrink: 0,
     textAlignVertical: "center",
-    lineHeight: RFValue(20),
+    lineHeight: RFValue(16),
+    alignSelf: "center",
+    paddingVertical: 0,
   },
 
   modalOrderPrice: {
@@ -452,7 +454,9 @@ export const orderStatusStyles = StyleSheet.create({
     paddingLeft: moderateScale(5),
     flexShrink: 0,
     textAlignVertical: "center",
-    lineHeight: RFValue(20),
+    lineHeight: RFValue(16),
+    alignSelf: "center",
+    paddingVertical: 0,
   },
 
   modalFooter: {

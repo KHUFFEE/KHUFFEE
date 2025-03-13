@@ -399,8 +399,9 @@ export const orderStatusStyles = StyleSheet.create({
   modalOrderItem: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingVertical: moderateScale(8),
+    paddingTop: moderateScale(8),
     paddingHorizontal: moderateScale(10),
     borderBottomWidth: 1,
     borderColor: "#e2e8f0",
@@ -408,6 +409,7 @@ export const orderStatusStyles = StyleSheet.create({
     backgroundColor: "#ffffff",
     marginBottom: moderateScale(6),
     minHeight: verticalScale(40),
+    height: "auto",
   },
 
   modalOrderName: {
@@ -419,6 +421,8 @@ export const orderStatusStyles = StyleSheet.create({
     letterSpacing: -0.3,
     textAlignVertical: "center",
     lineHeight: RFValue(20),
+    flexWrap: "wrap",
+    marginRight: moderateScale(10),
   },
 
   modalOrderDate: {

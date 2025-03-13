@@ -1230,7 +1230,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                   <Text
                     testID="modalOrderName"
                     style={orderStatusStyles.modalOrderName}
-                    numberOfLines={1}
+                    numberOfLines={0} // 줄 제한 없음
                     ellipsizeMode="tail"
                   >
                     {order.품목명}

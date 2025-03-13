@@ -406,7 +406,7 @@ export const orderStatusStyles = StyleSheet.create({
     borderColor: "#e2e8f0",
     width: "100%",
     backgroundColor: "#ffffff",
-    marginBottom: moderateScale(6),
+    // marginBottom: moderateScale(6),
   },
 
   modalOrderName: {

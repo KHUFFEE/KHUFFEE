@@ -109,6 +109,12 @@ export const orderStatusStyles = StyleSheet.create({
     alignItems: "center",
   },
 
+  loadingMoreContainer: {
+    padding: moderateScale(12),
+    alignItems: "center",
+    marginBottom: verticalScale(8),
+  },
+
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -400,27 +406,27 @@ export const orderStatusStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: moderateScale(8),
-    paddingHorizontal: moderateScale(10),
+    paddingVertical: moderateScale(10),
+    paddingLeft: moderateScale(2),
+    paddingRight: moderateScale(4.5),
     borderBottomWidth: 1,
     borderColor: "#e2e8f0",
     width: "100%",
     backgroundColor: "#ffffff",
-    marginBottom: moderateScale(6),
-    // borderRadius: moderateScale(6),
-    minHeight: verticalScale(40),
+    marginLeft: moderateScale(5),
+    // marginBottom: moderateScale(6),
   },
 
   modalOrderName: {
     ...commonTextStyle,
-    flex: 3,
+    flex: 1,
     fontSize: RFValue(14),
-    paddingTop: verticalScale(4),
     color: "#1e293b",
-    // fontWeight: '500',
-    paddingRight: moderateScale(5),
-    flexShrink: 1,
+    paddingRight: moderateScale(3),
     letterSpacing: -0.3,
+    lineHeight: RFValue(20),
+    flexWrap: "wrap",
+    marginRight: moderateScale(10),
   },
 
   modalOrderDate: {
@@ -433,23 +439,22 @@ export const orderStatusStyles = StyleSheet.create({
   modalOrderQuantity: {
     ...commonTextStyle,
     fontSize: RFValue(14),
-    // color: '#64748b',
-    // fontWeight: '500',
-    textAlign: "center",
+    textAlign: "right",
     paddingHorizontal: moderateScale(2),
-    minWidth: wp("15%"),
+    minWidth: wp("10%"),
     flexShrink: 0,
+    lineHeight: RFValue(20),
   },
 
   modalOrderPrice: {
     ...commonTextStyle,
     fontSize: RFValue(14),
     color: "#0D326F",
-    // fontWeight: '600',
     textAlign: "right",
-    minWidth: wp("20%"),
+    minWidth: wp("22%"),
     paddingLeft: moderateScale(5),
     flexShrink: 0,
+    lineHeight: RFValue(20),
   },
 
   modalFooter: {
@@ -853,6 +858,7 @@ export const orderStatusStyles = StyleSheet.create({
     minWidth: wp("30%"),
     borderRightWidth: 1,
     borderRightColor: "#e2e8f0",
+    paddingVertical: moderateScale(5),
   },
 
   quantityColumn: {

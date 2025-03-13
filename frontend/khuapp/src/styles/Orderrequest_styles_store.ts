@@ -83,6 +83,7 @@ export const OrderRequeststyle = StyleSheet.create({
     color: "#1e293b",
     letterSpacing: -0.3,
     // marginLeft: moderateScale(4),
+    lineHeight: RFValue(20),
   },
   favoriteButton: {
     padding: moderateScale(2),
@@ -545,7 +546,7 @@ export const OrderRequeststyle = StyleSheet.create({
     fontSize: RFValue(15),
     color: "#1e293b",
     letterSpacing: -0.3,
-    // marginLeft: moderateScale(4),
+    lineHeight: RFValue(20), // 여기 수정
   },
   productPrice: {
     ...commonTextStyle,

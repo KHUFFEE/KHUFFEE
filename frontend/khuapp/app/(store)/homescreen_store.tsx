@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { homescreenStyles } from "../../src/styles/homescreen_styles_store";
+import { modalStyles } from "../../src/components/ui/common/commonstyler";
 import {
   StoreOrderData,
   APIProduct,

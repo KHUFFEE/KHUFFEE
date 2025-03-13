@@ -370,7 +370,7 @@ const WarehouseOrder = () => {
 
   return (
     <div className="wo-container">
-      <h2 className="title">창고 발주 취합서</h2>
+      <h2 className="title">창고 발주 관리</h2>
       <div className="period-controls">
         <div className="period-search">
           {/* 기간 선택 드롭다운 (년/월/회차) */}

@@ -413,11 +413,9 @@ export const orderStatusStyles = StyleSheet.create({
 
   modalOrderName: {
     ...commonTextStyle,
-    flex: 3,
+    flex: 1,
     fontSize: RFValue(14),
-    paddingTop: verticalScale(4),
     color: "#1e293b",
-    // fontWeight: '500',
     paddingRight: moderateScale(5),
     flexShrink: 1,
     letterSpacing: -0.3,
@@ -433,8 +431,6 @@ export const orderStatusStyles = StyleSheet.create({
   modalOrderQuantity: {
     ...commonTextStyle,
     fontSize: RFValue(14),
-    // color: '#64748b',
-    // fontWeight: '500',
     textAlign: "center",
     paddingHorizontal: moderateScale(2),
     minWidth: wp("15%"),
@@ -445,7 +441,6 @@ export const orderStatusStyles = StyleSheet.create({
     ...commonTextStyle,
     fontSize: RFValue(14),
     color: "#0D326F",
-    // fontWeight: '600',
     textAlign: "right",
     minWidth: wp("20%"),
     paddingLeft: moderateScale(5),

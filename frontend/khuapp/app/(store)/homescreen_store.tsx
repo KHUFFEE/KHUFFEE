@@ -723,13 +723,18 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                           >
                             <View
                               testID="amountCell"
-                              style={[homescreenStyles.amountCell, { flex: 1 }]}
+                              style={[
+                                homescreenStyles.amountCell,
+                                { flex: 1.1, alignItems: "flex-end" },
+                              ]}
                             >
                               <Text
                                 testID="tableHeaderText"
                                 style={[
                                   homescreenStyles.tableHeaderText,
-                                  { paddingRight: moderateScale(15) },
+                                  {
+                                    paddingRight: moderateScale(15),
+                                  },
                                 ]}
                               >
                                 {lastMonth}월
@@ -737,7 +742,10 @@ const HomeScreen_store: React.FC<HomeScreenProps> = ({
                             </View>
                             <View
                               testID="amountCell"
-                              style={[homescreenStyles.amountCell, { flex: 1 }]}
+                              style={[
+                                homescreenStyles.amountCell,
+                                { flex: 0.5 },
+                              ]}
                             >
                               <Text
                                 testID="tableHeaderText"

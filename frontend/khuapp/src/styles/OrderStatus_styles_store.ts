@@ -399,16 +399,14 @@ export const orderStatusStyles = StyleSheet.create({
   modalOrderItem: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    // paddingVertical: moderateScale(8),
-    // paddingTop: moderateScale(8),
+    alignItems: "center",
+    paddingVertical: moderateScale(10),
     paddingHorizontal: moderateScale(10),
     borderBottomWidth: 1,
     borderColor: "#e2e8f0",
     width: "100%",
     backgroundColor: "#ffffff",
-    // marginBottom: moderateScale(6),
-    height: verticalScale(40),
+    marginBottom: moderateScale(6),
   },
 
   modalOrderName: {
@@ -418,11 +416,9 @@ export const orderStatusStyles = StyleSheet.create({
     color: "#1e293b",
     paddingRight: moderateScale(5),
     letterSpacing: -0.3,
-    textAlignVertical: "center",
-    lineHeight: RFValue(16),
+    lineHeight: RFValue(20),
     flexWrap: "wrap",
-    alignSelf: "center",
-    paddingVertical: 0,
+    marginRight: moderateScale(10),
   },
 
   modalOrderDate: {
@@ -435,14 +431,11 @@ export const orderStatusStyles = StyleSheet.create({
   modalOrderQuantity: {
     ...commonTextStyle,
     fontSize: RFValue(14),
-    textAlign: "right",
+    textAlign: "center",
     paddingHorizontal: moderateScale(2),
-    minWidth: wp("15%"),
+    minWidth: wp("12%"),
     flexShrink: 0,
-    textAlignVertical: "center",
-    lineHeight: RFValue(16),
-    alignSelf: "center",
-    paddingVertical: 0,
+    lineHeight: RFValue(20),
   },
 
   modalOrderPrice: {
@@ -453,10 +446,7 @@ export const orderStatusStyles = StyleSheet.create({
     minWidth: wp("22%"),
     paddingLeft: moderateScale(5),
     flexShrink: 0,
-    textAlignVertical: "center",
-    lineHeight: RFValue(16),
-    alignSelf: "center",
-    paddingVertical: 0,
+    lineHeight: RFValue(20),
   },
 
   modalFooter: {
@@ -860,6 +850,7 @@ export const orderStatusStyles = StyleSheet.create({
     minWidth: wp("30%"),
     borderRightWidth: 1,
     borderRightColor: "#e2e8f0",
+    paddingVertical: moderateScale(5),
   },
 
   quantityColumn: {

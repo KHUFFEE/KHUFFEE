@@ -18,8 +18,7 @@ const WarehouseIncoming = () => {
   const [items, setItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [prevInventory, setPrevInventory] = useState(null);
-  // 발주 데이터를 품목별로 그룹화한 결과 (여러 회차의 창고_발주량을 합산)
-  const [ordersGrouped, setOrdersGrouped] = useState({});
+  const [ordersGrouped, setOrdersGrouped] = useState({}); // 발주 데이터를 품목별로 그룹화한 결과
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -82,7 +81,7 @@ const WarehouseIncoming = () => {
       }
 
       // ----------------------- 발주 데이터 조회 및 그룹화 -----------------------
-      // 월 기준으로 창고 발주 데이터를 가져오고, 여러 회차가 있으면 같은 품목_id의 창고_발주량을 합산
+      // 월 기준으로 창고 발주 데이터를 가져오고, 여러 회차가 있으면 합산하여 품목별로 그룹화
       if (params.기간) {
         const ordersRes = await fetchWarehouseOrders({ 기간: params.기간 });
         let groupedOrders = {};
@@ -185,12 +184,6 @@ const WarehouseIncoming = () => {
     return Number(num).toLocaleString();
   };
 
-  const calculateOrderMoney = (row) => {
-    const orderAmount = Number(row.orderAmount);
-    const price = Number(row.입고단가) || 0;
-    return orderAmount * price;
-  };
-
   // ----------------------- 테이블 데이터 구성 -----------------------
   // 창고 입고 데이터(incomingData.orders)를 품목별로 그룹화하여 각 주차(1~5주차) 입고량 집계
   let tableRows = [];
@@ -224,10 +217,11 @@ const WarehouseIncoming = () => {
       const unitPrice =
         matchedItem && matchedItem.입고단가 ? Number(matchedItem.입고단가) : 0;
       const monthlyAmount = monthlyIncoming * unitPrice;
+      // 전월 재고: prevInventory가 배열 형태이면 해당 품목의 창고 재고량 조회
       const prevInvValue = Array.isArray(prevInventory)
         ? (prevInventory.find((r) => r.품목_id === itemId)?.창고_재고량 ?? "-")
         : "-";
-      // *** 발주 데이터 적용 ***
+      // fetchWarehouseOrders로 그룹화한 발주량 적용 (여러 회차의 발주량 합산)
       const orderAmount = ordersGrouped[itemId] || 0;
       return {
         itemId,
@@ -262,22 +256,20 @@ const WarehouseIncoming = () => {
     });
   }
 
-  // ----------------------- 공급업체별 병합 셀 계산 -----------------------
-  // 각 공급업체별로 행 개수와 발주금액 합계를 계산 (부가세 별도/포함)
-  const supplierGroupCounts = {};
-  const supplierGroupOrderSums = {};
-  tableRows.forEach((row) => {
-    if (!supplierGroupCounts[row.supplierName]) {
-      supplierGroupCounts[row.supplierName] = 0;
-    }
-    supplierGroupCounts[row.supplierName] += 1;
-    if (!supplierGroupOrderSums[row.supplierName]) {
-      supplierGroupOrderSums[row.supplierName] = { sumEx: 0, sumInc: 0 };
-    }
-    const orderMoney = calculateOrderMoney(row);
-    supplierGroupOrderSums[row.supplierName].sumEx += orderMoney;
-    supplierGroupOrderSums[row.supplierName].sumInc += orderMoney * 1.1;
-  });
+  // 발주금액: 각 행에서 (발주량 x 입고단가)
+  const calculateOrderMoney = (row) => {
+    const orderAmount = Number(row.orderAmount);
+    const price = Number(row.입고단가) || 0;
+    return orderAmount * price;
+  };
+
+  // 발주합계(부가세 별도): 모든 행의 발주금액 합계
+  const totalOrderMoney = tableRows.reduce(
+    (sum, row) => sum + calculateOrderMoney(row),
+    0
+  );
+  // 발주합계(부가세 포함): 부가세 별도 합계 x 1.1
+  const totalOrderMoneyWithTax = totalOrderMoney * 1.1;
 
   // ----------------------- 수정 모드 핸들러 -----------------------
   const handleEditToggle = () => {
@@ -346,48 +338,6 @@ const WarehouseIncoming = () => {
       alert("수정에 실패하였습니다.");
     }
   };
-
-  // ----------------------- 합계 계산 -----------------------
-  const totalPrevInv = tableRows.reduce(
-    (sum, row) => sum + Number(row.prevInv || 0),
-    0
-  );
-  const totalWeek1 = tableRows.reduce(
-    (sum, row) => sum + Number(row.week1 || 0),
-    0
-  );
-  const totalWeek2 = tableRows.reduce(
-    (sum, row) => sum + Number(row.week2 || 0),
-    0
-  );
-  const totalWeek3 = tableRows.reduce(
-    (sum, row) => sum + Number(row.week3 || 0),
-    0
-  );
-  const totalWeek4 = tableRows.reduce(
-    (sum, row) => sum + Number(row.week4 || 0),
-    0
-  );
-  const totalWeek5 = tableRows.reduce(
-    (sum, row) => sum + Number(row.week5 || 0),
-    0
-  );
-  const totalMonthlyIncoming = tableRows.reduce(
-    (sum, row) => sum + Number(row.monthlyIncoming || 0),
-    0
-  );
-  const totalMonthlyAmount = tableRows.reduce(
-    (sum, row) => sum + Number(row.monthlyAmount || 0),
-    0
-  );
-  const totalOrderAmount = tableRows.reduce(
-    (sum, row) => sum + Number(row.orderAmount || 0),
-    0
-  );
-  const totalOrderMoney = tableRows.reduce(
-    (sum, row) => sum + calculateOrderMoney(row),
-    0
-  );
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
@@ -542,12 +492,18 @@ const WarehouseIncoming = () => {
             </th>
             <th className="wc-order-qty-col">발주량</th>
             <th className="wc-order-amount-col">발주금액</th>
-            <th className="wc-order-sum-ex-col">
+            <th
+              className="wc-order-sum-ex-col"
+              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
+            >
               발주합계
               <br />
               부가세x
             </th>
-            <th className="wc-order-sum-inc-col">
+            <th
+              className="wc-order-sum-inc-col"
+              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
+            >
               발주합계
               <br />
               부가세o
@@ -555,268 +511,183 @@ const WarehouseIncoming = () => {
           </tr>
         </thead>
         <tbody>
-          {tableRows.map((row, index) => {
-            const isFirstRowOfGroup =
-              index === 0 ||
-              row.supplierName !== tableRows[index - 1].supplierName;
-            // 발주량과 월 입고량 차이가 0이 아닐 경우 negative-difference 클래스 적용
-            const hasNegativeDiff =
-              Number(row.orderAmount) - Number(row.monthlyIncoming) !== 0;
-            return (
-              <tr key={row.itemId}>
-                <td className="wc-number-col">{index + 1}</td>
-                <td className="wc-supplier-col">
-                  <div className="wc-supplier-cell">{row.supplierName}</div>
-                </td>
-                <td className="wc-item-col">
-                  <div className="wc-item-cell">{row.itemName}</div>
-                </td>
-                <td className="wc-spec-col">
-                  <div className="wc-spec-cell">{row.규격 || "-"}</div>
-                </td>
-                <td className="wc-price-col">
-                  {row.입고단가 ? Number(row.입고단가).toLocaleString() : "-"}
-                </td>
-                <td className="wc-inunitprice-col">
-                  {row.입고단위단가
-                    ? Number(row.입고단위단가).toLocaleString()
-                    : "-"}
-                </td>
-                <td className="wc-previnv-col">
-                  {row.prevInv !== undefined
-                    ? typeof row.prevInv === "number"
-                      ? Number(row.prevInv).toLocaleString()
-                      : row.prevInv
-                    : "-"}
-                </td>
-                <td className="wc-week-col">
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={
-                        editedIncoming[row.itemId] &&
-                        editedIncoming[row.itemId].week1 !== undefined
-                          ? formatNumber(editedIncoming[row.itemId].week1)
-                          : ""
-                      }
-                      onChange={(e) =>
-                        handleIncomingChange(
-                          row.itemId,
-                          "week1",
-                          e.target.value
-                        )
-                      }
-                      style={{ textAlign: "right" }}
-                    />
-                  ) : row.week1 ? (
-                    Number(row.week1).toLocaleString()
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                <td className="wc-week-col">
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={
-                        editedIncoming[row.itemId] &&
-                        editedIncoming[row.itemId].week2 !== undefined
-                          ? formatNumber(editedIncoming[row.itemId].week2)
-                          : ""
-                      }
-                      onChange={(e) =>
-                        handleIncomingChange(
-                          row.itemId,
-                          "week2",
-                          e.target.value
-                        )
-                      }
-                      style={{ textAlign: "right" }}
-                    />
-                  ) : row.week2 ? (
-                    Number(row.week2).toLocaleString()
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                <td className="wc-week-col">
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={
-                        editedIncoming[row.itemId] &&
-                        editedIncoming[row.itemId].week3 !== undefined
-                          ? formatNumber(editedIncoming[row.itemId].week3)
-                          : ""
-                      }
-                      onChange={(e) =>
-                        handleIncomingChange(
-                          row.itemId,
-                          "week3",
-                          e.target.value
-                        )
-                      }
-                      style={{ textAlign: "right" }}
-                    />
-                  ) : row.week3 ? (
-                    Number(row.week3).toLocaleString()
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                <td className="wc-week-col">
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={
-                        editedIncoming[row.itemId] &&
-                        editedIncoming[row.itemId].week4 !== undefined
-                          ? formatNumber(editedIncoming[row.itemId].week4)
-                          : ""
-                      }
-                      onChange={(e) =>
-                        handleIncomingChange(
-                          row.itemId,
-                          "week4",
-                          e.target.value
-                        )
-                      }
-                      style={{ textAlign: "right" }}
-                    />
-                  ) : row.week4 ? (
-                    Number(row.week4).toLocaleString()
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                <td className="wc-week-col">
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={
-                        editedIncoming[row.itemId] &&
-                        editedIncoming[row.itemId].week5 !== undefined
-                          ? formatNumber(editedIncoming[row.itemId].week5)
-                          : ""
-                      }
-                      onChange={(e) =>
-                        handleIncomingChange(
-                          row.itemId,
-                          "week5",
-                          e.target.value
-                        )
-                      }
-                      style={{ textAlign: "right" }}
-                    />
-                  ) : row.week5 ? (
-                    Number(row.week5).toLocaleString()
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                <td className="wc-month-col">
-                  {row.monthlyIncoming
-                    ? Number(row.monthlyIncoming).toLocaleString()
-                    : "-"}
-                </td>
-                <td className="wc-month-col">
-                  {row.monthlyAmount
-                    ? Number(row.monthlyAmount).toLocaleString()
-                    : "-"}
-                </td>
-                <td
-                  className={`wc-order-qty-col ${hasNegativeDiff ? "negative-difference" : ""}`}
-                >
-                  {formatNumber(row.orderAmount)}
-                </td>
-                <td className="wc-order-amount-col">
-                  {formatNumber(calculateOrderMoney(row))}
-                </td>
-                {isFirstRowOfGroup && (
-                  <>
-                    <td
-                      className="wc-order-sum-ex-col"
-                      rowSpan={supplierGroupCounts[row.supplierName]}
-                    >
-                      {formatNumber(
-                        supplierGroupOrderSums[row.supplierName].sumEx
-                      )}
-                    </td>
-                    <td
-                      className="wc-order-sum-inc-col"
-                      rowSpan={supplierGroupCounts[row.supplierName]}
-                    >
-                      {formatNumber(
-                        supplierGroupOrderSums[row.supplierName].sumInc
-                      )}
-                    </td>
-                  </>
+          {tableRows.map((row, index) => (
+            <tr key={row.itemId}>
+              <td className="wc-number-col">{index + 1}</td>
+              <td className="wc-supplier-col">
+                <div className="wc-supplier-cell">{row.supplierName}</div>
+              </td>
+              <td className="wc-item-col">
+                <div className="wc-item-cell">{row.itemName}</div>
+              </td>
+              <td className="wc-spec-col">
+                <div className="wc-spec-cell">{row.규격 || "-"}</div>
+              </td>
+              <td className="wc-price-col">
+                {row.입고단가 ? Number(row.입고단가).toLocaleString() : "-"}
+              </td>
+              <td className="wc-inunitprice-col">
+                {row.입고단위단가
+                  ? Number(row.입고단위단가).toLocaleString()
+                  : "-"}
+              </td>
+              <td className="wc-previnv-col">
+                {row.prevInv !== undefined
+                  ? typeof row.prevInv === "number"
+                    ? Number(row.prevInv).toLocaleString()
+                    : row.prevInv
+                  : "-"}
+              </td>
+              <td className="wc-week-col">
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      editedIncoming[row.itemId] &&
+                      editedIncoming[row.itemId].week1 !== undefined
+                        ? formatNumber(editedIncoming[row.itemId].week1)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleIncomingChange(row.itemId, "week1", e.target.value)
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                ) : row.week1 ? (
+                  Number(row.week1).toLocaleString()
+                ) : (
+                  "-"
                 )}
-              </tr>
-            );
-          })}
+              </td>
+              <td className="wc-week-col">
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      editedIncoming[row.itemId] &&
+                      editedIncoming[row.itemId].week2 !== undefined
+                        ? formatNumber(editedIncoming[row.itemId].week2)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleIncomingChange(row.itemId, "week2", e.target.value)
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                ) : row.week2 ? (
+                  Number(row.week2).toLocaleString()
+                ) : (
+                  "-"
+                )}
+              </td>
+              <td className="wc-week-col">
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      editedIncoming[row.itemId] &&
+                      editedIncoming[row.itemId].week3 !== undefined
+                        ? formatNumber(editedIncoming[row.itemId].week3)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleIncomingChange(row.itemId, "week3", e.target.value)
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                ) : row.week3 ? (
+                  Number(row.week3).toLocaleString()
+                ) : (
+                  "-"
+                )}
+              </td>
+              <td className="wc-week-col">
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      editedIncoming[row.itemId] &&
+                      editedIncoming[row.itemId].week4 !== undefined
+                        ? formatNumber(editedIncoming[row.itemId].week4)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleIncomingChange(row.itemId, "week4", e.target.value)
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                ) : row.week4 ? (
+                  Number(row.week4).toLocaleString()
+                ) : (
+                  "-"
+                )}
+              </td>
+              <td className="wc-week-col">
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={
+                      editedIncoming[row.itemId] &&
+                      editedIncoming[row.itemId].week5 !== undefined
+                        ? formatNumber(editedIncoming[row.itemId].week5)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleIncomingChange(row.itemId, "week5", e.target.value)
+                    }
+                    style={{ textAlign: "right" }}
+                  />
+                ) : row.week5 ? (
+                  Number(row.week5).toLocaleString()
+                ) : (
+                  "-"
+                )}
+              </td>
+              <td className="wc-month-col">
+                {row.monthlyIncoming
+                  ? Number(row.monthlyIncoming).toLocaleString()
+                  : "-"}
+              </td>
+              <td className="wc-month-col">
+                {row.monthlyAmount
+                  ? Number(row.monthlyAmount).toLocaleString()
+                  : "-"}
+              </td>
+              <td className="wc-order-qty-col">
+                {formatNumber(row.orderAmount)}
+              </td>
+              <td className="wc-order-amount-col">
+                {formatNumber(calculateOrderMoney(row))}
+              </td>
+              {index === 0 && (
+                <>
+                  <td
+                    className="wc-order-sum-ex-col"
+                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
+                  >
+                    {formatNumber(totalOrderMoney)}
+                  </td>
+                  <td
+                    className="wc-order-sum-inc-col"
+                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
+                  >
+                    {formatNumber(totalOrderMoneyWithTax)}
+                  </td>
+                </>
+              )}
+            </tr>
+          ))}
         </tbody>
-        <tfoot>
-          <tr>
-            {/* No. 열: 빈셀 */}
-            <td className="wc-number-col"></td>
-            {/* 협력사, 품목명, 규격, 입고단가, 입고단위 단가 병합 (colSpan=5) */}
-            <td
-              className="wc-supplier-col"
-              colSpan="5"
-              style={{ textAlign: "center" }}
-            >
-              합계
-            </td>
-            {/* 전월재고: 빈셀 */}
-            <td className="wc-previnv-col">
-              {totalPrevInv ? formatNumber(totalPrevInv) : "-"}
-            </td>
-            {/* 1주차 ~ 5주차 입고 */}
-            <td className="wc-week-col">
-              {totalWeek1 ? formatNumber(totalWeek1) : "-"}
-            </td>
-            <td className="wc-week-col">
-              {totalWeek2 ? formatNumber(totalWeek2) : "-"}
-            </td>
-            <td className="wc-week-col">
-              {totalWeek3 ? formatNumber(totalWeek3) : "-"}
-            </td>
-            <td className="wc-week-col">
-              {totalWeek4 ? formatNumber(totalWeek4) : "-"}
-            </td>
-            <td className="wc-week-col">
-              {totalWeek5 ? formatNumber(totalWeek5) : "-"}
-            </td>
-            {/* 월 입고량, 월 입고금액 */}
-            <td className="wc-month-col">
-              {totalMonthlyIncoming ? formatNumber(totalMonthlyIncoming) : "-"}
-            </td>
-            <td className="wc-month-col">
-              {totalMonthlyAmount ? formatNumber(totalMonthlyAmount) : "-"}
-            </td>
-            {/* 발주량, 발주금액 */}
-            <td className="wc-order-qty-col">
-              {totalOrderAmount ? formatNumber(totalOrderAmount) : "-"}
-            </td>
-            <td className="wc-order-amount-col">
-              {totalOrderMoney ? formatNumber(totalOrderMoney) : "-"}
-            </td>
-            {/* 발주합계 부가세x, 발주합계 부가세o: 빈셀 */}
-            <td className="wc-order-sum-ex-col"></td>
-            <td className="wc-order-sum-inc-col"></td>
-          </tr>
-        </tfoot>
       </table>
     </div>
   );

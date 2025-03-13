@@ -131,10 +131,7 @@
 .wc-spec-cell,
 .wg-supplier-cell,
 .wg-item-cell,
-.wg-spec-cell,
-.wo-supplier-cell,
-.wo-item-cell,
-.wo-spec-cell {
+.wg-spec-cell {
   height: 20px;
   overflow-y: auto;
   display: block;
@@ -150,19 +147,16 @@
 .wc-spec-cel::-webkit-scrollbar,
 .wg-supplier-cell::-webkit-scrollbar,
 .wg-item-cell::-webkit-scrollbar,
-.wg-spec-cell::-webkit-scrollbar,
-.wo-supplier-cell::-webkit-scrollbar,
-.wo-item-cell::-webkit-scrollbar,
-.wo-spec-cell::-webkit-scrollbar {
+.wg-spec-cell::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera에서 스크롤바 숨김 */
 }
 
 /* 수정 열 호버 */
-.small-table tbody td.si-sum-col:hover,
-.small-table tbody td.wi-sum-col:hover,
-.big-table tbody td.sime-order-col:hover,
-.big-table tbody td.so-order-col:hover,
-.big-table tbody td.wc-week-col:hover,
-.big-table tbody td.wg-week-col:hover {
+.small-table td.si-sum-col:hover,
+.small-table td.wi-sum-col:hover,
+.big-table td.sime-order-col:hover,
+.big-table td.so-order-col:hover,
+.big-table td.wc-week-col:hover,
+.big-table td.wg-week-col:hover {
   background-color: rgba(139, 0, 0, 0.08);
 }

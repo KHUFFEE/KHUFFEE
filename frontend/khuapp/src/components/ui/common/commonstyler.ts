@@ -155,7 +155,7 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "black",
     flex: 1,
-    marginRight: moderateScale(10),
+    // marginRight: moderateScale(10),
     ...commonTextStyle,
   },
   bottom_navbar: {
@@ -1297,8 +1297,8 @@ export const modernStyles = StyleSheet.create({
     fontSize: RFValue(18),
     fontWeight: "600",
     color: "#1e293b",
-    flex: 1,
-    marginRight: moderateScale(15),
+    flex: 0.3,
+    marginRight: moderateScale(5),
     ...commonTextStyle,
   },
   settingsButton: {

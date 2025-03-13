@@ -322,7 +322,6 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
     forceFetch: boolean = false
   ) => {
     if (!storeId) return;
-    setLoading(true);
     if (forceFetch || !isPeriodSearch) {
       try {
         // 먼저 current_period를 가져오기 위한 API 호출
@@ -336,7 +335,6 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
         const currentPeriodResponse = await fetch(currentPeriodUrl);
         if (!currentPeriodResponse.ok) {
           console.error("현재 기간 조회 실패");
-          setLoading(false);
           return;
         }
 
@@ -345,7 +343,6 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
 
         if (!currentPeriod) {
           console.error("현재 기간 정보를 받아오지 못했습니다");
-          setLoading(false);
           return;
         }
 
@@ -396,11 +393,7 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
         }
       } catch (error) {
         console.error("발주 내역 조회 중 오류:", error);
-      } finally {
-        setLoading(false);
       }
-    } else {
-      setLoading(false);
     }
   };
 
@@ -803,9 +796,14 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
       setLoading(true);
       setIsPeriodSearch(false);
       (async () => {
-        await fetchOrders(1, "desc");
-        setCurrentPage(2);
-        setLoading(false);
+        try {
+          await fetchOrders(1, "desc");
+          setCurrentPage(2);
+        } catch (error) {
+          console.error("초기 데이터 로딩 중 오류:", error);
+        } finally {
+          setLoading(false);
+        }
       })();
     }
   }, [storeId, itemsLoaded]);
@@ -1167,14 +1165,21 @@ const OrderStatus_store: React.FC<OrderStatusProps> = ({ storeId }) => {
                   style={orderStatusStyles.loadMoreButton}
                   onPress={async () => {
                     const currentOffset = scrollOffset.current;
-                    await fetchOrders(currentPage, sortOrder);
-                    setCurrentPage((prev) => prev + 1);
-                    setTimeout(() => {
-                      flatListRef.current?.scrollToOffset({
-                        offset: currentOffset,
-                        animated: false,
-                      });
-                    }, 100);
+                    setLoading(true); // 로딩 상태를 즉시 true로 설정
+                    try {
+                      await fetchOrders(currentPage, sortOrder);
+                      setCurrentPage((prev) => prev + 1);
+                    } catch (error) {
+                      console.error("더 불러오기 중 오류 발생:", error);
+                    } finally {
+                      setLoading(false); // 작업 완료 후 로딩 상태를 false로 변경
+                      setTimeout(() => {
+                        flatListRef.current?.scrollToOffset({
+                          offset: currentOffset,
+                          animated: false,
+                        });
+                      }, 100);
+                    }
                   }}
                 >
                   <Text

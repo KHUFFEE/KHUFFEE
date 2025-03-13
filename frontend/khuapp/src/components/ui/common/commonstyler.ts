@@ -1298,8 +1298,8 @@ export const modernStyles = StyleSheet.create({
     fontSize: RFValue(18),
     fontWeight: "600",
     color: "#1e293b",
-    flex: 0.25,
-    // marginRight: moderateScale(5),
+    flexShrink: 1, // 영역을 넘어서면 줄어들도록 허용
+    marginRight: moderateScale(2),
   },
   settingsButton: {
     padding: moderateScale(8),

@@ -7,6 +7,10 @@ from .views import (
     StoreMonthEndInventoryUpdateView,
     StoreMonthEndInventoryListView,
     WarehouseInventoryUpdateView,
+    WarehouseExpirationListView,
+    WarehouseExpirationCreateView,
+    WarehouseExpirationUpdateView,
+    WarehouseExpirationDeleteView,
 )
 
 urlpatterns = [
@@ -35,5 +39,25 @@ urlpatterns = [
         "warehouse_inventory_update/",
         WarehouseInventoryUpdateView.as_view(),
         name="warehouse-inventory-update",
+    ),
+    path(
+        "warehouse_expiration_list/",
+        WarehouseExpirationListView.as_view(),
+        name="warehouse-expiration-list",
+    ),
+    path(
+        "warehouse_expiration_create/",
+        WarehouseExpirationCreateView.as_view(),
+        name="warehouse-expiration-create",
+    ),
+    path(
+        "warehouse_expiration_update/",
+        WarehouseExpirationUpdateView.as_view(),
+        name="warehouse-expiration-update",
+    ),
+    path(
+        "warehouse_expiration_delete/",
+        WarehouseExpirationDeleteView.as_view(),
+        name="warehouse-expiration-delete",
     ),
 ]

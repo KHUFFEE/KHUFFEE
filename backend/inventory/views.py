@@ -2,7 +2,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import StoreInventory, WarehouseInventory, StoreMonthEndInventory
+from .models import (
+    StoreInventory,
+    WarehouseInventory,
+    StoreMonthEndInventory,
+    WarehouseExpiration,
+)
+from .serializers import WarehouseExpirationSerializer
 from decimal import Decimal
 from accounts.models import Store
 from suppliers.models import Item
@@ -391,3 +397,142 @@ class WarehouseInventoryUpdateView(APIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
+
+
+class WarehouseExpirationListView(APIView):
+    def get(self, request):
+        # 전체 WarehouseExpiration 레코드를 조회할 때, 필요한 필드만 선택하여 반환
+        queryset = WarehouseExpiration.objects.all().values(
+            "품목_id", "유통기한", "창고_재고량"
+        )
+        return Response(list(queryset), status=status.HTTP_200_OK)
+
+
+class WarehouseExpirationCreateView(APIView):
+    def post(self, request):
+        data = request.data
+        try:
+            품목_id = data["품목_id"]
+            유통기한 = data["유통기한"]
+            창고_재고량 = data.get("창고_재고량", 0)
+        except KeyError:
+            return Response(
+                {"error": "품목_id와 유통기한은 필수 입력입니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            item_obj = Item.objects.get(pk=품목_id)
+        except Item.DoesNotExist:
+            return Response(
+                {"error": "해당 품목을 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if WarehouseExpiration.objects.filter(
+            품목_id=item_obj, 유통기한=유통기한
+        ).exists():
+            return Response(
+                {"error": "해당 키의 레코드가 이미 존재합니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        WarehouseExpiration.objects.create(
+            품목_id=item_obj, 유통기한=유통기한, 창고_재고량=창고_재고량
+        )
+        # 존재하는 칼럼으로 정렬하도록 수정
+        record_data = (
+            WarehouseExpiration.objects.filter(품목_id=item_obj, 유통기한=유통기한)
+            .order_by("품목_id", "유통기한")
+            .values("품목_id", "유통기한", "창고_재고량")
+            .first()
+        )
+        return Response(record_data, status=status.HTTP_201_CREATED)
+
+
+class WarehouseExpirationUpdateView(APIView):
+    def post(self, request):
+        data = request.data
+        try:
+            품목_id = data["품목_id"]
+            new_유통기한 = data["유통기한"]
+            창고_재고량 = data.get("창고_재고량", None)
+        except KeyError:
+            return Response(
+                {"error": "품목_id와 유통기한은 필수 입력입니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 수정 시 기존 유통기한(old_유통기한)이 함께 전달되면 이를 기준으로 찾음
+        old_유통기한 = data.get("old_유통기한", None)
+
+        try:
+            item_obj = Item.objects.get(pk=품목_id)
+        except Item.DoesNotExist:
+            return Response(
+                {"error": "해당 품목을 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if old_유통기한:
+            qs = WarehouseExpiration.objects.filter(
+                품목_id=item_obj, 유통기한=old_유통기한
+            )
+        else:
+            qs = WarehouseExpiration.objects.filter(
+                품목_id=item_obj, 유통기한=new_유통기한
+            )
+
+        if not qs.exists():
+            return Response(
+                {"error": "수정할 레코드를 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        qs.update(유통기한=new_유통기한, 창고_재고량=창고_재고량)
+        # 존재하는 칼럼으로 정렬하도록 수정
+        record_data = (
+            WarehouseExpiration.objects.filter(품목_id=item_obj, 유통기한=new_유통기한)
+            .order_by("품목_id", "유통기한")
+            .values("품목_id", "유통기한", "창고_재고량")
+            .first()
+        )
+        return Response(record_data, status=status.HTTP_200_OK)
+
+
+class WarehouseExpirationDeleteView(APIView):
+    def post(self, request):
+        data = request.data
+        try:
+            품목_id = data["품목_id"]
+            유통기한 = data["유통기한"]
+        except KeyError:
+            return Response(
+                {"error": "품목_id와 유통기한은 필수 입력입니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            item_obj = Item.objects.get(pk=품목_id)
+        except Item.DoesNotExist:
+            return Response(
+                {"error": "해당 품목을 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        qs = WarehouseExpiration.objects.filter(품목_id=item_obj, 유통기한=유통기한)
+        if not qs.exists():
+            return Response(
+                {"error": "삭제할 레코드를 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        qs.delete()
+        return Response(
+            {
+                "message": "레코드가 삭제되었습니다.",
+                "품목_id": 품목_id,
+                "유통기한": 유통기한,
+            },
+            status=status.HTTP_200_OK,
+        )

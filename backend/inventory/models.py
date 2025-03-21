@@ -46,3 +46,15 @@ class WarehouseInventory(models.Model):
     class Meta:
         db_table = "창고_재고"
         unique_together = ("매장_id", "품목_id", "기간")
+
+
+class WarehouseExpiration(models.Model):
+    품목_id = models.ForeignKey(
+        Item, on_delete=models.PROTECT, db_column="품목_id"
+    )  # 삭제 방지
+    유통기한 = models.CharField(max_length=10)  # 예: 'YYYY.MM.DD'
+    창고_재고량 = models.IntegerField()
+
+    class Meta:
+        db_table = "창고_유통기한"
+        unique_together = ("품목_id", "유통기한")

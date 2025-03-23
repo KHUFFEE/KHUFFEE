@@ -158,6 +158,7 @@
 }
 
 /* 수정 열 호버 */
+.big-table tbody td.wo-sum-col:hover,
 .small-table tbody td.si-sum-col:hover,
 .small-table tbody td.wi-sum-col:hover,
 .big-table tbody td.sime-order-col:hover,
@@ -165,4 +166,38 @@
 .big-table tbody td.wc-week-col:hover,
 .big-table tbody td.wg-week-col:hover {
   background-color: rgba(139, 0, 0, 0.08);
+}
+
+/* ───────────────────────────────────────────── */
+/* 발주합계 열(부가세 별도/포함) 세로 병합 스타일 */
+/* ───────────────────────────────────────────── */
+
+/* 세로 병합된 셀 기본 스타일 */
+.big-table td.wo-order-sum-ex-col,
+.big-table td.wo-order-sum-inc-col,
+.big-table td.wc-order-sum-ex-col,
+.big-table td.wc-order-sum-inc-col {
+  z-index: 1;
+  vertical-align: middle !important;
+  text-align: right !important;
+  padding: 12px !important;
+  background-color: #fff !important;
+  position: relative;
+  border: 1px solid #ddd;
+  box-shadow: none !important;
+  outline: none;
+}
+
+/* ───────────────────────────────────────────── */
+/* 강조: 수정 열 스타일 */
+/* ───────────────────────────────────────────── */
+.big-table tbody td.wo-sum-col,
+.big-table tbody td.wg-week-col:nth-of-type(8),
+.big-table tbody td.wc-week-col:nth-of-type(8) {
+  border-left: 2px solid #8b000062;
+}
+.big-table tbody td.wo-sum-col,
+.big-table tbody td.wg-week-col:nth-of-type(12),
+.big-table tbody td.wc-week-col:nth-of-type(12) {
+  border-right: 2px solid #8b000062;
 }

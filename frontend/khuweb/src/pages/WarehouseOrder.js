@@ -1,4 +1,5 @@
 // frontend/khuweb/src/pages/WarehouseOrder.js
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import {
   fetchWarehouseOrders,
@@ -411,13 +412,6 @@ const WarehouseOrder = () => {
     }
     return 0;
   };
-
-  // 기존 전체 합계 계산 (더 이상 사용하지 않음)
-  const totalOrderMoney = tableRows.reduce(
-    (sum, row) => sum + calculateOrderMoney(row),
-    0
-  );
-  const totalOrderMoneyWithTax = totalOrderMoney * 1.1;
 
   // ----------------------- 공급업체별 병합 셀 계산 -----------------------
   // 각 공급업체별로 행 개수와 발주금액 합계를 계산 (부가세 별도/포함)

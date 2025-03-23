@@ -48,8 +48,8 @@
 .big-table td.wo-currentinv-money-col,
 .big-table td.wo-sum-col,
 .big-table td.wo-ordermoney-col,
-.big-table td.wo-total-excl-col,
-.big-table td.wo-total-incl-col {
+.big-table td.wo-order-sum-ex-col,
+.big-table td.wo-order-sum-inc-col {
   font-size: 15px;
   min-width: 47px;
 }
@@ -70,8 +70,8 @@
 .big-table th.wo-currentinv-money-col,
 .big-table th.wo-sum-col,
 .big-table th.wo-ordermoney-col,
-.big-table th.wo-total-excl-col,
-.big-table th.wo-total-incl-col {
+.big-table th.wo-order-sum-ex-col,
+.big-table th.wo-order-sum-inc-col {
   min-width: 47px;
   vertical-align: middle;
   font-size: 13px;

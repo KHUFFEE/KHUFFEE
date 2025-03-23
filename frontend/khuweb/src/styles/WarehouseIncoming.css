@@ -88,17 +88,6 @@
   text-align: right;
 }
 
-/* ───────────────────────────────────────────── */
-/* 강조: 1주차 ~ 5주차 입고 열 스타일 */
-/* ───────────────────────────────────────────── */
-.big-table tbody td.wc-week-col:nth-of-type(8) {
-  border-left: 2px solid #8b000062;
-}
-
-.big-table tbody td.wc-week-col:nth-of-type(12) {
-  border-right: 2px solid #8b000062;
-}
-
 /* 발주량 - 입고 */
 .wc-order-qty-col.negative-difference {
   background-color: rgba(139, 0, 0, 0.215);
@@ -108,22 +97,4 @@
 .wc-month-col.negative-difference {
   background-color: rgba(139, 0, 0, 0.215);
   transition: background-color 0.3s ease;
-}
-
-/* ───────────────────────────────────────────── */
-/* 발주합계 열(부가세 별도/포함) 세로 병합 스타일 */
-/* ───────────────────────────────────────────── */
-
-/* 세로 병합된 셀 기본 스타일 */
-.big-table td.wc-order-sum-ex-col,
-.big-table td.wc-order-sum-inc-col {
-  z-index: 1;
-  vertical-align: middle !important;
-  text-align: right !important;
-  padding: 12px !important;
-  background-color: #fff !important;
-  position: relative;
-  border: 1px solid #ddd;
-  box-shadow: none !important;
-  outline: none;
 }

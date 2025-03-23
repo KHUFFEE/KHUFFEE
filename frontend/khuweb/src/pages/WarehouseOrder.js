@@ -7,6 +7,8 @@ import {
   getTableStatusList,
   updateTableStatus,
   fetchWarehouseInventory,
+  fetchWarehouseOutgoing,
+  updateWarehouseOrder, // 추가: 발주 수정 API 함수 (WarehouseIncoming.js와 유사)
 } from "../api/api";
 import "../styles/WarehouseOrder.css";
 import "../styles/table.css";
@@ -39,8 +41,71 @@ const WarehouseOrder = () => {
   const [currInvData, setCurrInvData] = useState([]);
   const [latestPeriod, setLatestPeriod] = useState("");
 
+  // 추가: 창고 출고 데이터 (월 출고량) 상태 – 각 기간별(전년도 m1, m2, m3 및 현재월) 항목별 집계
+  const [prevOutgoingM1, setPrevOutgoingM1] = useState({});
+  const [prevOutgoingM2, setPrevOutgoingM2] = useState({});
+  const [prevOutgoingM3, setPrevOutgoingM3] = useState({});
+  const [currentMonthlyOutgoing, setCurrentMonthlyOutgoing] = useState({});
+
+  // ----------------------- 수정(편집) 모드 상태 및 핸들러 (발주량 수정) -----------------------
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedOrder, setEditedOrder] = useState({});
+
+  const handleEditToggle = () => {
+    if (!isEditMode) {
+      // 초기값 설정: 각 행의 발주량
+      const init = {};
+      tableRows.forEach((row) => {
+        init[row.itemId] = row.orderAmount;
+      });
+      setEditedOrder(init);
+    }
+    setIsEditMode(!isEditMode);
+  };
+
+  const handleOrderChange = (itemId, value) => {
+    const valueWithoutCommas = value.replace(/,/g, "");
+    const numericValue = valueWithoutCommas.replace(/\D/g, "");
+    setEditedOrder((prev) => ({
+      ...prev,
+      [itemId]: numericValue,
+    }));
+  };
+
+  const handleEditSubmit = async () => {
+    try {
+      const updates = [];
+      const defaultStoreId = "ST_102";
+      const period = `${selectedYear}.${selectedMonth}`; // "YYYY.MM" 형식
+      const round = selectedRound;
+      tableRows.forEach((row) => {
+        const edited = editedOrder[row.itemId];
+        if (
+          edited !== undefined &&
+          Number(edited) !== Number(row.orderAmount)
+        ) {
+          const payload = {
+            매장_id: defaultStoreId,
+            품목_id: row.itemId,
+            기간: period,
+            회차: round,
+            창고_발주량: Number(edited),
+          };
+          updates.push(updateWarehouseOrder(payload));
+        }
+      });
+      await Promise.all(updates);
+      await fetchData({ 기간: period, 회차: selectedRound }, false);
+      setIsEditMode(false);
+    } catch (err) {
+      console.error("수정 실패:", err);
+      alert("수정에 실패하였습니다.");
+    }
+  };
+  // --------------------------------------------------------------------------------------------
+
   // ----------------------- 데이터 조회 함수 -----------------------
-  // WarehouseOrder 데이터와 품목, 협력사, 그리고 창고 재고 데이터를 가져옴.
+  // WarehouseOrder 데이터와 품목, 협력사, 그리고 창고 재고 및 창고 출고(월 출고량) 데이터를 가져옴.
   // params: { 기간, 회차 } (기간: "YYYY.MM" 형식)
   const fetchData = async (params = { page: 1 }, manual = false) => {
     try {
@@ -112,6 +177,62 @@ const WarehouseOrder = () => {
         ]);
         setPrevInvData(prevInvRes);
         setCurrInvData(currInvRes);
+      }
+      // ----------------- 창고 출고(월 출고량) 데이터 불러오기 -----------------
+      // params.기간은 "YYYY.MM" 형식임을 전제로 함 → 현재 월 출고량 및 전년도 동일기간부터 m1, m2, m3월 집계
+      if (params.기간) {
+        const currentPeriod = params.기간; // "YYYY.MM"
+        const [year, month] = currentPeriod.split(".");
+        const prevYear = Number(year) - 1;
+        const m = Number(month);
+        const m1 = m; // 전년도 m1월은 현재 선택월과 동일
+        const m2 = m + 1 > 12 ? m + 1 - 12 : m + 1;
+        const m3 = m + 2 > 12 ? m + 2 - 12 : m + 2;
+        const periodPrevM1 = `${prevYear}.${String(m1).padStart(2, "0")}`;
+        const periodPrevM2 = `${prevYear}.${String(m2).padStart(2, "0")}`;
+        const periodPrevM3 = `${prevYear}.${String(m3).padStart(2, "0")}`;
+
+        // 각 기간별로, WarehouseOutgoing API 호출 (기간에 대해 1~5주차 집계)
+        const [
+          outgoingCurrent,
+          outgoingPrevM1,
+          outgoingPrevM2,
+          outgoingPrevM3,
+        ] = await Promise.all([
+          fetchWarehouseOutgoing({
+            기간: `${currentPeriod}.1~${currentPeriod}.5`,
+          }),
+          fetchWarehouseOutgoing({
+            기간: `${periodPrevM1}.1~${periodPrevM1}.5`,
+          }),
+          fetchWarehouseOutgoing({
+            기간: `${periodPrevM2}.1~${periodPrevM2}.5`,
+          }),
+          fetchWarehouseOutgoing({
+            기간: `${periodPrevM3}.1~${periodPrevM3}.5`,
+          }),
+        ]);
+
+        // helper: 주문 데이터(orders)를 품목별 월 출고량으로 집계
+        const groupOutgoingData = (data) => {
+          const grouped = {};
+          if (data && data.orders) {
+            data.orders.forEach((record) => {
+              const itemId = record.품목_id;
+              const value = Number(record.창고_출고량) || 0;
+              if (!grouped[itemId]) {
+                grouped[itemId] = 0;
+              }
+              grouped[itemId] += value;
+            });
+          }
+          return grouped;
+        };
+
+        setCurrentMonthlyOutgoing(groupOutgoingData(outgoingCurrent));
+        setPrevOutgoingM1(groupOutgoingData(outgoingPrevM1));
+        setPrevOutgoingM2(groupOutgoingData(outgoingPrevM2));
+        setPrevOutgoingM3(groupOutgoingData(outgoingPrevM3));
       }
       // -----------------------------------------------------------
       if (manual) setLoading(false);
@@ -230,6 +351,14 @@ const WarehouseOrder = () => {
     // 전월/현 재고 데이터 조회
     const prevRecord = prevInvData.find((r) => r.품목_id === itemId);
     const currRecord = currInvData.find((r) => r.품목_id === itemId);
+    // 추가: 창고 출고(월 출고량) 데이터 – 전년도 및 현재 월
+    const prevOut1 = prevOutgoingM1[itemId] || 0;
+    const prevOut2 = prevOutgoingM2[itemId] || 0;
+    const prevOut3 = prevOutgoingM3[itemId] || 0;
+    const currentOut = currentMonthlyOutgoing[itemId] || 0;
+    const monthlyOutputAmount =
+      currentOut * (matchedItem ? Number(matchedItem.입고단가) : 0);
+
     return {
       itemId,
       supplierName: supplier.협력사명 || "N/A",
@@ -238,12 +367,17 @@ const WarehouseOrder = () => {
       orderAmount: groupedOrders[itemId] || 0,
       unitPrice: matchedItem ? Number(matchedItem.입고단가) : 0,
       규격: matchedItem ? matchedItem.규격 : "",
-      // 단위, 입고단위 삭제됨
+      // 기존 필드들
       입고단가: matchedItem ? matchedItem.입고단가 : "",
-      // 입고단위단가는 그대로 유지
       입고단위단가: matchedItem ? matchedItem.입고단위단가 : "",
       prevInv: prevRecord ? prevRecord.창고_재고량 : "-",
       currInv: currRecord ? currRecord.창고_재고량 : "-",
+      // 추가된 창고 출고 데이터
+      prevOutgoing1: prevOut1,
+      prevOutgoing2: prevOut2,
+      prevOutgoing3: prevOut3,
+      currentOutgoing: currentOut,
+      monthlyOutputAmount,
     };
   });
 
@@ -389,14 +523,18 @@ const WarehouseOrder = () => {
       <h2 className="title">창고 발주 관리</h2>
       <div className="period-controls">
         <div className="period-search">
-          {/* 기간 선택 드롭다운 (년/월/회차) */}
+          {/* 기간 선택 드롭다운 (년/월/회차) – 수정 모드일 때 흐릿하게 */}
           <div
             className="period-select-box"
             onClick={() => {
-              if (selectRef.current) {
+              if (!isEditMode && selectRef.current) {
                 selectRef.current.focus();
                 setIsDropdownOpen(true);
               }
+            }}
+            style={{
+              pointerEvents: isEditMode ? "none" : "auto",
+              opacity: isEditMode ? 0.5 : 1,
             }}
           >
             <div className="select-display">{displayPeriod || "기간 선택"}</div>
@@ -443,17 +581,47 @@ const WarehouseOrder = () => {
               </svg>
             </span>
           </div>
-          <button className="reset-button" onClick={() => handleReset(true)}>
+          <button
+            className="reset-button"
+            onClick={() => handleReset(true)}
+            disabled={isEditMode}
+            style={{ opacity: isEditMode ? 0.5 : 1 }}
+          >
             최신 조회
           </button>
-          <button className="session-button" onClick={handleSessionButtonClick}>
+          <button
+            className="session-button"
+            onClick={handleSessionButtonClick}
+            disabled={isEditMode}
+            style={{ opacity: isEditMode ? 0.5 : 1 }}
+          >
             회차 관리
           </button>
         </div>
         <div className="warehouse-action-buttons">
-          <button onClick={handleExcelDownload} className="download-button">
-            Excel 다운로드
-          </button>
+          {/* 수정 모드일 때 Excel 다운로드 버튼 숨김 */}
+          {!isEditMode && (
+            <button onClick={handleExcelDownload} className="download-button">
+              Excel 다운로드
+            </button>
+          )}
+          {isEditMode ? (
+            <>
+              <button
+                className="edit-confirm-button"
+                onClick={handleEditSubmit}
+              >
+                수정완료
+              </button>
+              <button className="edit-button" onClick={handleEditToggle}>
+                취소
+              </button>
+            </>
+          ) : (
+            <button className="edit-button" onClick={handleEditToggle}>
+              수정
+            </button>
+          )}
         </div>
       </div>
       <hr className="divider" />
@@ -493,11 +661,13 @@ const WarehouseOrder = () => {
             <th className="wo-prev-month2-col">{prevYearHeaders[1]}</th>
             <th className="wo-prev-month3-col">{prevYearHeaders[2]}</th>
             <th className="wo-monthly-output-col">
-              월<br />
+              월
+              <br />
               출고량
             </th>
             <th className="wo-monthly-outputmoney-col">
-              월<br />
+              월
+              <br />
               출고금액
             </th>
           </tr>
@@ -536,7 +706,26 @@ const WarehouseOrder = () => {
                     ? formatNumber(calculateCurrentInvMoney(row))
                     : "-"}
                 </td>
-                <td className="wo-sum-col">{formatNumber(row.orderAmount)}</td>
+                <td className="wo-sum-col">
+                  {isEditMode ? (
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={
+                        editedOrder[row.itemId] !== undefined
+                          ? formatNumber(editedOrder[row.itemId])
+                          : ""
+                      }
+                      onChange={(e) =>
+                        handleOrderChange(row.itemId, e.target.value)
+                      }
+                      style={{ textAlign: "right" }}
+                    />
+                  ) : (
+                    formatNumber(row.orderAmount)
+                  )}
+                </td>
                 <td className="wo-ordermoney-col">
                   {formatNumber(calculateOrderMoney(row))}
                 </td>
@@ -560,11 +749,21 @@ const WarehouseOrder = () => {
                     </td>
                   </>
                 )}
-                <td className="wo-prev-month1-col">-</td>
-                <td className="wo-prev-month2-col">-</td>
-                <td className="wo-prev-month3-col">-</td>
-                <td className="wo-monthly-output-col">-</td>
-                <td className="wo-monthly-outputmoney-col">-</td>
+                <td className="wo-prev-month1-col">
+                  {formatNumber(row.prevOutgoing1)}
+                </td>
+                <td className="wo-prev-month2-col">
+                  {formatNumber(row.prevOutgoing2)}
+                </td>
+                <td className="wo-prev-month3-col">
+                  {formatNumber(row.prevOutgoing3)}
+                </td>
+                <td className="wo-monthly-output-col">
+                  {formatNumber(row.currentOutgoing)}
+                </td>
+                <td className="wo-monthly-outputmoney-col">
+                  {formatNumber(row.monthlyOutputAmount)}
+                </td>
               </tr>
             );
           })}
@@ -575,7 +774,7 @@ const WarehouseOrder = () => {
           <div className="order-popup-content">
             <h3>!! 주의 !!</h3>
             <p>
-              현재 매니저의 발주는 {managerOrderRound}회차로 저장됩니다.
+              현재 창고 발주는 {managerOrderRound}회차로 저장됩니다.
               <br />
               {managerOrderRound + 1}회차로 변경하려면 변경 버튼을 클릭해주세요.
             </p>

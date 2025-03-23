@@ -166,3 +166,23 @@
 .big-table tbody td.wg-week-col:hover {
   background-color: rgba(139, 0, 0, 0.08);
 }
+
+/* ───────────────────────────────────────────── */
+/* 발주합계 열(부가세 별도/포함) 세로 병합 스타일 */
+/* ───────────────────────────────────────────── */
+
+/* 세로 병합된 셀 기본 스타일 */
+.big-table td.wo-order-sum-ex-col,
+.big-table td.wo-order-sum-inc-col,
+.big-table td.wc-order-sum-ex-col,
+.big-table td.wc-order-sum-inc-col {
+  z-index: 1;
+  vertical-align: middle !important;
+  text-align: right !important;
+  padding: 12px !important;
+  background-color: #fff !important;
+  position: relative;
+  border: 1px solid #ddd;
+  box-shadow: none !important;
+  outline: none;
+}

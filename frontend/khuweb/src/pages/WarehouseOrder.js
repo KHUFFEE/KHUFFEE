@@ -6,7 +6,7 @@ import {
   fetchSuppliers,
   getTableStatusList,
   updateTableStatus,
-  fetchWarehouseInventory, // 추가된 부분
+  fetchWarehouseInventory,
 } from "../api/api";
 import "../styles/WarehouseOrder.css";
 import "../styles/table.css";
@@ -278,48 +278,29 @@ const WarehouseOrder = () => {
     return 0;
   };
 
-  // 발주합계(부가세 별도): 모든 행의 발주금액 합계
+  // 기존 전체 합계 계산 (더 이상 사용하지 않음)
   const totalOrderMoney = tableRows.reduce(
     (sum, row) => sum + calculateOrderMoney(row),
     0
   );
-  // 발주합계(부가세 포함): 부가세 별도 합계 x 1.1
   const totalOrderMoneyWithTax = totalOrderMoney * 1.1;
 
-  // 다운로드 버튼 (동작 비활성화)
-  const handleExcelDownload = () => {
-    alert("다운로드 기능은 현재 비활성화되어 있습니다.");
-  };
-
-  // ----------------------- 회차 관리 (세션 관리) -----------------------
-  const handleSessionButtonClick = async () => {
-    try {
-      const statusList = await getTableStatusList();
-      const warehouseOrderStatus = statusList.find(
-        (s) => s.테이블 === "창고_발주"
-      );
-      const currentStatus = warehouseOrderStatus
-        ? warehouseOrderStatus.상태
-        : 1;
-      setManagerOrderRound(currentStatus);
-    } catch (err) {
-      console.error("회차 관리 조회 실패:", err);
-      setManagerOrderRound(1);
+  // ----------------------- 공급업체별 병합 셀 계산 -----------------------
+  // 각 공급업체별로 행 개수와 발주금액 합계를 계산 (부가세 별도/포함)
+  const supplierGroupCounts = {};
+  const supplierGroupOrderSums = {};
+  tableRows.forEach((row) => {
+    if (!supplierGroupCounts[row.supplierName]) {
+      supplierGroupCounts[row.supplierName] = 0;
     }
-    setShowPopup(true);
-  };
-
-  const handleUpdateSession = async () => {
-    try {
-      const newRound = managerOrderRound + 1;
-      await updateTableStatus({ 테이블: "창고_발주", 상태: newRound });
-      setManagerOrderRound(newRound);
-      setShowPopup(false);
-    } catch (err) {
-      console.error("회차 관리 업데이트 실패:", err);
-      alert("회차 관리 업데이트에 실패하였습니다.");
+    supplierGroupCounts[row.supplierName] += 1;
+    if (!supplierGroupOrderSums[row.supplierName]) {
+      supplierGroupOrderSums[row.supplierName] = { sumEx: 0, sumInc: 0 };
     }
-  };
+    const orderMoney = calculateOrderMoney(row);
+    supplierGroupOrderSums[row.supplierName].sumEx += orderMoney;
+    supplierGroupOrderSums[row.supplierName].sumInc += orderMoney * 1.1;
+  });
 
   // 현재 선택된 월(selectedMonth)을 기준으로 전년도 월 헤더 계산
   let prevYearHeaders = [];
@@ -365,6 +346,41 @@ const WarehouseOrder = () => {
     ];
   }
 
+  // 다운로드 버튼 (동작 비활성화)
+  const handleExcelDownload = () => {
+    alert("다운로드 기능은 현재 비활성화되어 있습니다.");
+  };
+
+  // ----------------------- 회차 관리 (세션 관리) -----------------------
+  const handleSessionButtonClick = async () => {
+    try {
+      const statusList = await getTableStatusList();
+      const warehouseOrderStatus = statusList.find(
+        (s) => s.테이블 === "창고_발주"
+      );
+      const currentStatus = warehouseOrderStatus
+        ? warehouseOrderStatus.상태
+        : 1;
+      setManagerOrderRound(currentStatus);
+    } catch (err) {
+      console.error("회차 관리 조회 실패:", err);
+      setManagerOrderRound(1);
+    }
+    setShowPopup(true);
+  };
+
+  const handleUpdateSession = async () => {
+    try {
+      const newRound = managerOrderRound + 1;
+      await updateTableStatus({ 테이블: "창고_발주", 상태: newRound });
+      setManagerOrderRound(newRound);
+      setShowPopup(false);
+    } catch (err) {
+      console.error("회차 관리 업데이트 실패:", err);
+      alert("회차 관리 업데이트에 실패하였습니다.");
+    }
+  };
+
   if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
 
@@ -409,10 +425,7 @@ const WarehouseOrder = () => {
                 })
                 .map((dp) => {
                   const parts = dp.split(".");
-                  const label = `${parts[0]}년 ${parts[1].padStart(
-                    2,
-                    "0"
-                  )}월 ${parts[2]}회차`;
+                  const label = `${parts[0]}년 ${parts[1].padStart(2, "0")}월 ${parts[2]}회차`;
                   return (
                     <option key={dp} value={dp}>
                       {label}
@@ -466,18 +479,12 @@ const WarehouseOrder = () => {
             </th>
             <th className="wo-sum-col">발주량</th>
             <th className="wo-ordermoney-col">발주금액</th>
-            <th
-              className="wo-total-excl-col"
-              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-            >
+            <th className="wo-order-sum-ex-col">
               발주합계
               <br />
               부가세x
             </th>
-            <th
-              className="wo-total-incl-col"
-              rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-            >
+            <th className="wo-order-sum-inc-col">
               발주합계
               <br />
               부가세o
@@ -486,74 +493,81 @@ const WarehouseOrder = () => {
             <th className="wo-prev-month2-col">{prevYearHeaders[1]}</th>
             <th className="wo-prev-month3-col">{prevYearHeaders[2]}</th>
             <th className="wo-monthly-output-col">
-              월
-              <br />
+              월<br />
               출고량
             </th>
             <th className="wo-monthly-outputmoney-col">
-              월
-              <br />
+              월<br />
               출고금액
             </th>
           </tr>
         </thead>
         <tbody>
-          {tableRows.map((row, index) => (
-            <tr key={row.itemId}>
-              <td className="wo-number-col">{index + 1}</td>
-              <td className="wo-supplier-col">
-                <div className="wo-supplier-cell">{row.supplierName}</div>
-              </td>
-              <td className="wo-item-col">
-                <div className="wo-item-cell">{row.itemName}</div>
-              </td>
-              <td className="wo-spec-col">
-                <div className="wo-spec-cell">{row.규격 || "-"}</div>
-              </td>
-              <td className="wo-price-col">
-                {row.입고단가 ? formatNumber(row.입고단가) : "-"}
-              </td>
-              <td className="wo-inunitprice-col">
-                {row.입고단위단가 ? formatNumber(row.입고단위단가) : "-"}
-              </td>
-              <td className="wo-previnv-col">
-                {row.prevInv !== "-" ? formatNumber(row.prevInv) : "-"}
-              </td>
-              <td className="wo-currinv-col">
-                {row.currInv !== "-" ? formatNumber(row.currInv) : "-"}
-              </td>
-              <td className="wo-currentinv-money-col">
-                {row.currInv !== "-" && row.입고단가
-                  ? formatNumber(calculateCurrentInvMoney(row))
-                  : "-"}
-              </td>
-              <td className="wo-sum-col">{formatNumber(row.orderAmount)}</td>
-              <td className="wo-ordermoney-col">
-                {formatNumber(calculateOrderMoney(row))}
-              </td>
-              {index === 0 && (
-                <>
-                  <td
-                    className="wo-total-excl-col"
-                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-                  >
-                    {formatNumber(totalOrderMoney)}
-                  </td>
-                  <td
-                    className="wo-total-incl-col"
-                    rowSpan={tableRows.length > 0 ? tableRows.length : 1}
-                  >
-                    {formatNumber(totalOrderMoneyWithTax)}
-                  </td>
-                </>
-              )}
-              <td className="wo-prev-month1-col">-</td>
-              <td className="wo-prev-month2-col">-</td>
-              <td className="wo-prev-month3-col">-</td>
-              <td className="wo-monthly-output-col">-</td>
-              <td className="wo-monthly-outputmoney-col">-</td>
-            </tr>
-          ))}
+          {tableRows.map((row, index) => {
+            const isFirstRowOfGroup =
+              index === 0 ||
+              row.supplierName !== tableRows[index - 1].supplierName;
+            return (
+              <tr key={row.itemId}>
+                <td className="wo-number-col">{index + 1}</td>
+                <td className="wo-supplier-col">
+                  <div className="wo-supplier-cell">{row.supplierName}</div>
+                </td>
+                <td className="wo-item-col">
+                  <div className="wo-item-cell">{row.itemName}</div>
+                </td>
+                <td className="wo-spec-col">
+                  <div className="wo-spec-cell">{row.규격 || "-"}</div>
+                </td>
+                <td className="wo-price-col">
+                  {row.입고단가 ? formatNumber(row.입고단가) : "-"}
+                </td>
+                <td className="wo-inunitprice-col">
+                  {row.입고단위단가 ? formatNumber(row.입고단위단가) : "-"}
+                </td>
+                <td className="wo-previnv-col">
+                  {row.prevInv !== "-" ? formatNumber(row.prevInv) : "-"}
+                </td>
+                <td className="wo-currinv-col">
+                  {row.currInv !== "-" ? formatNumber(row.currInv) : "-"}
+                </td>
+                <td className="wo-currentinv-money-col">
+                  {row.currInv !== "-" && row.입고단가
+                    ? formatNumber(calculateCurrentInvMoney(row))
+                    : "-"}
+                </td>
+                <td className="wo-sum-col">{formatNumber(row.orderAmount)}</td>
+                <td className="wo-ordermoney-col">
+                  {formatNumber(calculateOrderMoney(row))}
+                </td>
+                {isFirstRowOfGroup && (
+                  <>
+                    <td
+                      className="wo-order-sum-ex-col"
+                      rowSpan={supplierGroupCounts[row.supplierName]}
+                    >
+                      {formatNumber(
+                        supplierGroupOrderSums[row.supplierName].sumEx
+                      )}
+                    </td>
+                    <td
+                      className="wo-order-sum-inc-col"
+                      rowSpan={supplierGroupCounts[row.supplierName]}
+                    >
+                      {formatNumber(
+                        supplierGroupOrderSums[row.supplierName].sumInc
+                      )}
+                    </td>
+                  </>
+                )}
+                <td className="wo-prev-month1-col">-</td>
+                <td className="wo-prev-month2-col">-</td>
+                <td className="wo-prev-month3-col">-</td>
+                <td className="wo-monthly-output-col">-</td>
+                <td className="wo-monthly-outputmoney-col">-</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       {showPopup && (

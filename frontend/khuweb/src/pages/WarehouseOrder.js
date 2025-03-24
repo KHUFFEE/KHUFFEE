@@ -474,6 +474,58 @@ const WarehouseOrder = () => {
     ];
   }
 
+  // ----------------------- 합계 계산 (Footer) -----------------------
+  const totalPrevInv = tableRows.reduce((sum, row) => {
+    let val = 0;
+    if (row.prevInv && row.prevInv !== "-" && !isNaN(Number(row.prevInv))) {
+      val = Number(row.prevInv);
+    }
+    return sum + val;
+  }, 0);
+
+  const totalCurrInv = tableRows.reduce((sum, row) => {
+    let val = 0;
+    if (row.currInv && row.currInv !== "-" && !isNaN(Number(row.currInv))) {
+      val = Number(row.currInv);
+    }
+    return sum + val;
+  }, 0);
+
+  const totalCurrentInvMoney = tableRows.reduce(
+    (sum, row) => sum + calculateCurrentInvMoney(row),
+    0
+  );
+
+  const totalOrderAmount = tableRows.reduce(
+    (sum, row) => sum + Number(row.orderAmount || 0),
+    0
+  );
+  const totalOrderMoney = tableRows.reduce(
+    (sum, row) => sum + calculateOrderMoney(row),
+    0
+  );
+
+  const totalPrevOutgoing1 = tableRows.reduce(
+    (sum, row) => sum + Number(row.prevOutgoing1 || 0),
+    0
+  );
+  const totalPrevOutgoing2 = tableRows.reduce(
+    (sum, row) => sum + Number(row.prevOutgoing2 || 0),
+    0
+  );
+  const totalPrevOutgoing3 = tableRows.reduce(
+    (sum, row) => sum + Number(row.prevOutgoing3 || 0),
+    0
+  );
+  const totalCurrentOutgoing = tableRows.reduce(
+    (sum, row) => sum + Number(row.currentOutgoing || 0),
+    0
+  );
+  const totalMonthlyOutputAmount = tableRows.reduce(
+    (sum, row) => sum + Number(row.monthlyOutputAmount || 0),
+    0
+  );
+
   // 다운로드 버튼 (동작 비활성화)
   const handleExcelDownload = () => {
     alert("다운로드 기능은 현재 비활성화되어 있습니다.");
@@ -655,13 +707,11 @@ const WarehouseOrder = () => {
             <th className="wo-prev-month2-col">{prevYearHeaders[1]}</th>
             <th className="wo-prev-month3-col">{prevYearHeaders[2]}</th>
             <th className="wo-monthly-output-col">
-              월
-              <br />
+              월<br />
               출고량
             </th>
             <th className="wo-monthly-outputmoney-col">
-              월
-              <br />
+              월<br />
               출고금액
             </th>
           </tr>
@@ -762,6 +812,66 @@ const WarehouseOrder = () => {
             );
           })}
         </tbody>
+        <tfoot>
+          <tr>
+            {/* No. 열: 빈셀 */}
+            <td className="wo-number-col"></td>
+            {/* 협력사, 품목명, 규격, 입고단가, 입고단위단가 병합 (colSpan=5) */}
+            <td
+              className="wo-supplier-col"
+              colSpan="5"
+              style={{ textAlign: "center" }}
+            >
+              합계
+            </td>
+            {/* 전월재고 */}
+            <td className="wo-previnv-col">
+              {totalPrevInv ? formatNumber(totalPrevInv) : "-"}
+            </td>
+            {/* 현재고 */}
+            <td className="wo-currinv-col">
+              {totalCurrInv ? formatNumber(totalCurrInv) : "-"}
+            </td>
+            {/* 현재고 금액 */}
+            <td className="wo-currentinv-money-col">
+              {totalCurrentInvMoney ? formatNumber(totalCurrentInvMoney) : "-"}
+            </td>
+            {/* 발주량 */}
+            <td className="wo-sum-col">
+              {totalOrderAmount ? formatNumber(totalOrderAmount) : "-"}
+            </td>
+            {/* 발주금액 */}
+            <td className="wo-ordermoney-col">
+              {totalOrderMoney ? formatNumber(totalOrderMoney) : "-"}
+            </td>
+            {/* 발주합계 부가세x (빈셀) */}
+            <td className="wo-order-sum-ex-col"></td>
+            {/* 발주합계 부가세o (빈셀) */}
+            <td className="wo-order-sum-inc-col"></td>
+            {/* 전년도 m1 */}
+            <td className="wo-prev-month1-col">
+              {totalPrevOutgoing1 ? formatNumber(totalPrevOutgoing1) : "-"}
+            </td>
+            {/* 전년도 m2 */}
+            <td className="wo-prev-month2-col">
+              {totalPrevOutgoing2 ? formatNumber(totalPrevOutgoing2) : "-"}
+            </td>
+            {/* 전년도 m3 */}
+            <td className="wo-prev-month3-col">
+              {totalPrevOutgoing3 ? formatNumber(totalPrevOutgoing3) : "-"}
+            </td>
+            {/* 월 출고량 */}
+            <td className="wo-monthly-output-col">
+              {totalCurrentOutgoing ? formatNumber(totalCurrentOutgoing) : "-"}
+            </td>
+            {/* 월 출고금액 */}
+            <td className="wo-monthly-outputmoney-col">
+              {totalMonthlyOutputAmount
+                ? formatNumber(totalMonthlyOutputAmount)
+                : "-"}
+            </td>
+          </tr>
+        </tfoot>
       </table>
       {showPopup && (
         <div className="order-popup">

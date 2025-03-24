@@ -215,11 +215,36 @@ const WarehouseIncoming = () => {
       const supplier = matchedItem
         ? suppliers.find((s) => s.협력사_id === matchedItem.협력사_id) || {}
         : {};
-      const week1 = Number(grouped[itemId].week1) || 0;
-      const week2 = Number(grouped[itemId].week2) || 0;
-      const week3 = Number(grouped[itemId].week3) || 0;
-      const week4 = Number(grouped[itemId].week4) || 0;
-      const week5 = Number(grouped[itemId].week5) || 0;
+      const week1 =
+        isEditMode &&
+        editedIncoming[itemId] &&
+        editedIncoming[itemId].week1 !== undefined
+          ? Number(editedIncoming[itemId].week1)
+          : Number(grouped[itemId].week1) || 0;
+      const week2 =
+        isEditMode &&
+        editedIncoming[itemId] &&
+        editedIncoming[itemId].week2 !== undefined
+          ? Number(editedIncoming[itemId].week2)
+          : Number(grouped[itemId].week2) || 0;
+      const week3 =
+        isEditMode &&
+        editedIncoming[itemId] &&
+        editedIncoming[itemId].week3 !== undefined
+          ? Number(editedIncoming[itemId].week3)
+          : Number(grouped[itemId].week3) || 0;
+      const week4 =
+        isEditMode &&
+        editedIncoming[itemId] &&
+        editedIncoming[itemId].week4 !== undefined
+          ? Number(editedIncoming[itemId].week4)
+          : Number(grouped[itemId].week4) || 0;
+      const week5 =
+        isEditMode &&
+        editedIncoming[itemId] &&
+        editedIncoming[itemId].week5 !== undefined
+          ? Number(editedIncoming[itemId].week5)
+          : Number(grouped[itemId].week5) || 0;
       const monthlyIncoming = week1 + week2 + week3 + week4 + week5;
       const unitPrice =
         matchedItem && matchedItem.입고단가 ? Number(matchedItem.입고단가) : 0;

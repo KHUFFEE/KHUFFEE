@@ -348,10 +348,15 @@ const WarehouseIncoming = () => {
   };
 
   // ----------------------- 합계 계산 -----------------------
-  const totalPrevInv = tableRows.reduce(
-    (sum, row) => sum + Number(row.prevInv || 0),
-    0
-  );
+  const totalPrevInv = tableRows.reduce((sum, row) => {
+    const prev = row.prevInv;
+    const num =
+      typeof prev === "number"
+        ? prev
+        : Number(String(prev).replace(/,/g, "")) || 0;
+    return sum + num;
+  }, 0);
+
   const totalWeek1 = tableRows.reduce(
     (sum, row) => sum + Number(row.week1 || 0),
     0

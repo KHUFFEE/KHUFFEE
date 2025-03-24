@@ -623,7 +623,7 @@ const StoreInventoryMonthEnd = () => {
               className="download-button"
               disabled={isEditMode}
             >
-              Excel 다운로드
+              Excel 다운
             </button>
           )}
           {isEditMode && (

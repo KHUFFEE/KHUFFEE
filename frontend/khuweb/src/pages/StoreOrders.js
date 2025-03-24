@@ -946,7 +946,7 @@ const StoreOrders = () => {
                 className="download-button"
                 onClick={() => setShowDownloadOptions(true)}
               >
-                다운로드
+                Excel 다운
               </button>
               <button className="edit-button" onClick={handleEditToggle}>
                 수정

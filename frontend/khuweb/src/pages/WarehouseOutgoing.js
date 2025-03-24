@@ -232,7 +232,13 @@ const WarehouseOutgoing = () => {
 
   // ----------------------- 헬퍼 함수 -----------------------
   const formatInputValue = (value) => {
-    if (value === "" || value === undefined || value === null) return "";
+    if (
+      value === "" ||
+      value === undefined ||
+      value === null ||
+      Number(value) === 0
+    )
+      return "-";
     const num = Number(value);
     if (!isNaN(num)) return num.toLocaleString();
     return value;

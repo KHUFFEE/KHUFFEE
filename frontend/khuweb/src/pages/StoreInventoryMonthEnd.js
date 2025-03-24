@@ -98,7 +98,7 @@ const StoreInventoryMonthEnd = () => {
     try {
       const statusList = await getTableStatusList();
       const targetStatus = statusList.find(
-        (item) => item.테이블 === "매장_월말재고",
+        (item) => item.테이블 === "매장_월말재고"
       );
       if (targetStatus !== undefined) {
         setTableStatus(targetStatus.상태);
@@ -125,7 +125,7 @@ const StoreInventoryMonthEnd = () => {
     try {
       // 첫 페이지를 별도로 호출하여 전체 페이지 수를 가져옴
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=1`,
+        `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=1`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch distinct period");
@@ -136,7 +136,7 @@ const StoreInventoryMonthEnd = () => {
       for (let p = 1; p <= totalPages; p++) {
         periodPromises.push(
           fetch(
-            `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=${p}`,
+            `${process.env.REACT_APP_API_URL}/api/inventory/store_monthend/?page=${p}`
           )
             .then((response) => {
               if (!response.ok) {
@@ -144,7 +144,7 @@ const StoreInventoryMonthEnd = () => {
               }
               return response.json();
             })
-            .then((data) => data.current_period),
+            .then((data) => data.current_period)
         );
       }
       const periods = await Promise.all(periodPromises);
@@ -397,7 +397,7 @@ const StoreInventoryMonthEnd = () => {
     sortedTableRows.reduce((sum, row) => {
       const val = getCellValue(row, store.매장_id);
       return sum + (val ? Number(val) : 0);
-    }, 0),
+    }, 0)
   );
 
   const formatNumber = (num) => {
@@ -671,7 +671,9 @@ const StoreInventoryMonthEnd = () => {
                         editedInventories[row.itemId] &&
                         editedInventories[row.itemId][store.매장_id] !==
                           undefined
-                          ? editedInventories[row.itemId][store.매장_id]
+                          ? formatNumber(
+                              editedInventories[row.itemId][store.매장_id]
+                            )
                           : ""
                       }
                       onChange={(e) => {
@@ -680,7 +682,7 @@ const StoreInventoryMonthEnd = () => {
                           handleInventoryChange(
                             row.itemId,
                             store.매장_id,
-                            newValue,
+                            newValue
                           );
                         }
                       }}

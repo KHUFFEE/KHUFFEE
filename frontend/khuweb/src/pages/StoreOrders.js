@@ -465,13 +465,6 @@ const StoreOrders = () => {
     .map((storeName) => stores.find((s) => s.매장명 === storeName))
     .filter(Boolean);
 
-  const formatInputValue = (value) => {
-    if (value === "" || value === undefined || value === null) return "";
-    const num = Number(value);
-    if (!isNaN(num)) return num.toLocaleString();
-    return value;
-  };
-
   const getCellValue = (row, storeId) => {
     if (
       isEditMode &&
@@ -981,7 +974,7 @@ const StoreOrders = () => {
                       value={
                         editedOrders[row.itemId] &&
                         editedOrders[row.itemId][store.매장_id] !== undefined
-                          ? formatInputValue(
+                          ? formatNumber(
                               editedOrders[row.itemId][store.매장_id]
                             )
                           : ""

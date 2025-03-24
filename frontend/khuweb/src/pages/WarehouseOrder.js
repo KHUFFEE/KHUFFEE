@@ -651,7 +651,7 @@ const WarehouseOrder = () => {
           {/* 수정 모드일 때 Excel 다운로드 버튼 숨김 */}
           {!isEditMode && (
             <button onClick={handleExcelDownload} className="download-button">
-              Excel 다운로드
+              Excel 다운
             </button>
           )}
           {isEditMode ? (

@@ -47,8 +47,8 @@ const Suppliers = () => {
       await deleteSuppliers(selectedSuppliers);
       setSuppliers((prev) =>
         prev.filter(
-          (supplier) => !selectedSuppliers.includes(supplier.협력사명),
-        ),
+          (supplier) => !selectedSuppliers.includes(supplier.협력사명)
+        )
       );
       setSelectedSuppliers([]);
       setIsDeleteMode(false);
@@ -65,7 +65,7 @@ const Suppliers = () => {
     setSelectedSuppliers((prev) =>
       prev.includes(name)
         ? prev.filter((selectedName) => selectedName !== name)
-        : [...prev, name],
+        : [...prev, name]
     );
   };
 
@@ -82,7 +82,7 @@ const Suppliers = () => {
           {!isDeleteMode && (
             <>
               <button onClick={handleDownloadExcel} className="download-button">
-                Excel 다운로드
+                Excel 다운
               </button>
               <button onClick={() => setShowPopup(true)} className="add-button">
                 + 협력사 추가

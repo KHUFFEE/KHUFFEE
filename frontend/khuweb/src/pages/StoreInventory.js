@@ -56,7 +56,7 @@ const StoreInventory = () => {
   const refreshPeriods = async () => {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/inventory/store/?range=first_last`,
+        `${process.env.REACT_APP_API_URL}/api/inventory/store/?range=first_last`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch period range");
@@ -68,7 +68,7 @@ const StoreInventory = () => {
         return new Date(
           parseInt(parts[0], 10),
           parseInt(parts[1], 10) - 1,
-          parseInt(parts[2], 10),
+          parseInt(parts[2], 10)
         );
       };
       const minDate = parsePeriod(periodData.earliest_period);
@@ -109,11 +109,11 @@ const StoreInventory = () => {
       try {
         const res = await fetchStores();
         const filteredStores = res.filter(
-          (store) => store.매장_id !== "ST_101" && store.매장_id !== "ST_102",
+          (store) => store.매장_id !== "ST_101" && store.매장_id !== "ST_102"
         );
         setStores(filteredStores);
         const defaultStore = filteredStores.find(
-          (store) => store.매장_id === "ST_103",
+          (store) => store.매장_id === "ST_103"
         );
         if (defaultStore) {
           setSelectedStore("ST_103");
@@ -341,7 +341,7 @@ const StoreInventory = () => {
         </div>
         <div className="warehouse-action-buttons">
           <button onClick={handleExcelDownload} className="download-button">
-            Excel 다운로드
+            Excel 다운
           </button>
         </div>
       </div>

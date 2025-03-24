@@ -522,7 +522,7 @@ const WarehouseIncoming = () => {
                 /* Excel 다운로드 처리 */
               }}
             >
-              Excel 다운로드
+              Excel 다운
             </button>
           )}
           {isEditMode ? (

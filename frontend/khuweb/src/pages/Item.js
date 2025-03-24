@@ -336,8 +336,8 @@ const Item = () => {
         const res = await updateItem(updatedData);
         setItems((prev) =>
           prev.map((item) =>
-            item.품목_id === itemId ? { ...item, ...res } : item,
-          ),
+            item.품목_id === itemId ? { ...item, ...res } : item
+          )
         );
       }
       setAlertPopup({
@@ -361,7 +361,7 @@ const Item = () => {
                 try {
                   const data = await fetchItems(true);
                   const deactivatedItems = data.filter(
-                    (item) => item.활성화 === false,
+                    (item) => item.활성화 === false
                   );
                   setItems(deactivatedItems);
                   setIsActivateMode(true);
@@ -420,7 +420,7 @@ const Item = () => {
                   : "inline-block",
             }}
           >
-            Excel 다운로드
+            Excel 다운
           </button>
           <button
             onClick={() => setShowPopup(true)}
@@ -534,7 +534,7 @@ const Item = () => {
         <tbody>
           {sortedItems.map((item, index) => {
             const supplier = suppliers.find(
-              (s) => s.협력사_id === item.협력사_id,
+              (s) => s.협력사_id === item.협력사_id
             );
             return (
               <tr key={item.품목_id}>
@@ -582,7 +582,7 @@ const Item = () => {
                         handleEditChange(
                           item.품목_id,
                           "협력사명",
-                          e.target.value,
+                          e.target.value
                         )
                       }
                     >
@@ -665,7 +665,7 @@ const Item = () => {
                       type="text"
                       name="입고단위"
                       value={formatNumber(
-                        editedItems[item.품목_id]?.입고단위 || "",
+                        editedItems[item.품목_id]?.입고단위 || ""
                       )}
                       disabled
                       className="calc-input"
@@ -681,7 +681,7 @@ const Item = () => {
                       type="text"
                       name="입고단위단가"
                       value={formatNumber(
-                        editedItems[item.품목_id]?.입고단위단가 || "",
+                        editedItems[item.품목_id]?.입고단위단가 || ""
                       )}
                       disabled
                       className="calc-input"
@@ -697,13 +697,13 @@ const Item = () => {
                       type="text"
                       name="출고단위"
                       value={formatNumber(
-                        editedItems[item.품목_id]?.출고단위 || "",
+                        editedItems[item.품목_id]?.출고단위 || ""
                       )}
                       onChange={(e) =>
                         handleEditChange(
                           item.품목_id,
                           "출고단위",
-                          e.target.value.replace(/,/g, ""),
+                          e.target.value.replace(/,/g, "")
                         )
                       }
                       style={{ textAlign: "right" }}

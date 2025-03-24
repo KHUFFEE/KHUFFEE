@@ -398,7 +398,10 @@ const WarehouseOrder = () => {
 
   // 발주금액: 각 행에서 (발주량 x 입고단가)
   const calculateOrderMoney = (row) => {
-    const orderAmount = Number(row.orderAmount);
+    const orderAmount =
+      isEditMode && editedOrder[row.itemId] !== undefined
+        ? Number(editedOrder[row.itemId])
+        : Number(row.orderAmount);
     const price = Number(row.입고단가) || 0;
     return orderAmount * price;
   };
@@ -648,7 +651,7 @@ const WarehouseOrder = () => {
           {/* 수정 모드일 때 Excel 다운로드 버튼 숨김 */}
           {!isEditMode && (
             <button onClick={handleExcelDownload} className="download-button">
-              Excel 다운로드
+              Excel 다운
             </button>
           )}
           {isEditMode ? (

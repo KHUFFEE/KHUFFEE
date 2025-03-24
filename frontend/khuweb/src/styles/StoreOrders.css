@@ -169,34 +169,11 @@
 }
 
 .selected-dropdown-option {
-  background-color: #445382;
+  background-color: #e3e9f0;
 }
 
 .dropdown-option:hover {
   background-color: #f7f7f7;
-}
-
-.download-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  border: 1.6px solid #445382;
-  border-radius: 8px;
-  z-index: 1000;
-  background-color: #fff;
-  flex-direction: row;
-}
-
-.download-dropdown-option {
-  padding: 10px 14px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #445382;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
-  position: relative;
-  z-index: 1000;
 }
 
 /* 첫번째 옵션 오른쪽에 검은 구분선 추가 */

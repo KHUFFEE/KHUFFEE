@@ -332,7 +332,7 @@ class WarehouseOrderListView(APIView):
         if round_param:
             orders_queryset = orders_queryset.filter(회차=round_param)
         # 창고_발주량 0인 주문 제외
-        orders_queryset = orders_queryset.exclude(창고_발주량=0)
+        # orders_queryset = orders_queryset.exclude(창고_발주량=0)
 
         # 기간 범위 조회 (YYYY.MM~YYYY.MM)
         period_param = request.GET.get("기간")
@@ -447,49 +447,26 @@ class WarehouseOrderUpdateView(APIView):
             품목_id=item_obj, 기간=period, 회차=round_val
         )
         if qs.exists():
-            if new_value == 0:
-                qs.delete()
-                return Response(
-                    {
-                        "품목_id": item_obj.pk,
-                        "기간": period,
-                        "회차": round_val,
-                        "창고_발주량": 0,
-                    },
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                qs.update(창고_발주량=new_value)
-                updated_record = (
-                    qs.order_by("품목_id", "기간", "회차")
-                    .values("품목_id", "기간", "회차", "창고_발주량")
-                    .first()
-                )
-                return Response(updated_record, status=status.HTTP_200_OK)
+            qs.update(창고_발주량=new_value)
+            updated_record = (
+                qs.order_by("품목_id", "기간", "회차")
+                .values("품목_id", "기간", "회차", "창고_발주량")
+                .first()
+            )
+            return Response(updated_record, status=status.HTTP_200_OK)
         else:
-            if new_value == 0:
-                return Response(
-                    {
-                        "품목_id": item_obj.pk,
-                        "기간": period,
-                        "회차": round_val,
-                        "창고_발주량": 0,
-                    },
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                WarehouseOrder.objects.create(
-                    품목_id=item_obj, 기간=period, 회차=round_val, 창고_발주량=new_value
-                )
-                return Response(
-                    {
-                        "품목_id": item_obj.pk,
-                        "기간": period,
-                        "회차": round_val,
-                        "창고_발주량": new_value,
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
+            WarehouseOrder.objects.create(
+                품목_id=item_obj, 기간=period, 회차=round_val, 창고_발주량=new_value
+            )
+            return Response(
+                {
+                    "품목_id": item_obj.pk,
+                    "기간": period,
+                    "회차": round_val,
+                    "창고_발주량": new_value,
+                },
+                status=status.HTTP_201_CREATED,
+            )
 
 
 class WarehouseOutgoingCreateView(APIView):

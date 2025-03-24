@@ -215,11 +215,36 @@ const WarehouseIncoming = () => {
       const supplier = matchedItem
         ? suppliers.find((s) => s.협력사_id === matchedItem.협력사_id) || {}
         : {};
-      const week1 = Number(grouped[itemId].week1) || 0;
-      const week2 = Number(grouped[itemId].week2) || 0;
-      const week3 = Number(grouped[itemId].week3) || 0;
-      const week4 = Number(grouped[itemId].week4) || 0;
-      const week5 = Number(grouped[itemId].week5) || 0;
+      const week1 =
+        isEditMode &&
+        editedIncoming[itemId] &&
+        editedIncoming[itemId].week1 !== undefined
+          ? Number(editedIncoming[itemId].week1)
+          : Number(grouped[itemId].week1) || 0;
+      const week2 =
+        isEditMode &&
+        editedIncoming[itemId] &&
+        editedIncoming[itemId].week2 !== undefined
+          ? Number(editedIncoming[itemId].week2)
+          : Number(grouped[itemId].week2) || 0;
+      const week3 =
+        isEditMode &&
+        editedIncoming[itemId] &&
+        editedIncoming[itemId].week3 !== undefined
+          ? Number(editedIncoming[itemId].week3)
+          : Number(grouped[itemId].week3) || 0;
+      const week4 =
+        isEditMode &&
+        editedIncoming[itemId] &&
+        editedIncoming[itemId].week4 !== undefined
+          ? Number(editedIncoming[itemId].week4)
+          : Number(grouped[itemId].week4) || 0;
+      const week5 =
+        isEditMode &&
+        editedIncoming[itemId] &&
+        editedIncoming[itemId].week5 !== undefined
+          ? Number(editedIncoming[itemId].week5)
+          : Number(grouped[itemId].week5) || 0;
       const monthlyIncoming = week1 + week2 + week3 + week4 + week5;
       const unitPrice =
         matchedItem && matchedItem.입고단가 ? Number(matchedItem.입고단가) : 0;
@@ -313,15 +338,39 @@ const WarehouseIncoming = () => {
   const handleEditSubmit = async () => {
     try {
       const updates = [];
-      // 기본 매장 ID (예: "ST_102")
       const defaultStoreId = "ST_102";
       const currentPeriod = selectedPeriod; // "YYYY.MM" 형식; 주차는 뒤에 붙임
+
+      // ★ 원본 입고 데이터를 그룹화하여 저장 (수정 전 값)
+      const originalGrouped = {};
+      if (incomingData && incomingData.orders) {
+        incomingData.orders.forEach((record) => {
+          const itemId = record.품목_id;
+          const parts = record.기간.split(".");
+          const week = parts.length === 3 ? parts[2] : "0";
+          if (!originalGrouped[itemId]) {
+            originalGrouped[itemId] = {
+              week1: 0,
+              week2: 0,
+              week3: 0,
+              week4: 0,
+              week5: 0,
+            };
+          }
+          const weekKey = `week${week}`;
+          originalGrouped[itemId][weekKey] += Number(record.창고_입고량);
+        });
+      }
+
       tableRows.forEach((row) => {
         const edited = editedIncoming[row.itemId];
         if (!edited) return;
         ["week1", "week2", "week3", "week4", "week5"].forEach(
           (weekKey, index) => {
-            const original = row[weekKey];
+            // 원본 값은 originalGrouped에서 가져옵니다.
+            const original = originalGrouped[row.itemId]
+              ? Number(originalGrouped[row.itemId][weekKey])
+              : 0;
             const newValue = edited[weekKey];
             if (Number(newValue) !== Number(original)) {
               // "YYYY.MM.(주차)" 형식의 기간 구성
@@ -473,7 +522,7 @@ const WarehouseIncoming = () => {
                 /* Excel 다운로드 처리 */
               }}
             >
-              Excel 다운로드
+              Excel 다운
             </button>
           )}
           {isEditMode ? (

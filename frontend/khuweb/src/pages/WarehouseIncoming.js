@@ -338,15 +338,39 @@ const WarehouseIncoming = () => {
   const handleEditSubmit = async () => {
     try {
       const updates = [];
-      // 기본 매장 ID (예: "ST_102")
       const defaultStoreId = "ST_102";
       const currentPeriod = selectedPeriod; // "YYYY.MM" 형식; 주차는 뒤에 붙임
+
+      // ★ 원본 입고 데이터를 그룹화하여 저장 (수정 전 값)
+      const originalGrouped = {};
+      if (incomingData && incomingData.orders) {
+        incomingData.orders.forEach((record) => {
+          const itemId = record.품목_id;
+          const parts = record.기간.split(".");
+          const week = parts.length === 3 ? parts[2] : "0";
+          if (!originalGrouped[itemId]) {
+            originalGrouped[itemId] = {
+              week1: 0,
+              week2: 0,
+              week3: 0,
+              week4: 0,
+              week5: 0,
+            };
+          }
+          const weekKey = `week${week}`;
+          originalGrouped[itemId][weekKey] += Number(record.창고_입고량);
+        });
+      }
+
       tableRows.forEach((row) => {
         const edited = editedIncoming[row.itemId];
         if (!edited) return;
         ["week1", "week2", "week3", "week4", "week5"].forEach(
           (weekKey, index) => {
-            const original = row[weekKey];
+            // 원본 값은 originalGrouped에서 가져옵니다.
+            const original = originalGrouped[row.itemId]
+              ? Number(originalGrouped[row.itemId][weekKey])
+              : 0;
             const newValue = edited[weekKey];
             if (Number(newValue) !== Number(original)) {
               // "YYYY.MM.(주차)" 형식의 기간 구성

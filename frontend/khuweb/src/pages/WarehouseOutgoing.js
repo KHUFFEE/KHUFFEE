@@ -310,18 +310,41 @@ const WarehouseOutgoing = () => {
   const handleEditSubmit = async () => {
     try {
       const updates = [];
-      // 기본 매장 ID로 가정 (예: "ST_102")
       const defaultStoreId = "ST_102";
-      const currentPeriod = selectedPeriod; // "YYYY.MM" format; 각 주차 is appended below.
+      const currentPeriod = selectedPeriod; // "YYYY.MM" format
+
+      // 원본 출고 데이터를 그룹화 (수정 전 값)
+      const originalGrouped = {};
+      if (outgoingData && outgoingData.orders) {
+        outgoingData.orders.forEach((record) => {
+          const itemId = record.품목_id;
+          const parts = record.기간.split(".");
+          const week = parts.length === 3 ? parts[2] : "0";
+          if (!originalGrouped[itemId]) {
+            originalGrouped[itemId] = {
+              week1: 0,
+              week2: 0,
+              week3: 0,
+              week4: 0,
+              week5: 0,
+            };
+          }
+          const weekKey = `week${week}`;
+          originalGrouped[itemId][weekKey] += Number(record.창고_출고량);
+        });
+      }
+
       tableRows.forEach((row) => {
         const edited = editedOutgoing[row.itemId];
         if (!edited) return;
         ["week1", "week2", "week3", "week4", "week5"].forEach(
           (weekKey, index) => {
-            const original = row[weekKey];
+            // 원본 값은 originalGrouped에서 가져옴
+            const original = originalGrouped[row.itemId]
+              ? Number(originalGrouped[row.itemId][weekKey])
+              : 0;
             const newValue = edited[weekKey];
-            if (Number(newValue) !== Number(original)) {
-              // Construct period as "YYYY.MM.(weekNumber)"
+            if (Number(newValue) !== original) {
               const periodForUpdate = `${currentPeriod}.${index + 1}`;
               const payload = {
                 매장_id: defaultStoreId,

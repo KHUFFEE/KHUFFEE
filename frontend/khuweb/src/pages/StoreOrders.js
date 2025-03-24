@@ -514,10 +514,18 @@ const StoreOrders = () => {
 
   // 오픈하기 확인 시 처리
   const handleOpenModalConfirm = async () => {
-    setLoading(true); // 확인 버튼 누르자마자 로딩 화면 표시
     const { year, month, week, round } = openModalData;
     const formattedMonth = month.toString().padStart(2, "0");
     const period = `${year}.${formattedMonth}.${week}`;
+    const newPeriodFull = `${year}.${formattedMonth}.${week}.${round}`;
+
+    // 중복 기간 체크
+    if (distinctPeriods.includes(newPeriodFull)) {
+      alert("중복되는 기간으로 오픈 불가능합니다.");
+      return;
+    }
+
+    setLoading(true);
     try {
       await updateTableStatus({ 테이블: "매장_발주", 상태: 1 });
       const activeItems = items.filter((item) => item.활성화);
@@ -535,7 +543,7 @@ const StoreOrders = () => {
         });
       });
       await Promise.all(createPromises);
-      await handleReset(true); // 최신 조회 버튼 효과와 동일하게 최신 데이터 갱신
+      await handleReset(true);
       fetchData({ 기간: period, 회차: round });
       setOrderTableStatus(1);
       setOpenModalVisible(false);
@@ -543,7 +551,7 @@ const StoreOrders = () => {
       console.error("오픈 처리 실패:", err);
       alert("오픈 처리에 실패하였습니다.");
     }
-    setLoading(false); // 모든 동작 후 로딩 종료
+    setLoading(false);
   };
 
   // 기간 수정 확인 시 처리:
@@ -554,7 +562,15 @@ const StoreOrders = () => {
     const { year, month, week, round } = editPeriodData;
     const formattedMonth = month.toString().padStart(2, "0");
     const newPeriod = `${year}.${formattedMonth}.${week}`;
-    setLoading(true); // 로딩 시작
+    const newPeriodFull = `${year}.${formattedMonth}.${week}.${round}`;
+
+    // 중복 기간 체크
+    if (distinctPeriods.includes(newPeriodFull)) {
+      alert("중복되는 기간으로 변경 불가능합니다.");
+      return;
+    }
+
+    setLoading(true);
     try {
       const updates = ordersData.orders.map((order) =>
         updateStoreOrder({
@@ -572,15 +588,13 @@ const StoreOrders = () => {
       if (rejected.length > 0) {
         console.error("일부 업데이트 실패:", rejected);
       }
-      // 최신 조회 버튼 효과: handleReset(true) 호출
       await handleReset(true);
       setEditPeriodModalVisible(false);
-      // 편집 모드에서 나가도록 추가
       setIsEditMode(false);
     } catch (err) {
       console.error("기간 수정 실패:", err);
     }
-    setLoading(false); // 로딩 종료
+    setLoading(false);
   };
 
   // 삭제 확인 시 처리: 현재 선택된 기간 및 회차의 데이터를 삭제
@@ -703,15 +717,18 @@ const StoreOrders = () => {
   // years, months, weeks, rounds 배열은 dropdown 옵션에 사용
   const years = [];
   let minYear = currentYear;
+  let maxYear = currentYear;
   if (distinctPeriods.length > 0) {
     const yearsFromDP = distinctPeriods.map((dp) =>
       parseInt(dp.split(".")[0], 10)
     );
     minYear = Math.min(...yearsFromDP);
+    maxYear = Math.max(...yearsFromDP);
   }
-  for (let y = minYear; y <= currentYear; y++) {
+  for (let y = minYear; y <= maxYear + 1; y++) {
     years.push(y);
   }
+
   const months = Array.from({ length: 12 }, (_, i) =>
     (i + 1).toString().padStart(2, "0")
   );
@@ -849,7 +866,7 @@ const StoreOrders = () => {
                 className="session-button"
                 onClick={() => setEditPeriodModalVisible(true)}
               >
-                기간 수정
+                기간 변경
               </button>
               <button
                 className="edit-confirm-button"
@@ -1229,7 +1246,7 @@ const StoreOrders = () => {
       {editPeriodModalVisible && (
         <div className="sime-popup">
           <div className="sime-popup-content">
-            <h3>기간 수정</h3>
+            <h3>기간 변경</h3>
             <div className="toggle-group-container">
               {/* 년도 토글 */}
               <div className="toggle-group">

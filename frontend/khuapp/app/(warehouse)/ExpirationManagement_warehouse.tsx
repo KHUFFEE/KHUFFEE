@@ -31,6 +31,7 @@ import {
   headerRowStyles,
 } from "../../src/styles/ExpirationMangaement_warehouse";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { OrderRequeststyle } from "../../src/styles/StockManagement_styles_warehouse";
 
 interface ExpirationManagementProps {
   warehouseId: string;
@@ -78,11 +79,13 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filteredData, setFilteredData] = useState<ExpirationItem[]>([]);
-  const [sortBy, setSortBy] = useState<"name" | "date" | "daysLeft">("date");
+  const [sortBy, setSortBy] = useState<"date">("date");
   const [products, setProducts] = useState<APIProduct[]>([]);
   const [currentStockData, setCurrentStockData] = useState<{
     [key: string]: number;
   }>({});
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [suppliersData, setSuppliersData] = useState<any[]>([]);
 
   // 추가/수정/삭제 관련 상태
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -97,6 +100,31 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>("");
+  const [showSaveSuccessModal, setShowSaveSuccessModal] =
+    useState<boolean>(false);
+
+  // 협력사 데이터 로딩
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        const response = await fetch(`${RN_API_URL}/api/suppliers/`);
+        if (!response.ok)
+          throw new Error("협력사 데이터를 불러오는데 실패했습니다.");
+        const data = await response.json();
+        setSuppliersData(data);
+      } catch (error) {
+        console.error("협력사 데이터 로딩 중 오류:", error);
+      }
+    };
+    fetchSuppliers();
+  }, []);
+
+  // 정렬된 협력사 목록
+  const sortedSuppliers = React.useMemo(() => {
+    const suppliers = suppliersData.map((supplier) => supplier.협력사명 || "");
+    suppliers.sort((a, b) => a.localeCompare(b, "ko"));
+    return suppliers;
+  }, [suppliersData]);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -105,12 +133,16 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
       try {
         setLoading(true);
 
-        // 1. 품목 데이터 가져오기
+        // 1. 품목 데이터 가져오기 (소모품 제외)
         const itemsResponse = await fetch(`${RN_API_URL}/api/suppliers/items/`);
         if (!itemsResponse.ok)
           throw new Error("품목 데이터를 가져오는데 실패했습니다.");
         const itemsData = await itemsResponse.json();
-        setProducts(itemsData);
+        // 소모품이 아닌 품목만 필터링
+        const filteredItems = itemsData.filter(
+          (item: APIProduct) => item.종류 !== "소모품"
+        );
+        setProducts(filteredItems);
 
         // 2. 최근 재고 데이터 가져오기
         const stockResponse = await fetch(
@@ -135,7 +167,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         const expirationData = await expirationResponse.json();
 
         const mergedData: ExpirationItem[] = expirationData.map((exp: any) => {
-          const matchedProduct = itemsData.find(
+          const matchedProduct = filteredItems.find(
             (item: APIProduct) => item.품목_id === exp.품목_id
           );
           return {
@@ -171,14 +203,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
       );
     }
 
-    if (sortBy === "name") {
-      filtered.sort((a, b) => a.품목명.localeCompare(b.품목명));
-    } else if (sortBy === "date") {
-      filtered.sort(
-        (a, b) =>
-          new Date(a.유통기한).getTime() - new Date(b.유통기한).getTime()
-      );
-    } else if (sortBy === "daysLeft") {
+    if (sortBy === "date") {
       filtered.sort(
         (a, b) =>
           new Date(a.유통기한).getTime() - new Date(b.유통기한).getTime()
@@ -387,6 +412,21 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     setIsEditMode(!isEditMode);
   };
 
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      await refreshData();
+      setIsEditMode(false);
+      setShowSaveSuccessModal(true);
+      setTimeout(() => setShowSaveSuccessModal(false), 2000);
+    } catch (error) {
+      console.error("저장 중 오류:", error);
+      Alert.alert("오류", "저장 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <View testID="loading-container" style={styles.loadingContainer}>
@@ -419,58 +459,65 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         </View>
       ) : null}
 
-      <View testID="header-row-container" style={headerRowStyles.container}>
-        <View
-          testID="header-row-button-container"
-          style={headerRowStyles.buttonContainer}
+      <View testID="categorySection" style={OrderRequeststyle.categorySection}>
+        <Text testID="sectionTitle" style={OrderRequeststyle.sectionTitle}>
+          협력사 선택
+        </Text>
+        <ScrollView
+          testID="categoryList"
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={OrderRequeststyle.categoryList}
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "flex-start",
+            alignItems: "center",
+          }}
         >
           <TouchableOpacity
-            testID="edit-mode-button"
+            testID="categoryButton"
             style={[
-              isEditMode
-                ? headerRowStyles.activeButton
-                : headerRowStyles.smallButton,
+              OrderRequeststyle.categoryButton,
+              selectedCategory === null &&
+                OrderRequeststyle.categoryButtonActive,
             ]}
-            onPress={toggleEditMode}
+            onPress={() => setSelectedCategory(null)}
           >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Edit2
-                size={16}
-                color={isEditMode ? "#ffffff" : "#0D326F"}
-                style={{ marginRight: moderateScale(4) }}
-              />
-              <Text
-                style={
-                  isEditMode
-                    ? headerRowStyles.activeButtonText
-                    : headerRowStyles.buttonText
-                }
-              >
-                편집모드
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          {isEditMode && (
-            <TouchableOpacity
-              testID="add-button"
+            <Text
+              testID="categoryButtonText"
               style={[
-                headerRowStyles.smallButton,
-                { backgroundColor: "#f8fafc", marginRight: moderateScale(10) },
+                OrderRequeststyle.categoryButtonText,
+                selectedCategory === null &&
+                  OrderRequeststyle.categoryButtonTextActive,
               ]}
-              onPress={handleAddItem}
             >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Plus
-                  size={16}
-                  color="#0D326F"
-                  style={{ marginRight: moderateScale(4) }}
-                />
-                <Text style={headerRowStyles.buttonText}>추가</Text>
-              </View>
+              전체
+            </Text>
+          </TouchableOpacity>
+          {sortedSuppliers.map((supplier, idx) => (
+            <TouchableOpacity
+              key={idx}
+              testID="categoryButton"
+              style={[
+                OrderRequeststyle.categoryButton,
+                selectedCategory === supplier &&
+                  OrderRequeststyle.categoryButtonActive,
+              ]}
+              onPress={() => setSelectedCategory(supplier)}
+            >
+              <Text
+                testID="categoryButtonText"
+                style={[
+                  OrderRequeststyle.categoryButtonText,
+                  selectedCategory === supplier &&
+                    OrderRequeststyle.categoryButtonTextActive,
+                ]}
+              >
+                {supplier}
+              </Text>
             </TouchableOpacity>
-          )}
-        </View>
+          ))}
+        </ScrollView>
       </View>
 
       <View testID="filter-container" style={styles.filterContainer}>
@@ -495,45 +542,56 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           )}
         </View>
 
+        <View testID="legend-container" style={styles.legendContainer}>
+          <View testID="legend-item-expired" style={styles.legendItem}>
+            <View
+              testID="legend-expired"
+              style={[styles.legendColor, styles.expired]}
+            />
+            <Text testID="legend-expired-text" style={styles.legendText}>
+              유통기한 만료
+            </Text>
+          </View>
+          <View testID="legend-item-nearExpiration" style={styles.legendItem}>
+            <View
+              testID="legend-nearExpiration"
+              style={[styles.legendColor, styles.nearExpiration]}
+            />
+            <Text testID="legend-nearExpiration-text" style={styles.legendText}>
+              7일 이내
+            </Text>
+          </View>
+          <View testID="legend-item-warning" style={styles.legendItem}>
+            <View
+              testID="legend-warning"
+              style={[styles.legendColor, styles.warning]}
+            />
+            <Text testID="legend-warning-text" style={styles.legendText}>
+              30일 이내
+            </Text>
+          </View>
+          <View testID="legend-item-normal" style={styles.legendItem}>
+            <View
+              testID="legend-normal"
+              style={[styles.legendColor, styles.normal]}
+            />
+            <Text testID="legend-normal-text" style={styles.legendText}>
+              정상
+            </Text>
+          </View>
+        </View>
+
         <View testID="sort-container" style={headerRowStyles.container}>
           <View
             testID="sort-button-container"
             style={headerRowStyles.buttonContainer}
           >
             <TouchableOpacity
-              testID="sort-name-button"
-              style={[
-                sortBy === "name"
-                  ? headerRowStyles.activeButton
-                  : headerRowStyles.smallButton,
-                { marginRight: moderateScale(10) },
-              ]}
-              onPress={() => setSortBy("name")}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text
-                  style={
-                    sortBy === "name"
-                      ? headerRowStyles.activeButtonText
-                      : headerRowStyles.buttonText
-                  }
-                >
-                  이름순
-                </Text>
-                <ArrowDownUp
-                  size={16}
-                  color={sortBy === "name" ? "#ffffff" : "#0D326F"}
-                  style={{ marginLeft: moderateScale(4) }}
-                />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
               testID="sort-date-button"
               style={[
                 sortBy === "date"
                   ? headerRowStyles.activeButton
                   : headerRowStyles.smallButton,
-                { marginRight: moderateScale(10) },
               ]}
               onPress={() => setSortBy("date")}
             >
@@ -554,76 +612,14 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 />
               </View>
             </TouchableOpacity>
-            <TouchableOpacity
-              testID="sort-daysLeft-button"
-              style={
-                sortBy === "daysLeft"
-                  ? headerRowStyles.activeButton
-                  : headerRowStyles.smallButton
-              }
-              onPress={() => setSortBy("daysLeft")}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text
-                  style={
-                    sortBy === "daysLeft"
-                      ? headerRowStyles.activeButtonText
-                      : headerRowStyles.buttonText
-                  }
-                >
-                  남은일수순
-                </Text>
-                <ArrowDownUp
-                  size={16}
-                  color={sortBy === "daysLeft" ? "#ffffff" : "#0D326F"}
-                  style={{ marginLeft: moderateScale(4) }}
-                />
-              </View>
-            </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      <View testID="legend-container" style={styles.legendContainer}>
-        <View testID="legend-item-expired" style={styles.legendItem}>
-          <View
-            testID="legend-expired"
-            style={[styles.legendColor, styles.expired]}
-          />
-          <Text testID="legend-expired-text" style={styles.legendText}>
-            유통기한 만료
-          </Text>
-        </View>
-        <View testID="legend-item-nearExpiration" style={styles.legendItem}>
-          <View
-            testID="legend-nearExpiration"
-            style={[styles.legendColor, styles.nearExpiration]}
-          />
-          <Text testID="legend-nearExpiration-text" style={styles.legendText}>
-            7일 이내
-          </Text>
-        </View>
-        <View testID="legend-item-warning" style={styles.legendItem}>
-          <View
-            testID="legend-warning"
-            style={[styles.legendColor, styles.warning]}
-          />
-          <Text testID="legend-warning-text" style={styles.legendText}>
-            30일 이내
-          </Text>
-        </View>
-        <View testID="legend-item-normal" style={styles.legendItem}>
-          <View
-            testID="legend-normal"
-            style={[styles.legendColor, styles.normal]}
-          />
-          <Text testID="legend-normal-text" style={styles.legendText}>
-            정상
-          </Text>
-        </View>
-      </View>
-
-      <View testID="table-container" style={styles.tableContainer}>
+      <View
+        testID="table-container"
+        style={[styles.tableContainer, { flex: 1 }]}
+      >
         <View testID="table-header" style={styles.tableHeader}>
           <Text
             testID="header-supplier"
@@ -674,7 +670,8 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           <FlatList
             testID="flatlist"
             data={filteredData}
-            style={styles.flatListStyle}
+            style={[styles.flatListStyle, { flex: 1 }]}
+            contentContainerStyle={{ flexGrow: 1 }}
             renderItem={({ item, index }) => {
               const expirationStyle = getExpirationStyle(item.유통기한);
               return (
@@ -756,6 +753,47 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           />
         )}
       </View>
+
+      {!isEditMode && (
+        <View
+          testID="bottom-button-container"
+          style={styles.bottomButtonContainer}
+        >
+          <TouchableOpacity
+            testID="add-button"
+            style={styles.addButton}
+            onPress={handleAddItem}
+          >
+            <Plus size={20} color="#ffffff" />
+            <Text style={styles.addButtonText}>항목 추가</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID="edit-mode-button"
+            style={styles.editButton}
+            onPress={toggleEditMode}
+          >
+            <Edit2 size={20} color="#ffffff" />
+            <Text style={styles.editButtonText}>편집모드</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {isEditMode && (
+        <View
+          testID="bottom-button-container"
+          style={styles.bottomButtonContainer}
+        >
+          <TouchableOpacity
+            testID="save-button"
+            style={styles.saveButton}
+            onPress={handleSave}
+            disabled={loading}
+          >
+            <Save size={20} color="#ffffff" />
+            <Text style={styles.saveButtonText}>저장</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <Modal
         testID="modal"
@@ -917,6 +955,25 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 </TouchableOpacity>
               </View>
             </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        testID="save-success-modal"
+        visible={showSaveSuccessModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.saveSuccessModal}>
+            <Text style={styles.saveSuccessText}>저장이 완료되었습니다</Text>
+            <TouchableOpacity
+              style={styles.saveSuccessButton}
+              onPress={() => setShowSaveSuccessModal(false)}
+            >
+              <Text style={styles.saveSuccessButtonText}>확인</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

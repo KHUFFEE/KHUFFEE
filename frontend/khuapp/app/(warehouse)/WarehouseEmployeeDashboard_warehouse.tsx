@@ -32,7 +32,7 @@ const WarehouseEmployeeDashboard_warehouse: React.FC<
         const storesData = await response.json();
         // 창고는 매장 테이블에서 매장_id가 'ST_102'인 항목
         const warehouse = storesData.find(
-          (store: any) => store.매장_id === "ST_102",
+          (store: any) => store.매장_id === "ST_102"
         );
         if (warehouse) {
           setWarehouseId(warehouse.매장_id);
@@ -62,12 +62,7 @@ const WarehouseEmployeeDashboard_warehouse: React.FC<
   const renderView = () => {
     switch (activeView) {
       case "expiration":
-        return (
-          <ExpirationManagement_warehouse
-            warehouseId={warehouseId}
-            items={items}
-          />
-        );
+        return <ExpirationManagement_warehouse warehouseId={warehouseId} />;
       case "stock":
         return <StockManagement_warehouse storeId={warehouseId} />;
       default:

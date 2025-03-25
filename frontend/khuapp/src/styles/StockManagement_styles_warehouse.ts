@@ -18,7 +18,7 @@ export const inventoryStyles = StyleSheet.create({
   container: {
     ...commonTextStyle,
     flex: 1,
-    padding: moderateScale(20),
+    paddingHorizontal: moderateScale(10),
     backgroundColor: "#fff",
   },
   term_of_name: {
@@ -170,7 +170,7 @@ export const inventoryStyles = StyleSheet.create({
     alignItems: "stretch",
     justifyContent: "flex-start",
     backgroundColor: "#fff",
-    paddingHorizontal: moderateScale(16),
+    paddingHorizontal: moderateScale(10),
   },
   inventory_cardContent: {
     ...commonTextStyle,

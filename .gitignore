@@ -24,3 +24,6 @@ node_modules/
 
 # Ignore preprocessing/data directory
 preprocessing/data/
+
+# Ignore celery data
+celerybeat-schedule*

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "sales",
     "suppliers",
     "management",
+    "tasks",
 ]
 
 REST_FRAMEWORK = {
@@ -151,3 +152,42 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Celery settings
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    # 창고 발주 자동 생성 (매월 1일 0시)
+    "create-monthly-warehouse-orders": {
+        "task": "tasks.tasks.create_monthly_warehouse_orders",
+        "schedule": crontab(day_of_month="1", hour=0, minute=0),
+    },
+    # 매장 재고 이월 (매일 0시)
+    "store-inventory-rollover": {
+        "task": "tasks.tasks.store_inventory_rollover",
+        "schedule": crontab(hour=0, minute=0),
+    },
+    # 창고 재고 이월 (매일 0시)
+    "warehouse-inventory-rollover": {
+        "task": "tasks.tasks.warehouse_inventory_rollover",
+        "schedule": crontab(hour=0, minute=0),
+    },
+    # 창고 발주 상태 리셋 (매월 1일 0시)
+    "reset-warehouse-order-status": {
+        "task": "tasks.tasks.reset_warehouse_order_status",
+        "schedule": crontab(day_of_month="1", hour=0, minute=0),
+    },
+    # 매장 월말재고 상태 리셋 (매월 1일 0시)
+    "reset-store-month-end-inventory-status": {
+        "task": "tasks.tasks.reset_store_month_end_inventory_status",
+        "schedule": crontab(day_of_month="1", hour=0, minute=0),
+    },
+    # 창고 재고 상태 리셋 (매일 0시)
+    "reset-warehouse-inventory-status": {
+        "task": "tasks.tasks.reset_warehouse_inventory_status",
+        "schedule": crontab(hour=0, minute=0),
+    },
+}

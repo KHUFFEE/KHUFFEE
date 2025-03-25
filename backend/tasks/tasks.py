@@ -80,21 +80,6 @@ def warehouse_inventory_rollover():
 
 
 @shared_task
-def reset_store_order_status():
-    """
-    매주 실행: '매장_발주' 테이블 관련 상태를 1로 리셋
-    """
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            UPDATE khuffee.상태_관리
-            SET 상태 = 1
-            WHERE 테이블 = '매장_발주'
-        """
-        )
-
-
-@shared_task
 def reset_warehouse_order_status():
     """
     매월 1일 실행: '창고_발주' 테이블 관련 상태를 1로 리셋

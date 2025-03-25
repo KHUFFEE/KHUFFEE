@@ -175,11 +175,6 @@ CELERY_BEAT_SCHEDULE = {
         "task": "tasks.tasks.warehouse_inventory_rollover",
         "schedule": crontab(hour=0, minute=0),
     },
-    # 매장 발주 상태 리셋 (매주 월요일 0시; 시작일이 2025-03-03인 월요일)
-    "reset-store-order-status": {
-        "task": "tasks.tasks.reset_store_order_status",
-        "schedule": crontab(day_of_week="mon", hour=0, minute=0),
-    },
     # 창고 발주 상태 리셋 (매월 1일 0시)
     "reset-warehouse-order-status": {
         "task": "tasks.tasks.reset_warehouse_order_status",

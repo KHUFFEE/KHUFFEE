@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "sales",
     "suppliers",
     "management",
+    "tasks",
 ]
 
 REST_FRAMEWORK = {
@@ -151,3 +152,21 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Celery settings
+# 예시) Redis를 브로커로 사용하는 경우
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+
+# 결과 백엔드(필요 시)
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    "create-monthly-warehouse-orders": {
+        # (아래 tasks.tasks.create_monthly_warehouse_orders 함수명을 사용)
+        "task": "tasks.tasks.create_monthly_warehouse_orders",
+        # 매월 1일 0시 0분에 실행
+        "schedule": crontab(day_of_month="1", hour=0, minute=0),
+    },
+}

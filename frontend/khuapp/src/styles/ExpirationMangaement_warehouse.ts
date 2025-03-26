@@ -8,9 +8,8 @@ import { RFValue } from "react-native-responsive-fontsize";
 
 const { height: screenHeight } = Dimensions.get("window");
 
-// 색상 테마 정의 - StockManagement와 통일
 const COLORS = {
-  primary: "#0D326F", // 메인 컬러
+  primary: "#0D326F",
   primaryLight: "#3B82F6",
   secondary: "#F97316",
   background: "#FFFFFF",
@@ -23,12 +22,12 @@ const COLORS = {
   },
   expiration: {
     normal: "#FFFFFF",
-    warning: "#FEF9C3", // 30일 이내 (연한 노랑)
-    nearExpiration: "#FFEDD5", // 7일 이내 (연한 주황)
-    expired: "#FEE2E2", // 만료 (연한 빨강)
+    warning: "#FEF9C3",
+    nearExpiration: "#FFEDD5",
+    expired: "#FEE2E2",
   },
-  success: "#10b981", // 성공 메시지 색상
-  error: "#ef4444", // 오류 메시지 색상
+  success: "#10b981",
+  error: "#ef4444",
 };
 
 const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
@@ -45,7 +44,7 @@ export const styles = StyleSheet.create({
     justifyContent: "flex-start",
     backgroundColor: "#fff",
     marginHorizontal: moderateScale(10),
-    paddingBottom: moderateScale(0), //추후 높이 맞출 때 쓰기
+    paddingBottom: moderateScale(0),
   },
   loadingContainer: {
     flex: 1,
@@ -77,7 +76,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: moderateScale(12),
     marginTop: moderateScale(5),
     marginBottom: moderateScale(5),
-    // height: 45,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -100,7 +98,6 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
   },
-  // StockManagement와 동일한 버튼 스타일
   sortButton: {
     backgroundColor: "#f8fafc",
     paddingHorizontal: moderateScale(10),
@@ -153,7 +150,6 @@ export const styles = StyleSheet.create({
     fontSize: RFValue(12),
     color: COLORS.text.primary,
     textAlign: "left",
-    // paddingLeft: moderateScale(8),
     flex: 1,
   },
   loadingText: {
@@ -211,10 +207,6 @@ export const styles = StyleSheet.create({
   },
   productCell: {
     flex: 3.2,
-    // flexDirection: "column",
-    // justifyContent: "center",
-    // alignItems: "center",
-    // paddingVertical: moderateScale(4),
   },
   productName: {
     fontSize: RFValue(12),
@@ -230,7 +222,6 @@ export const styles = StyleSheet.create({
   },
   dateCell: {
     flex: 2,
-    // marginLeft: moderateScale(10),
   },
   dateContainer: {
     flexDirection: "column",
@@ -328,8 +319,6 @@ export const styles = StyleSheet.create({
     overflow: "hidden",
     flex: 1,
   },
-
-  // 모달 및 폼 관련 스타일
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -488,8 +477,6 @@ export const styles = StyleSheet.create({
     fontSize: RFValue(15),
     color: "#ffffff",
   },
-
-  // 성공 메시지 스타일
   successMessageContainer: {
     backgroundColor: "#d1fae5",
     padding: moderateScale(10),
@@ -504,8 +491,6 @@ export const styles = StyleSheet.create({
     fontSize: RFValue(14),
     textAlign: "center",
   },
-
-  // 하단 버튼 스타일
   bottomButtonContainer: {
     position: "absolute",
     bottom: 0,
@@ -577,8 +562,6 @@ export const styles = StyleSheet.create({
     color: "#ffffff",
     marginLeft: moderateScale(8),
   },
-
-  // 저장 완료 모달 스타일
   saveSuccessModal: {
     backgroundColor: "#ffffff",
     padding: moderateScale(20),
@@ -604,8 +587,6 @@ export const styles = StyleSheet.create({
     fontSize: RFValue(14),
     color: "#ffffff",
   },
-
-  // 협력사별 구분을 위한 스타일
   supplierHeader: {
     backgroundColor: "#f1f5f9",
     paddingVertical: moderateScale(8),
@@ -621,17 +602,13 @@ export const styles = StyleSheet.create({
   supplierContent: {
     backgroundColor: COLORS.card,
   },
-
-  // Stock Management에서 가져온 편집 모드 스타일
   controlContainer: {
-    position: "relative",
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
   },
   inputContainer: {
     width: "100%",
-    position: "relative",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -654,21 +631,17 @@ export const styles = StyleSheet.create({
     zIndex: 1,
   },
   leftButton: {
-    position: "absolute",
-    left: moderateScale(-28),
-    zIndex: 2,
+    marginRight: moderateScale(3),
   },
   rightButton: {
-    position: "absolute",
-    right: moderateScale(-28),
-    zIndex: 2,
+    marginLeft: moderateScale(3),
   },
   deleteButton: {
-    padding: moderateScale(2),
+    // padding: moderateScale(2),
     borderWidth: 1,
     borderColor: "#ffcccc",
     borderRadius: moderateScale(4),
-    marginLeft: moderateScale(2),
+    // marginLeft: moderateScale(2),
     backgroundColor: "#fff5f5",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -682,7 +655,6 @@ export const styles = StyleSheet.create({
   },
   quantityInput: {
     ...commonTextStyle({ fontWeight: "600" }),
-    width: "100%",
     textAlign: "center",
     borderWidth: 1,
     borderColor: "#e2e8f0",
@@ -696,8 +668,6 @@ export const styles = StyleSheet.create({
     height: moderateScale(28),
   },
 });
-
-// StockManagement에서 직접 가져온 headerRowStyles 정의
 export const headerRowStyles = StyleSheet.create({
   container: {
     flexDirection: "row",
@@ -745,6 +715,16 @@ export const headerRowStyles = StyleSheet.create({
     alignItems: "center",
     minWidth: moderateScale(80),
   },
+  buttonText: {
+    color: "#0D326F",
+    fontSize: RFValue(11),
+    fontWeight: "500",
+  },
+  activeButtonText: {
+    color: "#FFFFFF",
+    fontSize: RFValue(11),
+    fontWeight: "600",
+  },
   cancelButton: {
     backgroundColor: "#f8fafc",
     paddingHorizontal: moderateScale(10),
@@ -760,16 +740,6 @@ export const headerRowStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: moderateScale(5),
-  },
-  buttonText: {
-    color: "#0D326F",
-    fontSize: RFValue(11),
-    fontWeight: "500",
-  },
-  activeButtonText: {
-    color: "#FFFFFF",
-    fontSize: RFValue(11),
-    fontWeight: "600",
   },
   cancelButtonText: {
     color: "#e53e3e",

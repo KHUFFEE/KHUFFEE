@@ -9,7 +9,8 @@ import {
   updateTableStatus,
   fetchWarehouseInventory,
   fetchWarehouseOutgoing,
-  updateWarehouseOrder, // 추가: 발주 수정 API 함수 (WarehouseIncoming.js와 유사)
+  updateWarehouseOrder,
+  createWarehouseOrder,
 } from "../api/api";
 import "../styles/WarehouseOrder.css";
 import "../styles/table.css";
@@ -51,6 +52,40 @@ const WarehouseOrder = () => {
   // ----------------------- 수정(편집) 모드 상태 및 핸들러 (발주량 수정) -----------------------
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedOrder, setEditedOrder] = useState({});
+
+  // 발주 오픈하기 모달 관련 상태
+  const [warehouseOpenModalVisible, setWarehouseOpenModalVisible] =
+    useState(false);
+  const [warehouseOpenModalData, setWarehouseOpenModalData] = useState({
+    year: selectedYear || new Date().getFullYear().toString(),
+    month: selectedMonth || String(new Date().getMonth() + 1).padStart(2, "0"),
+    round: selectedRound || "1",
+  });
+
+  // 모달 내 토글 드롭다운 상태
+  const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
+  const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
+  const [roundDropdownOpen, setRoundDropdownOpen] = useState(false);
+
+  // 연, 월, 회차 옵션 (StoreOrders.js와 동일한 형식)
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  let minYear = currentYear;
+  let maxYear = currentYear;
+  if (distinctPeriods.length > 0) {
+    const yearsFromDP = distinctPeriods.map((dp) =>
+      parseInt(dp.split(".")[0], 10)
+    );
+    minYear = Math.min(...yearsFromDP);
+    maxYear = Math.max(...yearsFromDP);
+  }
+  for (let y = minYear; y <= maxYear + 1; y++) {
+    years.push(y);
+  }
+  const months = Array.from({ length: 12 }, (_, i) =>
+    (i + 1).toString().padStart(2, "0")
+  );
+  const rounds = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
   const handleEditToggle = () => {
     if (!isEditMode) {
@@ -564,6 +599,32 @@ const WarehouseOrder = () => {
     }
   };
 
+  const handleWarehouseOpenModalConfirm = async () => {
+    const { year, month, round } = warehouseOpenModalData;
+    const formattedMonth = month.toString().padStart(2, "0");
+    const period = `${year}.${formattedMonth}`; // API에서는 "YYYY.MM" 형식 사용
+    try {
+      // 활성화된 품목에 대해 창고 발주 생성 (창고_발주량 0)
+      const activeItems = items.filter((item) => item.활성화);
+      const createPromises = activeItems.map((item) => {
+        const payload = {
+          매장_id: "ST_102", // 기본 창고 ID (필요 시 수정)
+          품목_id: item.품목_id,
+          기간: period,
+          회차: Number(round),
+          창고_발주량: 0,
+        };
+        return createWarehouseOrder(payload);
+      });
+      await Promise.all(createPromises);
+      await handleReset(true); // 데이터 새로고침
+      setWarehouseOpenModalVisible(false);
+    } catch (err) {
+      console.error("발주 오픈 실패:", err);
+      alert("발주 오픈 처리에 실패하였습니다.");
+    }
+  };
+
   if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
 
@@ -648,6 +709,19 @@ const WarehouseOrder = () => {
           </button>
         </div>
         <div className="warehouse-action-buttons">
+          {selectedYear &&
+            selectedMonth &&
+            selectedRound &&
+            `${selectedYear}.${selectedMonth}.${selectedRound}` ===
+              latestPeriod && (
+              <button
+                className="status-open-button"
+                onClick={() => setWarehouseOpenModalVisible(true)}
+              >
+                발주 오픈하기
+              </button>
+            )}
+
           {/* 수정 모드일 때 Excel 다운로드 버튼 숨김 */}
           {!isEditMode && (
             <button onClick={handleExcelDownload} className="download-button">
@@ -876,6 +950,143 @@ const WarehouseOrder = () => {
           </tr>
         </tfoot>
       </table>
+      {warehouseOpenModalVisible && (
+        <div className="sime-popup">
+          <div className="sime-popup-content">
+            <h3>기간 설정</h3>
+            <div className="toggle-group-container">
+              {/* 년도 토글 */}
+              <div className="toggle-group">
+                <button
+                  className="period-select-box"
+                  onClick={() => setYearDropdownOpen(!yearDropdownOpen)}
+                >
+                  {warehouseOpenModalData.year}
+                  <span className="toggle">
+                    <svg width="16" height="16" viewBox="0 0 22 22">
+                      <path
+                        d="M7 10l5 5 5-5z"
+                        fill="#445382"
+                        transform={yearDropdownOpen ? "rotate(180 11 11)" : ""}
+                      />
+                    </svg>
+                  </span>
+                </button>
+                <span className="toggle-label">년도</span>
+                {yearDropdownOpen && (
+                  <div className="dropdown-options">
+                    {years.map((yr) => (
+                      <div
+                        key={yr}
+                        className={`dropdown-option ${yr === warehouseOpenModalData.year ? "selected-dropdown-option" : ""}`}
+                        onClick={() => {
+                          setWarehouseOpenModalData({
+                            ...warehouseOpenModalData,
+                            year: yr,
+                          });
+                          setYearDropdownOpen(false);
+                        }}
+                      >
+                        {yr}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* 월 토글 */}
+              <div className="toggle-group">
+                <button
+                  className="period-select-box"
+                  onClick={() => setMonthDropdownOpen(!monthDropdownOpen)}
+                >
+                  {warehouseOpenModalData.month}
+                  <span className="toggle">
+                    <svg width="16" height="16" viewBox="0 0 22 22">
+                      <path
+                        d="M7 10l5 5 5-5z"
+                        fill="#445382"
+                        transform={monthDropdownOpen ? "rotate(180 11 11)" : ""}
+                      />
+                    </svg>
+                  </span>
+                </button>
+                <span className="toggle-label">월</span>
+                {monthDropdownOpen && (
+                  <div className="dropdown-options">
+                    {months.map((mo) => (
+                      <div
+                        key={mo}
+                        className={`dropdown-option ${mo === warehouseOpenModalData.month ? "selected-dropdown-option" : ""}`}
+                        onClick={() => {
+                          setWarehouseOpenModalData({
+                            ...warehouseOpenModalData,
+                            month: mo,
+                          });
+                          setMonthDropdownOpen(false);
+                        }}
+                      >
+                        {mo}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* 회차 토글 */}
+              <div className="toggle-group">
+                <button
+                  className="period-select-box"
+                  onClick={() => setRoundDropdownOpen(!roundDropdownOpen)}
+                >
+                  {warehouseOpenModalData.round}
+                  <span className="toggle">
+                    <svg width="16" height="16" viewBox="0 0 22 22">
+                      <path
+                        d="M7 10l5 5 5-5z"
+                        fill="#445382"
+                        transform={roundDropdownOpen ? "rotate(180 11 11)" : ""}
+                      />
+                    </svg>
+                  </span>
+                </button>
+                <span className="toggle-label">회차</span>
+                {roundDropdownOpen && (
+                  <div className="dropdown-options">
+                    {rounds.map((rd) => (
+                      <div
+                        key={rd}
+                        className={`dropdown-option ${rd === warehouseOpenModalData.round ? "selected-dropdown-option" : ""}`}
+                        onClick={() => {
+                          setWarehouseOpenModalData({
+                            ...warehouseOpenModalData,
+                            round: rd,
+                          });
+                          setRoundDropdownOpen(false);
+                        }}
+                      >
+                        {rd}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="sime-popup-buttons">
+              <button
+                className="popup-cancel"
+                onClick={() => setWarehouseOpenModalVisible(false)}
+              >
+                취소
+              </button>
+              <button
+                className="popup-confirm"
+                onClick={handleWarehouseOpenModalConfirm}
+              >
+                오픈
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showPopup && (
         <div className="order-popup">
           <div className="order-popup-content">

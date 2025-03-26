@@ -681,7 +681,7 @@ export const headerRowStyles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: moderateScale(8),
+    // gap: moderateScale(8),
   },
   smallButton: {
     backgroundColor: "#f8fafc",

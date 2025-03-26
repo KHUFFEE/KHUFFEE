@@ -98,6 +98,17 @@ const formatNumber = (num: number | string): string => {
     : num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+// 유통기한 스타일 계산 함수 수정
+const getExpirationTextColor = useCallback((expirationDate: string) => {
+  const today = new Date();
+  const expDate = new Date(expirationDate);
+  const diffTime = expDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays <= 30) return "#ef4444"; // 빨간색 - 30일 이하
+  return "#64748b"; // 원래 텍스트 색상 (COLORS.text.secondary)
+}, []);
+
 const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   warehouseId,
 }) => {
@@ -622,7 +633,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 testID={index % 2 === 0 ? "evenRow" : "oddRow"}
                 style={[
                   styles.tableRow,
-                  getExpirationStyle(item.유통기한),
                   index % 2 === 0 ? styles.evenRow : styles.oddRow,
                 ]}
               >
@@ -641,16 +651,18 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                     </Text>
                     <Text
                       testID={(() => {
-                        const expStyle = getExpirationStyle(item.유통기한);
-                        if (expStyle === styles.expired) return "expired";
-                        if (expStyle === styles.nearExpiration)
-                          return "nearExpiration";
-                        if (expStyle === styles.warning) return "warning";
-                        return "normal";
+                        const daysRemaining = calculateDaysRemaining(
+                          item.유통기한
+                        );
+                        return daysRemaining === "만료" ||
+                          (daysRemaining.includes("일") &&
+                            parseInt(daysRemaining) <= 30)
+                          ? "warning"
+                          : "normal";
                       })()}
                       style={[
                         styles.daysRemainingText,
-                        getExpirationStyle(item.유통기한),
+                        { color: getExpirationTextColor(item.유통기한) },
                       ]}
                     >
                       {calculateDaysRemaining(item.유통기한)}
@@ -738,7 +750,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         </View>
       );
     },
-    [isEditMode, getExpirationStyle, formatDate]
+    [isEditMode, getExpirationStyle, formatDate, getExpirationTextColor]
   );
 
   // FlatList의 renderItem 수정
@@ -879,43 +891,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
             </TouchableOpacity>
           )}
         </View>
-
-        <View testID="legendContainer" style={styles.legendContainer}>
-          <View testID="legendItem" style={styles.legendItem}>
-            <View
-              testID="expired"
-              style={[styles.legendColor, styles.expired]}
-            />
-            <Text testID="legendText" style={styles.legendText}>
-              유통기한 만료
-            </Text>
-          </View>
-          <View testID="legendItem" style={styles.legendItem}>
-            <View
-              testID="nearExpiration"
-              style={[styles.legendColor, styles.nearExpiration]}
-            />
-            <Text testID="legendText" style={styles.legendText}>
-              7일 이내
-            </Text>
-          </View>
-          <View testID="legendItem" style={styles.legendItem}>
-            <View
-              testID="warning"
-              style={[styles.legendColor, styles.warning]}
-            />
-            <Text testID="legendText" style={styles.legendText}>
-              30일 이내
-            </Text>
-          </View>
-          <View testID="legendItem" style={styles.legendItem}>
-            <View testID="normal" style={[styles.legendColor, styles.normal]} />
-            <Text testID="legendText" style={styles.legendText}>
-              정상
-            </Text>
-          </View>
-        </View>
-
         <View testID="container" style={headerRowStyles.container}>
           <View
             testID="buttonContainer"

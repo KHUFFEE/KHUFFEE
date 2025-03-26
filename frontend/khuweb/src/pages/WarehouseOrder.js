@@ -664,8 +664,8 @@ const WarehouseOrder = () => {
             최신 조회
           </button>
           <div className="status-message" style={{ whiteSpace: "pre-wrap" }}>
-            창고 발주 테이블은 매월 1일 1회차로 자동 생성됩니다. <br />
-            새로운 회차를 관리하고 싶으시면 "회차 생성" 버튼을 클릭해주세요.
+            창고 발주 테이블은 매월 1일, 1회차로 자동 생성됩니다. <br />
+            새로운 회차를 추가하려면 "회차 생성" 버튼을 클릭해주세요.
           </div>
         </div>
         <div className="warehouse-action-buttons">

@@ -236,9 +236,9 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString);
     const year = date.getFullYear().toString().slice(-2); // 년도의 마지막 2자리
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // 월 (0부터 시작하므로 1을 더함)
-    const day = date.getDate().toString().padStart(2, "0"); // 일자 앞에 0 추가
-    return `${year}년${month}월${day}일`;
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // 월
+    const day = date.getDate().toString().padStart(2, "0"); // 일자
+    return `${year}.${month}.${day}`;
   }, []);
 
   const handleAddItem = () => {
@@ -433,7 +433,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   // 테이블 헤더 렌더링
   const renderTableHeader = useMemo(
     () => (
-      <View testID="table-header" style={styles.tableHeader}>
+      <View testID="tableHeader" style={styles.tableHeader}>
         <Text
           testID="productCell"
           style={[styles.headerText, styles.productCell]}
@@ -443,22 +443,14 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         <Text testID="dateCell" style={[styles.headerText, styles.dateCell]}>
           유통기한
         </Text>
+        <Text testID="stockCell" style={[styles.headerText, styles.stockCell]}>
+          현재고
+        </Text>
         <Text
           testID="quantityCell"
           style={[styles.headerText, styles.quantityCell]}
         >
           개수
-        </Text>
-        <Text testID="stockCell" style={[styles.headerText, styles.stockCell]}>
-          현재고
-        </Text>
-        <Text
-          style={[
-            styles.headerText,
-            isEditMode ? styles.actionCell : styles.daysLeftCell,
-          ]}
-        >
-          {isEditMode ? "작업" : "잔여일"}
         </Text>
       </View>
     ),
@@ -482,29 +474,49 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     (supplier: string, items: ExpirationItem[]) => {
       return (
         <View key={supplier}>
-          <View style={styles.supplierHeader}>
-            <Text style={styles.supplierHeaderText}>{supplier}</Text>
+          <View testID="supplierHeader" style={styles.supplierHeader}>
+            <Text testID="supplierHeaderText" style={styles.supplierHeaderText}>
+              {supplier}
+            </Text>
           </View>
-          <View style={styles.supplierContent}>
+          <View testID="supplierContent" style={styles.supplierContent}>
             {items.map((item, index) => (
               <View
                 key={`${item.품목_id}-${item.유통기한}-${index}`}
+                testID={index % 2 === 0 ? "evenRow" : "oddRow"}
                 style={[
                   styles.tableRow,
                   getExpirationStyle(item.유통기한),
                   index % 2 === 0 ? styles.evenRow : styles.oddRow,
                 ]}
               >
-                <View style={styles.productCell}>
+                <View testID="productCell" style={styles.productCell}>
                   <Text testID="productName" style={styles.productName}>
                     {item.품목명}
                   </Text>
                 </View>
+                <View testID="dateCell" style={styles.dateCell}>
+                  <View style={styles.dateContainer}>
+                    <Text style={styles.dateText}>
+                      {formatDate(item.유통기한)}
+                    </Text>
+                    {!isEditMode && (
+                      <Text
+                        style={[
+                          styles.daysRemainingText,
+                          getExpirationStyle(item.유통기한),
+                        ]}
+                      >
+                        {calculateDaysRemaining(item.유통기한)}
+                      </Text>
+                    )}
+                  </View>
+                </View>
                 <Text
-                  testID="dateCell"
-                  style={[styles.cellText, styles.dateCell]}
+                  testID="stockCell"
+                  style={[styles.cellText, styles.stockCell]}
                 >
-                  {formatDate(item.유통기한)}
+                  {item.현재고}
                 </Text>
                 <Text
                   testID="quantityCell"
@@ -512,40 +524,30 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 >
                   {item.창고_재고량}
                 </Text>
-                <Text
-                  testID="stockCell"
-                  style={[styles.cellText, styles.stockCell]}
-                >
-                  {item.현재고}
-                </Text>
                 {isEditMode ? (
                   <View
+                    testID="actionCell"
                     style={[
                       styles.actionCell,
                       { flexDirection: "row", justifyContent: "center" },
                     ]}
                   >
                     <TouchableOpacity
+                      testID="editButton"
                       style={styles.actionButton}
                       onPress={() => handleEditItem(item)}
                     >
                       <Edit2 size={16} color="#0D326F" />
                     </TouchableOpacity>
                     <TouchableOpacity
+                      testID="trashButton"
                       style={[styles.actionButton, { marginLeft: 10 }]}
                       onPress={() => handleDeleteItem(item)}
                     >
                       <Trash2 size={16} color="#e53e3e" />
                     </TouchableOpacity>
                   </View>
-                ) : (
-                  <Text
-                    testID="daysLeftCell"
-                    style={[styles.cellText, styles.daysLeftCell]}
-                  >
-                    {calculateDaysRemaining(item.유통기한)}
-                  </Text>
-                )}
+                ) : null}
               </View>
             ))}
           </View>
@@ -573,24 +575,34 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View testID="loadingContainer" style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0D326F" />
-        <Text style={styles.loadingText}>로딩중...</Text>
+        <Text testID="loadingText" style={styles.loadingText}>
+          로딩중...
+        </Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView testID="container" style={styles.container}>
       {successMessage ? (
-        <View style={styles.successMessageContainer}>
-          <Text style={styles.successMessageText}>{successMessage}</Text>
+        <View
+          testID="successMessageContainer"
+          style={styles.successMessageContainer}
+        >
+          <Text testID="successMessageText" style={styles.successMessageText}>
+            {successMessage}
+          </Text>
         </View>
       ) : null}
 
-      <View style={OrderRequeststyle.categorySection}>
-        <Text style={OrderRequeststyle.sectionTitle}>협력사 선택</Text>
+      <View testID="categorySection" style={OrderRequeststyle.categorySection}>
+        <Text testID="sectionTitle" style={OrderRequeststyle.sectionTitle}>
+          협력사 선택
+        </Text>
         <ScrollView
+          testID="categoryList"
           horizontal
           showsHorizontalScrollIndicator={false}
           style={OrderRequeststyle.categoryList}
@@ -601,6 +613,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           }}
         >
           <TouchableOpacity
+            testID={
+              selectedCategory === null
+                ? "categoryButtonActive"
+                : "categoryButton"
+            }
             style={[
               OrderRequeststyle.categoryButton,
               selectedCategory === null &&
@@ -609,6 +626,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
             onPress={() => setSelectedCategory(null)}
           >
             <Text
+              testID={
+                selectedCategory === null
+                  ? "categoryButtonTextActive"
+                  : "categoryButtonText"
+              }
               style={[
                 OrderRequeststyle.categoryButtonText,
                 selectedCategory === null &&
@@ -621,6 +643,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           {sortedSuppliers.map((supplier, idx) => (
             <TouchableOpacity
               key={idx}
+              testID={
+                selectedCategory === supplier
+                  ? "categoryButtonActive"
+                  : "categoryButton"
+              }
               style={[
                 OrderRequeststyle.categoryButton,
                 selectedCategory === supplier &&
@@ -629,6 +656,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
               onPress={() => setSelectedCategory(supplier)}
             >
               <Text
+                testID={
+                  selectedCategory === supplier
+                    ? "categoryButtonTextActive"
+                    : "categoryButtonText"
+                }
                 style={[
                   OrderRequeststyle.categoryButtonText,
                   selectedCategory === supplier &&
@@ -642,10 +674,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         </ScrollView>
       </View>
 
-      <View style={styles.filterContainer}>
-        <View style={styles.searchContainer}>
+      <View testID="filterContainer" style={styles.filterContainer}>
+        <View testID="searchContainer" style={styles.searchContainer}>
           <Search color="#0D326F" size={20} />
           <TextInput
+            testID="searchInput"
             style={styles.searchInput}
             placeholder="상품명 또는 협력사로 검색"
             value={searchQuery}
@@ -654,6 +687,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity
+              testID="clearButton"
               style={styles.clearButton}
               onPress={() => setSearchQuery("")}
             >
@@ -662,100 +696,136 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           )}
         </View>
 
-        <View style={styles.legendContainer}>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendColor, styles.expired]} />
-            <Text style={styles.legendText}>유통기한 만료</Text>
+        <View testID="legendContainer" style={styles.legendContainer}>
+          <View testID="legendItem" style={styles.legendItem}>
+            <View
+              testID="expired"
+              style={[styles.legendColor, styles.expired]}
+            />
+            <Text testID="legendText" style={styles.legendText}>
+              유통기한 만료
+            </Text>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendColor, styles.nearExpiration]} />
-            <Text style={styles.legendText}>7일 이내</Text>
+          <View testID="legendItem" style={styles.legendItem}>
+            <View
+              testID="nearExpiration"
+              style={[styles.legendColor, styles.nearExpiration]}
+            />
+            <Text testID="legendText" style={styles.legendText}>
+              7일 이내
+            </Text>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendColor, styles.warning]} />
-            <Text style={styles.legendText}>30일 이내</Text>
+          <View testID="legendItem" style={styles.legendItem}>
+            <View
+              testID="warning"
+              style={[styles.legendColor, styles.warning]}
+            />
+            <Text testID="legendText" style={styles.legendText}>
+              30일 이내
+            </Text>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendColor, styles.normal]} />
-            <Text style={styles.legendText}>정상</Text>
+          <View testID="legendItem" style={styles.legendItem}>
+            <View testID="normal" style={[styles.legendColor, styles.normal]} />
+            <Text testID="legendText" style={styles.legendText}>
+              정상
+            </Text>
           </View>
         </View>
 
-        <View style={headerRowStyles.container}>
-          <View style={headerRowStyles.buttonContainer}>
-            <TouchableOpacity
-              style={[
-                sortBy === "date"
-                  ? headerRowStyles.activeButton
-                  : headerRowStyles.smallButton,
-              ]}
-              onPress={() => setSortBy("date")}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text
-                  style={
-                    sortBy === "date"
-                      ? headerRowStyles.activeButtonText
-                      : headerRowStyles.buttonText
-                  }
+        <View testID="container" style={headerRowStyles.container}>
+          <View
+            testID="buttonContainer"
+            style={headerRowStyles.buttonContainer}
+          >
+            {!isEditMode ? (
+              <>
+                <TouchableOpacity
+                  testID="addButton"
+                  style={headerRowStyles.smallButton}
+                  onPress={handleAddItem}
                 >
-                  유통기한순
-                </Text>
-                <ArrowDownUp
-                  size={16}
-                  color={sortBy === "date" ? "#ffffff" : "#0D326F"}
-                  style={{ marginLeft: moderateScale(4) }}
-                />
-              </View>
-            </TouchableOpacity>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Plus
+                      size={14}
+                      color="#0D326F"
+                      style={{ marginRight: 4 }}
+                    />
+                    <Text style={headerRowStyles.buttonText}>항목 추가</Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  testID="editButton"
+                  style={headerRowStyles.smallButton}
+                  onPress={toggleEditMode}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Edit2
+                      size={14}
+                      color="#0D326F"
+                      style={{ marginRight: 4 }}
+                    />
+                    <Text style={headerRowStyles.buttonText}>편집모드</Text>
+                  </View>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity
+                  testID="cancelButton"
+                  style={headerRowStyles.cancelButton}
+                  onPress={toggleEditMode}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={headerRowStyles.cancelButtonText}>취소</Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  testID="saveButton"
+                  style={headerRowStyles.activeButton}
+                  onPress={handleSave}
+                  disabled={loading}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Save
+                      size={14}
+                      color="#FFFFFF"
+                      style={{ marginRight: 4 }}
+                    />
+                    <Text style={headerRowStyles.activeButtonText}>저장</Text>
+                  </View>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </View>
 
-      <View style={[styles.tableContainer, { flex: 1 }]}>
+      <View
+        testID="tableContainer"
+        style={[styles.tableContainer, { flex: 1 }]}
+      >
         {renderTableHeader}
 
         {listData.length === 0 ? (
-          <Text style={styles.emptyText}>유통기한 데이터가 없습니다.</Text>
+          <Text testID="emptyText" style={styles.emptyText}>
+            유통기한 데이터가 없습니다.
+          </Text>
         ) : (
           <FlatList
+            testID="flatListStyle"
             data={listData}
             style={[styles.flatListStyle, { flex: 1 }]}
             contentContainerStyle={{ flexGrow: 1 }}
             renderItem={renderItem}
             keyExtractor={(item) => item.supplier}
             ListEmptyComponent={() => (
-              <Text style={styles.emptyText}>유통기한 데이터가 없습니다.</Text>
+              <Text testID="emptyText" style={styles.emptyText}>
+                유통기한 데이터가 없습니다.
+              </Text>
             )}
           />
         )}
       </View>
-
-      {!isEditMode && (
-        <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
-            <Plus size={20} color="#ffffff" />
-            <Text style={styles.addButtonText}>항목 추가</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.editButton} onPress={toggleEditMode}>
-            <Edit2 size={20} color="#ffffff" />
-            <Text style={styles.editButtonText}>편집모드</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {isEditMode && (
-        <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleSave}
-            disabled={loading}
-          >
-            <Save size={20} color="#ffffff" />
-            <Text style={styles.saveButtonText}>저장</Text>
-          </TouchableOpacity>
-        </View>
-      )}
 
       <Modal
         visible={showModal}
@@ -763,15 +833,16 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         transparent={true}
         onRequestClose={() => setShowModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+        <View testID="modalOverlay" style={styles.modalOverlay}>
+          <View testID="modalContainer" style={styles.modalContainer}>
+            <View testID="modalHeader" style={styles.modalHeader}>
+              <Text testID="modalTitle" style={styles.modalTitle}>
                 {modalMode === "add"
                   ? "유통기한 항목 추가"
                   : "유통기한 항목 수정"}
               </Text>
               <TouchableOpacity
+                testID="closeButton"
                 style={styles.closeButton}
                 onPress={() => setShowModal(false)}
               >
@@ -779,14 +850,19 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.formContainer}>
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>품목 선택</Text>
-                <View style={styles.pickerContainer}>
-                  <ScrollView style={styles.pickerScrollView}>
+            <ScrollView testID="formContainer" style={styles.formContainer}>
+              <View testID="formGroup" style={styles.formGroup}>
+                <Text testID="label" style={styles.label}>
+                  품목 선택
+                </Text>
+                <View testID="pickerContainer" style={styles.pickerContainer}>
+                  <ScrollView
+                    testID="pickerScrollView"
+                    style={styles.pickerScrollView}
+                  >
                     {modalMode === "edit" ? (
-                      <View style={styles.disabledInput}>
-                        <Text style={styles.disabledText}>
+                      <View testID="disabledInput" style={styles.disabledInput}>
+                        <Text testID="disabledText" style={styles.disabledText}>
                           {selectedItem?.품목명 || ""}
                         </Text>
                       </View>
@@ -794,6 +870,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                       products.map((product) => (
                         <TouchableOpacity
                           key={product.품목_id}
+                          testID={
+                            formData.품목_id === product.품목_id
+                              ? "selectedProductItem"
+                              : "productItem"
+                          }
                           style={[
                             styles.productItem,
                             formData.품목_id === product.품목_id &&
@@ -807,6 +888,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                           }
                         >
                           <Text
+                            testID={
+                              formData.품목_id === product.품목_id
+                                ? "selectedProductText"
+                                : "productItemText"
+                            }
                             style={
                               formData.품목_id === product.품목_id
                                 ? styles.selectedProductText
@@ -822,13 +908,16 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 </View>
               </View>
 
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>유통기한</Text>
+              <View testID="formGroup" style={styles.formGroup}>
+                <Text testID="label" style={styles.label}>
+                  유통기한
+                </Text>
                 <TouchableOpacity
+                  testID="dateInput"
                   style={styles.dateInput}
                   onPress={() => setShowDatePicker(true)}
                 >
-                  <Text style={styles.dateText}>
+                  <Text testID="dateText" style={styles.dateText}>
                     {formatDate(formData.유통기한.toISOString())}
                   </Text>
                 </TouchableOpacity>
@@ -842,9 +931,12 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 )}
               </View>
 
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>수량</Text>
+              <View testID="formGroup" style={styles.formGroup}>
+                <Text testID="label" style={styles.label}>
+                  수량
+                </Text>
                 <TextInput
+                  testID="input"
                   style={styles.input}
                   value={formData.창고_재고량}
                   onChangeText={(text) =>
@@ -858,15 +950,22 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 />
               </View>
 
-              <View style={styles.buttonGroup}>
+              <View testID="buttonGroup" style={styles.buttonGroup}>
                 <TouchableOpacity
+                  testID="cancelButton"
                   style={styles.cancelButton}
                   onPress={() => setShowModal(false)}
                   disabled={isSubmitting}
                 >
-                  <Text style={styles.cancelButtonText}>취소</Text>
+                  <Text
+                    testID="cancelButtonText"
+                    style={styles.cancelButtonText}
+                  >
+                    취소
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
+                  testID="submitButton"
                   style={styles.submitButton}
                   onPress={handleSubmit}
                   disabled={isSubmitting}
@@ -874,7 +973,10 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                   {isSubmitting ? (
                     <ActivityIndicator size="small" color="#ffffff" />
                   ) : (
-                    <Text style={styles.submitButtonText}>
+                    <Text
+                      testID="submitButtonText"
+                      style={styles.submitButtonText}
+                    >
                       {modalMode === "add" ? "추가" : "수정"}
                     </Text>
                   )}
@@ -890,14 +992,22 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         transparent={true}
         animationType="fade"
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.saveSuccessModal}>
-            <Text style={styles.saveSuccessText}>저장이 완료되었습니다</Text>
+        <View testID="modalOverlay" style={styles.modalOverlay}>
+          <View testID="saveSuccessModal" style={styles.saveSuccessModal}>
+            <Text testID="saveSuccessText" style={styles.saveSuccessText}>
+              저장이 완료되었습니다
+            </Text>
             <TouchableOpacity
+              testID="saveSuccessButton"
               style={styles.saveSuccessButton}
               onPress={() => setShowSaveSuccessModal(false)}
             >
-              <Text style={styles.saveSuccessButtonText}>확인</Text>
+              <Text
+                testID="saveSuccessButtonText"
+                style={styles.saveSuccessButtonText}
+              >
+                확인
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

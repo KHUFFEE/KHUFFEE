@@ -45,7 +45,7 @@ export const styles = StyleSheet.create({
     justifyContent: "flex-start",
     backgroundColor: "#fff",
     marginHorizontal: moderateScale(10),
-    paddingBottom: moderateScale(50), //추후 높이 맞출 때 쓰기
+    paddingBottom: moderateScale(0), //추후 높이 맞출 때 쓰기
   },
   loadingContainer: {
     flex: 1,
@@ -209,7 +209,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#f8fafc",
   },
   productCell: {
-    flex: 5,
+    flex: 4.3,
     // flexDirection: "column",
     // justifyContent: "center",
     // alignItems: "center",
@@ -227,17 +227,30 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   dateCell: {
-    flex: 4,
+    flex: 2.8,
     marginLeft: moderateScale(10),
+  },
+  dateContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dateText: {
+    fontSize: RFValue(12),
+    color: COLORS.text.primary,
+    textAlign: "center",
+  },
+  daysRemainingText: {
+    fontSize: RFValue(10),
+    color: COLORS.text.secondary,
+    textAlign: "center",
+    marginTop: 2,
   },
   quantityCell: {
     flex: 2,
   },
   stockCell: {
-    flex: 2,
-  },
-  daysLeftCell: {
-    flex: 2,
+    flex: 1.3,
   },
   actionCell: {
     flex: 1,
@@ -410,11 +423,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: moderateScale(12),
     justifyContent: "center",
     backgroundColor: "#f8fafc",
-  },
-  dateText: {
-    ...commonTextStyle(),
-    fontSize: RFValue(14),
-    color: COLORS.text.primary,
   },
   disabledInput: {
     ...commonTextStyle(),
@@ -625,6 +633,7 @@ export const headerRowStyles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
+    gap: moderateScale(8),
   },
   smallButton: {
     backgroundColor: "#f8fafc",
@@ -640,6 +649,7 @@ export const headerRowStyles = StyleSheet.create({
     elevation: 2,
     justifyContent: "center",
     alignItems: "center",
+    minWidth: moderateScale(80),
   },
   activeButton: {
     backgroundColor: "#0D326F",
@@ -655,6 +665,23 @@ export const headerRowStyles = StyleSheet.create({
     elevation: 3,
     justifyContent: "center",
     alignItems: "center",
+    minWidth: moderateScale(80),
+  },
+  cancelButton: {
+    backgroundColor: "#f8fafc",
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: verticalScale(5),
+    borderRadius: moderateScale(8),
+    borderWidth: 1,
+    borderColor: "#e53e3e",
+    shadowColor: "#e53e3e",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
+    elevation: 2,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: moderateScale(5),
   },
   buttonText: {
     color: "#0D326F",
@@ -665,5 +692,10 @@ export const headerRowStyles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: RFValue(11),
     fontWeight: "600",
+  },
+  cancelButtonText: {
+    color: "#e53e3e",
+    fontSize: RFValue(11),
+    fontWeight: "500",
   },
 });

@@ -5,8 +5,6 @@ import {
   fetchWarehouseOrders,
   fetchItems,
   fetchSuppliers,
-  getTableStatusList,
-  updateTableStatus,
   fetchWarehouseInventory,
   fetchWarehouseOutgoing,
   updateWarehouseOrder,

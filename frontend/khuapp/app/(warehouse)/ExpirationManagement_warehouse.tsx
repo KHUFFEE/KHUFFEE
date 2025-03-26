@@ -23,6 +23,7 @@ import {
   Trash2,
   Save,
   XCircle,
+  Minus,
 } from "lucide-react-native";
 import { moderateScale, scale } from "react-native-size-matters";
 import { RFValue } from "react-native-responsive-fontsize";
@@ -32,7 +33,10 @@ import {
 } from "../../src/styles/ExpirationMangaement_warehouse";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { OrderRequeststyle } from "../../src/styles/StockManagement_styles_warehouse";
-
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 interface ExpirationManagementProps {
   warehouseId: string;
 }
@@ -71,21 +75,39 @@ const calculateDaysRemaining = (expirationDate: string): string => {
       (expDate.getFullYear() - today.getFullYear()) * 12 +
       (expDate.getMonth() - today.getMonth());
 
-    // 현재 날짜의 일자가 만료일의 일자보다 크면 한 달을 빼고 남은 일수를 더함
     if (today.getDate() > expDate.getDate()) {
       months--;
-      // 이전 달의 마지막 날짜 계산
       const lastMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
       const remainingDays =
         lastMonth.getDate() - today.getDate() + expDate.getDate();
       return `${months}개월 ${remainingDays.toString().padStart(2, "0")}일`;
     } else {
-      // 현재 날짜의 일자가 만료일의 일자보다 작거나 같으면 남은 일수 계산
       const remainingDays = expDate.getDate() - today.getDate();
       return `${months}개월 ${remainingDays.toString().padStart(2, "0")}일`;
     }
   }
 };
+
+// 숫자 포맷팅 함수 추가
+const formatNumber = (num: number | string): string => {
+  if (typeof num === "string") {
+    num = parseFloat(num);
+  }
+  return isNaN(num)
+    ? "0"
+    : num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+// 유통기한 스타일 계산 함수 수정
+const getExpirationTextColor = useCallback((expirationDate: string) => {
+  const today = new Date();
+  const expDate = new Date(expirationDate);
+  const diffTime = expDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays <= 30) return "#ef4444"; // 빨간색 - 30일 이하
+  return "#64748b"; // 원래 텍스트 색상 (COLORS.text.secondary)
+}, []);
 
 const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   warehouseId,
@@ -250,9 +272,9 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   // 날짜 포맷팅
   const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString);
-    const year = date.getFullYear().toString().slice(-2); // 년도의 마지막 2자리
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // 월
-    const day = date.getDate().toString().padStart(2, "0"); // 일자
+    const year = date.getFullYear().toString().slice(-2);
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
     return `${year}.${month}.${day}`;
   }, []);
 
@@ -302,6 +324,14 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           onPress: async () => {
             try {
               setLoading(true);
+
+              // 날짜 형식을 yyyy.MM.dd 형식으로 포맷팅
+              const date = new Date(item.유통기한);
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, "0");
+              const day = String(date.getDate()).padStart(2, "0");
+              const formattedDate = `${year}.${month}.${day}`;
+
               const response = await fetch(
                 `${RN_API_URL}/api/inventory/warehouse_expiration_delete/`,
                 {
@@ -311,13 +341,16 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                   },
                   body: JSON.stringify({
                     품목_id: item.품목_id,
-                    유통기한: item.유통기한,
+                    유통기한: formattedDate,
                   }),
                 }
               );
 
               if (!response.ok) {
-                throw new Error("항목 삭제에 실패했습니다.");
+                const errorData = await response.json();
+                throw new Error(
+                  errorData.message || "항목 삭제에 실패했습니다."
+                );
               }
 
               await refreshData();
@@ -350,7 +383,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           ? `${RN_API_URL}/api/inventory/warehouse_expiration_create/`
           : `${RN_API_URL}/api/inventory/warehouse_expiration_update/`;
 
-      const formattedDate = formatDate(formData.유통기한.toISOString());
+      // 날짜 형식을 yyyy.MM.dd 형식으로 포맷팅
+      const year = formData.유통기한.getFullYear();
+      const month = String(formData.유통기한.getMonth() + 1).padStart(2, "0");
+      const day = String(formData.유통기한.getDate()).padStart(2, "0");
+      const formattedDate = `${year}.${month}.${day}`;
 
       const payload = {
         품목_id: formData.품목_id,
@@ -433,15 +470,95 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   const handleSave = async () => {
     try {
       setLoading(true);
+
+      const updatePromises = expirationData.map(async (item) => {
+        // 유통기한 날짜 형식 포맷팅
+        // 유통기한이 이미 YYYY.MM.DD 형식인지 확인하고 아니면 변환
+        let formattedDate = item.유통기한;
+
+        // YYYY-MM-DD 형식이나 다른 형식이면 YYYY.MM.DD 형식으로 변환
+        if (item.유통기한.includes("-") || !item.유통기한.includes(".")) {
+          const date = new Date(item.유통기한);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          formattedDate = `${year}.${month}.${day}`;
+        }
+
+        const payload = {
+          품목_id: item.품목_id,
+          유통기한: formattedDate,
+          창고_재고량: item.창고_재고량,
+        };
+
+        const response = await fetch(
+          `${RN_API_URL}/api/inventory/warehouse_expiration_update/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`저장 실패: ${item.품목명}`);
+        }
+
+        return response.json();
+      });
+
+      await Promise.all(updatePromises);
       await refreshData();
       setIsEditMode(false);
       setShowSaveSuccessModal(true);
       setTimeout(() => setShowSaveSuccessModal(false), 2000);
+
+      setSuccessMessage("모든 변경사항이 성공적으로 저장되었습니다.");
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       console.error("저장 중 오류:", error);
       Alert.alert("오류", "저장 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 수량 증가 함수
+  const handleIncrement = (item: ExpirationItem) => {
+    setExpirationData((prev) =>
+      prev.map((exp) =>
+        exp.품목_id === item.품목_id && exp.유통기한 === item.유통기한
+          ? { ...exp, 창고_재고량: exp.창고_재고량 + 1 }
+          : exp
+      )
+    );
+  };
+
+  // 수량 감소 함수
+  const handleDecrement = (item: ExpirationItem) => {
+    setExpirationData((prev) =>
+      prev.map((exp) =>
+        exp.품목_id === item.품목_id && exp.유통기한 === item.유통기한
+          ? { ...exp, 창고_재고량: Math.max(0, exp.창고_재고량 - 1) }
+          : exp
+      )
+    );
+  };
+
+  // 수량 직접 변경 함수
+  const handleQuantityChange = (item: ExpirationItem, value: string) => {
+    const numericValue = parseInt(value.replace(/,/g, ""));
+
+    if (!isNaN(numericValue)) {
+      setExpirationData((prev) =>
+        prev.map((exp) =>
+          exp.품목_id === item.품목_id && exp.유통기한 === item.유통기한
+            ? { ...exp, 창고_재고량: numericValue }
+            : exp
+        )
+      );
     }
   };
 
@@ -455,15 +572,30 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         >
           상품명
         </Text>
-        <Text testID="dateCell" style={[styles.headerText, styles.dateCell]}>
+        <Text
+          testID="dateCell"
+          style={[styles.headerText, styles.dateCell, { right: wp(5) }]}
+        >
           유통기한
         </Text>
-        <Text testID="stockCell" style={[styles.headerText, styles.stockCell]}>
+        {/* 편집 모드일 때도 현재고 영역을 렌더링하지만 투명 처리 */}
+        <Text
+          testID="stockCell"
+          style={[
+            styles.headerText,
+            styles.stockCell,
+            isEditMode && { opacity: 0 },
+          ]}
+        >
           현재고
         </Text>
         <Text
           testID="quantityCell"
-          style={[styles.headerText, styles.quantityCell]}
+          style={[
+            styles.headerText,
+            styles.quantityCell,
+            isEditMode && { right: wp(10) },
+          ]}
         >
           개수
         </Text>
@@ -472,7 +604,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     [isEditMode]
   );
 
-  // 협력사별로 데이터 그룹화
+  // 협력사별 데이터 그룹화
   const groupedData = useMemo(() => {
     const groups: { [key: string]: ExpirationItem[] } = {};
     filteredData.forEach((item) => {
@@ -501,7 +633,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 testID={index % 2 === 0 ? "evenRow" : "oddRow"}
                 style={[
                   styles.tableRow,
-                  getExpirationStyle(item.유통기한),
                   index % 2 === 0 ? styles.evenRow : styles.oddRow,
                 ]}
               >
@@ -510,66 +641,116 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                     {item.품목명}
                   </Text>
                 </View>
-                <View testID="dateCell" style={styles.dateCell}>
+                <View
+                  testID="dateCell"
+                  style={[styles.dateCell, { right: wp(5) }]}
+                >
                   <View style={styles.dateContainer}>
                     <Text style={styles.dateText}>
                       {formatDate(item.유통기한)}
                     </Text>
-                    {!isEditMode && (
-                      <Text
-                        style={[
-                          styles.daysRemainingText,
-                          getExpirationStyle(item.유통기한),
-                        ]}
-                      >
-                        {calculateDaysRemaining(item.유통기한)}
-                      </Text>
-                    )}
+                    <Text
+                      testID={(() => {
+                        const daysRemaining = calculateDaysRemaining(
+                          item.유통기한
+                        );
+                        return daysRemaining === "만료" ||
+                          (daysRemaining.includes("일") &&
+                            parseInt(daysRemaining) <= 30)
+                          ? "warning"
+                          : "normal";
+                      })()}
+                      style={[
+                        styles.daysRemainingText,
+                        { color: getExpirationTextColor(item.유통기한) },
+                      ]}
+                    >
+                      {calculateDaysRemaining(item.유통기한)}
+                    </Text>
                   </View>
                 </View>
+                {/* 항상 현재고 영역 렌더링 (편집 모드일 경우 투명 처리) */}
                 <Text
                   testID="stockCell"
-                  style={[styles.cellText, styles.stockCell]}
+                  style={[
+                    styles.cellText,
+                    styles.stockCell,
+                    isEditMode && { opacity: 0 },
+                  ]}
                 >
                   {item.현재고}
                 </Text>
-                <Text
-                  testID="quantityCell"
-                  style={[styles.cellText, styles.quantityCell]}
-                >
-                  {item.창고_재고량}
-                </Text>
                 {isEditMode ? (
                   <View
-                    testID="actionCell"
+                    testID="controlContainer"
                     style={[
-                      styles.actionCell,
-                      { flexDirection: "row", justifyContent: "center" },
+                      styles.quantityCell,
+                      styles.controlContainer,
+                      { right: wp(13) },
                     ]}
                   >
-                    <TouchableOpacity
-                      testID="editButton"
-                      style={styles.actionButton}
-                      onPress={() => handleEditItem(item)}
+                    <View
+                      style={[
+                        { height: moderateScale(28) },
+                        styles.inputContainer,
+                      ]}
                     >
-                      <Edit2 size={16} color="#0D326F" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      testID="trashButton"
-                      style={[styles.actionButton, { marginLeft: 10 }]}
-                      onPress={() => handleDeleteItem(item)}
-                    >
-                      <Trash2 size={16} color="#e53e3e" />
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        testID="leftButton"
+                        style={[styles.controlButton, styles.leftButton]}
+                        onPress={() => handleDecrement(item)}
+                      >
+                        <Minus size={14} color="#0A2A5E" />
+                      </TouchableOpacity>
+                      <TextInput
+                        testID="quantityInput"
+                        // 수량 입력란의 너비를 편집 모드에서는 약간 줄여서 버튼들을 배치할 공간 마련
+                        style={[
+                          styles.quantityInput,
+                          {
+                            width: moderateScale(50),
+                          },
+                        ]}
+                        value={formatNumber(item.창고_재고량)}
+                        onChangeText={(text) =>
+                          handleQuantityChange(item, text)
+                        }
+                        keyboardType="numeric"
+                      />
+                      <TouchableOpacity
+                        testID="rightButton"
+                        style={[styles.controlButton, styles.rightButton]}
+                        onPress={() => handleIncrement(item)}
+                      >
+                        <Plus size={14} color="#0A2A5E" />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        testID="deleteButton"
+                        style={[
+                          styles.deleteButton,
+                          { position: "absolute", left: wp(20) },
+                        ]}
+                        onPress={() => handleDeleteItem(item)}
+                      >
+                        <Trash2 size={12} color="#e53e3e" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                ) : null}
+                ) : (
+                  <Text
+                    testID="quantityCell"
+                    style={[styles.cellText, styles.quantityCell]}
+                  >
+                    {item.창고_재고량}
+                  </Text>
+                )}
               </View>
             ))}
           </View>
         </View>
       );
     },
-    [isEditMode, getExpirationStyle, formatDate]
+    [isEditMode, getExpirationStyle, formatDate, getExpirationTextColor]
   );
 
   // FlatList의 renderItem 수정
@@ -710,43 +891,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
             </TouchableOpacity>
           )}
         </View>
-
-        <View testID="legendContainer" style={styles.legendContainer}>
-          <View testID="legendItem" style={styles.legendItem}>
-            <View
-              testID="expired"
-              style={[styles.legendColor, styles.expired]}
-            />
-            <Text testID="legendText" style={styles.legendText}>
-              유통기한 만료
-            </Text>
-          </View>
-          <View testID="legendItem" style={styles.legendItem}>
-            <View
-              testID="nearExpiration"
-              style={[styles.legendColor, styles.nearExpiration]}
-            />
-            <Text testID="legendText" style={styles.legendText}>
-              7일 이내
-            </Text>
-          </View>
-          <View testID="legendItem" style={styles.legendItem}>
-            <View
-              testID="warning"
-              style={[styles.legendColor, styles.warning]}
-            />
-            <Text testID="legendText" style={styles.legendText}>
-              30일 이내
-            </Text>
-          </View>
-          <View testID="legendItem" style={styles.legendItem}>
-            <View testID="normal" style={[styles.legendColor, styles.normal]} />
-            <Text testID="legendText" style={styles.legendText}>
-              정상
-            </Text>
-          </View>
-        </View>
-
         <View testID="container" style={headerRowStyles.container}>
           <View
             testID="buttonContainer"
@@ -817,7 +961,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
 
       <View
         testID="tableContainer"
-        style={[styles.tableContainer, { flex: 1 }]}
+        style={[{ flex: 1 }, styles.tableContainer]}
       >
         {renderTableHeader}
 
@@ -829,7 +973,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           <FlatList
             testID="flatListStyle"
             data={listData}
-            style={[styles.flatListStyle, { flex: 1 }]}
+            style={[{ flex: 1 }, styles.flatListStyle]}
             contentContainerStyle={{ flexGrow: 1 }}
             renderItem={renderItem}
             keyExtractor={(item) => item.supplier}

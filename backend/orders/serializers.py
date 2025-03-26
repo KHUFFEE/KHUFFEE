@@ -86,64 +86,32 @@ class WarehouseOrderCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WarehouseOrder
-        fields = ("품목_id", "창고_발주량", "회차")
+        fields = (
+            "품목_id",
+            "창고_발주량",
+            "회차",
+            "기간",
+        )  # 기간 필드를 추가하여 payload에서 받도록 함
 
     def create(self, validated_data):
         today = date.today()
-        # WarehouseOrder는 YYYY.MM 형식
-        validated_data["기간"] = today.strftime("%Y.%m")
+        # payload에 "기간"이 없다면 기본값을 사용
+        if "기간" not in validated_data:
+            validated_data["기간"] = today.strftime("%Y.%m")
         new_value = validated_data.get("창고_발주량")
         duplicate_qs = WarehouseOrder.objects.filter(
             품목_id=validated_data["품목_id"],
             기간=validated_data["기간"],
             회차=validated_data["회차"],
         )
-        table_name = WarehouseOrder._meta.db_table
 
         if duplicate_qs.exists():
-            if new_value == "" or float(new_value) == 0:
-                duplicate_qs.delete()
-                instance = WarehouseOrder()
-                instance.품목_id = validated_data["품목_id"]
-                instance.기간 = validated_data["기간"]
-                instance.회차 = validated_data["회차"]
+            instance = duplicate_qs.first()
+            # 이미 존재하는 경우, 창고_발주량이 0이 아니라면 0으로 업데이트
+            if float(instance.창고_발주량) != 0:
                 instance.창고_발주량 = 0
-                return instance
-            else:
-                item_pk = (
-                    validated_data["품목_id"].pk
-                    if hasattr(validated_data["품목_id"], "pk")
-                    else validated_data["품목_id"]
-                )
-                period_val = validated_data["기간"]
-                round_val = validated_data["회차"]
-                add_amount = new_value
-
-                with connection.cursor() as cursor:
-                    update_sql = f"""
-                        UPDATE {table_name}
-                        SET 창고_발주량 = 창고_발주량 + %s
-                        WHERE 품목_id = %s AND 기간 = %s AND 회차 = %s
-                    """
-                    cursor.execute(
-                        update_sql, [add_amount, item_pk, period_val, round_val]
-                    )
-
-                    select_sql = f"""
-                        SELECT 창고_발주량
-                        FROM {table_name}
-                        WHERE 품목_id = %s AND 기간 = %s AND 회차 = %s
-                    """
-                    cursor.execute(select_sql, [item_pk, period_val, round_val])
-                    row = cursor.fetchone()
-                    new_amount = row[0] if row else add_amount
-
-                instance = WarehouseOrder()
-                instance.품목_id = validated_data["품목_id"]
-                instance.기간 = period_val
-                instance.회차 = round_val
-                instance.창고_발주량 = new_amount
-                return instance
+                instance.save()
+            return instance
 
         return super().create(validated_data)
 

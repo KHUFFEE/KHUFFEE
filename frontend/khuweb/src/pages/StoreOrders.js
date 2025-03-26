@@ -746,7 +746,7 @@ const StoreOrders = () => {
     if (orderTableStatus === 1) {
       statusMessage = `현재 매니저가 발주 입력이 가능한 상태입니다.\n매니저의 발주는 ${selectedYear}년 ${selectedMonth.padStart(2, "0")}월 ${selectedWeek}주차 ${selectedRound}회차로 입력됩니다.`;
     } else if (orderTableStatus === 0) {
-      statusMessage = `현재 발주가 마감된 상태입니다.\n매니저의 발주를 허용하기 위해서는 오픈 버튼을 클릭해주세요.`;
+      statusMessage = `현재 발주가 마감된 상태입니다.\n매니저의 발주를 허용하기 위해서는 "발주 오픈" 버튼을 클릭해주세요.`;
     }
   }
 
@@ -886,14 +886,14 @@ const StoreOrders = () => {
                     className="status-close-button"
                     onClick={() => setCloseModalVisible(true)}
                   >
-                    발주 마감하기
+                    발주 마감
                   </button>
                 ) : (
                   <button
                     className="status-open-button"
                     onClick={() => setOpenModalVisible(true)}
                   >
-                    발주 오픈하기
+                    발주 오픈
                   </button>
                 ))}
               <button
@@ -932,14 +932,14 @@ const StoreOrders = () => {
                     className="status-close-button"
                     onClick={() => setCloseModalVisible(true)}
                   >
-                    발주 마감하기
+                    발주 마감
                   </button>
                 ) : (
                   <button
                     className="status-open-button"
                     onClick={() => setOpenModalVisible(true)}
                   >
-                    발주 오픈하기
+                    발주 오픈
                   </button>
                 ))}
               <button

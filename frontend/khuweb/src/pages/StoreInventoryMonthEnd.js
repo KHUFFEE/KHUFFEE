@@ -490,8 +490,8 @@ const StoreInventoryMonthEnd = () => {
 
   const openButtonText =
     tableStatus === 0
-      ? `${nextMonthNumber}월 오픈하기`
-      : `${currentMonthNumber}월 마감하기`;
+      ? `${nextMonthNumber}월 오픈`
+      : `${currentMonthNumber}월 마감`;
 
   // 요청사항 2: 최신 기간일 때, 상태 메시지 표시 (3월 마감 상태와 4월 오픈 상태에 따른 메시지)
   let statusMessage = "";
@@ -502,13 +502,13 @@ const StoreInventoryMonthEnd = () => {
   ) {
     const [latestYear, latestMonth] = latestPeriodValue.split(".");
     if (tableStatus === 1) {
-      statusMessage = `현재 매니저가 ${parseInt(latestMonth, 10)}월 재고 입력이 가능한 상태입니다.\n매니저의 ${parseInt(latestMonth, 10)}월 재고 입력을 제한하기 위해서는 마감 버튼을 클릭해주세요.`;
+      statusMessage = `현재 매니저가 ${parseInt(latestMonth, 10)}월 재고 입력이 가능한 상태입니다.\n매니저의 ${parseInt(latestMonth, 10)}월 재고 입력을 제한하기 위해서는 "${parseInt(latestMonth, 10)}월 마감" 버튼을 클릭해주세요.`;
     } else if (tableStatus === 0) {
       let newMonth = parseInt(latestMonth, 10) + 1;
       if (newMonth > 12) {
         newMonth = 1;
       }
-      statusMessage = `현재 ${parseInt(latestMonth, 10)}월말 재고 입력은 마감 되었습니다.\n매니저의 ${newMonth}월 재고 입력을 허용하기 위해서는 ${newMonth}월 오픈 버튼을 클릭해주세요.`;
+      statusMessage = `현재 ${parseInt(latestMonth, 10)}월말 재고 입력은 마감 되었습니다.\n매니저의 ${newMonth}월 재고 입력을 허용하기 위해서는 "${newMonth}월 오픈" 버튼을 클릭해주세요.`;
     }
   }
 

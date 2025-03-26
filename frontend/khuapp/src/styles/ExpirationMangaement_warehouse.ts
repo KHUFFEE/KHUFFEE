@@ -152,7 +152,8 @@ export const styles = StyleSheet.create({
     ...commonTextStyle(),
     fontSize: RFValue(12),
     color: COLORS.text.primary,
-    textAlign: "center",
+    textAlign: "left",
+    // paddingLeft: moderateScale(8),
     flex: 1,
   },
   loadingText: {
@@ -209,7 +210,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#f8fafc",
   },
   productCell: {
-    flex: 4.3,
+    flex: 3.2,
     // flexDirection: "column",
     // justifyContent: "center",
     // alignItems: "center",
@@ -218,8 +219,9 @@ export const styles = StyleSheet.create({
   productName: {
     fontSize: RFValue(12),
     color: COLORS.text.primary,
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 2,
+    paddingLeft: moderateScale(8),
   },
   supplierName: {
     fontSize: RFValue(10),
@@ -227,8 +229,8 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   dateCell: {
-    flex: 2.8,
-    marginLeft: moderateScale(10),
+    flex: 2,
+    // marginLeft: moderateScale(10),
   },
   dateContainer: {
     flexDirection: "column",
@@ -247,10 +249,12 @@ export const styles = StyleSheet.create({
     marginTop: 2,
   },
   quantityCell: {
-    flex: 2,
+    flex: 1.1,
+    textAlign: "center",
   },
   stockCell: {
-    flex: 1.3,
+    flex: 1,
+    textAlign: "center",
   },
   actionCell: {
     flex: 1,
@@ -616,6 +620,80 @@ export const styles = StyleSheet.create({
   },
   supplierContent: {
     backgroundColor: COLORS.card,
+  },
+
+  // Stock Management에서 가져온 편집 모드 스타일
+  controlContainer: {
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+  },
+  inputContainer: {
+    width: "100%",
+    position: "relative",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  controlButton: {
+    padding: moderateScale(2),
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: moderateScale(4),
+    backgroundColor: "#f8fafc",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
+    width: moderateScale(24),
+    height: moderateScale(24),
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+  },
+  leftButton: {
+    position: "absolute",
+    left: moderateScale(-28),
+    zIndex: 2,
+  },
+  rightButton: {
+    position: "absolute",
+    right: moderateScale(-28),
+    zIndex: 2,
+  },
+  deleteButton: {
+    padding: moderateScale(2),
+    borderWidth: 1,
+    borderColor: "#ffcccc",
+    borderRadius: moderateScale(4),
+    marginLeft: moderateScale(2),
+    backgroundColor: "#fff5f5",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
+    width: moderateScale(24),
+    height: moderateScale(24),
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  quantityInput: {
+    ...commonTextStyle({ fontWeight: "600" }),
+    width: "100%",
+    textAlign: "center",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: moderateScale(6),
+    paddingVertical: moderateScale(4),
+    paddingHorizontal: moderateScale(4),
+    backgroundColor: "#f8fafc",
+    fontSize: RFValue(12),
+    color: "#0A2A5E",
+    minWidth: moderateScale(40),
+    height: moderateScale(28),
   },
 });
 

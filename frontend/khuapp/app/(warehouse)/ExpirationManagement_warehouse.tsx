@@ -59,16 +59,31 @@ const calculateDaysRemaining = (expirationDate: string): string => {
   const diffTime = expDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays >= 30) {
-    const months = Math.floor(diffDays / 30);
-    const days = diffDays % 30;
-    return `${months}개월 ${days}일`;
-  } else if (diffDays > 0) {
-    return `${diffDays}일`;
+  if (diffDays < 0) {
+    return "만료";
   } else if (diffDays === 0) {
     return "만료";
+  } else if (diffDays <= 30) {
+    return `${diffDays.toString().padStart(2, "0")}일`;
   } else {
-    return "만료";
+    // 정확한 개월 수 계산
+    let months =
+      (expDate.getFullYear() - today.getFullYear()) * 12 +
+      (expDate.getMonth() - today.getMonth());
+
+    // 현재 날짜의 일자가 만료일의 일자보다 크면 한 달을 빼고 남은 일수를 더함
+    if (today.getDate() > expDate.getDate()) {
+      months--;
+      // 이전 달의 마지막 날짜 계산
+      const lastMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      const remainingDays =
+        lastMonth.getDate() - today.getDate() + expDate.getDate();
+      return `${months}개월 ${remainingDays.toString().padStart(2, "0")}일`;
+    } else {
+      // 현재 날짜의 일자가 만료일의 일자보다 작거나 같으면 남은 일수 계산
+      const remainingDays = expDate.getDate() - today.getDate();
+      return `${months}개월 ${remainingDays.toString().padStart(2, "0")}일`;
+    }
   }
 };
 

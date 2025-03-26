@@ -208,16 +208,12 @@ export const styles = StyleSheet.create({
   oddRow: {
     backgroundColor: "#f8fafc",
   },
-  supplierCell: {
-    flex: 5,
-    // paddingHorizontal: moderateScale(4),
-  },
   productCell: {
-    flex: 4,
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: moderateScale(4),
+    flex: 5,
+    // flexDirection: "column",
+    // justifyContent: "center",
+    // alignItems: "center",
+    // paddingVertical: moderateScale(4),
   },
   productName: {
     fontSize: RFValue(12),
@@ -231,7 +227,8 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   dateCell: {
-    flex: 3,
+    flex: 4,
+    marginLeft: moderateScale(10),
   },
   quantityCell: {
     flex: 2,

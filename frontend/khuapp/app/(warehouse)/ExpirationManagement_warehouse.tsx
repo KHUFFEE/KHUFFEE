@@ -195,6 +195,12 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   useEffect(() => {
     let filtered = [...expirationData];
 
+    // 협력사 필터링
+    if (selectedCategory) {
+      filtered = filtered.filter((item) => item.협력사명 === selectedCategory);
+    }
+
+    // 검색어 필터링
     if (searchQuery.trim() !== "") {
       filtered = filtered.filter(
         (item) =>
@@ -203,15 +209,26 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
       );
     }
 
+    // 정렬
     if (sortBy === "date") {
-      filtered.sort(
-        (a, b) =>
-          new Date(a.유통기한).getTime() - new Date(b.유통기한).getTime()
-      );
+      filtered.sort((a, b) => {
+        // 1. 협력사명 기준 정렬
+        if (a.협력사명 !== b.협력사명) {
+          return a.협력사명.localeCompare(b.협력사명);
+        }
+
+        // 2. 품목명 기준 정렬
+        if (a.품목명 !== b.품목명) {
+          return a.품목명.localeCompare(b.품목명);
+        }
+
+        // 3. 유통기한 기준 정렬
+        return new Date(a.유통기한).getTime() - new Date(b.유통기한).getTime();
+      });
     }
 
     setFilteredData(filtered);
-  }, [searchQuery, expirationData, sortBy]);
+  }, [searchQuery, expirationData, sortBy, selectedCategory]);
 
   const getExpirationStyle = (expirationDate: string) => {
     const today = new Date();
@@ -444,10 +461,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
 
   return (
     <SafeAreaView testID="container" style={styles.container}>
-      <Text testID="title" style={styles.title}>
-        유통기한 관리
-      </Text>
-
       {successMessage ? (
         <View
           testID="success-message-container"

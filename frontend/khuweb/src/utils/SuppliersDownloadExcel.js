@@ -8,8 +8,11 @@ export const suppliersDownloadExcel = (suppliers) => {
   const dd = now.getDate().toString().padStart(2, "0");
   const filename = `카페쿠피_협력사목록_관리자용_${yyyy}${mm}${dd}.xlsx`;
 
-  // 2. JSON 데이터 준비 (협력사명만)
-  const data = suppliers.map((supplier) => ({
+  // 2. JSON 데이터 준비
+  const sortedSuppliers = suppliers
+    .slice()
+    .sort((a, b) => a.협력사명.localeCompare(b.협력사명));
+  const data = sortedSuppliers.map((supplier) => ({
     협력사명: supplier.협력사명,
   }));
 

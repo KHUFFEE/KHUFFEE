@@ -34,10 +34,6 @@ const WarehouseOrder = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const selectRef = useRef(null);
 
-  // 회차 관리(세션) 관련 상태 (테이블 이름: "창고_발주")
-  const [managerOrderRound, setManagerOrderRound] = useState(1);
-  const [showPopup, setShowPopup] = useState(false);
-
   // 추가: 창고 재고 데이터와 최신 기간 정보를 위한 상태
   const [prevInvData, setPrevInvData] = useState([]);
   const [currInvData, setCurrInvData] = useState([]);
@@ -569,36 +565,6 @@ const WarehouseOrder = () => {
     alert("다운로드 기능은 현재 비활성화되어 있습니다.");
   };
 
-  // ----------------------- 회차 관리 (세션 관리) -----------------------
-  const handleSessionButtonClick = async () => {
-    try {
-      const statusList = await getTableStatusList();
-      const warehouseOrderStatus = statusList.find(
-        (s) => s.테이블 === "창고_발주"
-      );
-      const currentStatus = warehouseOrderStatus
-        ? warehouseOrderStatus.상태
-        : 1;
-      setManagerOrderRound(currentStatus);
-    } catch (err) {
-      console.error("회차 관리 조회 실패:", err);
-      setManagerOrderRound(1);
-    }
-    setShowPopup(true);
-  };
-
-  const handleUpdateSession = async () => {
-    try {
-      const newRound = managerOrderRound + 1;
-      await updateTableStatus({ 테이블: "창고_발주", 상태: newRound });
-      setManagerOrderRound(newRound);
-      setShowPopup(false);
-    } catch (err) {
-      console.error("회차 관리 업데이트 실패:", err);
-      alert("회차 관리 업데이트에 실패하였습니다.");
-    }
-  };
-
   const handleWarehouseOpenModalConfirm = async () => {
     const { year, month, round } = warehouseOpenModalData;
     const formattedMonth = month.toString().padStart(2, "0");
@@ -620,8 +586,8 @@ const WarehouseOrder = () => {
       await handleReset(true); // 데이터 새로고침
       setWarehouseOpenModalVisible(false);
     } catch (err) {
-      console.error("발주 오픈 실패:", err);
-      alert("발주 오픈 처리에 실패하였습니다.");
+      console.error("회차 생성 실패:", err);
+      alert("회차 생성 처리에 실패하였습니다.");
     }
   };
 
@@ -699,17 +665,14 @@ const WarehouseOrder = () => {
           >
             최신 조회
           </button>
-          <button
-            className="session-button"
-            onClick={handleSessionButtonClick}
-            disabled={isEditMode}
-            style={{ opacity: isEditMode ? 0.5 : 1 }}
-          >
-            회차 관리
-          </button>
+          <div className="status-message" style={{ whiteSpace: "pre-wrap" }}>
+            창고 발주 테이블은 매월 1일 1회차로 자동 생성됩니다. <br />
+            새로운 회차를 관리하고 싶으시면 "회차 생성" 버튼을 클릭해주세요.
+          </div>
         </div>
         <div className="warehouse-action-buttons">
-          {selectedYear &&
+          {!isEditMode &&
+            selectedYear &&
             selectedMonth &&
             selectedRound &&
             `${selectedYear}.${selectedMonth}.${selectedRound}` ===
@@ -718,7 +681,7 @@ const WarehouseOrder = () => {
                 className="status-open-button"
                 onClick={() => setWarehouseOpenModalVisible(true)}
               >
-                발주 오픈하기
+                회차 생성
               </button>
             )}
 
@@ -1082,29 +1045,6 @@ const WarehouseOrder = () => {
                 onClick={handleWarehouseOpenModalConfirm}
               >
                 오픈
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {showPopup && (
-        <div className="order-popup">
-          <div className="order-popup-content">
-            <h3>!! 주의 !!</h3>
-            <p>
-              현재 창고 발주는 {managerOrderRound}회차로 저장됩니다.
-              <br />
-              {managerOrderRound + 1}회차로 변경하려면 변경 버튼을 클릭해주세요.
-            </p>
-            <div className="order-popup-buttons">
-              <button
-                className="popup-cancel"
-                onClick={() => setShowPopup(false)}
-              >
-                취소
-              </button>
-              <button className="popup-confirm" onClick={handleUpdateSession}>
-                변경
               </button>
             </div>
           </div>

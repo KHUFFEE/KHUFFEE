@@ -153,6 +153,7 @@ const WarehouseOrder = () => {
         const prevDateStr = `${prevYear}.${String(prevMonth).padStart(2, "0")}.${String(prevLastDay).padStart(2, "0")}`;
 
         // 현 재고: 최신 기간이면 현재 날짜, 그렇지 않으면 선택된 달의 마지막 일자 사용
+        // 현 재고: 최신 기간이면 현재 날짜, 그렇지 않으면 선택된 달의 마지막 일자 사용
         const selectedLastDay = new Date(
           numericYear,
           numericMonth,
@@ -160,13 +161,12 @@ const WarehouseOrder = () => {
         ).getDate();
         const selectedLastDayStr = `${numericYear}.${String(numericMonth).padStart(2, "0")}.${String(selectedLastDay).padStart(2, "0")}`;
         const selectedYM = `${numericYear}.${String(numericMonth).padStart(2, "0")}`;
-        let latestYM = "";
-        if (latestPeriod) {
-          const latestParts = latestPeriod.split(".");
-          latestYM = `${latestParts[0]}.${latestParts[1].padStart(2, "0")}`;
-        }
+        // 수정: latestPeriod가 없으면 현재 기간(selectedYM)으로 가정
+        const computedLatestYM = latestPeriod
+          ? `${latestPeriod.split(".")[0]}.${latestPeriod.split(".")[1].padStart(2, "0")}`
+          : selectedYM;
         let currentInvDateStr = selectedLastDayStr;
-        if (selectedYM === latestYM) {
+        if (selectedYM === computedLatestYM) {
           const now = new Date();
           currentInvDateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
         }

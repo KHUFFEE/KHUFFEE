@@ -313,6 +313,14 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           onPress: async () => {
             try {
               setLoading(true);
+
+              // 날짜 형식을 yyyy.MM.dd 형식으로 포맷팅
+              const date = new Date(item.유통기한);
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, "0");
+              const day = String(date.getDate()).padStart(2, "0");
+              const formattedDate = `${year}.${month}.${day}`;
+
               const response = await fetch(
                 `${RN_API_URL}/api/inventory/warehouse_expiration_delete/`,
                 {
@@ -322,13 +330,16 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                   },
                   body: JSON.stringify({
                     품목_id: item.품목_id,
-                    유통기한: item.유통기한,
+                    유통기한: formattedDate,
                   }),
                 }
               );
 
               if (!response.ok) {
-                throw new Error("항목 삭제에 실패했습니다.");
+                const errorData = await response.json();
+                throw new Error(
+                  errorData.message || "항목 삭제에 실패했습니다."
+                );
               }
 
               await refreshData();
@@ -361,7 +372,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           ? `${RN_API_URL}/api/inventory/warehouse_expiration_create/`
           : `${RN_API_URL}/api/inventory/warehouse_expiration_update/`;
 
-      const formattedDate = formatDate(formData.유통기한.toISOString());
+      // 날짜 형식을 yyyy.MM.dd 형식으로 포맷팅
+      const year = formData.유통기한.getFullYear();
+      const month = String(formData.유통기한.getMonth() + 1).padStart(2, "0");
+      const day = String(formData.유통기한.getDate()).padStart(2, "0");
+      const formattedDate = `${year}.${month}.${day}`;
 
       const payload = {
         품목_id: formData.품목_id,
@@ -446,9 +461,22 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
       setLoading(true);
 
       const updatePromises = expirationData.map(async (item) => {
+        // 유통기한 날짜 형식 포맷팅
+        // 유통기한이 이미 YYYY.MM.DD 형식인지 확인하고 아니면 변환
+        let formattedDate = item.유통기한;
+
+        // YYYY-MM-DD 형식이나 다른 형식이면 YYYY.MM.DD 형식으로 변환
+        if (item.유통기한.includes("-") || !item.유통기한.includes(".")) {
+          const date = new Date(item.유통기한);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          formattedDate = `${year}.${month}.${day}`;
+        }
+
         const payload = {
           품목_id: item.품목_id,
-          유통기한: item.유통기한,
+          유통기한: formattedDate,
           창고_재고량: item.창고_재고량,
         };
 

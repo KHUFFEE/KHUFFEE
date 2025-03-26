@@ -9,7 +9,8 @@ import {
   updateTableStatus,
   fetchWarehouseInventory,
   fetchWarehouseOutgoing,
-  updateWarehouseOrder, // 추가: 발주 수정 API 함수 (WarehouseIncoming.js와 유사)
+  updateWarehouseOrder,
+  createWarehouseOrder,
 } from "../api/api";
 import "../styles/WarehouseOrder.css";
 import "../styles/table.css";
@@ -33,10 +34,6 @@ const WarehouseOrder = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const selectRef = useRef(null);
 
-  // 회차 관리(세션) 관련 상태 (테이블 이름: "창고_발주")
-  const [managerOrderRound, setManagerOrderRound] = useState(1);
-  const [showPopup, setShowPopup] = useState(false);
-
   // 추가: 창고 재고 데이터와 최신 기간 정보를 위한 상태
   const [prevInvData, setPrevInvData] = useState([]);
   const [currInvData, setCurrInvData] = useState([]);
@@ -51,6 +48,40 @@ const WarehouseOrder = () => {
   // ----------------------- 수정(편집) 모드 상태 및 핸들러 (발주량 수정) -----------------------
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedOrder, setEditedOrder] = useState({});
+
+  // 발주 오픈하기 모달 관련 상태
+  const [warehouseOpenModalVisible, setWarehouseOpenModalVisible] =
+    useState(false);
+  const [warehouseOpenModalData, setWarehouseOpenModalData] = useState({
+    year: selectedYear || new Date().getFullYear().toString(),
+    month: selectedMonth || String(new Date().getMonth() + 1).padStart(2, "0"),
+    round: selectedRound || "1",
+  });
+
+  // 모달 내 토글 드롭다운 상태
+  const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
+  const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
+  const [roundDropdownOpen, setRoundDropdownOpen] = useState(false);
+
+  // 연, 월, 회차 옵션 (StoreOrders.js와 동일한 형식)
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  let minYear = currentYear;
+  let maxYear = currentYear;
+  if (distinctPeriods.length > 0) {
+    const yearsFromDP = distinctPeriods.map((dp) =>
+      parseInt(dp.split(".")[0], 10)
+    );
+    minYear = Math.min(...yearsFromDP);
+    maxYear = Math.max(...yearsFromDP);
+  }
+  for (let y = minYear; y <= maxYear + 1; y++) {
+    years.push(y);
+  }
+  const months = Array.from({ length: 12 }, (_, i) =>
+    (i + 1).toString().padStart(2, "0")
+  );
+  const rounds = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
   const handleEditToggle = () => {
     if (!isEditMode) {
@@ -153,6 +184,7 @@ const WarehouseOrder = () => {
         const prevDateStr = `${prevYear}.${String(prevMonth).padStart(2, "0")}.${String(prevLastDay).padStart(2, "0")}`;
 
         // 현 재고: 최신 기간이면 현재 날짜, 그렇지 않으면 선택된 달의 마지막 일자 사용
+        // 현 재고: 최신 기간이면 현재 날짜, 그렇지 않으면 선택된 달의 마지막 일자 사용
         const selectedLastDay = new Date(
           numericYear,
           numericMonth,
@@ -160,13 +192,12 @@ const WarehouseOrder = () => {
         ).getDate();
         const selectedLastDayStr = `${numericYear}.${String(numericMonth).padStart(2, "0")}.${String(selectedLastDay).padStart(2, "0")}`;
         const selectedYM = `${numericYear}.${String(numericMonth).padStart(2, "0")}`;
-        let latestYM = "";
-        if (latestPeriod) {
-          const latestParts = latestPeriod.split(".");
-          latestYM = `${latestParts[0]}.${latestParts[1].padStart(2, "0")}`;
-        }
+        // 수정: latestPeriod가 없으면 현재 기간(selectedYM)으로 가정
+        const computedLatestYM = latestPeriod
+          ? `${latestPeriod.split(".")[0]}.${latestPeriod.split(".")[1].padStart(2, "0")}`
+          : selectedYM;
         let currentInvDateStr = selectedLastDayStr;
-        if (selectedYM === latestYM) {
+        if (selectedYM === computedLatestYM) {
           const now = new Date();
           currentInvDateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
         }
@@ -534,33 +565,29 @@ const WarehouseOrder = () => {
     alert("다운로드 기능은 현재 비활성화되어 있습니다.");
   };
 
-  // ----------------------- 회차 관리 (세션 관리) -----------------------
-  const handleSessionButtonClick = async () => {
+  const handleWarehouseOpenModalConfirm = async () => {
+    const { year, month, round } = warehouseOpenModalData;
+    const formattedMonth = month.toString().padStart(2, "0");
+    const period = `${year}.${formattedMonth}`; // API에서는 "YYYY.MM" 형식 사용
     try {
-      const statusList = await getTableStatusList();
-      const warehouseOrderStatus = statusList.find(
-        (s) => s.테이블 === "창고_발주"
-      );
-      const currentStatus = warehouseOrderStatus
-        ? warehouseOrderStatus.상태
-        : 1;
-      setManagerOrderRound(currentStatus);
+      // 활성화된 품목에 대해 창고 발주 생성 (창고_발주량 0)
+      const activeItems = items.filter((item) => item.활성화);
+      const createPromises = activeItems.map((item) => {
+        const payload = {
+          매장_id: "ST_102", // 기본 창고 ID (필요 시 수정)
+          품목_id: item.품목_id,
+          기간: period,
+          회차: Number(round),
+          창고_발주량: 0,
+        };
+        return createWarehouseOrder(payload);
+      });
+      await Promise.all(createPromises);
+      await handleReset(true); // 데이터 새로고침
+      setWarehouseOpenModalVisible(false);
     } catch (err) {
-      console.error("회차 관리 조회 실패:", err);
-      setManagerOrderRound(1);
-    }
-    setShowPopup(true);
-  };
-
-  const handleUpdateSession = async () => {
-    try {
-      const newRound = managerOrderRound + 1;
-      await updateTableStatus({ 테이블: "창고_발주", 상태: newRound });
-      setManagerOrderRound(newRound);
-      setShowPopup(false);
-    } catch (err) {
-      console.error("회차 관리 업데이트 실패:", err);
-      alert("회차 관리 업데이트에 실패하였습니다.");
+      console.error("회차 생성 실패:", err);
+      alert("회차 생성 처리에 실패하였습니다.");
     }
   };
 
@@ -638,16 +665,26 @@ const WarehouseOrder = () => {
           >
             최신 조회
           </button>
-          <button
-            className="session-button"
-            onClick={handleSessionButtonClick}
-            disabled={isEditMode}
-            style={{ opacity: isEditMode ? 0.5 : 1 }}
-          >
-            회차 관리
-          </button>
+          <div className="status-message" style={{ whiteSpace: "pre-wrap" }}>
+            창고 발주 테이블은 매월 1일 1회차로 자동 생성됩니다. <br />
+            새로운 회차를 관리하고 싶으시면 "회차 생성" 버튼을 클릭해주세요.
+          </div>
         </div>
         <div className="warehouse-action-buttons">
+          {!isEditMode &&
+            selectedYear &&
+            selectedMonth &&
+            selectedRound &&
+            `${selectedYear}.${selectedMonth}.${selectedRound}` ===
+              latestPeriod && (
+              <button
+                className="status-open-button"
+                onClick={() => setWarehouseOpenModalVisible(true)}
+              >
+                회차 생성
+              </button>
+            )}
+
           {/* 수정 모드일 때 Excel 다운로드 버튼 숨김 */}
           {!isEditMode && (
             <button onClick={handleExcelDownload} className="download-button">
@@ -876,24 +913,138 @@ const WarehouseOrder = () => {
           </tr>
         </tfoot>
       </table>
-      {showPopup && (
-        <div className="order-popup">
-          <div className="order-popup-content">
-            <h3>!! 주의 !!</h3>
-            <p>
-              현재 창고 발주는 {managerOrderRound}회차로 저장됩니다.
-              <br />
-              {managerOrderRound + 1}회차로 변경하려면 변경 버튼을 클릭해주세요.
-            </p>
-            <div className="order-popup-buttons">
+      {warehouseOpenModalVisible && (
+        <div className="sime-popup">
+          <div className="sime-popup-content">
+            <h3>기간 설정</h3>
+            <div className="toggle-group-container">
+              {/* 년도 토글 */}
+              <div className="toggle-group">
+                <button
+                  className="period-select-box"
+                  onClick={() => setYearDropdownOpen(!yearDropdownOpen)}
+                >
+                  {warehouseOpenModalData.year}
+                  <span className="toggle">
+                    <svg width="16" height="16" viewBox="0 0 22 22">
+                      <path
+                        d="M7 10l5 5 5-5z"
+                        fill="#445382"
+                        transform={yearDropdownOpen ? "rotate(180 11 11)" : ""}
+                      />
+                    </svg>
+                  </span>
+                </button>
+                <span className="toggle-label">년도</span>
+                {yearDropdownOpen && (
+                  <div className="dropdown-options">
+                    {years.map((yr) => (
+                      <div
+                        key={yr}
+                        className={`dropdown-option ${yr === warehouseOpenModalData.year ? "selected-dropdown-option" : ""}`}
+                        onClick={() => {
+                          setWarehouseOpenModalData({
+                            ...warehouseOpenModalData,
+                            year: yr,
+                          });
+                          setYearDropdownOpen(false);
+                        }}
+                      >
+                        {yr}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* 월 토글 */}
+              <div className="toggle-group">
+                <button
+                  className="period-select-box"
+                  onClick={() => setMonthDropdownOpen(!monthDropdownOpen)}
+                >
+                  {warehouseOpenModalData.month}
+                  <span className="toggle">
+                    <svg width="16" height="16" viewBox="0 0 22 22">
+                      <path
+                        d="M7 10l5 5 5-5z"
+                        fill="#445382"
+                        transform={monthDropdownOpen ? "rotate(180 11 11)" : ""}
+                      />
+                    </svg>
+                  </span>
+                </button>
+                <span className="toggle-label">월</span>
+                {monthDropdownOpen && (
+                  <div className="dropdown-options">
+                    {months.map((mo) => (
+                      <div
+                        key={mo}
+                        className={`dropdown-option ${mo === warehouseOpenModalData.month ? "selected-dropdown-option" : ""}`}
+                        onClick={() => {
+                          setWarehouseOpenModalData({
+                            ...warehouseOpenModalData,
+                            month: mo,
+                          });
+                          setMonthDropdownOpen(false);
+                        }}
+                      >
+                        {mo}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* 회차 토글 */}
+              <div className="toggle-group">
+                <button
+                  className="period-select-box"
+                  onClick={() => setRoundDropdownOpen(!roundDropdownOpen)}
+                >
+                  {warehouseOpenModalData.round}
+                  <span className="toggle">
+                    <svg width="16" height="16" viewBox="0 0 22 22">
+                      <path
+                        d="M7 10l5 5 5-5z"
+                        fill="#445382"
+                        transform={roundDropdownOpen ? "rotate(180 11 11)" : ""}
+                      />
+                    </svg>
+                  </span>
+                </button>
+                <span className="toggle-label">회차</span>
+                {roundDropdownOpen && (
+                  <div className="dropdown-options">
+                    {rounds.map((rd) => (
+                      <div
+                        key={rd}
+                        className={`dropdown-option ${rd === warehouseOpenModalData.round ? "selected-dropdown-option" : ""}`}
+                        onClick={() => {
+                          setWarehouseOpenModalData({
+                            ...warehouseOpenModalData,
+                            round: rd,
+                          });
+                          setRoundDropdownOpen(false);
+                        }}
+                      >
+                        {rd}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="sime-popup-buttons">
               <button
                 className="popup-cancel"
-                onClick={() => setShowPopup(false)}
+                onClick={() => setWarehouseOpenModalVisible(false)}
               >
                 취소
               </button>
-              <button className="popup-confirm" onClick={handleUpdateSession}>
-                변경
+              <button
+                className="popup-confirm"
+                onClick={handleWarehouseOpenModalConfirm}
+              >
+                오픈
               </button>
             </div>
           </div>

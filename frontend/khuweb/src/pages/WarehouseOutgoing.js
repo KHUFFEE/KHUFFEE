@@ -6,6 +6,7 @@ import {
   fetchSuppliers,
   fetchWarehouseInventory,
   updateWarehouseOutgoing,
+  fetchOrders,
 } from "../api/api";
 import "../styles/WarehouseOutgoing.css";
 import "../styles/table.css";
@@ -367,6 +368,47 @@ const WarehouseOutgoing = () => {
     }
   };
 
+  // 1. 상단(컴포넌트 내부)에 새 함수를 추가합니다.
+  const handleRefreshAggregation = async () => {
+    try {
+      setLoading(true);
+      const defaultStoreId = "ST_102";
+      // 선택된 월(selectedPeriod)이 "YYYY.MM" 형식이라고 가정
+      for (let week = 1; week <= 5; week++) {
+        const period = `${selectedPeriod}.${week}`;
+        // 매장_발주 데이터 조회 (store order 목록)
+        const storeOrdersData = await fetchOrders({ 기간: period });
+        const orders = storeOrdersData.orders || [];
+        // 품목_id별 매장_발주량 합계 계산 (회차별 구분 없이)
+        const aggregation = {};
+        orders.forEach((order) => {
+          const itemId = order.품목_id;
+          const orderAmount = Number(order.매장_발주량) || 0;
+          aggregation[itemId] = (aggregation[itemId] || 0) + orderAmount;
+        });
+        // 계산된 합계를 바탕으로 창고_출고 업데이트 API 호출
+        const updatePromises = Object.keys(aggregation).map((itemId) => {
+          const payload = {
+            매장_id: defaultStoreId,
+            품목_id: itemId,
+            기간: period,
+            회차: 1,
+            창고_출고량: aggregation[itemId],
+          };
+          return updateWarehouseOutgoing(payload);
+        });
+        await Promise.all(updatePromises);
+      }
+      // 갱신 후 최신 데이터를 다시 조회
+      await fetchData({ 기간: selectedPeriod }, false);
+      setLoading(false);
+    } catch (err) {
+      console.error("갱신 실패:", err);
+      alert("갱신에 실패하였습니다.");
+      setLoading(false);
+    }
+  };
+
   // ----------------------- 합계 계산 -----------------------
   const totalPrevinv = tableRows.reduce(
     (sum, row) => sum + (typeof row.prevInv === "number" ? row.prevInv : 0),
@@ -471,18 +513,32 @@ const WarehouseOutgoing = () => {
           >
             최신 조회
           </button>
+          <div className="status-message" style={{ whiteSpace: "pre-wrap" }}>
+            매장 발주량을 출고량에 반영하려면 "갱신" 버튼을 눌러주세요.
+            <br />
+            모든 매장의 주차별, 회차별 발주량이 자동으로 합산되어 출고량에
+            반영됩니다.
+          </div>
         </div>
         <div className="warehouse-action-buttons">
-          {/* 수정 모드일 때는 다운로드 버튼을 숨김 */}
+          {/* 수정 모드가 아닐 때만 갱신 및 Excel 다운 버튼 보임 */}
           {!isEditMode && (
-            <button
-              className="download-button"
-              onClick={() => {
-                /* Excel 다운로드 처리 */
-              }}
-            >
-              Excel 다운
-            </button>
+            <>
+              <button
+                className="status-open-button"
+                onClick={handleRefreshAggregation}
+              >
+                갱신
+              </button>
+              <button
+                className="download-button"
+                onClick={() => {
+                  /* Excel 다운로드 처리 */
+                }}
+              >
+                Excel 다운
+              </button>
+            </>
           )}
           {isEditMode ? (
             <>

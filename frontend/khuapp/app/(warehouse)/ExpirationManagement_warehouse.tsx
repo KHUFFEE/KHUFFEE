@@ -66,9 +66,9 @@ const calculateDaysRemaining = (expirationDate: string): string => {
   } else if (diffDays > 0) {
     return `${diffDays}일`;
   } else if (diffDays === 0) {
-    return "오늘 만료";
+    return "만료";
   } else {
-    return `${Math.abs(diffDays)}일 지남`;
+    return "만료";
   }
 };
 
@@ -236,8 +236,8 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString);
     const year = date.getFullYear().toString().slice(-2); // 년도의 마지막 2자리
-    const month = date.getMonth() + 1; // 월 (0부터 시작하므로 1을 더함)
-    const day = date.getDate();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // 월 (0부터 시작하므로 1을 더함)
+    const day = date.getDate().toString().padStart(2, "0"); // 일자 앞에 0 추가
     return `${year}년${month}월${day}일`;
   }, []);
 
@@ -433,11 +433,25 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   // 테이블 헤더 렌더링
   const renderTableHeader = useMemo(
     () => (
-      <View style={styles.tableHeader}>
-        <Text style={[styles.headerText, styles.productCell]}>상품명</Text>
-        <Text style={[styles.headerText, styles.dateCell]}>유통기한</Text>
-        <Text style={[styles.headerText, styles.quantityCell]}>개수</Text>
-        <Text style={[styles.headerText, styles.stockCell]}>현재고</Text>
+      <View testID="table-header" style={styles.tableHeader}>
+        <Text
+          testID="productCell"
+          style={[styles.headerText, styles.productCell]}
+        >
+          상품명
+        </Text>
+        <Text testID="dateCell" style={[styles.headerText, styles.dateCell]}>
+          유통기한
+        </Text>
+        <Text
+          testID="quantityCell"
+          style={[styles.headerText, styles.quantityCell]}
+        >
+          개수
+        </Text>
+        <Text testID="stockCell" style={[styles.headerText, styles.stockCell]}>
+          현재고
+        </Text>
         <Text
           style={[
             styles.headerText,
@@ -482,15 +496,26 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 ]}
               >
                 <View style={styles.productCell}>
-                  <Text style={styles.productName}>{item.품목명}</Text>
+                  <Text testID="productName" style={styles.productName}>
+                    {item.품목명}
+                  </Text>
                 </View>
-                <Text style={[styles.cellText, styles.dateCell]}>
+                <Text
+                  testID="dateCell"
+                  style={[styles.cellText, styles.dateCell]}
+                >
                   {formatDate(item.유통기한)}
                 </Text>
-                <Text style={[styles.cellText, styles.quantityCell]}>
+                <Text
+                  testID="quantityCell"
+                  style={[styles.cellText, styles.quantityCell]}
+                >
                   {item.창고_재고량}
                 </Text>
-                <Text style={[styles.cellText, styles.stockCell]}>
+                <Text
+                  testID="stockCell"
+                  style={[styles.cellText, styles.stockCell]}
+                >
                   {item.현재고}
                 </Text>
                 {isEditMode ? (
@@ -514,7 +539,10 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                     </TouchableOpacity>
                   </View>
                 ) : (
-                  <Text style={[styles.cellText, styles.daysLeftCell]}>
+                  <Text
+                    testID="daysLeftCell"
+                    style={[styles.cellText, styles.daysLeftCell]}
+                  >
                     {calculateDaysRemaining(item.유통기한)}
                   </Text>
                 )}

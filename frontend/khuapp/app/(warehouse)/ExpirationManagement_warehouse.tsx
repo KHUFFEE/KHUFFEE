@@ -33,7 +33,10 @@ import {
 } from "../../src/styles/ExpirationMangaement_warehouse";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { OrderRequeststyle } from "../../src/styles/StockManagement_styles_warehouse";
-
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 interface ExpirationManagementProps {
   warehouseId: string;
 }
@@ -530,10 +533,13 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         >
           상품명
         </Text>
-        <Text testID="dateCell" style={[styles.headerText, styles.dateCell]}>
+        <Text
+          testID="dateCell"
+          style={[styles.headerText, styles.dateCell, { right: wp(5) }]}
+        >
           유통기한
         </Text>
-        {/* 현재고 영역은 항상 렌더링하고, 편집 모드일 때는 보이지 않게 처리 */}
+        {/* 편집 모드일 때도 현재고 영역을 렌더링하지만 투명 처리 */}
         <Text
           testID="stockCell"
           style={[
@@ -546,7 +552,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         </Text>
         <Text
           testID="quantityCell"
-          style={[styles.headerText, styles.quantityCell]}
+          style={[
+            styles.headerText,
+            styles.quantityCell,
+            isEditMode && { right: wp(10) },
+          ]}
         >
           개수
         </Text>
@@ -593,7 +603,10 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                     {item.품목명}
                   </Text>
                 </View>
-                <View testID="dateCell" style={[styles.dateCell]}>
+                <View
+                  testID="dateCell"
+                  style={[styles.dateCell, { right: wp(5) }]}
+                >
                   <View style={styles.dateContainer}>
                     <Text style={styles.dateText}>
                       {formatDate(item.유통기한)}
@@ -630,7 +643,11 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 {isEditMode ? (
                   <View
                     testID="controlContainer"
-                    style={[styles.quantityCell, styles.controlContainer]}
+                    style={[
+                      styles.quantityCell,
+                      styles.controlContainer,
+                      { right: wp(13) },
+                    ]}
                   >
                     <View
                       style={[
@@ -650,7 +667,9 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                         // 수량 입력란의 너비를 편집 모드에서는 약간 줄여서 버튼들을 배치할 공간 마련
                         style={[
                           styles.quantityInput,
-                          { width: moderateScale(50) },
+                          {
+                            width: moderateScale(50),
+                          },
                         ]}
                         value={formatNumber(item.창고_재고량)}
                         onChangeText={(text) =>
@@ -669,7 +688,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                         testID="deleteButton"
                         style={[
                           styles.deleteButton,
-                          { position: "absolute", right: moderateScale(-52) },
+                          { position: "absolute", left: wp(20) },
                         ]}
                         onPress={() => handleDeleteItem(item)}
                       >

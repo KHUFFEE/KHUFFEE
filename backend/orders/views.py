@@ -16,6 +16,7 @@ from .serializers import (
 from .models import StoreOrder, WarehouseOrder, WarehouseOutgoing, WarehouseIncoming
 from collections import OrderedDict
 from django.db.models import F
+from django.db import transaction
 
 # 새로 추가: 외래키 모델 임포트
 from accounts.models import Store
@@ -202,104 +203,104 @@ class StoreOrderUpdateView(APIView):
         except ValueError:
             new_round = 1
 
-        if app_param:
-            # app=true인 경우: 기존 주문의 매장_발주량에 new_value를 누적 업데이트 (F() 표현식 사용)
-            if old_period is not None and old_round is not None:
-                qs = StoreOrder.objects.filter(
-                    매장_id=store_obj, 품목_id=item_obj, 기간=old_period, 회차=old_round
-                )
-                if qs.exists():
-                    qs.update(
-                        기간=period,
-                        회차=new_round,
-                        매장_발주량=F("매장_발주량") + new_value,
-                    )
-                    updated_record = (
-                        qs.order_by("매장_id", "품목_id", "기간", "회차")
-                        .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")
-                        .first()
-                    )
-                    return Response(updated_record, status=status.HTTP_200_OK)
+        with transaction.atomic():
+            if app_param:
+                # app=true인 경우 (누적 업데이트)
+                if old_period is not None and old_round is not None:
+                    try:
+                        order_obj = StoreOrder.objects.get(
+                            매장_id=store_obj,
+                            품목_id=item_obj,
+                            기간=old_period,
+                            회차=old_round,
+                        )
+                        order_obj.기간 = period
+                        order_obj.회차 = new_round
+                        order_obj.매장_발주량 += new_value
+                        order_obj.save()
+                        updated_record = StoreOrderListSerializer(order_obj).data
+                        return Response(updated_record, status=status.HTTP_200_OK)
+                    except StoreOrder.DoesNotExist:
+                        new_order = StoreOrder.objects.create(
+                            매장_id=store_obj,
+                            품목_id=item_obj,
+                            기간=period,
+                            회차=new_round,
+                            매장_발주량=new_value,
+                        )
+                        return Response(
+                            StoreOrderCreateSerializer(new_order).data,
+                            status=status.HTTP_201_CREATED,
+                        )
                 else:
-                    # 기존 주문이 없으면 새로 생성
-                    new_order = StoreOrder.objects.create(
-                        매장_id=store_obj,
-                        품목_id=item_obj,
-                        기간=period,
-                        회차=new_round,
-                        매장_발주량=new_value,
-                    )
-                    return Response(
-                        StoreOrderCreateSerializer(new_order).data,
-                        status=status.HTTP_201_CREATED,
-                    )
+                    try:
+                        order_obj = StoreOrder.objects.get(
+                            매장_id=store_obj,
+                            품목_id=item_obj,
+                            기간=period,
+                            회차=new_round,
+                        )
+                        order_obj.매장_발주량 += new_value
+                        order_obj.save()
+                        updated_record = StoreOrderListSerializer(order_obj).data
+                        return Response(updated_record, status=status.HTTP_200_OK)
+                    except StoreOrder.DoesNotExist:
+                        new_order = StoreOrder.objects.create(
+                            매장_id=store_obj,
+                            품목_id=item_obj,
+                            기간=period,
+                            회차=new_round,
+                            매장_발주량=new_value,
+                        )
+                        return Response(
+                            StoreOrderCreateSerializer(new_order).data,
+                            status=status.HTTP_201_CREATED,
+                        )
             else:
-                qs = StoreOrder.objects.filter(
-                    매장_id=store_obj, 품목_id=item_obj, 기간=period, 회차=new_round
-                )
-                if qs.exists():
-                    qs.update(매장_발주량=F("매장_발주량") + new_value)
-                    updated_record = (
-                        qs.order_by("매장_id", "품목_id", "기간", "회차")
-                        .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")
-                        .first()
-                    )
-                    return Response(updated_record, status=status.HTTP_200_OK)
+                # app 파라미터가 false인 경우 (값 덮어쓰기)
+                if old_period is not None and old_round is not None:
+                    try:
+                        order_obj = StoreOrder.objects.get(
+                            매장_id=store_obj,
+                            품목_id=item_obj,
+                            기간=old_period,
+                            회차=old_round,
+                        )
+                        order_obj.기간 = period
+                        order_obj.회차 = new_round
+                        order_obj.매장_발주량 = new_value
+                        order_obj.save()
+                        updated_record = StoreOrderListSerializer(order_obj).data
+                        return Response(updated_record, status=status.HTTP_200_OK)
+                    except StoreOrder.DoesNotExist:
+                        return Response(
+                            {"error": "원래 주문이 존재하지 않습니다."},
+                            status=status.HTTP_404_NOT_FOUND,
+                        )
                 else:
-                    new_order = StoreOrder.objects.create(
-                        매장_id=store_obj,
-                        품목_id=item_obj,
-                        기간=period,
-                        회차=new_round,
-                        매장_발주량=new_value,
-                    )
-                    return Response(
-                        StoreOrderCreateSerializer(new_order).data,
-                        status=status.HTTP_201_CREATED,
-                    )
-        else:
-            # app 파라미터가 false인 경우 (기존 기능: 값 덮어쓰기)
-            if old_period is not None and old_round is not None:
-                qs = StoreOrder.objects.filter(
-                    매장_id=store_obj, 품목_id=item_obj, 기간=old_period, 회차=old_round
-                )
-                if qs.exists():
-                    qs.update(기간=period, 회차=new_round, 매장_발주량=new_value)
-                    updated_record = (
-                        qs.order_by("매장_id", "품목_id", "기간", "회차")
-                        .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")
-                        .first()
-                    )
-                    return Response(updated_record, status=status.HTTP_200_OK)
-                else:
-                    return Response(
-                        {"error": "원래 주문이 존재하지 않습니다."},
-                        status=status.HTTP_404_NOT_FOUND,
-                    )
-            else:
-                qs = StoreOrder.objects.filter(
-                    매장_id=store_obj, 품목_id=item_obj, 기간=period, 회차=new_round
-                )
-                if qs.exists():
-                    qs.update(매장_발주량=new_value)
-                    updated_record = (
-                        qs.order_by("매장_id", "품목_id", "기간", "회차")
-                        .values("매장_id", "품목_id", "기간", "회차", "매장_발주량")
-                        .first()
-                    )
-                    return Response(updated_record, status=status.HTTP_200_OK)
-                else:
-                    new_order = StoreOrder.objects.create(
-                        매장_id=store_obj,
-                        품목_id=item_obj,
-                        기간=period,
-                        회차=new_round,
-                        매장_발주량=new_value,
-                    )
-                    return Response(
-                        StoreOrderCreateSerializer(new_order).data,
-                        status=status.HTTP_201_CREATED,
-                    )
+                    try:
+                        order_obj = StoreOrder.objects.get(
+                            매장_id=store_obj,
+                            품목_id=item_obj,
+                            기간=period,
+                            회차=new_round,
+                        )
+                        order_obj.매장_발주량 = new_value
+                        order_obj.save()
+                        updated_record = StoreOrderListSerializer(order_obj).data
+                        return Response(updated_record, status=status.HTTP_200_OK)
+                    except StoreOrder.DoesNotExist:
+                        new_order = StoreOrder.objects.create(
+                            매장_id=store_obj,
+                            품목_id=item_obj,
+                            기간=period,
+                            회차=new_round,
+                            매장_발주량=new_value,
+                        )
+                        return Response(
+                            StoreOrderCreateSerializer(new_order).data,
+                            status=status.HTTP_201_CREATED,
+                        )
 
 
 class WarehouseOrderCreateView(APIView):

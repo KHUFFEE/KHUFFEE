@@ -351,7 +351,7 @@ const StoreOrders = () => {
   };
 
   useEffect(() => {
-    handleReset();
+    handleReset(true);
   }, []);
 
   const fetchOrderTableStatus = async () => {

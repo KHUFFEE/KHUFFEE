@@ -333,7 +333,7 @@ const WarehouseOrder = () => {
 
   // 최초 로드 시 handleReset 실행
   useEffect(() => {
-    handleReset();
+    handleReset(true);
   }, []);
 
   // 드롭다운 선택 변경 시 (value: "YYYY.MM.회차")

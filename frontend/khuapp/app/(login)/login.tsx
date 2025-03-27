@@ -9,12 +9,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StatusBar,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./index";
 import { styles } from "../../src/components/ui/common/commonstyler";
 import { RN_API_URL } from "@env";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 
 console.log(RN_API_URL);
 
@@ -55,7 +57,7 @@ const LoginScreen: React.FC = () => {
           setErrorMessage("비밀번호가 틀립니다.");
         } else {
           setErrorMessage(
-            errorData.message || "아이디 또는 비밀번호가 잘못되었습니다.",
+            errorData.message || "아이디 또는 비밀번호가 잘못되었습니다."
           );
         }
         return;
@@ -67,11 +69,11 @@ const LoginScreen: React.FC = () => {
       // 매장 정보 조회
       try {
         const storesResponse = await fetch(
-          `${RN_API_URL}/api/accounts/stores/`,
+          `${RN_API_URL}/api/accounts/stores/`
         );
         const storesData = await storesResponse.json();
         const matchedStore = storesData.find(
-          (store: any) => store.매장명 === 매장명,
+          (store: any) => store.매장명 === 매장명
         );
 
         if (matchedStore && matchedStore.매장_id === "ST_102") {
@@ -93,70 +95,77 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.dashboardContainer}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.dashboardContainer}
-      >
-        <ScrollView
-          contentContainerStyle={styles.contentContainer}
-          keyboardShouldPersistTaps="handled"
+    <SafeAreaProvider>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent={true}
+      />
+      <SafeAreaView style={styles.safeAreaContainer}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.dashboardContainer}
         >
-          <View style={styles.logoContainer}>
-            <Image
-              source={require("../../assets/img/logo2.png")}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <Text style={styles.logo_name}>cafeKHUFFEE</Text>
-          </View>
-
-          <View style={styles.form_Container}>
-            {/* 매장명 입력창을 감싸는 컨테이너 */}
-            <View style={styles.textboxContainer}>
-              <TextInput
-                style={[
-                  styles.form_input_box,
-                  매장명 ? { color: "#000000" } : { color: "#B3B3B3" },
-                ]}
-                placeholder="매장명을 입력하세요"
-                value={매장명}
-                onChangeText={set매장명}
-                autoCapitalize="none"
-                autoCorrect={false}
+          <ScrollView
+            contentContainerStyle={styles.contentContainer}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.logoContainer}>
+              <Image
+                source={require("../../assets/img/logo2.png")}
+                style={styles.logo}
+                resizeMode="contain"
               />
+              <Text style={styles.logo_name}>cafeKHUFFEE</Text>
             </View>
 
-            {/* 비밀번호 입력창을 감싸는 컨테이너 */}
-            <View style={styles.textboxContainer}>
-              <TextInput
-                style={[
-                  styles.form_input_box,
-                  매장_비밀번호 ? { color: "#000000" } : { color: "#B3B3B3" },
-                ]}
-                placeholder="비밀번호를 입력하세요"
-                value={매장_비밀번호}
-                onChangeText={set매장_비밀번호}
-                secureTextEntry
-                autoCapitalize="none"
-              />
+            <View style={styles.form_Container}>
+              {/* 매장명 입력창을 감싸는 컨테이너 */}
+              <View style={styles.textboxContainer}>
+                <TextInput
+                  style={[
+                    styles.form_input_box,
+                    매장명 ? { color: "#000000" } : { color: "#B3B3B3" },
+                  ]}
+                  placeholder="매장명을 입력하세요"
+                  value={매장명}
+                  onChangeText={set매장명}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              {/* 비밀번호 입력창을 감싸는 컨테이너 */}
+              <View style={styles.textboxContainer}>
+                <TextInput
+                  style={[
+                    styles.form_input_box,
+                    매장_비밀번호 ? { color: "#000000" } : { color: "#B3B3B3" },
+                  ]}
+                  placeholder="비밀번호를 입력하세요"
+                  value={매장_비밀번호}
+                  onChangeText={set매장_비밀번호}
+                  secureTextEntry
+                  autoCapitalize="none"
+                />
+              </View>
+
+              {errorMessage ? (
+                <Text style={styles.login_errorText}>{errorMessage}</Text>
+              ) : null}
+
+              <TouchableOpacity
+                style={styles.login_button}
+                onPress={handleLogin}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.login_buttonText}>로그인</Text>
+              </TouchableOpacity>
             </View>
-
-            {errorMessage ? (
-              <Text style={styles.login_errorText}>{errorMessage}</Text>
-            ) : null}
-
-            <TouchableOpacity
-              style={styles.login_button}
-              onPress={handleLogin}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.login_buttonText}>로그인</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 

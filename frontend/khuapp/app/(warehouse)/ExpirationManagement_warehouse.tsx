@@ -24,6 +24,7 @@ import {
   Save,
   XCircle,
   Minus,
+  Calendar,
 } from "lucide-react-native";
 import { moderateScale, scale } from "react-native-size-matters";
 import { RFValue } from "react-native-responsive-fontsize";
@@ -31,7 +32,6 @@ import {
   styles,
   headerRowStyles,
 } from "../../src/styles/ExpirationMangaement_warehouse";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { OrderRequeststyle } from "../../src/styles/StockManagement_styles_warehouse";
 import {
   widthPercentageToDP as wp,
@@ -98,8 +98,8 @@ const formatNumber = (num: number | string): string => {
     : num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-// 유통기한 스타일 계산 함수 수정
-const getExpirationTextColor = useCallback((expirationDate: string) => {
+// useCallback을 사용한 함수를 제거하고 일반 함수로 변경
+const getExpirationTextColor = (expirationDate: string) => {
   const today = new Date();
   const expDate = new Date(expirationDate);
   const diffTime = expDate.getTime() - today.getTime();
@@ -107,7 +107,7 @@ const getExpirationTextColor = useCallback((expirationDate: string) => {
 
   if (diffDays <= 30) return "#ef4444"; // 빨간색 - 30일 이하
   return "#64748b"; // 원래 텍스트 색상 (COLORS.text.secondary)
-}, []);
+};
 
 const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   warehouseId,
@@ -135,6 +135,15 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     창고_재고량: "",
   });
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [datePickerYear, setDatePickerYear] = useState<number>(
+    new Date().getFullYear()
+  );
+  const [datePickerMonth, setDatePickerMonth] = useState<number>(
+    new Date().getMonth() + 1
+  );
+  const [datePickerDay, setDatePickerDay] = useState<number>(
+    new Date().getDate()
+  );
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [showSaveSuccessModal, setShowSaveSuccessModal] =
@@ -257,7 +266,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   }, [searchQuery, expirationData, sortBy, selectedCategory]);
 
   // 유통기한 스타일 계산
-  const getExpirationStyle = useCallback((expirationDate: string) => {
+  const getExpirationStyle = (expirationDate: string) => {
     const today = new Date();
     const expDate = new Date(expirationDate);
     const diffTime = expDate.getTime() - today.getTime();
@@ -267,7 +276,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     if (diffDays <= 7) return styles.nearExpiration;
     if (diffDays <= 30) return styles.warning;
     return styles.normal;
-  }, []);
+  };
 
   // 날짜 포맷팅
   const formatDate = useCallback((dateString: string) => {
@@ -299,14 +308,15 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     setShowModal(true);
   };
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
+  const handleDateChange = (selectedDate: Date) => {
+    setFormData({
+      ...formData,
+      유통기한: selectedDate,
+    });
+    setDatePickerYear(selectedDate.getFullYear());
+    setDatePickerMonth(selectedDate.getMonth() + 1);
+    setDatePickerDay(selectedDate.getDate());
     setShowDatePicker(false);
-    if (selectedDate) {
-      setFormData({
-        ...formData,
-        유통기한: selectedDate,
-      });
-    }
   };
 
   const handleDeleteItem = async (item: ExpirationItem) => {
@@ -750,7 +760,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         </View>
       );
     },
-    [isEditMode, getExpirationStyle, formatDate, getExpirationTextColor]
+    [isEditMode, formatDate]
   );
 
   // FlatList의 renderItem 수정
@@ -769,6 +779,153 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     }));
   }, [groupedData]);
 
+  // 날짜 선택 컴포넌트 렌더링
+  const renderCustomDatePicker = () => {
+    if (!showDatePicker) return null;
+
+    const years = Array.from(
+      { length: 10 },
+      (_, i) => new Date().getFullYear() + i
+    );
+    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+    const daysInMonth = new Date(datePickerYear, datePickerMonth, 0).getDate();
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+    return (
+      <Modal
+        visible={showDatePicker}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowDatePicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContainer, { padding: 20 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>날짜 선택</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setShowDatePicker(false)}
+              >
+                <XCircle size={24} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginVertical: 20,
+              }}
+            >
+              {/* 년도 선택 */}
+              <View style={{ flex: 1, marginRight: 10 }}>
+                <Text style={styles.label}>년도</Text>
+                <ScrollView style={[styles.pickerScrollView, { height: 150 }]}>
+                  {years.map((year) => (
+                    <TouchableOpacity
+                      key={`year-${year}`}
+                      style={[
+                        styles.productItem,
+                        datePickerYear === year && styles.selectedProductItem,
+                      ]}
+                      onPress={() => setDatePickerYear(year)}
+                    >
+                      <Text
+                        style={
+                          datePickerYear === year
+                            ? styles.selectedProductText
+                            : styles.productItemText
+                        }
+                      >
+                        {year}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* 월 선택 */}
+              <View style={{ flex: 1, marginHorizontal: 5 }}>
+                <Text style={styles.label}>월</Text>
+                <ScrollView style={[styles.pickerScrollView, { height: 150 }]}>
+                  {months.map((month) => (
+                    <TouchableOpacity
+                      key={`month-${month}`}
+                      style={[
+                        styles.productItem,
+                        datePickerMonth === month && styles.selectedProductItem,
+                      ]}
+                      onPress={() => setDatePickerMonth(month)}
+                    >
+                      <Text
+                        style={
+                          datePickerMonth === month
+                            ? styles.selectedProductText
+                            : styles.productItemText
+                        }
+                      >
+                        {month}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* 일 선택 */}
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.label}>일</Text>
+                <ScrollView style={[styles.pickerScrollView, { height: 150 }]}>
+                  {days.map((day) => (
+                    <TouchableOpacity
+                      key={`day-${day}`}
+                      style={[
+                        styles.productItem,
+                        datePickerDay === day && styles.selectedProductItem,
+                      ]}
+                      onPress={() => setDatePickerDay(day)}
+                    >
+                      <Text
+                        style={
+                          datePickerDay === day
+                            ? styles.selectedProductText
+                            : styles.productItemText
+                        }
+                      >
+                        {day}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+
+            <View style={styles.buttonGroup}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowDatePicker(false)}
+              >
+                <Text style={styles.cancelButtonText}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={() => {
+                  const selectedDate = new Date(
+                    datePickerYear,
+                    datePickerMonth - 1,
+                    datePickerDay
+                  );
+                  handleDateChange(selectedDate);
+                }}
+              >
+                <Text style={styles.submitButtonText}>선택</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   if (loading) {
     return (
       <View testID="loadingContainer" style={styles.loadingContainer}>
@@ -781,7 +938,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   }
 
   return (
-    <SafeAreaView testID="container" style={styles.container}>
+    <View style={styles.container}>
       {successMessage ? (
         <View
           testID="successMessageContainer"
@@ -986,6 +1143,9 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         )}
       </View>
 
+      {/* 수정된 커스텀 DatePicker 렌더링 */}
+      {renderCustomDatePicker()}
+
       <Modal
         visible={showModal}
         animationType="slide"
@@ -1079,15 +1239,12 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                   <Text testID="dateText" style={styles.dateText}>
                     {formatDate(formData.유통기한.toISOString())}
                   </Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={formData.유통기한}
-                    mode="date"
-                    display="default"
-                    onChange={handleDateChange}
+                  <Calendar
+                    size={18}
+                    color="#0D326F"
+                    style={{ marginLeft: 8 }}
                   />
-                )}
+                </TouchableOpacity>
               </View>
 
               <View testID="formGroup" style={styles.formGroup}>
@@ -1171,7 +1328,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 

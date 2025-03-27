@@ -37,6 +37,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+
 interface ExpirationManagementProps {
   warehouseId: string;
 }
@@ -56,10 +57,32 @@ interface FormData {
   창고_재고량: string;
 }
 
+// 날짜 문자열을 JS Date 객체로 변환하는 함수 (YYYY.MM.DD → YYYY-MM-DD)
+function parseDateStringToJSDate(dateString: string): Date {
+  if (/^\d{4}\.\d{2}\.\d{2}$/.test(dateString)) {
+    // "YYYY.MM.DD"를 "YYYY-MM-DD"로 변환
+    const replaced = dateString.replace(/\./g, "-");
+    return new Date(replaced);
+  }
+  return new Date(dateString);
+}
+
+// 화면에 날짜를 "YY.MM.DD"로 표시하기 위한 포맷 함수
+function formatDateForDisplay(dateString: string): string {
+  const date = parseDateStringToJSDate(dateString);
+  if (isNaN(date.getTime())) {
+    return ""; // 잘못된 날짜일 경우 빈 문자열 처리
+  }
+  const year = date.getFullYear().toString().slice(-2);
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}.${month}.${day}`;
+}
+
 // 남은 일수 계산 함수
 const calculateDaysRemaining = (expirationDate: string): string => {
+  const expDate = parseDateStringToJSDate(expirationDate);
   const today = new Date();
-  const expDate = new Date(expirationDate);
   const diffTime = expDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -70,7 +93,6 @@ const calculateDaysRemaining = (expirationDate: string): string => {
   } else if (diffDays <= 30) {
     return `${diffDays.toString().padStart(2, "0")}일`;
   } else {
-    // 정확한 개월 수 계산
     let months =
       (expDate.getFullYear() - today.getFullYear()) * 12 +
       (expDate.getMonth() - today.getMonth());
@@ -88,7 +110,7 @@ const calculateDaysRemaining = (expirationDate: string): string => {
   }
 };
 
-// 숫자 포맷팅 함수 추가
+// 숫자 포맷팅 함수
 const formatNumber = (num: number | string): string => {
   if (typeof num === "string") {
     num = parseFloat(num);
@@ -98,15 +120,14 @@ const formatNumber = (num: number | string): string => {
     : num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-// useCallback을 사용한 함수를 제거하고 일반 함수로 변경
+// 유통기한 글자색
 const getExpirationTextColor = (expirationDate: string) => {
   const today = new Date();
-  const expDate = new Date(expirationDate);
+  const expDate = parseDateStringToJSDate(expirationDate);
   const diffTime = expDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays <= 30) return "#ef4444"; // 빨간색 - 30일 이하
-  return "#64748b"; // 원래 텍스트 색상 (COLORS.text.secondary)
+  if (diffDays <= 30) return "#ef4444";
+  return "#64748b";
 };
 
 const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
@@ -258,17 +279,21 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         if (a.품목명 !== b.품목명) {
           return a.품목명.localeCompare(b.품목명);
         }
-        return new Date(a.유통기한).getTime() - new Date(b.유통기한).getTime();
+        // 날짜 비교 시 parseDateStringToJSDate를 통해 변환
+        return (
+          parseDateStringToJSDate(a.유통기한).getTime() -
+          parseDateStringToJSDate(b.유통기한).getTime()
+        );
       });
     }
 
     setFilteredData(filtered);
   }, [searchQuery, expirationData, sortBy, selectedCategory]);
 
-  // 유통기한 스타일 계산
+  // 편집모드 시 유통기한 스타일
   const getExpirationStyle = (expirationDate: string) => {
     const today = new Date();
-    const expDate = new Date(expirationDate);
+    const expDate = parseDateStringToJSDate(expirationDate);
     const diffTime = expDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -278,13 +303,9 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     return styles.normal;
   };
 
-  // 날짜 포맷팅
+  // 날짜 포맷팅(YY.MM.DD)
   const formatDate = useCallback((dateString: string) => {
-    const date = new Date(dateString);
-    const year = date.getFullYear().toString().slice(-2);
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${year}.${month}.${day}`;
+    return formatDateForDisplay(dateString);
   }, []);
 
   const handleAddItem = () => {
@@ -302,7 +323,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     setSelectedItem(item);
     setFormData({
       품목_id: item.품목_id,
-      유통기한: new Date(item.유통기한),
+      유통기한: parseDateStringToJSDate(item.유통기한),
       창고_재고량: item.창고_재고량.toString(),
     });
     setShowModal(true);
@@ -335,11 +356,10 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
             try {
               setLoading(true);
 
-              // 날짜 형식을 yyyy.MM.dd 형식으로 포맷팅
-              const date = new Date(item.유통기한);
-              const year = date.getFullYear();
-              const month = String(date.getMonth() + 1).padStart(2, "0");
-              const day = String(date.getDate()).padStart(2, "0");
+              const dateObj = parseDateStringToJSDate(item.유통기한);
+              const year = dateObj.getFullYear();
+              const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+              const day = String(dateObj.getDate()).padStart(2, "0");
               const formattedDate = `${year}.${month}.${day}`;
 
               const response = await fetch(
@@ -482,18 +502,12 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
       setLoading(true);
 
       const updatePromises = expirationData.map(async (item) => {
-        // 유통기한 날짜 형식 포맷팅
         // 유통기한이 이미 YYYY.MM.DD 형식인지 확인하고 아니면 변환
-        let formattedDate = item.유통기한;
-
-        // YYYY-MM-DD 형식이나 다른 형식이면 YYYY.MM.DD 형식으로 변환
-        if (item.유통기한.includes("-") || !item.유통기한.includes(".")) {
-          const date = new Date(item.유통기한);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          formattedDate = `${year}.${month}.${day}`;
-        }
+        const dateObj = parseDateStringToJSDate(item.유통기한);
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const formattedDate = `${year}.${month}.${day}`;
 
         const payload = {
           품목_id: item.품목_id,
@@ -535,7 +549,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     }
   };
 
-  // 수량 증가 함수
+  // 수량 증가
   const handleIncrement = (item: ExpirationItem) => {
     setExpirationData((prev) =>
       prev.map((exp) =>
@@ -546,7 +560,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     );
   };
 
-  // 수량 감소 함수
+  // 수량 감소
   const handleDecrement = (item: ExpirationItem) => {
     setExpirationData((prev) =>
       prev.map((exp) =>
@@ -557,10 +571,9 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     );
   };
 
-  // 수량 직접 변경 함수
+  // 수량 직접 변경
   const handleQuantityChange = (item: ExpirationItem, value: string) => {
     const numericValue = parseInt(value.replace(/,/g, ""));
-
     if (!isNaN(numericValue)) {
       setExpirationData((prev) =>
         prev.map((exp) =>
@@ -572,7 +585,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     }
   };
 
-  // 테이블 헤더 렌더링
+  // 테이블 헤더
   const renderTableHeader = useMemo(
     () => (
       <View testID="tableHeader" style={styles.tableHeader}>
@@ -588,7 +601,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         >
           유통기한
         </Text>
-        {/* 편집 모드일 때도 현재고 영역을 렌더링하지만 투명 처리 */}
         <Text
           testID="stockCell"
           style={[
@@ -626,7 +638,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     return groups;
   }, [filteredData]);
 
-  // 협력사별 섹션 렌더링
+  // 협력사 섹션 렌더링
   const renderSupplierSection = useCallback(
     (supplier: string, items: ExpirationItem[]) => {
       return (
@@ -679,7 +691,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                     </Text>
                   </View>
                 </View>
-                {/* 항상 현재고 영역 렌더링 (편집 모드일 경우 투명 처리) */}
                 <Text
                   testID="stockCell"
                   style={[
@@ -714,7 +725,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                       </TouchableOpacity>
                       <TextInput
                         testID="quantityInput"
-                        // 수량 입력란의 너비를 편집 모드에서는 약간 줄여서 버튼들을 배치할 공간 마련
                         style={[
                           styles.quantityInput,
                           {
@@ -763,15 +773,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     [isEditMode, formatDate]
   );
 
-  // FlatList의 renderItem 수정
-  const renderItem = useCallback(
-    ({ item }: { item: { supplier: string; items: ExpirationItem[] } }) => {
-      return renderSupplierSection(item.supplier, item.items);
-    },
-    [renderSupplierSection]
-  );
-
-  // FlatList의 data 수정
+  // FlatList용 데이터
   const listData = useMemo(() => {
     return Object.entries(groupedData).map(([supplier, items]) => ({
       supplier,
@@ -779,7 +781,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     }));
   }, [groupedData]);
 
-  // 날짜 선택 컴포넌트 렌더링
+  // 커스텀 DatePicker
   const renderCustomDatePicker = () => {
     if (!showDatePicker) return null;
 
@@ -1132,7 +1134,9 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
             data={listData}
             style={[{ flex: 1 }, styles.flatListStyle]}
             contentContainerStyle={{ flexGrow: 1 }}
-            renderItem={renderItem}
+            renderItem={({ item }) =>
+              renderSupplierSection(item.supplier, item.items)
+            }
             keyExtractor={(item) => item.supplier}
             ListEmptyComponent={() => (
               <Text testID="emptyText" style={styles.emptyText}>
@@ -1143,7 +1147,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         )}
       </View>
 
-      {/* 수정된 커스텀 DatePicker 렌더링 */}
       {renderCustomDatePicker()}
 
       <Modal
@@ -1237,7 +1240,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                   onPress={() => setShowDatePicker(true)}
                 >
                   <Text testID="dateText" style={styles.dateText}>
-                    {formatDate(formData.유통기한.toISOString())}
+                    {formatDateForDisplay(formData.유통기한.toISOString())}
                   </Text>
                   <Calendar
                     size={18}

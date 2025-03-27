@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native";
+import { StatusBar } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { styles } from "../../src/components/ui/common/commonstyler";
 import Layout_warehouse from "../../src/components/ui/Layout_warehouse";
 import { ViewType } from "../../src/components/ui/common/types";
 import WarehouseEmployeeDashboard_warehouse from "./WarehouseEmployeeDashboard_warehouse";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function WarehouseDashboardScreen() {
   const route = useRoute();
@@ -14,18 +15,28 @@ export default function WarehouseDashboardScreen() {
   const [activeView, setActiveView] = useState<ViewType>("stock");
 
   return (
-    <SafeAreaView testID="dashboardContainer" style={styles.dashboardContainer}>
-      <Layout_warehouse
-        storeName={storeName}
-        activeView={activeView}
-        setActiveView={setActiveView}
+    <SafeAreaProvider>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent={true}
+      />
+      <SafeAreaView
+        testID="dashboardContainer"
+        style={styles.dashboardContainer}
       >
-        <WarehouseEmployeeDashboard_warehouse
+        <Layout_warehouse
           storeName={storeName}
           activeView={activeView}
           setActiveView={setActiveView}
-        />
-      </Layout_warehouse>
-    </SafeAreaView>
+        >
+          <WarehouseEmployeeDashboard_warehouse
+            storeName={storeName}
+            activeView={activeView}
+            setActiveView={setActiveView}
+          />
+        </Layout_warehouse>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }

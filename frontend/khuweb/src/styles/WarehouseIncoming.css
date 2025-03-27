@@ -83,7 +83,9 @@
 .wc-week-col,
 .wc-month-col,
 .wc-sum-col,
-.wc-cost-col {
+.wc-cost-col,
+.wc-order-qty-col,
+.wc-order-amount-col {
   text-align: right;
 }
 

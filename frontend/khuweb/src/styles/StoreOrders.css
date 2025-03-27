@@ -4,7 +4,6 @@
   max-width: 96%;
   margin: 0 auto;
   text-align: left;
-  position: relative; /* 추가: 상대 위치 설정 */
 }
 
 .store-orders-container p {

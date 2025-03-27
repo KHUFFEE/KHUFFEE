@@ -51,6 +51,7 @@
 .big-table td.wo-order-sum-inc-col {
   font-size: 15px;
   min-width: 47px;
+  text-align: right;
 }
 
 /* th 요소에 적용할 스타일 */

@@ -261,92 +261,56 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
       return;
     }
     try {
-      // 주문 목록 가져오기
       const ordersResponse = await fetch(
-        `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
+        `${RN_API_URL}/api/orders/store_order_list/?store_id=${storeId}`
       );
-
-      if (!ordersResponse.ok) {
-        const errorText = await ordersResponse.text();
-        console.error("주문 목록 API 응답:", errorText);
-        throw new Error(`주문 목록 불러오기 실패: ${ordersResponse.status}`);
-      }
-
+      if (!ordersResponse.ok) throw new Error("주문 목록 불러오기 실패");
       const ordersData = await ordersResponse.json();
-      const updatedOrders = [];
 
-      // 순차적으로 주문 업데이트 처리
-      for (const selectedItem of selectedItems) {
-        const order = ordersData.orders.find(
-          (order: any) => order.품목_id === selectedItem.품목_id
+      // 각 주문별로 개별 POST 요청 실행 (추가 방식)
+      const updatePromises = ordersData.orders.map(async (order: any) => {
+        const selectedItem = selectedItems.find(
+          (item) => item.품목_id === order.품목_id
         );
-
-        if (order) {
+        if (selectedItem) {
           const payload = {
-            매장_id: storeId,
-            품목_id: selectedItem.품목_id,
-            기간: order.기간,
-            회차: order.회차,
-            매장_발주량: selectedItem.quantity,
-            old_기간: order.기간,
-            old_회차: order.회차,
-            app: "true",
+            ...order, // 기존 주문 데이터 유지 (매장_id, 품목_id, 기간, 회차 등)
+            old_기간: order.기간, // 기존 기간 추가
+            old_회차: order.회차, // 기존 회차 추가
+            매장_발주량: selectedItem.quantity, // 선택한 수량을 추가
           };
-
-          try {
-            const updateResponse = await fetch(
-              `${RN_API_URL}/api/orders/store_order_update/`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Accept: "application/json",
-                },
-                body: JSON.stringify(payload),
-              }
-            );
-
-            if (!updateResponse.ok) {
-              const errorText = await updateResponse.text();
-              console.error("주문 업데이트 API 응답:", errorText);
-              throw new Error(`주문 업데이트 실패: ${updateResponse.status}`);
+          const updateResponse = await fetch(
+            `${RN_API_URL}/api/orders/store_order_update/`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...payload,
+                app: "true",
+              }),
             }
-
-            const responseData = await updateResponse.json();
-            updatedOrders.push(responseData);
-
-            // 각 요청 사이에 약간의 지연 추가
-            await new Promise((resolve) => setTimeout(resolve, 100));
-          } catch (error) {
-            console.error(
-              `주문 업데이트 중 오류 발생 (품목 ID: ${selectedItem.품목_id}):`,
-              error
-            );
-            throw error;
+          );
+          if (!updateResponse.ok) {
+            const errorData = await updateResponse.json();
+            throw new Error(errorData.error || "재고량 업데이트 실패");
           }
+          return await updateResponse.json();
         }
-      }
+        return null;
+      });
 
-      if (updatedOrders.length > 0) {
-        onNewOrder(updatedOrders[0]);
-        setOrderCompleteModalVisible(true);
-      } else {
-        throw new Error("업데이트된 주문이 없습니다.");
-      }
+      // 모든 요청 완료 후, null이 아닌 결과만 필터링하여 첫 번째 주문 업데이트 결과를 onNewOrder에 전달합니다.
+      const updatedOrders = (await Promise.all(updatePromises)).filter(
+        (res) => res !== null
+      );
+      onNewOrder(updatedOrders[0]);
+      setOrderCompleteModalVisible(true);
     } catch (error: any) {
       console.error("발주 요청 실패:", error);
       setOrderFailureMessages([error.message]);
       setOrderFailureModalVisible(true);
-    } finally {
-      setOrderSubmitted(false);
     }
+    setOrderSubmitted(false);
   };
 
   const renderInventoryText = (product: APIProduct) => {

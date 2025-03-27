@@ -24,6 +24,7 @@ import {
   Save,
   XCircle,
   Minus,
+  Calendar,
 } from "lucide-react-native";
 import { moderateScale, scale } from "react-native-size-matters";
 import { RFValue } from "react-native-responsive-fontsize";
@@ -31,7 +32,6 @@ import {
   styles,
   headerRowStyles,
 } from "../../src/styles/ExpirationMangaement_warehouse";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { OrderRequeststyle } from "../../src/styles/StockManagement_styles_warehouse";
 import {
   widthPercentageToDP as wp,
@@ -98,8 +98,8 @@ const formatNumber = (num: number | string): string => {
     : num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-// 유통기한 스타일 계산 함수 수정
-const getExpirationTextColor = useCallback((expirationDate: string) => {
+// useCallback을 사용한 함수를 제거하고 일반 함수로 변경
+const getExpirationTextColor = (expirationDate: string) => {
   const today = new Date();
   const expDate = new Date(expirationDate);
   const diffTime = expDate.getTime() - today.getTime();
@@ -107,7 +107,7 @@ const getExpirationTextColor = useCallback((expirationDate: string) => {
 
   if (diffDays <= 30) return "#ef4444"; // 빨간색 - 30일 이하
   return "#64748b"; // 원래 텍스트 색상 (COLORS.text.secondary)
-}, []);
+};
 
 const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   warehouseId,
@@ -135,6 +135,15 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     창고_재고량: "",
   });
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [datePickerYear, setDatePickerYear] = useState<number>(
+    new Date().getFullYear()
+  );
+  const [datePickerMonth, setDatePickerMonth] = useState<number>(
+    new Date().getMonth() + 1
+  );
+  const [datePickerDay, setDatePickerDay] = useState<number>(
+    new Date().getDate()
+  );
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [showSaveSuccessModal, setShowSaveSuccessModal] =
@@ -257,7 +266,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   }, [searchQuery, expirationData, sortBy, selectedCategory]);
 
   // 유통기한 스타일 계산
-  const getExpirationStyle = useCallback((expirationDate: string) => {
+  const getExpirationStyle = (expirationDate: string) => {
     const today = new Date();
     const expDate = new Date(expirationDate);
     const diffTime = expDate.getTime() - today.getTime();
@@ -267,7 +276,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     if (diffDays <= 7) return styles.nearExpiration;
     if (diffDays <= 30) return styles.warning;
     return styles.normal;
-  }, []);
+  };
 
   // 날짜 포맷팅
   const formatDate = useCallback((dateString: string) => {
@@ -299,14 +308,15 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     setShowModal(true);
   };
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
+  const handleDateChange = (selectedDate: Date) => {
+    setFormData({
+      ...formData,
+      유통기한: selectedDate,
+    });
+    setDatePickerYear(selectedDate.getFullYear());
+    setDatePickerMonth(selectedDate.getMonth() + 1);
+    setDatePickerDay(selectedDate.getDate());
     setShowDatePicker(false);
-    if (selectedDate) {
-      setFormData({
-        ...formData,
-        유통기한: selectedDate,
-      });
-    }
   };
 
   const handleDeleteItem = async (item: ExpirationItem) => {
@@ -750,7 +760,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         </View>
       );
     },
-    [isEditMode, getExpirationStyle, formatDate, getExpirationTextColor]
+    [isEditMode, formatDate]
   );
 
   // FlatList의 renderItem 수정
@@ -769,6 +779,153 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     }));
   }, [groupedData]);
 
+  // 날짜 선택 컴포넌트 렌더링
+  const renderCustomDatePicker = () => {
+    if (!showDatePicker) return null;
+
+    const years = Array.from(
+      { length: 10 },
+      (_, i) => new Date().getFullYear() + i
+    );
+    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+    const daysInMonth = new Date(datePickerYear, datePickerMonth, 0).getDate();
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+    return (
+      <Modal
+        visible={showDatePicker}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowDatePicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContainer, { padding: 20 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>날짜 선택</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setShowDatePicker(false)}
+              >
+                <XCircle size={24} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginVertical: 20,
+              }}
+            >
+              {/* 년도 선택 */}
+              <View style={{ flex: 1, marginRight: 10 }}>
+                <Text style={styles.label}>년도</Text>
+                <ScrollView style={[styles.pickerScrollView, { height: 150 }]}>
+                  {years.map((year) => (
+                    <TouchableOpacity
+                      key={`year-${year}`}
+                      style={[
+                        styles.productItem,
+                        datePickerYear === year && styles.selectedProductItem,
+                      ]}
+                      onPress={() => setDatePickerYear(year)}
+                    >
+                      <Text
+                        style={
+                          datePickerYear === year
+                            ? styles.selectedProductText
+                            : styles.productItemText
+                        }
+                      >
+                        {year}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* 월 선택 */}
+              <View style={{ flex: 1, marginHorizontal: 5 }}>
+                <Text style={styles.label}>월</Text>
+                <ScrollView style={[styles.pickerScrollView, { height: 150 }]}>
+                  {months.map((month) => (
+                    <TouchableOpacity
+                      key={`month-${month}`}
+                      style={[
+                        styles.productItem,
+                        datePickerMonth === month && styles.selectedProductItem,
+                      ]}
+                      onPress={() => setDatePickerMonth(month)}
+                    >
+                      <Text
+                        style={
+                          datePickerMonth === month
+                            ? styles.selectedProductText
+                            : styles.productItemText
+                        }
+                      >
+                        {month}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* 일 선택 */}
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.label}>일</Text>
+                <ScrollView style={[styles.pickerScrollView, { height: 150 }]}>
+                  {days.map((day) => (
+                    <TouchableOpacity
+                      key={`day-${day}`}
+                      style={[
+                        styles.productItem,
+                        datePickerDay === day && styles.selectedProductItem,
+                      ]}
+                      onPress={() => setDatePickerDay(day)}
+                    >
+                      <Text
+                        style={
+                          datePickerDay === day
+                            ? styles.selectedProductText
+                            : styles.productItemText
+                        }
+                      >
+                        {day}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+
+            <View style={styles.buttonGroup}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowDatePicker(false)}
+              >
+                <Text style={styles.cancelButtonText}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={() => {
+                  const selectedDate = new Date(
+                    datePickerYear,
+                    datePickerMonth - 1,
+                    datePickerDay
+                  );
+                  handleDateChange(selectedDate);
+                }}
+              >
+                <Text style={styles.submitButtonText}>선택</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   if (loading) {
     return (
       <View testID="loadingContainer" style={styles.loadingContainer}>
@@ -781,396 +938,415 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   }
 
   return (
-    <SafeAreaView testID="container" style={styles.container}>
-      {successMessage ? (
-        <View
-          testID="successMessageContainer"
-          style={styles.successMessageContainer}
-        >
-          <Text testID="successMessageText" style={styles.successMessageText}>
-            {successMessage}
-          </Text>
-        </View>
-      ) : null}
-
-      <View testID="categorySection" style={OrderRequeststyle.categorySection}>
-        <Text testID="sectionTitle" style={OrderRequeststyle.sectionTitle}>
-          협력사 선택
-        </Text>
-        <ScrollView
-          testID="categoryList"
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={OrderRequeststyle.categoryList}
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: "flex-start",
-            alignItems: "center",
-          }}
-        >
-          <TouchableOpacity
-            testID={
-              selectedCategory === null
-                ? "categoryButtonActive"
-                : "categoryButton"
-            }
-            style={[
-              OrderRequeststyle.categoryButton,
-              selectedCategory === null &&
-                OrderRequeststyle.categoryButtonActive,
-            ]}
-            onPress={() => setSelectedCategory(null)}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={styles.container}>
+        {successMessage ? (
+          <View
+            testID="successMessageContainer"
+            style={styles.successMessageContainer}
           >
-            <Text
+            <Text testID="successMessageText" style={styles.successMessageText}>
+              {successMessage}
+            </Text>
+          </View>
+        ) : null}
+
+        <View
+          testID="categorySection"
+          style={OrderRequeststyle.categorySection}
+        >
+          <Text testID="sectionTitle" style={OrderRequeststyle.sectionTitle}>
+            협력사 선택
+          </Text>
+          <ScrollView
+            testID="categoryList"
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={OrderRequeststyle.categoryList}
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: "flex-start",
+              alignItems: "center",
+            }}
+          >
+            <TouchableOpacity
               testID={
                 selectedCategory === null
-                  ? "categoryButtonTextActive"
-                  : "categoryButtonText"
-              }
-              style={[
-                OrderRequeststyle.categoryButtonText,
-                selectedCategory === null &&
-                  OrderRequeststyle.categoryButtonTextActive,
-              ]}
-            >
-              전체
-            </Text>
-          </TouchableOpacity>
-          {sortedSuppliers.map((supplier, idx) => (
-            <TouchableOpacity
-              key={idx}
-              testID={
-                selectedCategory === supplier
                   ? "categoryButtonActive"
                   : "categoryButton"
               }
               style={[
                 OrderRequeststyle.categoryButton,
-                selectedCategory === supplier &&
+                selectedCategory === null &&
                   OrderRequeststyle.categoryButtonActive,
               ]}
-              onPress={() => setSelectedCategory(supplier)}
+              onPress={() => setSelectedCategory(null)}
             >
               <Text
                 testID={
-                  selectedCategory === supplier
+                  selectedCategory === null
                     ? "categoryButtonTextActive"
                     : "categoryButtonText"
                 }
                 style={[
                   OrderRequeststyle.categoryButtonText,
-                  selectedCategory === supplier &&
+                  selectedCategory === null &&
                     OrderRequeststyle.categoryButtonTextActive,
                 ]}
               >
-                {supplier}
+                전체
               </Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+            {sortedSuppliers.map((supplier, idx) => (
+              <TouchableOpacity
+                key={idx}
+                testID={
+                  selectedCategory === supplier
+                    ? "categoryButtonActive"
+                    : "categoryButton"
+                }
+                style={[
+                  OrderRequeststyle.categoryButton,
+                  selectedCategory === supplier &&
+                    OrderRequeststyle.categoryButtonActive,
+                ]}
+                onPress={() => setSelectedCategory(supplier)}
+              >
+                <Text
+                  testID={
+                    selectedCategory === supplier
+                      ? "categoryButtonTextActive"
+                      : "categoryButtonText"
+                  }
+                  style={[
+                    OrderRequeststyle.categoryButtonText,
+                    selectedCategory === supplier &&
+                      OrderRequeststyle.categoryButtonTextActive,
+                  ]}
+                >
+                  {supplier}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
 
-      <View testID="filterContainer" style={styles.filterContainer}>
-        <View testID="searchContainer" style={styles.searchContainer}>
-          <Search color="#0D326F" size={20} />
-          <TextInput
-            testID="searchInput"
-            style={styles.searchInput}
-            placeholder="상품명 또는 협력사로 검색"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#94a3b8"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity
-              testID="clearButton"
-              style={styles.clearButton}
-              onPress={() => setSearchQuery("")}
+        <View testID="filterContainer" style={styles.filterContainer}>
+          <View testID="searchContainer" style={styles.searchContainer}>
+            <Search color="#0D326F" size={20} />
+            <TextInput
+              testID="searchInput"
+              style={styles.searchInput}
+              placeholder="상품명 또는 협력사로 검색"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholderTextColor="#94a3b8"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                testID="clearButton"
+                style={styles.clearButton}
+                onPress={() => setSearchQuery("")}
+              >
+                <X color="#0D326F" size={20} />
+              </TouchableOpacity>
+            )}
+          </View>
+          <View testID="container" style={headerRowStyles.container}>
+            <View
+              testID="buttonContainer"
+              style={headerRowStyles.buttonContainer}
             >
-              <X color="#0D326F" size={20} />
-            </TouchableOpacity>
+              {!isEditMode ? (
+                <>
+                  <TouchableOpacity
+                    testID="addButton"
+                    style={headerRowStyles.smallButton}
+                    onPress={handleAddItem}
+                  >
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Plus
+                        size={14}
+                        color="#0D326F"
+                        style={{ marginRight: 4 }}
+                      />
+                      <Text style={headerRowStyles.buttonText}>항목 추가</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    testID="editButton"
+                    style={headerRowStyles.smallButton}
+                    onPress={toggleEditMode}
+                  >
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Edit2
+                        size={14}
+                        color="#0D326F"
+                        style={{ marginRight: 4 }}
+                      />
+                      <Text style={headerRowStyles.buttonText}>편집모드</Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    testID="cancelButton"
+                    style={headerRowStyles.cancelButton}
+                    onPress={toggleEditMode}
+                  >
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Text style={headerRowStyles.cancelButtonText}>취소</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    testID="saveButton"
+                    style={headerRowStyles.activeButton}
+                    onPress={handleSave}
+                    disabled={loading}
+                  >
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Save
+                        size={14}
+                        color="#FFFFFF"
+                        style={{ marginRight: 4 }}
+                      />
+                      <Text style={headerRowStyles.activeButtonText}>저장</Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </View>
+        </View>
+
+        <View
+          testID="tableContainer"
+          style={[{ flex: 1 }, styles.tableContainer]}
+        >
+          {renderTableHeader}
+
+          {listData.length === 0 ? (
+            <Text testID="emptyText" style={styles.emptyText}>
+              유통기한 데이터가 없습니다.
+            </Text>
+          ) : (
+            <FlatList
+              testID="flatListStyle"
+              data={listData}
+              style={[{ flex: 1 }, styles.flatListStyle]}
+              contentContainerStyle={{ flexGrow: 1 }}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.supplier}
+              ListEmptyComponent={() => (
+                <Text testID="emptyText" style={styles.emptyText}>
+                  유통기한 데이터가 없습니다.
+                </Text>
+              )}
+            />
           )}
         </View>
-        <View testID="container" style={headerRowStyles.container}>
-          <View
-            testID="buttonContainer"
-            style={headerRowStyles.buttonContainer}
-          >
-            {!isEditMode ? (
-              <>
-                <TouchableOpacity
-                  testID="addButton"
-                  style={headerRowStyles.smallButton}
-                  onPress={handleAddItem}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Plus
-                      size={14}
-                      color="#0D326F"
-                      style={{ marginRight: 4 }}
-                    />
-                    <Text style={headerRowStyles.buttonText}>항목 추가</Text>
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  testID="editButton"
-                  style={headerRowStyles.smallButton}
-                  onPress={toggleEditMode}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Edit2
-                      size={14}
-                      color="#0D326F"
-                      style={{ marginRight: 4 }}
-                    />
-                    <Text style={headerRowStyles.buttonText}>편집모드</Text>
-                  </View>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <TouchableOpacity
-                  testID="cancelButton"
-                  style={headerRowStyles.cancelButton}
-                  onPress={toggleEditMode}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text style={headerRowStyles.cancelButtonText}>취소</Text>
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  testID="saveButton"
-                  style={headerRowStyles.activeButton}
-                  onPress={handleSave}
-                  disabled={loading}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Save
-                      size={14}
-                      color="#FFFFFF"
-                      style={{ marginRight: 4 }}
-                    />
-                    <Text style={headerRowStyles.activeButtonText}>저장</Text>
-                  </View>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        </View>
-      </View>
 
-      <View
-        testID="tableContainer"
-        style={[{ flex: 1 }, styles.tableContainer]}
-      >
-        {renderTableHeader}
+        {/* 수정된 커스텀 DatePicker 렌더링 */}
+        {renderCustomDatePicker()}
 
-        {listData.length === 0 ? (
-          <Text testID="emptyText" style={styles.emptyText}>
-            유통기한 데이터가 없습니다.
-          </Text>
-        ) : (
-          <FlatList
-            testID="flatListStyle"
-            data={listData}
-            style={[{ flex: 1 }, styles.flatListStyle]}
-            contentContainerStyle={{ flexGrow: 1 }}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.supplier}
-            ListEmptyComponent={() => (
-              <Text testID="emptyText" style={styles.emptyText}>
-                유통기한 데이터가 없습니다.
-              </Text>
-            )}
-          />
-        )}
-      </View>
-
-      <Modal
-        visible={showModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowModal(false)}
-      >
-        <View testID="modalOverlay" style={styles.modalOverlay}>
-          <View testID="modalContainer" style={styles.modalContainer}>
-            <View testID="modalHeader" style={styles.modalHeader}>
-              <Text testID="modalTitle" style={styles.modalTitle}>
-                {modalMode === "add"
-                  ? "유통기한 항목 추가"
-                  : "유통기한 항목 수정"}
-              </Text>
-              <TouchableOpacity
-                testID="closeButton"
-                style={styles.closeButton}
-                onPress={() => setShowModal(false)}
-              >
-                <XCircle size={24} color="#64748b" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView testID="formContainer" style={styles.formContainer}>
-              <View testID="formGroup" style={styles.formGroup}>
-                <Text testID="label" style={styles.label}>
-                  품목 선택
+        <Modal
+          visible={showModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowModal(false)}
+        >
+          <View testID="modalOverlay" style={styles.modalOverlay}>
+            <View testID="modalContainer" style={styles.modalContainer}>
+              <View testID="modalHeader" style={styles.modalHeader}>
+                <Text testID="modalTitle" style={styles.modalTitle}>
+                  {modalMode === "add"
+                    ? "유통기한 항목 추가"
+                    : "유통기한 항목 수정"}
                 </Text>
-                <View testID="pickerContainer" style={styles.pickerContainer}>
-                  <ScrollView
-                    testID="pickerScrollView"
-                    style={styles.pickerScrollView}
-                  >
-                    {modalMode === "edit" ? (
-                      <View testID="disabledInput" style={styles.disabledInput}>
-                        <Text testID="disabledText" style={styles.disabledText}>
-                          {selectedItem?.품목명 || ""}
-                        </Text>
-                      </View>
-                    ) : (
-                      products.map((product) => (
-                        <TouchableOpacity
-                          key={product.품목_id}
-                          testID={
-                            formData.품목_id === product.품목_id
-                              ? "selectedProductItem"
-                              : "productItem"
-                          }
-                          style={[
-                            styles.productItem,
-                            formData.품목_id === product.품목_id &&
-                              styles.selectedProductItem,
-                          ]}
-                          onPress={() =>
-                            setFormData({
-                              ...formData,
-                              품목_id: product.품목_id,
-                            })
-                          }
+                <TouchableOpacity
+                  testID="closeButton"
+                  style={styles.closeButton}
+                  onPress={() => setShowModal(false)}
+                >
+                  <XCircle size={24} color="#64748b" />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView testID="formContainer" style={styles.formContainer}>
+                <View testID="formGroup" style={styles.formGroup}>
+                  <Text testID="label" style={styles.label}>
+                    품목 선택
+                  </Text>
+                  <View testID="pickerContainer" style={styles.pickerContainer}>
+                    <ScrollView
+                      testID="pickerScrollView"
+                      style={styles.pickerScrollView}
+                    >
+                      {modalMode === "edit" ? (
+                        <View
+                          testID="disabledInput"
+                          style={styles.disabledInput}
                         >
                           <Text
+                            testID="disabledText"
+                            style={styles.disabledText}
+                          >
+                            {selectedItem?.품목명 || ""}
+                          </Text>
+                        </View>
+                      ) : (
+                        products.map((product) => (
+                          <TouchableOpacity
+                            key={product.품목_id}
                             testID={
                               formData.품목_id === product.품목_id
-                                ? "selectedProductText"
-                                : "productItemText"
+                                ? "selectedProductItem"
+                                : "productItem"
                             }
-                            style={
-                              formData.품목_id === product.품목_id
-                                ? styles.selectedProductText
-                                : styles.productItemText
+                            style={[
+                              styles.productItem,
+                              formData.품목_id === product.품목_id &&
+                                styles.selectedProductItem,
+                            ]}
+                            onPress={() =>
+                              setFormData({
+                                ...formData,
+                                품목_id: product.품목_id,
+                              })
                             }
                           >
-                            {product.품목명} ({product.협력사명})
-                          </Text>
-                        </TouchableOpacity>
-                      ))
-                    )}
-                  </ScrollView>
+                            <Text
+                              testID={
+                                formData.품목_id === product.품목_id
+                                  ? "selectedProductText"
+                                  : "productItemText"
+                              }
+                              style={
+                                formData.품목_id === product.품목_id
+                                  ? styles.selectedProductText
+                                  : styles.productItemText
+                              }
+                            >
+                              {product.품목명} ({product.협력사명})
+                            </Text>
+                          </TouchableOpacity>
+                        ))
+                      )}
+                    </ScrollView>
+                  </View>
                 </View>
-              </View>
 
-              <View testID="formGroup" style={styles.formGroup}>
-                <Text testID="label" style={styles.label}>
-                  유통기한
-                </Text>
-                <TouchableOpacity
-                  testID="dateInput"
-                  style={styles.dateInput}
-                  onPress={() => setShowDatePicker(true)}
-                >
-                  <Text testID="dateText" style={styles.dateText}>
-                    {formatDate(formData.유통기한.toISOString())}
+                <View testID="formGroup" style={styles.formGroup}>
+                  <Text testID="label" style={styles.label}>
+                    유통기한
                   </Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={formData.유통기한}
-                    mode="date"
-                    display="default"
-                    onChange={handleDateChange}
-                  />
-                )}
-              </View>
-
-              <View testID="formGroup" style={styles.formGroup}>
-                <Text testID="label" style={styles.label}>
-                  수량
-                </Text>
-                <TextInput
-                  testID="input"
-                  style={styles.input}
-                  value={formData.창고_재고량}
-                  onChangeText={(text) =>
-                    setFormData({
-                      ...formData,
-                      창고_재고량: text.replace(/[^0-9]/g, ""),
-                    })
-                  }
-                  keyboardType="numeric"
-                  placeholder="수량을 입력하세요"
-                />
-              </View>
-
-              <View testID="buttonGroup" style={styles.buttonGroup}>
-                <TouchableOpacity
-                  testID="cancelButton"
-                  style={styles.cancelButton}
-                  onPress={() => setShowModal(false)}
-                  disabled={isSubmitting}
-                >
-                  <Text
-                    testID="cancelButtonText"
-                    style={styles.cancelButtonText}
+                  <TouchableOpacity
+                    testID="dateInput"
+                    style={styles.dateInput}
+                    onPress={() => setShowDatePicker(true)}
                   >
-                    취소
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  testID="submitButton"
-                  style={styles.submitButton}
-                  onPress={handleSubmit}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <ActivityIndicator size="small" color="#ffffff" />
-                  ) : (
-                    <Text
-                      testID="submitButtonText"
-                      style={styles.submitButtonText}
-                    >
-                      {modalMode === "add" ? "추가" : "수정"}
+                    <Text testID="dateText" style={styles.dateText}>
+                      {formatDate(formData.유통기한.toISOString())}
                     </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+                    <Calendar
+                      size={18}
+                      color="#0D326F"
+                      style={{ marginLeft: 8 }}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-      <Modal
-        visible={showSaveSuccessModal}
-        transparent={true}
-        animationType="fade"
-      >
-        <View testID="modalOverlay" style={styles.modalOverlay}>
-          <View testID="saveSuccessModal" style={styles.saveSuccessModal}>
-            <Text testID="saveSuccessText" style={styles.saveSuccessText}>
-              저장이 완료되었습니다
-            </Text>
-            <TouchableOpacity
-              testID="saveSuccessButton"
-              style={styles.saveSuccessButton}
-              onPress={() => setShowSaveSuccessModal(false)}
-            >
-              <Text
-                testID="saveSuccessButtonText"
-                style={styles.saveSuccessButtonText}
-              >
-                확인
-              </Text>
-            </TouchableOpacity>
+                <View testID="formGroup" style={styles.formGroup}>
+                  <Text testID="label" style={styles.label}>
+                    수량
+                  </Text>
+                  <TextInput
+                    testID="input"
+                    style={styles.input}
+                    value={formData.창고_재고량}
+                    onChangeText={(text) =>
+                      setFormData({
+                        ...formData,
+                        창고_재고량: text.replace(/[^0-9]/g, ""),
+                      })
+                    }
+                    keyboardType="numeric"
+                    placeholder="수량을 입력하세요"
+                  />
+                </View>
+
+                <View testID="buttonGroup" style={styles.buttonGroup}>
+                  <TouchableOpacity
+                    testID="cancelButton"
+                    style={styles.cancelButton}
+                    onPress={() => setShowModal(false)}
+                    disabled={isSubmitting}
+                  >
+                    <Text
+                      testID="cancelButtonText"
+                      style={styles.cancelButtonText}
+                    >
+                      취소
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    testID="submitButton"
+                    style={styles.submitButton}
+                    onPress={handleSubmit}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <ActivityIndicator size="small" color="#ffffff" />
+                    ) : (
+                      <Text
+                        testID="submitButtonText"
+                        style={styles.submitButtonText}
+                      >
+                        {modalMode === "add" ? "추가" : "수정"}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+
+        <Modal
+          visible={showSaveSuccessModal}
+          transparent={true}
+          animationType="fade"
+        >
+          <View testID="modalOverlay" style={styles.modalOverlay}>
+            <View testID="saveSuccessModal" style={styles.saveSuccessModal}>
+              <Text testID="saveSuccessText" style={styles.saveSuccessText}>
+                저장이 완료되었습니다
+              </Text>
+              <TouchableOpacity
+                testID="saveSuccessButton"
+                style={styles.saveSuccessButton}
+                onPress={() => setShowSaveSuccessModal(false)}
+              >
+                <Text
+                  testID="saveSuccessButtonText"
+                  style={styles.saveSuccessButtonText}
+                >
+                  확인
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </View>
     </SafeAreaView>
   );
 };

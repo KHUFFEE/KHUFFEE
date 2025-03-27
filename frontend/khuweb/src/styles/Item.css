@@ -41,7 +41,6 @@
 .item-table td span {
   display: inline-block;
   width: 100%;
-  padding: 4px;
   box-sizing: border-box;
   font-size: inherit;
 }

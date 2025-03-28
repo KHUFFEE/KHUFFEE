@@ -58,7 +58,7 @@ export const storeInventoryMonthEndDownloadExcel = ({
   const totalCols = headerRow.length;
 
   // 5. 데이터 행 (엑셀상의 행번호는 5부터 시작)
-  const dataStartRow = 4;
+  const dataStartRow = 4; // ws_data index 4 corresponds to Excel row 5
   sortedTableRows.forEach((row, i) => {
     const excelRow = [];
     // A열: 협력사, B열: 품목명
@@ -71,7 +71,8 @@ export const storeInventoryMonthEndDownloadExcel = ({
     // "합계" 열: 수식 셀 (각 매장 열의 합계)
     const firstStoreColLetter = XLSX.utils.encode_col(2);
     const lastStoreColLetter = XLSX.utils.encode_col(totalCols - 2);
-    const excelRowNumber = dataStartRow + i;
+    // Excel row numbering is 1-indexed; 데이터 행은 5행부터 시작하므로 add 1
+    const excelRowNumber = dataStartRow + i + 1;
     excelRow[totalCols - 1] = {
       f: `SUM(${firstStoreColLetter}${excelRowNumber}:${lastStoreColLetter}${excelRowNumber})`,
       z: '#,##0;(#,##0);"-"',
@@ -85,10 +86,9 @@ export const storeInventoryMonthEndDownloadExcel = ({
   totalsRow[1] = "";
   for (let col = 2; col < totalCols - 1; col++) {
     const colLetter = XLSX.utils.encode_col(col);
+    // 합계는 항상 5행(= dataStartRow+1)부터 데이터 행의 마지막까지 (즉, 합계 행 직전 행까지)
     totalsRow[col] = {
-      f: `SUM(${colLetter}${dataStartRow}:${colLetter}${
-        dataStartRow + sortedTableRows.length - 1
-      })`,
+      f: `SUM(${colLetter}${dataStartRow + 1}:${colLetter}${dataStartRow + sortedTableRows.length})`,
       z: '#,##0;(#,##0);"-"',
     };
   }
@@ -307,10 +307,13 @@ export const storeInventoryMonthEndDownloadExcel = ({
   }
   ws["!cols"] = colWidths;
 
-  // 10. 숨기기 기능 구현 (총합이 0인 행과, 각 매장 열의 총합이 0이면 숨김)
+  // 10. 숨기기 기능 구현
+  //    - 모든 매장에 대해 데이터가 없는(즉, 각 매장의 값이 0인) 행은 숨김 처리
+  //    - 각 매장 열의 총합이 0이면 해당 열도 숨김 처리
   for (let i = 0; i < sortedTableRows.length; i++) {
     if (getRowSum(sortedTableRows[i]) === 0) {
-      const rowIndex = dataStartRow + i - 1;
+      // 수정: 행 인덱스는 dataStartRow + i (즉, Excel상에서 5행부터 시작)
+      const rowIndex = dataStartRow + i;
       ws["!rows"] = ws["!rows"] || [];
       ws["!rows"][rowIndex] = { hidden: true };
     }

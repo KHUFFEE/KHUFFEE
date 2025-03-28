@@ -211,14 +211,6 @@ const WarehouseInventory = () => {
     return `${y}년 ${m}월`;
   };
 
-  // 입력값 천단위 구분 처리
-  const formatInputValue = (value) => {
-    if (value === "" || value === undefined || value === null) return "";
-    const num = Number(value);
-    if (!isNaN(num)) return num.toLocaleString();
-    return value;
-  };
-
   const handleExcelDownload = () => {
     warehouseInventoryDownloadExcel({
       selectedYearMonth,

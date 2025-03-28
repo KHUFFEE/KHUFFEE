@@ -1,0 +1,37 @@
+/* 기본 컨테이너 */
+.we-container {
+  padding: 0;
+  max-width: 95%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* 열 너비: StoreOrders와 동일 */
+.we-number-col {
+  width: 5px;
+  text-align: center;
+}
+
+.we-supplier-col {
+  width: 80px;
+  text-align: left;
+}
+
+.we-item-col {
+  width: 170px;
+  text-align: left;
+}
+
+.we-sum-col {
+  width: 60px;
+  text-align: right;
+}
+.we-cost-col {
+  width: 50px;
+  text-align: right;
+}
+
+.warehouse-action-buttons {
+  display: flex;
+  gap: 10px;
+}

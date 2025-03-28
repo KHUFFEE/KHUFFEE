@@ -10,6 +10,7 @@ import {
 } from "../api/api";
 import "../styles/StoreInventoryMonthEnd.css";
 import "../styles/table.css";
+import { storeInventoryMonthEndDownloadExcel } from "../utils/StoreInventoryMonthEndDownloadExcel";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const StoreInventoryMonthEnd = () => {
@@ -456,9 +457,17 @@ const StoreInventoryMonthEnd = () => {
     }
   };
 
-  // 엑셀 다운로드 함수는 미구현 상태로 안내 (요청사항 7)
   const handleExcelDownload = () => {
-    alert("Excel 다운로드 기능은 미구현입니다.");
+    storeInventoryMonthEndDownloadExcel({
+      selectedYear,
+      selectedMonth,
+      isFreeInput,
+      freePeriod,
+      inventoryData,
+      orderedStores,
+      sortedTableRows,
+      storeTotals,
+    });
   };
 
   // 요청사항 1,2: 가장 최근인 기간(최신 기간) 계산 및 버튼 문구 설정

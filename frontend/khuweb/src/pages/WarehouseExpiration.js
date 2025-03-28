@@ -150,13 +150,16 @@ const WarehouseExpiration = () => {
     };
   });
 
-  // WarehouseInventory.js 와 동일한 정렬 로직 적용 (협력사 오름차순 → 종류 오름차순 → 품목명 오름차순)
   tableRows.sort((a, b) => {
     const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
     if (cmpSupplier !== 0) return cmpSupplier;
+    const cmpItemName = a.itemName.localeCompare(b.itemName);
+    if (cmpItemName !== 0) return cmpItemName;
     const cmpType = a.type.localeCompare(b.type);
     if (cmpType !== 0) return cmpType;
-    return a.itemName.localeCompare(b.itemName);
+    const dateA = new Date(a.expiration.replace(/\./g, "-"));
+    const dateB = new Date(b.expiration.replace(/\./g, "-"));
+    return dateA - dateB;
   });
 
   if (loading) return <LoadingSpinner />;

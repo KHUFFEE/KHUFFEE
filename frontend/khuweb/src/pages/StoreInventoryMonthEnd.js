@@ -665,8 +665,8 @@ const StoreInventoryMonthEnd = () => {
                   {isEditMode ? (
                     <input
                       type="text"
-                      inputMode="decimal"
-                      pattern="^\\d*(\\.\\d{0,2})?$"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={
                         editedInventories[row.itemId] &&
                         editedInventories[row.itemId][store.매장_id] !==
@@ -677,14 +677,19 @@ const StoreInventoryMonthEnd = () => {
                           : ""
                       }
                       onChange={(e) => {
-                        let newValue = e.target.value.replace(/,/g, "");
-                        if (/^\d*(\.\d{0,2})?$/.test(newValue)) {
-                          handleInventoryChange(
-                            row.itemId,
-                            store.매장_id,
-                            newValue
-                          );
-                        }
+                        const valueWithoutCommas = e.target.value.replace(
+                          /,/g,
+                          ""
+                        );
+                        const numericValue = valueWithoutCommas.replace(
+                          /\D/g,
+                          ""
+                        );
+                        handleInventoryChange(
+                          row.itemId,
+                          store.매장_id,
+                          numericValue
+                        );
                       }}
                       style={{ textAlign: "right" }}
                     />

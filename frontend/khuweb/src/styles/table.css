@@ -28,6 +28,9 @@
   width: 30%;
 }
 
+.we-container .big-table {
+  width: 70%;
+}
 /* ───────────────────────────────────────────── */
 /* 2. 공통 셀 스타일 (th, td) */
 /* ───────────────────────────────────────────── */
@@ -134,7 +137,9 @@
 .wg-spec-cell,
 .wo-supplier-cell,
 .wo-item-cell,
-.wo-spec-cell {
+.wo-spec-cell,
+.we-item-cell,
+.we-supplier-cell {
   height: 20px;
   overflow-y: auto;
   display: block;
@@ -142,6 +147,8 @@
   -ms-overflow-style: none; /* IE 10+에서 스크롤바 숨김 */
 }
 
+.we-item-cell::-webkit-scrollbar,
+.we-supplier-cell::-webkit-scrollbar,
 .sime-item-cell::-webkit-scrollbar,
 .supplier-cell::-webkit-scrollbar,
 .item-cell::-webkit-scrollbar,

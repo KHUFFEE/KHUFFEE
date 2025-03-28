@@ -211,14 +211,6 @@ const WarehouseInventory = () => {
     return `${y}년 ${m}월`;
   };
 
-  // 입력값 천단위 구분 처리
-  const formatInputValue = (value) => {
-    if (value === "" || value === undefined || value === null) return "";
-    const num = Number(value);
-    if (!isNaN(num)) return num.toLocaleString();
-    return value;
-  };
-
   const handleExcelDownload = () => {
     warehouseInventoryDownloadExcel({
       selectedYearMonth,
@@ -267,7 +259,7 @@ const WarehouseInventory = () => {
         }
       });
       await Promise.all(updates);
-      fetchData({ 기간: currentPeriod, 매장_id: selectedStore }, true);
+      fetchData({ 기간: currentPeriod, 매장_id: selectedStore }, false);
       setIsEditMode(false);
     } catch (err) {
       console.error("수정 실패:", err);
@@ -422,7 +414,7 @@ const WarehouseInventory = () => {
                     pattern="[0-9]*"
                     value={
                       editedInventory[row.itemId] !== undefined
-                        ? formatInputValue(editedInventory[row.itemId])
+                        ? formatNumber(editedInventory[row.itemId])
                         : ""
                     }
                     onChange={(e) =>

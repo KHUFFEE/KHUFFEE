@@ -57,7 +57,17 @@ const WarehouseExpiration = () => {
         expDate.getDate() +
         (previousMonthDate.getDate() - currentDate.getDate());
     }
-    return `${months}개월 ${days}일`;
+
+    // 숫자를 두 자리로 포맷 (한 자리일 경우 앞에 0 추가)
+    const formattedMonths = months < 10 ? `0${months}` : months;
+    const formattedDays = days < 10 ? `0${days}` : days;
+
+    // 0개월인 경우, 남은 일수만 출력
+    if (months === 0) {
+      return `${formattedDays}일`;
+    }
+
+    return `${formattedMonths}개월 ${formattedDays}일`;
   };
 
   // API 데이터 호출: 유통기한, 재고, 품목, 협력사
@@ -92,12 +102,20 @@ const WarehouseExpiration = () => {
     fetchData();
   }, []);
 
-  // 재고 데이터를 품목별로 합산하여 매핑
+  // 재고 데이터를 품목별로 합산하여 매핑 (현재고)
   const inventoryMap = {};
   inventoryData.forEach((record) => {
     const itemId = record.품목_id;
     inventoryMap[itemId] =
       (inventoryMap[itemId] || 0) + Number(record.창고_재고량);
+  });
+
+  // expirationData의 개수를 품목별로 합산 (개수)
+  const aggregatedCounts = {};
+  expirationData.forEach((record) => {
+    const itemId = record.품목_id;
+    aggregatedCounts[itemId] =
+      (aggregatedCounts[itemId] || 0) + Number(record.창고_재고량);
   });
 
   // 테이블 행 생성 (품목 데이터에서 협력사, 품목명, 종류 추출 및 남은 일수 계산)
@@ -115,14 +133,20 @@ const WarehouseExpiration = () => {
       );
       supplierName = supplier ? supplier.협력사명 : "N/A";
     }
+    // 동일 품목_id의 총 개수와 현재고 비교
+    const totalCount = aggregatedCounts[itemId] || 0;
+    const currentStock = inventoryMap[itemId] || 0;
+    const isMismatch = totalCount !== currentStock;
     return {
+      itemId,
       supplierName,
       itemName,
       type,
       expiration: record.유통기한,
       count: Number(record.창고_재고량),
-      currentStock: inventoryMap[itemId] || 0,
+      currentStock: currentStock,
       remainingDays: calculateRemaining(record.유통기한),
+      isMismatch,
     };
   });
 
@@ -175,11 +199,26 @@ const WarehouseExpiration = () => {
                 <div className="we-item-cell">{row.itemName}</div>
               </td>
               <td className="we-expiration-col">{row.expiration}</td>
-              <td className="we-count-col">{row.count.toLocaleString()}</td>
-              <td className="we-current-stock-col">
+              <td
+                className={`we-count-col ${row.isMismatch ? "mismatch" : ""}`}
+              >
+                {row.count.toLocaleString()}
+              </td>
+              <td
+                className={`we-current-stock-col ${row.isMismatch ? "mismatch" : ""}`}
+              >
                 {row.currentStock.toLocaleString()}
               </td>
-              <td className="we-remaining-days-col">{row.remainingDays}</td>
+              <td
+                className={`we-remaining-days-col ${
+                  row.remainingDays === "만료" ||
+                  !row.remainingDays.includes("개월")
+                    ? "red-text"
+                    : ""
+                }`}
+              >
+                {row.remainingDays}
+              </td>
             </tr>
           ))}
         </tbody>

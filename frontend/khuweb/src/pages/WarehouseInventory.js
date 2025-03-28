@@ -267,7 +267,7 @@ const WarehouseInventory = () => {
         }
       });
       await Promise.all(updates);
-      fetchData({ 기간: currentPeriod, 매장_id: selectedStore }, true);
+      fetchData({ 기간: currentPeriod, 매장_id: selectedStore }, false);
       setIsEditMode(false);
     } catch (err) {
       console.error("수정 실패:", err);
@@ -422,7 +422,7 @@ const WarehouseInventory = () => {
                     pattern="[0-9]*"
                     value={
                       editedInventory[row.itemId] !== undefined
-                        ? formatInputValue(editedInventory[row.itemId])
+                        ? formatNumber(editedInventory[row.itemId])
                         : ""
                     }
                     onChange={(e) =>

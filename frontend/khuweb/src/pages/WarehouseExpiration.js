@@ -1,11 +1,127 @@
 // frontend/khuweb/src/pages/WarehouseExpiration.js
-import React from "react";
+import React, { useState, useEffect } from "react";
+import {
+  fetchWarehouseInventory,
+  fetchWarehouseExpirations,
+  fetchItems,
+  fetchSuppliers,
+} from "../api/api";
+import "../styles/WarehouseExpiration.css";
+import "../styles/table.css";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const WarehouseExpiration = () => {
+  const [expirationData, setExpirationData] = useState([]);
+  const [inventoryData, setInventoryData] = useState([]);
+  const [items, setItems] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // 데이터 API 호출: fetchWarehouseExpirations, fetchWarehouseInventory, fetchItems, fetchSuppliers
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const currentDate = new Date();
+      const formattedDate = `${currentDate.getFullYear()}.${("0" + (currentDate.getMonth() + 1)).slice(-2)}.${("0" + currentDate.getDate()).slice(-2)}`;
+      const [expirationRes, inventoryRes, itemsRes, suppliersRes] =
+        await Promise.all([
+          fetchWarehouseExpirations(),
+          fetchWarehouseInventory({ 기간: formattedDate }),
+          fetchItems(true),
+          fetchSuppliers(),
+        ]);
+      setExpirationData(expirationRes);
+      setInventoryData(inventoryRes);
+      setItems(itemsRes);
+      setSuppliers(suppliersRes);
+      setLoading(false);
+    } catch (err) {
+      console.error("데이터 불러오기 실패:", err);
+      setError("데이터를 불러오는데 실패하였습니다.");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // fetchWarehouseInventory 결과를 기반으로 품목별 현재고(창고_재고량)를 합산
+  const inventoryMap = {};
+  inventoryData.forEach((record) => {
+    const itemId = record.품목_id;
+    inventoryMap[itemId] =
+      (inventoryMap[itemId] || 0) + Number(record.창고_재고량);
+  });
+
+  // fetchWarehouseExpirations 데이터를 기반으로 테이블 행 생성
+  const tableRows = expirationData.map((record, index) => {
+    const itemId = record.품목_id;
+    const matchedItem = items.find((item) => item.품목_id === itemId);
+    let supplierName = "N/A";
+    let itemName = "N/A";
+    if (matchedItem) {
+      itemName = matchedItem.품목명;
+      const supplier = suppliers.find(
+        (s) => s.협력사_id === matchedItem.협력사_id
+      );
+      supplierName = supplier ? supplier.협력사명 : "N/A";
+    }
+    return {
+      no: index + 1,
+      supplierName,
+      itemName,
+      expiration: record.유통기한,
+      count: Number(record.창고_재고량),
+      currentStock: inventoryMap[itemId] || 0,
+      remainingDays: "", // 남은 일수는 추후 계산 또는 빈 칸 처리
+    };
+  });
+
+  if (loading) return <LoadingSpinner />;
+  if (error) return <div>{error}</div>;
+
   return (
-    <div>
-      <h1>유통기한 관리</h1>
-      <p>여기는 창고의 유통기한 관리를 위한 페이지입니다.</p>
+    <div className="we-container">
+      <h2 className="title">유통 기한 관리</h2>
+      <div className="warehouse-action-buttons">
+        <button
+          className="reset-button"
+          onClick={() => window.location.reload()}
+        >
+          새로 고침
+        </button>
+      </div>
+      <hr className="divider" />
+      <table className="big-table">
+        <thead>
+          <tr>
+            <th className="we-number-col">No.</th>
+            <th className="we-supplier-col">협력사</th>
+            <th className="we-item-col">품목명</th>
+            <th className="we-expiration-col">유통기한</th>
+            <th className="we-count-col">개수</th>
+            <th className="we-current-stock-col">현재고</th>
+            <th className="we-remaining-days-col">남은 일수</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tableRows.map((row) => (
+            <tr key={row.no}>
+              <td className="we-number-col">{row.no}</td>
+              <td className="we-supplier-col">{row.supplierName}</td>
+              <td className="we-item-col">{row.itemName}</td>
+              <td className="we-expiration-col">{row.expiration}</td>
+              <td className="we-count-col">{row.count.toLocaleString()}</td>
+              <td className="we-current-stock-col">
+                {row.currentStock.toLocaleString()}
+              </td>
+              <td className="we-remaining-days-col">{row.remainingDays}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

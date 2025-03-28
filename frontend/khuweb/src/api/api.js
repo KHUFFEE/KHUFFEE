@@ -121,6 +121,10 @@ export const fetchOrders = async (params) => {
   if (params.order) {
     url += `&order=${params.order}`;
   }
+  // 회차 파라미터 추가
+  if (params.회차) {
+    url += `&회차=${params.회차}`;
+  }
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error("Failed to fetch orders");

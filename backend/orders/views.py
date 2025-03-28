@@ -96,6 +96,9 @@ class StoreOrderListView(APIView):
         # 특정 기간 조회 (정확한 기간 문자열)
         if period_param:
             qs = orders_queryset.filter(기간=period_param)
+            # 회차 파라미터가 존재하면 추가 필터 적용
+            if round_param:
+                qs = qs.filter(회차=round_param)
             orders_for_period = qs.order_by(*ordering)
             orders = list(
                 orders_for_period.values(

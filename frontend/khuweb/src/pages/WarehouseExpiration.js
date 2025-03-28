@@ -166,13 +166,16 @@ const WarehouseExpiration = () => {
     <div className="we-container">
       <h2 className="title">유통 기한 관리</h2>
       <div className="period-controls">
-        <div className="warehouse-action-buttons">
+        <div className="period-search">
           <button
             className="reset-button"
             onClick={() => window.location.reload()}
           >
             새로 고침
           </button>
+        </div>
+        <div className="warehouse-action-buttons">
+          <button className="download-button">Excel 다운</button>
         </div>
       </div>
       <hr className="divider" />

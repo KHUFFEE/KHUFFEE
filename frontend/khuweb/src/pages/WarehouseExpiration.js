@@ -18,12 +18,15 @@ const WarehouseExpiration = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 데이터 API 호출: fetchWarehouseExpirations, fetchWarehouseInventory, fetchItems, fetchSuppliers
+  // API 데이터 호출: 유통기한, 재고, 품목, 협력사
   const fetchData = async () => {
     try {
       setLoading(true);
       const currentDate = new Date();
-      const formattedDate = `${currentDate.getFullYear()}.${("0" + (currentDate.getMonth() + 1)).slice(-2)}.${("0" + currentDate.getDate()).slice(-2)}`;
+      const formattedDate = `${currentDate.getFullYear()}.${(
+        "0" +
+        (currentDate.getMonth() + 1)
+      ).slice(-2)}.${("0" + currentDate.getDate()).slice(-2)}`;
       const [expirationRes, inventoryRes, itemsRes, suppliersRes] =
         await Promise.all([
           fetchWarehouseExpirations(),
@@ -47,7 +50,7 @@ const WarehouseExpiration = () => {
     fetchData();
   }, []);
 
-  // fetchWarehouseInventory 결과를 기반으로 품목별 현재고(창고_재고량)를 합산
+  // 재고 데이터를 품목별로 합산하여 매핑
   const inventoryMap = {};
   inventoryData.forEach((record) => {
     const itemId = record.품목_id;
@@ -55,28 +58,39 @@ const WarehouseExpiration = () => {
       (inventoryMap[itemId] || 0) + Number(record.창고_재고량);
   });
 
-  // fetchWarehouseExpirations 데이터를 기반으로 테이블 행 생성
-  const tableRows = expirationData.map((record, index) => {
+  // 테이블 행 생성 (품목 데이터에서 협력사, 품목명, 종류 추출)
+  const tableRows = expirationData.map((record) => {
     const itemId = record.품목_id;
     const matchedItem = items.find((item) => item.품목_id === itemId);
     let supplierName = "N/A";
     let itemName = "N/A";
+    let type = "";
     if (matchedItem) {
       itemName = matchedItem.품목명;
+      type = matchedItem.종류 || "";
       const supplier = suppliers.find(
         (s) => s.협력사_id === matchedItem.협력사_id
       );
       supplierName = supplier ? supplier.협력사명 : "N/A";
     }
     return {
-      no: index + 1,
       supplierName,
       itemName,
+      type,
       expiration: record.유통기한,
       count: Number(record.창고_재고량),
       currentStock: inventoryMap[itemId] || 0,
       remainingDays: "", // 남은 일수는 추후 계산 또는 빈 칸 처리
     };
+  });
+
+  // WarehouseInventory.js 와 동일한 정렬 로직 적용 (협력사 오름차순 → 종류 오름차순 → 품목명 오름차순)
+  tableRows.sort((a, b) => {
+    const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
+    if (cmpSupplier !== 0) return cmpSupplier;
+    const cmpType = a.type.localeCompare(b.type);
+    if (cmpType !== 0) return cmpType;
+    return a.itemName.localeCompare(b.itemName);
   });
 
   if (loading) return <LoadingSpinner />;
@@ -85,13 +99,15 @@ const WarehouseExpiration = () => {
   return (
     <div className="we-container">
       <h2 className="title">유통 기한 관리</h2>
-      <div className="warehouse-action-buttons">
-        <button
-          className="reset-button"
-          onClick={() => window.location.reload()}
-        >
-          새로 고침
-        </button>
+      <div className="period-controls">
+        <div className="warehouse-action-buttons">
+          <button
+            className="reset-button"
+            onClick={() => window.location.reload()}
+          >
+            새로 고침
+          </button>
+        </div>
       </div>
       <hr className="divider" />
       <table className="big-table">
@@ -107,9 +123,9 @@ const WarehouseExpiration = () => {
           </tr>
         </thead>
         <tbody>
-          {tableRows.map((row) => (
-            <tr key={row.no}>
-              <td className="we-number-col">{row.no}</td>
+          {tableRows.map((row, index) => (
+            <tr key={index}>
+              <td className="we-number-col">{index + 1}</td>
               <td className="we-supplier-col">{row.supplierName}</td>
               <td className="we-item-col">{row.itemName}</td>
               <td className="we-expiration-col">{row.expiration}</td>

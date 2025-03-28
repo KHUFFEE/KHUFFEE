@@ -18,7 +18,7 @@
 }
 
 .we-item-col {
-  width: 170px;
+  width: 120px;
   text-align: left;
 }
 
@@ -26,8 +26,24 @@
   width: 60px;
   text-align: right;
 }
-.we-cost-col {
-  width: 50px;
+
+.we-expiration-col {
+  width: 40px;
+  text-align: right;
+}
+
+.we-count-col {
+  width: 30px;
+  text-align: right;
+}
+
+.we-current-stock-col {
+  width: 30px;
+  text-align: right;
+}
+
+.we-remaining-days-col {
+  width: 120px;
   text-align: right;
 }
 

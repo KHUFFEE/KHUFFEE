@@ -69,8 +69,7 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
     // periodStr 형식: "YYYY.MM.W.R"
     const parts = periodStr.split(".");
     const [year, month, week, round] = parts;
-    const formattedMonth = month.toString().padStart(2, "0");
-    const periodParam = `${year}.${formattedMonth}.${week}`;
+    const periodParam = `${year}.${month}.${week}`;
 
     // 해당 기간에 대한 발주 데이터 조회 (회차는 round)
     const ordersResponse = await fetchOrders({
@@ -104,7 +103,7 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
     });
     // 추가 행: 활성화되어 있는 품목 중 주문 데이터에 없는 항목
     const activeItemsNotInOrders = items.filter(
-      (item) => item.활성화 && !orderItemIds.includes(item.품목_id),
+      (item) => item.활성화 && !orderItemIds.includes(item.품목_id)
     );
     const tableRowsFromActive = activeItemsNotInOrders.map((item) => {
       const supplier =
@@ -138,7 +137,7 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
       sortedTableRows.reduce((sum, row) => {
         const val = row.orders[store.매장_id];
         return sum + (val ? Number(val) : 0);
-      }, 0),
+      }, 0)
     );
 
     // 4. 시트에 들어갈 데이터 배열 구성
@@ -147,7 +146,7 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
     ws_data[0] = []; // row 1
     ws_data[1] = []; // row 2
     // 상단 제목: "카페 쿠피 {월}월 {주}주차 {회}회차 발주 취합"
-    const headerTitle = `카페 쿠피 ${formattedMonth}월 ${week}주차 ${round}회차 발주 취합`;
+    const headerTitle = `카페 쿠피 ${month}월 ${week}주차 ${round}회차 발주 취합`;
     ws_data[0][0] = headerTitle;
     ws_data[2] = []; // row 3 (빈행)
     const headerRow = ["협력사", "품목명"];
@@ -459,7 +458,7 @@ export const storeOrdersCombinedDownloadExcel = async ({ distinctPeriods }) => {
 
     // 시트 이름: "{단축년도}년 {월}월 {주}주차 {회}회차 발주"
     const shortYear = String(year).slice(-2);
-    const sheetName = `${shortYear}년 ${formattedMonth}월 ${week}주차 ${round}회차 발주`;
+    const sheetName = `${shortYear}년 ${month}월 ${week}주차 ${round}회차 발주`;
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
   }
 

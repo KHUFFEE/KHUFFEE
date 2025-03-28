@@ -472,3 +472,64 @@ export const updateWarehouseIncoming = async (incomingData) => {
   }
   return await response.json();
 };
+
+export const fetchWarehouseExpirations = async () => {
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/inventory/warehouse_expiration_list/`
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch warehouse expirations");
+  }
+  return await response.json();
+};
+
+export const createWarehouseExpiration = async (data) => {
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/inventory/warehouse_expiration_create/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to create warehouse expiration");
+  }
+  return await response.json();
+};
+
+export const updateWarehouseExpiration = async (data) => {
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/inventory/warehouse_expiration_update/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to update warehouse expiration");
+  }
+  return await response.json();
+};
+
+export const deleteWarehouseExpiration = async (data) => {
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/inventory/warehouse_expiration_delete/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to delete warehouse expiration");
+  }
+  return await response.json();
+};

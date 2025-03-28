@@ -1,0 +1,64 @@
+/* 기본 컨테이너 */
+.we-container {
+  padding: 0;
+  max-width: 95%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* 열 너비: StoreOrders와 동일 */
+.we-number-col {
+  width: 5px;
+  text-align: center;
+}
+
+.we-supplier-col {
+  width: 80px;
+  text-align: left;
+}
+
+.we-item-col {
+  width: 120px;
+  text-align: left;
+}
+
+.we-sum-col {
+  width: 60px;
+  text-align: right;
+}
+
+.we-expiration-col {
+  width: 40px;
+  text-align: right;
+}
+
+.we-count-col {
+  width: 30px;
+  text-align: right;
+}
+
+.we-current-stock-col {
+  width: 30px;
+  text-align: right;
+}
+
+.we-remaining-days-col {
+  width: 120px;
+  text-align: right;
+}
+
+.warehouse-action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* mismatch 클래스: 개수와 현재고가 다를 경우 적용 */
+.mismatch {
+  background-color: rgba(139, 0, 0, 0.215);
+  transition: background-color 0.3s ease;
+}
+
+/* 남은 일수가 만료 또는 1개월 미만일 경우 텍스트 빨간색 */
+.red-text {
+  color: red;
+}

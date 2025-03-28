@@ -51,3 +51,14 @@
   display: flex;
   gap: 10px;
 }
+
+/* mismatch 클래스: 개수와 현재고가 다를 경우 적용 */
+.mismatch {
+  background-color: rgba(139, 0, 0, 0.215);
+  transition: background-color 0.3s ease;
+}
+
+/* 남은 일수가 만료 또는 1개월 미만일 경우 텍스트 빨간색 */
+.red-text {
+  color: red;
+}

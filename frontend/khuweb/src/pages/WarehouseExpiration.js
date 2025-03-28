@@ -18,6 +18,48 @@ const WarehouseExpiration = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // 유통기한 문자열(예: "2026.05.05")를 Date 객체로 변환 후 현재 날짜와의 차이를 계산하여
+  // "~~개월 ~~일" 형식으로 반환하며, 만약 만료되었으면 "만료"를 반환하는 함수
+  const calculateRemaining = (expirationStr) => {
+    const parts = expirationStr.split(".");
+    const expDate = new Date(
+      parseInt(parts[0]),
+      parseInt(parts[1]) - 1,
+      parseInt(parts[2])
+    );
+    const now = new Date();
+    // 시간 비교를 위해 현재 날짜의 시,분,초는 0으로 초기화
+    const currentDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+
+    // 유통기한이 현재 날짜와 같거나 이전이면 "만료" 반환
+    if (expDate <= currentDate) {
+      return "만료";
+    }
+
+    // 연도, 월, 일 차이 계산
+    let years = expDate.getFullYear() - currentDate.getFullYear();
+    let months = expDate.getMonth() - currentDate.getMonth() + years * 12;
+    let days = expDate.getDate() - currentDate.getDate();
+
+    if (days < 0) {
+      months -= 1;
+      // expDate의 직전 달의 마지막 날짜 구하기
+      const previousMonthDate = new Date(
+        expDate.getFullYear(),
+        expDate.getMonth(),
+        0
+      );
+      days =
+        expDate.getDate() +
+        (previousMonthDate.getDate() - currentDate.getDate());
+    }
+    return `${months}개월 ${days}일`;
+  };
+
   // API 데이터 호출: 유통기한, 재고, 품목, 협력사
   const fetchData = async () => {
     try {
@@ -58,7 +100,7 @@ const WarehouseExpiration = () => {
       (inventoryMap[itemId] || 0) + Number(record.창고_재고량);
   });
 
-  // 테이블 행 생성 (품목 데이터에서 협력사, 품목명, 종류 추출)
+  // 테이블 행 생성 (품목 데이터에서 협력사, 품목명, 종류 추출 및 남은 일수 계산)
   const tableRows = expirationData.map((record) => {
     const itemId = record.품목_id;
     const matchedItem = items.find((item) => item.품목_id === itemId);
@@ -80,7 +122,7 @@ const WarehouseExpiration = () => {
       expiration: record.유통기한,
       count: Number(record.창고_재고량),
       currentStock: inventoryMap[itemId] || 0,
-      remainingDays: "", // 남은 일수는 추후 계산 또는 빈 칸 처리
+      remainingDays: calculateRemaining(record.유통기한),
     };
   });
 
@@ -126,8 +168,12 @@ const WarehouseExpiration = () => {
           {tableRows.map((row, index) => (
             <tr key={index}>
               <td className="we-number-col">{index + 1}</td>
-              <td className="we-supplier-col">{row.supplierName}</td>
-              <td className="we-item-col">{row.itemName}</td>
+              <td className="we-supplier-col">
+                <div className="we-supplier-cell">{row.supplierName}</div>
+              </td>
+              <td className="we-item-col">
+                <div className="we-item-cell">{row.itemName}</div>
+              </td>
               <td className="we-expiration-col">{row.expiration}</td>
               <td className="we-count-col">{row.count.toLocaleString()}</td>
               <td className="we-current-stock-col">

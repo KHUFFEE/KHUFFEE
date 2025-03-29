@@ -105,11 +105,13 @@ export const warehouseExpirationDownloadExcel = ({ tableRows }) => {
       ws[cellAddr].s = ws[cellAddr].s || {};
       ws[cellAddr].s.font = { bold: true };
       ws[cellAddr].s.alignment = { horizontal: "center", vertical: "center" };
-      ws[cellAddr].s.border = {
-        top: { style: "thick", color: { rgb: "000000" } },
-        bottom: { style: "thick", color: { rgb: "000000" } },
-        left: { style: "thick", color: { rgb: "000000" } },
-        right: { style: "thick", color: { rgb: "000000" } },
+      ws[cellAddr].s.border = ws[cellAddr].s.border || {};
+      ws[cellAddr].s.border.left = { style: "thin", color: { rgb: "000000" } };
+      ws[cellAddr].s.border.right = { style: "thin", color: { rgb: "000000" } };
+      ws[cellAddr].s.border.top = { style: "thick", color: { rgb: "000000" } };
+      ws[cellAddr].s.border.bottom = {
+        style: "thick",
+        color: { rgb: "000000" },
       };
     }
   }

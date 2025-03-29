@@ -199,16 +199,8 @@ export const storeOrdersDownloadExcel = ({
     const cellAddr = XLSX.utils.encode_cell({ r: 3, c });
     if (ws[cellAddr]) {
       ws[cellAddr].s.border = ws[cellAddr].s.border || {};
-      if (c === 0)
-        ws[cellAddr].s.border.left = {
-          style: "thick",
-          color: { rgb: "000000" },
-        };
-      if (c === totalCols - 1)
-        ws[cellAddr].s.border.right = {
-          style: "thick",
-          color: { rgb: "000000" },
-        };
+      ws[cellAddr].s.border.left = { style: "thin", color: { rgb: "000000" } };
+      ws[cellAddr].s.border.right = { style: "thin", color: { rgb: "000000" } };
       ws[cellAddr].s.border.top = { style: "thick", color: { rgb: "000000" } };
       ws[cellAddr].s.border.bottom = {
         style: "thick",

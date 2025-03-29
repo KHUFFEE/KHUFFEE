@@ -8,6 +8,7 @@ import {
 } from "../api/api";
 import "../styles/WarehouseExpiration.css";
 import "../styles/table.css";
+import { warehouseExpirationDownloadExcel } from "../utils/WarehouseExpirationDownloadExcel";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const WarehouseExpiration = () => {
@@ -178,7 +179,12 @@ const WarehouseExpiration = () => {
           </button>
         </div>
         <div className="warehouse-action-buttons">
-          <button className="download-button">Excel 다운</button>
+          <button
+            className="download-button"
+            onClick={() => warehouseExpirationDownloadExcel({ tableRows })}
+          >
+            Excel 다운
+          </button>
         </div>
       </div>
       <hr className="divider" />

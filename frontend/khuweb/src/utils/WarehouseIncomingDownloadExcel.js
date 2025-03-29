@@ -206,7 +206,8 @@ export const warehouseIncomingDownloadExcel = ({
 
   // ★ 추가 1:
   // StoreInventoryMonthEndDownloadExcel.js와 같이, 5행부터 협력사 열을 공급업체별로 병합하고,
-  // 공급업체가 바뀌는 지점에서는 굵은 하단 선(두꺼운 선)을 추가함
+  // 공급업체가 바뀌는 지점에서는 굵은 하단 선(두꺼운 선)을 추가하며,
+  // 협력사 셀은 항상 가운데 정렬 처리
   let startRowIdx = dataStartRow;
   while (startRowIdx < dataStartRow + tableRows.length) {
     const cellAddr = XLSX.utils.encode_cell({ r: startRowIdx, c: 0 });
@@ -221,11 +222,15 @@ export const warehouseIncomingDownloadExcel = ({
         break;
       }
     }
-    if (endRowIdx > startRowIdx) {
-      ws["!merges"].push({
-        s: { r: startRowIdx, c: 0 },
-        e: { r: endRowIdx, c: 0 },
-      });
+    if (endRowIdx >= startRowIdx) {
+      // 병합 (여러 행일 경우)
+      if (endRowIdx > startRowIdx) {
+        ws["!merges"].push({
+          s: { r: startRowIdx, c: 0 },
+          e: { r: endRowIdx, c: 0 },
+        });
+      }
+      // 병합된 셀(또는 단일 셀) 가운데 정렬
       const mergeAddr = XLSX.utils.encode_cell({ r: startRowIdx, c: 0 });
       if (ws[mergeAddr]) {
         ws[mergeAddr].s = ws[mergeAddr].s || {};
@@ -234,25 +239,25 @@ export const warehouseIncomingDownloadExcel = ({
           vertical: "center",
         };
       }
-      // 병합된 마지막 행에 굵은 하단 선 적용
+      // 병합된 마지막 행에 굵은 하단 선 적용 (전체 열에 적용)
       for (let col = 0; col < totalCols; col++) {
         const bottomCellAddr = XLSX.utils.encode_cell({ r: endRowIdx, c: col });
-        if (ws[bottomCellAddr]) {
-          ws[bottomCellAddr].s = ws[bottomCellAddr].s || {}; // s 객체 초기화
-          ws[bottomCellAddr].s.border = ws[bottomCellAddr].s.border || {};
-          ws[bottomCellAddr].s.border.bottom = {
-            style: "thick",
-            color: { rgb: "000000" },
-          };
-        }
+        if (!ws[bottomCellAddr]) ws[bottomCellAddr] = { t: "s", v: "" };
+        ws[bottomCellAddr].s = ws[bottomCellAddr].s || {};
+        ws[bottomCellAddr].s.border = ws[bottomCellAddr].s.border || {};
+        ws[bottomCellAddr].s.border.bottom = {
+          style: "thick",
+          color: { rgb: "000000" },
+        };
       }
     }
     startRowIdx = endRowIdx + 1;
   }
 
   // 10. 스타일 적용
+
+  // (1) 상단 제목 및 첫 두 행 스타일
   const maxCol = Math.min(totalCols, 17);
-  // 상단 제목 및 첫 두 행 스타일
   for (let r = 0; r < 2; r++) {
     for (let c = 0; c < maxCol; c++) {
       const cellAddr = XLSX.utils.encode_cell({ r, c });
@@ -289,7 +294,8 @@ export const warehouseIncomingDownloadExcel = ({
       }
     }
   }
-  // 헤더(엑셀상의 4행, 인덱스 3) 스타일
+
+  // (2) 헤더(엑셀상의 4행, 인덱스 3) 스타일
   for (let c = 0; c < totalCols; c++) {
     const cellAddr = XLSX.utils.encode_cell({ r: 3, c });
     if (!ws[cellAddr]) ws[cellAddr] = { t: "s", v: "" };
@@ -304,7 +310,8 @@ export const warehouseIncomingDownloadExcel = ({
       bottom: { style: "thick", color: { rgb: "000000" } },
     };
   }
-  // 데이터 영역 스타일 (데이터 행: row index 4 ~ totalsRowIndex-1)
+
+  // (3) 데이터 영역 스타일 (데이터 행: row index 4 ~ totalsRowIndex-1)
   for (let r = 4; r < totalsRowIndex; r++) {
     for (let c = 0; c < totalCols; c++) {
       const cellAddr = XLSX.utils.encode_cell({ r, c });
@@ -318,6 +325,10 @@ export const warehouseIncomingDownloadExcel = ({
           fgColor: { rgb: "C9C9C9" },
         };
       }
+      // 발주합계 부가세x, 부가세o (열 15, 16) 및 협력사 열(열 0)는 항상 가운데 정렬
+      if (c === 0 || c === 15 || c === 16) {
+        ws[cellAddr].s.alignment = { horizontal: "center", vertical: "center" };
+      }
       ws[cellAddr].s.border = {
         top: { style: "thin", color: { rgb: "000000" } },
         bottom: { style: "thin", color: { rgb: "000000" } },
@@ -326,14 +337,15 @@ export const warehouseIncomingDownloadExcel = ({
       };
     }
   }
-  // 합계 행 스타일
+
+  // (4) 합계 행 스타일
   for (let c = 0; c < totalCols; c++) {
     const cellAddr = XLSX.utils.encode_cell({ r: totalsRowIndex, c });
     if (!ws[cellAddr]) ws[cellAddr] = { t: "s", v: "" };
     ws[cellAddr].s = ws[cellAddr].s || {};
     // (6) 합계 행의 굵은 글씨 적용 해제 (bold 제거)
     ws[cellAddr].s.font = { name: "Arial", sz: c < 5 ? 12 : 10, bold: false };
-    // (7) 합계 행의 숫자(수식) 셀은 우측 정렬
+    // (7) 합계 행의 숫자(수식) 셀은 우측 정렬 (단, 협력사, 발주합계 부가세x/부가세o는 가운데)
     if (c >= 5 && c < 15) {
       ws[cellAddr].s.alignment = { horizontal: "right", vertical: "center" };
     } else {
@@ -341,7 +353,7 @@ export const warehouseIncomingDownloadExcel = ({
     }
   }
 
-  // 11. 열 너비 자동 설정
+  // (5) 열 너비 자동 설정
   const wsRows = XLSX.utils.sheet_to_json(ws, { header: 1 });
   const colWidths = [];
   for (let col = 0; col < totalCols; col++) {
@@ -355,6 +367,25 @@ export const warehouseIncomingDownloadExcel = ({
     colWidths.push({ wch: maxLen + 10 });
   }
   ws["!cols"] = colWidths;
+
+  // 11. 모든 숫자 셀에 천단위 콤마 포맷 적용
+  const numFmtWithDecimals = "#,##0.##"; // 소숫점이 있을 경우 출력
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  for (let r = range.s.r; r <= range.e.r; r++) {
+    for (let c = range.s.c; c <= range.e.c; c++) {
+      const cellAddr = XLSX.utils.encode_cell({ r, c });
+      const cell = ws[cellAddr];
+      if (cell && cell.t === "n") {
+        cell.s = cell.s || {};
+        // 입고단가(3), 월 입고금액(12), 발주금액(14), 발주합계 부가세x(15), 발주합계 부가세o(16)는 소숫점 표시 적용
+        if ([3, 12, 14, 15, 16].includes(c)) {
+          cell.s.numFmt = numFmtWithDecimals;
+        } else if (!cell.s.numFmt) {
+          cell.s.numFmt = "#,##0";
+        }
+      }
+    }
+  }
 
   // 12. 워크북 생성, 시트 추가 후 파일 저장
   const wb = XLSX.utils.book_new();

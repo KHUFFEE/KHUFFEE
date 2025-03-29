@@ -10,6 +10,7 @@ import {
 } from "../api/api";
 import "../styles/WarehouseIncoming.css";
 import "../styles/table.css";
+import { warehouseIncomingDownloadExcel } from "../utils/WarehouseIncomingDownloadExcel";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const WarehouseIncoming = () => {
@@ -519,7 +520,7 @@ const WarehouseIncoming = () => {
             <button
               className="download-button"
               onClick={() => {
-                /* Excel 다운로드 처리 */
+                warehouseIncomingDownloadExcel({ selectedPeriod, tableRows });
               }}
             >
               Excel 다운

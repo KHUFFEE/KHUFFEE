@@ -12,6 +12,7 @@ import {
 } from "../api/api";
 import "../styles/WarehouseOrder.css";
 import "../styles/table.css";
+import { warehouseOrderDownloadExcel } from "../utils/WarehouseOrderDownloadExcel";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const WarehouseOrder = () => {
@@ -560,7 +561,12 @@ const WarehouseOrder = () => {
 
   // 다운로드 버튼 (동작 비활성화)
   const handleExcelDownload = () => {
-    alert("다운로드 기능은 현재 비활성화되어 있습니다.");
+    warehouseOrderDownloadExcel({
+      selectedYear,
+      selectedMonth,
+      selectedRound,
+      tableRows,
+    });
   };
 
   const handleWarehouseOpenModalConfirm = async () => {

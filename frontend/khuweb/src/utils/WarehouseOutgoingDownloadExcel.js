@@ -1,7 +1,7 @@
-// frontend/khuweb/src/utils/WarehouseIncomingDownloadExcel.js
+// frontend/khuweb/src/utils/warehouseOutgoingDownloadExcel.js
 import * as XLSX from "xlsx-js-style";
 
-export const warehouseIncomingDownloadExcel = ({
+export const warehouseOutgoingDownloadExcel = ({
   selectedPeriod,
   tableRows,
 }) => {
@@ -22,11 +22,11 @@ export const warehouseIncomingDownloadExcel = ({
   const yyyymmdd = `${now.getFullYear()}${(now.getMonth() + 1)
     .toString()
     .padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}`;
-  const filename = `카페쿠피_${year}년_${month}월_창고입고_관리자용_(${yyyymmdd}).xlsx`;
+  const filename = `카페쿠피_${year}년_${month}월_창고출고_관리자용_(${yyyymmdd}).xlsx`;
 
   // 3. 상단 제목 및 시트 이름 설정
-  const headerTitle = `카페 쿠피 ${month}월 창고 입고`;
-  const sheetName = `${year}년 ${month}월 창고 입고`;
+  const headerTitle = `카페 쿠피 ${month}월 창고 출고`;
+  const sheetName = `${year}년 ${month}월 창고 출고`;
 
   // 4. 워크시트 데이터 배열 구성
   // - row0, row1: 제목 (병합 대상)
@@ -44,27 +44,18 @@ export const warehouseIncomingDownloadExcel = ({
     "입고단가",
     "입고단위단가",
     "전월재고",
-    "1주차 입고",
-    "2주차 입고",
-    "3주차 입고",
-    "4주차 입고",
-    "5주차 입고",
-    "월 입고량",
-    "월 입고금액",
-    "발주량",
-    "발주금액",
-    "발주합계 부가세x",
-    "발주합계 부가세o",
+    "1주차 출고",
+    "2주차 출고",
+    "3주차 출고",
+    "4주차 출고",
+    "5주차 출고",
+    "월 출고량",
+    "월 출고금액",
   ];
   ws_data[3] = headerRow;
   const totalCols = headerRow.length;
 
   // 5. 데이터 행 구성 (엑셀상의 행번호는 5행부터 시작)
-  // helper: 발주금액 = 발주량 * 입고단가
-  const calculateOrderMoney = (row) => {
-    return formatNumber(row.orderAmount) * formatNumber(row.입고단가);
-  };
-
   // 헬퍼 함수: 숫자 변환 – null, NaN인 경우 항상 0 반환
   const formatNumber = (val) => {
     const num = Number(val);
@@ -89,55 +80,7 @@ export const warehouseIncomingDownloadExcel = ({
     excelRow[10] = formatNumber(row.week5);
     excelRow[11] = formatNumber(row.monthlyIncoming);
     excelRow[12] = formatNumber(row.monthlyAmount);
-    excelRow[13] = formatNumber(row.orderAmount);
-    excelRow[14] = calculateOrderMoney(row);
-    // 발주합계 부가세x, 부가세o – 추후 공급업체별 병합 적용 (우선 빈 값)
-    excelRow[15] = "";
-    excelRow[16] = "";
     ws_data[dataStartRow + i] = excelRow;
-  });
-
-  // 6. 공급업체별 발주합계 (부가세x, 부가세o) 계산 및 그룹별 병합 처리
-  let supplierGroupIndices = [];
-  let currentSupplier = null;
-  let startIdx = dataStartRow;
-  for (let i = 0; i < tableRows.length; i++) {
-    const supplier = tableRows[i].supplierName || "";
-    if (supplier !== currentSupplier) {
-      if (currentSupplier !== null) {
-        supplierGroupIndices.push({
-          supplier: currentSupplier,
-          start: startIdx,
-          end: dataStartRow + i - 1,
-        });
-      }
-      currentSupplier = supplier;
-      startIdx = dataStartRow + i;
-    }
-  }
-  if (currentSupplier !== null) {
-    supplierGroupIndices.push({
-      supplier: currentSupplier,
-      start: startIdx,
-      end: dataStartRow + tableRows.length - 1,
-    });
-  }
-  const supplierGroupOrderSums = {};
-  tableRows.forEach((row) => {
-    const supplier = row.supplierName || "";
-    if (!supplierGroupOrderSums[supplier]) {
-      supplierGroupOrderSums[supplier] = { sumEx: 0, sumInc: 0 };
-    }
-    const orderMoney = calculateOrderMoney(row);
-    supplierGroupOrderSums[supplier].sumEx += orderMoney;
-    supplierGroupOrderSums[supplier].sumInc += orderMoney * 1.1;
-  });
-  // 각 그룹의 첫번째 행에 발주합계 값을 기록
-  supplierGroupIndices.forEach((group) => {
-    const supplier = group.supplier;
-    const sums = supplierGroupOrderSums[supplier] || { sumEx: 0, sumInc: 0 };
-    ws_data[group.start][15] = sums.sumEx;
-    ws_data[group.start][16] = sums.sumInc;
   });
 
   // 7. 합계 행 추가 (데이터 행 바로 아래)
@@ -147,20 +90,16 @@ export const warehouseIncomingDownloadExcel = ({
   for (let c = 1; c < 5; c++) {
     totalsRow[c] = "";
   }
-  // 전월재고부터 발주금액까지 (열 5 ~ 14)는 수식 셀로 합계 계산
-  for (let col = 5; col < 15; col++) {
+  // 전월재고부터 월 출고금액까지 (열 5 ~ 12)는 수식 셀로 합계 계산
+  for (let col = 5; col < 13; col++) {
     const colLetter = XLSX.utils.encode_col(col);
     const firstDataRow = dataStartRow + 1;
     const lastDataRow = dataStartRow + tableRows.length;
     totalsRow[col] = {
       f: `SUM(${colLetter}${firstDataRow}:${colLetter}${lastDataRow})`,
-      // 0인 경우 '-' 대신 0으로 표시
       z: "#,##0;(#,##0);0",
     };
   }
-  // 발주합계 부가세x, 부가세o 열은 빈 값 처리
-  totalsRow[15] = "";
-  totalsRow[16] = "";
   ws_data[dataStartRow + tableRows.length] = totalsRow;
   const totalsRowIndex = ws_data.length - 1;
 
@@ -175,33 +114,6 @@ export const warehouseIncomingDownloadExcel = ({
   ws["!merges"].push({
     s: { r: totalsRowIndex, c: 0 },
     e: { r: totalsRowIndex, c: 4 },
-  });
-  // 공급업체별 발주합계 열(열 15, 16) 병합 처리
-  supplierGroupIndices.forEach((group) => {
-    if (group.end > group.start) {
-      ws["!merges"].push({
-        s: { r: group.start, c: 15 },
-        e: { r: group.end, c: 15 },
-      });
-      ws["!merges"].push({
-        s: { r: group.start, c: 16 },
-        e: { r: group.end, c: 16 },
-      });
-      const mergeAddr15 = XLSX.utils.encode_cell({ r: group.start, c: 15 });
-      if (!ws[mergeAddr15]) ws[mergeAddr15] = { t: "s", v: "" };
-      ws[mergeAddr15].s = ws[mergeAddr15].s || {};
-      ws[mergeAddr15].s.alignment = {
-        horizontal: "center",
-        vertical: "center",
-      };
-      const mergeAddr16 = XLSX.utils.encode_cell({ r: group.start, c: 16 });
-      if (!ws[mergeAddr16]) ws[mergeAddr16] = { t: "s", v: "" };
-      ws[mergeAddr16].s = ws[mergeAddr16].s || {};
-      ws[mergeAddr16].s.alignment = {
-        horizontal: "center",
-        vertical: "center",
-      };
-    }
   });
 
   // 10. 스타일 적용
@@ -268,15 +180,15 @@ export const warehouseIncomingDownloadExcel = ({
       if (!ws[cellAddr]) ws[cellAddr] = { t: "s", v: "" };
       ws[cellAddr].s = ws[cellAddr].s || {};
       ws[cellAddr].s.font = { name: "Arial", sz: c === 0 ? 12 : 10 };
-      // 1주차 입고 ~ 5주차 입고 (열 6~10): 배경색 C9C9C9 적용
+      // 1주차 출고 ~ 5주차 출고 (열 6~10): 배경색 C9C9C9 적용
       if (c >= 6 && c <= 10) {
         ws[cellAddr].s.fill = {
           patternType: "solid",
           fgColor: { rgb: "C9C9C9" },
         };
       }
-      // 발주합계 부가세x, 부가세o (열 15, 16) 및 협력사 열(열 0)은 항상 가운데 정렬
-      if (c === 0 || c === 15 || c === 16) {
+      // 협력사 열(열 0)은 항상 가운데 정렬
+      if (c === 0) {
         ws[cellAddr].s.alignment = { horizontal: "center", vertical: "center" };
       }
       ws[cellAddr].s.border = {
@@ -293,10 +205,10 @@ export const warehouseIncomingDownloadExcel = ({
     const cellAddr = XLSX.utils.encode_cell({ r: totalsRowIndex, c });
     if (!ws[cellAddr]) ws[cellAddr] = { t: "s", v: "" };
     ws[cellAddr].s = ws[cellAddr].s || {};
-    // (6) 합계 행의 굵은 글씨 적용 해제 (bold 제거)
+    // 합계 행의 굵은 글씨 적용 해제 (bold 제거)
     ws[cellAddr].s.font = { name: "Arial", sz: c < 5 ? 12 : 10, bold: false };
-    // (7) 합계 행의 숫자(수식) 셀은 우측 정렬 (단, 협력사, 발주합계 부가세x/부가세o는 가운데)
-    if (c >= 5 && c < 15) {
+    // 합계 행의 숫자(수식) 셀은 우측 정렬 (단, 협력사 열은 가운데)
+    if (c >= 5 && c < 13) {
       ws[cellAddr].s.alignment = { horizontal: "right", vertical: "center" };
     } else {
       ws[cellAddr].s.alignment = { horizontal: "center", vertical: "center" };

@@ -13,7 +13,7 @@ def create_monthly_warehouse_orders():
     매월 1일 실행되어, 활성화=True인 품목(Item)마다
     WarehouseOrder 테이블에 (기간=YYYY.MM, 회차=1, 창고_발주량=0) 레코드를 자동 생성한다.
     """
-    now = timezone.now()
+    now = timezone.localtime(timezone.now())
     # 오늘 날짜로 "YYYY.MM" 만들기 (예: 2025.04)
     period = now.strftime("%Y.%m")
     round_value = 1

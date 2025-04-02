@@ -1,7 +1,13 @@
+// frontend\khuweb\src\pages\home.js
 import React from "react";
+import "../styles/Home.css";
 
-function Home() {
-  return <h1>홈 페이지</h1>;
-}
+const home = () => {
+  return (
+    <div className="home-container">
+      <h2 className="title">홈</h2>
+    </div>
+  );
+};
 
-export default Home;
+export default home;

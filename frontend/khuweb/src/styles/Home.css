@@ -4,3 +4,7 @@
   margin: 0 auto;
   text-align: left;
 }
+
+.manual-content ul li {
+  font-size: 18px;
+}

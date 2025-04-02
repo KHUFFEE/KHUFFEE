@@ -64,7 +64,7 @@ const Home = () => {
   return (
     <div className="home-container">
       {/* 기존 Home 콘텐츠 유지 */}
-      <h2 className="title">관리 대장 관리</h2>
+      <h2 className="title">관리 대장</h2>
       <div>
         {/* StoreOrders.js에서 복사해온 기간 선택 토글 버튼 및 divider */}
         <div className="period-controls">
@@ -142,6 +142,10 @@ const Home = () => {
         <h3>통합 관리</h3>
         <ul>
           <li>
+            생성되는 모든 테이블은 제품관리에서 활성화된 제품을 기준으로
+            생성되므로, 제품의 활성화 상태를 정확히 관리하는 것이 중요합니다.
+          </li>
+          <li>
             새로운 협력사와 제품이 추가될 경우, 먼저 협력사를 등록한 후 제품을
             추가해주세요.
           </li>
@@ -155,6 +159,10 @@ const Home = () => {
           <li>
             관리 대장을 다운로드하기 전에 월말 재고와 매장 발주를 반드시
             마감해주세요.
+          </li>
+          <li>
+            관리대장에서 매장시트의 '전월재고' 열은 월말 재고 데이터를 기준으로
+            불러옵니다.
           </li>
         </ul>
         <h3>창고 관리</h3>

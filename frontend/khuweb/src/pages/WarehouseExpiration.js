@@ -175,10 +175,8 @@ const WarehouseExpiration = () => {
             className="reset-button"
             onClick={() => window.location.reload()}
           >
-            새로 고침
+            새로고침
           </button>
-        </div>
-        <div className="warehouse-action-buttons">
           <button
             className="download-button"
             onClick={() => warehouseExpirationDownloadExcel({ tableRows })}

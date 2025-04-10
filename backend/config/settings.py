@@ -68,12 +68,6 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True  # 모든 도메인 허용 (개발용)
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://192.168.0.6:3000",
-#     "http://localhost:3000",  # React 웹 (개발 환경)
-#     "http://localhost:19006",  # React Native 앱 (Expo 개발 환경)
-#     "http://192.168.0.11:8081"
-# ]
 
 ROOT_URLCONF = "config.urls"
 
@@ -104,9 +98,9 @@ DATABASES = {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "khuffee",  # MySQL 데이터베이스 이름
         "USER": "root",  # MySQL 유저명
-        "PASSWORD": "9420",  # MySQL 비밀번호
+        "PASSWORD": "your_password",  # MySQL 비밀번호
         "HOST": "localhost",  # 로컬 개발이면 'localhost'
-        "PORT": "3306",  # 기본 MySQL 포트
+        "PORT": "0000",  # 기본 MySQL 포트
         "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
     }
 }

@@ -131,7 +131,6 @@ body {
 }
 
 /* 메뉴 링크 및 서브메뉴 링크 (NavLink) */
-.menu-link,
 .submenu a {
   font-size: 17px;
   text-decoration: none;
@@ -145,19 +144,25 @@ body {
   align-items: center;
 }
 
+.menu-link {
+  font-size: 18px;
+  text-decoration: none;
+  color: #445382;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  letter-spacing: 0.2px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
 .menu-link.active,
 .submenu a.active {
   background-color: rgba(139, 0, 0, 0.08);
   color: #8b0000;
   box-shadow: none;
   font-weight: 650;
-}
-
-.menu-link:hover,
-.submenu a:hover {
-  background-color: rgba(13, 50, 111, 0.04);
-  color: #445382;
-  transform: translateX(2px);
 }
 
 /* 토글 메뉴 (통합 관리, 매장 관리, 창고 관리) */
@@ -175,6 +180,8 @@ body {
   letter-spacing: 0.2px;
 }
 
+.menu-link:hover,
+.submenu a:hover,
 .toggle-menu:hover {
   background-color: rgba(13, 50, 111, 0.04);
   color: #445382;

@@ -12,7 +12,7 @@ import Orders from "./pages/StoreOrders";
 import Item from "./pages/Item";
 import Login from "./pages/Login";
 import Suppliers from "./pages/Suppliers";
-import InventoryLog from "./pages/InventoryLog";
+
 import StoreInventory from "./pages/StoreInventory";
 // 추가: 월말 재고 관리를 위한 페이지
 import StoreInventoryMonthEnd from "./pages/StoreInventoryMonthEnd";
@@ -154,15 +154,6 @@ function App() {
                       >
                         협력사 관리
                       </NavLink>
-                      <NavLink
-                        to="/integration/inventorylog"
-                        onClick={() =>
-                          handleNavLinkClick("/integration/inventorylog")
-                        }
-                        className={({ isActive }) => (isActive ? "active" : "")}
-                      >
-                        관리 대장
-                      </NavLink>
                     </div>
                   )}
                 </div>
@@ -294,10 +285,6 @@ function App() {
                 />
                 <Route path="/store/orders" element={<Orders />} />
                 <Route path="/integration/suppliers" element={<Suppliers />} />
-                <Route
-                  path="/integration/inventorylog"
-                  element={<InventoryLog />}
-                />
                 <Route path="/integration/item" element={<Item />} />
                 <Route
                   path="/warehouse/inventory"

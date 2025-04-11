@@ -27,3 +27,6 @@ preprocessing/data/
 
 # Ignore celery data
 celerybeat-schedule*
+
+# Ignore migrations directory
+/backend/config/settings.py

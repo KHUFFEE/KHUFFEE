@@ -32,7 +32,10 @@ import {
   styles,
   headerRowStyles,
 } from "../../src/styles/ExpirationMangaement_warehouse";
-import { OrderRequeststyle } from "../../src/styles/StockManagement_styles_warehouse";
+import {
+  OrderRequeststyle,
+  modalStyles,
+} from "../../src/styles/StockManagement_styles_warehouse";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -166,9 +169,12 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     new Date().getDate()
   );
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [successMessage, setSuccessMessage] = useState<string>("");
-  const [showSaveSuccessModal, setShowSaveSuccessModal] =
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] =
     useState<boolean>(false);
+  const [itemToDelete, setItemToDelete] = useState<ExpirationItem | null>(null);
+  const [showDeleteSuccessModal, setShowDeleteSuccessModal] =
+    useState<boolean>(false);
+  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string>("");
 
   // 데이터 로딩 함수
   const fetchData = useCallback(async () => {
@@ -341,61 +347,52 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   };
 
   const handleDeleteItem = async (item: ExpirationItem) => {
-    Alert.alert(
-      "항목 삭제",
-      `"${item.품목명}"의 유통기한 정보를 삭제하시겠습니까?`,
-      [
+    setItemToDelete(item);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      setLoading(true);
+
+      const dateObj = parseDateStringToJSDate(itemToDelete.유통기한);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const day = String(dateObj.getDate()).padStart(2, "0");
+      const formattedDate = `${year}.${month}.${day}`;
+
+      const response = await fetch(
+        `${RN_API_URL}/api/inventory/warehouse_expiration_delete/`,
         {
-          text: "취소",
-          style: "cancel",
-        },
-        {
-          text: "삭제",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              setLoading(true);
-
-              const dateObj = parseDateStringToJSDate(item.유통기한);
-              const year = dateObj.getFullYear();
-              const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-              const day = String(dateObj.getDate()).padStart(2, "0");
-              const formattedDate = `${year}.${month}.${day}`;
-
-              const response = await fetch(
-                `${RN_API_URL}/api/inventory/warehouse_expiration_delete/`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    품목_id: item.품목_id,
-                    유통기한: formattedDate,
-                  }),
-                }
-              );
-
-              if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(
-                  errorData.message || "항목 삭제에 실패했습니다."
-                );
-              }
-
-              await refreshData();
-              setSuccessMessage("항목이 성공적으로 삭제되었습니다.");
-              setTimeout(() => setSuccessMessage(""), 3000);
-            } catch (error) {
-              console.error("삭제 중 오류:", error);
-              Alert.alert("오류", "항목 삭제 중 오류가 발생했습니다.");
-            } finally {
-              setLoading(false);
-            }
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        },
-      ]
-    );
+          body: JSON.stringify({
+            품목_id: itemToDelete.품목_id,
+            유통기한: formattedDate,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "항목 삭제에 실패했습니다.");
+      }
+
+      await refreshData();
+      setDeleteSuccessMessage("항목이 성공적으로 삭제되었습니다.");
+      setShowDeleteSuccessModal(true);
+    } catch (error) {
+      console.error("삭제 중 오류:", error);
+      Alert.alert("오류", "항목 삭제 중 오류가 발생했습니다.");
+    } finally {
+      setShowDeleteConfirmModal(false);
+      setItemToDelete(null);
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -445,8 +442,8 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
           ? "새 항목이 성공적으로 추가되었습니다."
           : "항목이 성공적으로 수정되었습니다.";
 
-      setSuccessMessage(successMsg);
-      setTimeout(() => setSuccessMessage(""), 3000);
+      setDeleteSuccessMessage(successMsg);
+      setShowDeleteSuccessModal(true);
     } catch (error) {
       console.error("제출 중 오류:", error);
       Alert.alert("오류", "데이터 제출 중 오류가 발생했습니다.");
@@ -536,11 +533,8 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
       await Promise.all(updatePromises);
       await refreshData();
       setIsEditMode(false);
-      setShowSaveSuccessModal(true);
-      setTimeout(() => setShowSaveSuccessModal(false), 2000);
-
-      setSuccessMessage("모든 변경사항이 성공적으로 저장되었습니다.");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      setDeleteSuccessMessage("모든 변경사항이 성공적으로 저장되었습니다.");
+      setShowDeleteSuccessModal(true);
     } catch (error) {
       console.error("저장 중 오류:", error);
       Alert.alert("오류", "저장 중 오류가 발생했습니다.");
@@ -941,17 +935,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
 
   return (
     <View style={styles.container}>
-      {successMessage ? (
-        <View
-          testID="successMessageContainer"
-          style={styles.successMessageContainer}
-        >
-          <Text testID="successMessageText" style={styles.successMessageText}>
-            {successMessage}
-          </Text>
-        </View>
-      ) : null}
-
       <View testID="categorySection" style={OrderRequeststyle.categorySection}>
         <Text testID="sectionTitle" style={OrderRequeststyle.sectionTitle}>
           협력사 선택
@@ -1090,7 +1073,14 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
               <>
                 <TouchableOpacity
                   testID="cancelButton"
-                  style={headerRowStyles.cancelButton}
+                  style={[
+                    headerRowStyles.cancelButton,
+                    {
+                      flex: 1,
+                      marginRight: moderateScale(10),
+                      maxWidth: "45%",
+                    },
+                  ]}
                   onPress={toggleEditMode}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -1099,7 +1089,14 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 </TouchableOpacity>
                 <TouchableOpacity
                   testID="saveButton"
-                  style={headerRowStyles.activeButton}
+                  style={[
+                    headerRowStyles.activeButton,
+                    {
+                      flex: 1,
+                      marginLeft: moderateScale(10),
+                      maxWidth: "45%",
+                    },
+                  ]}
                   onPress={handleSave}
                   disabled={loading}
                 >
@@ -1155,24 +1152,45 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
         transparent={true}
         onRequestClose={() => setShowModal(false)}
       >
-        <View testID="modalOverlay" style={styles.modalOverlay}>
-          <View testID="modalContainer" style={styles.modalContainer}>
-            <View testID="modalHeader" style={styles.modalHeader}>
-              <Text testID="modalTitle" style={styles.modalTitle}>
+        <View testID="modalCenteredView" style={modalStyles.centeredView}>
+          <View
+            testID="modalContainer"
+            style={[
+              modalStyles.modalView,
+              { paddingBottom: moderateScale(20) },
+            ]}
+          >
+            <View
+              testID="modalHeader"
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderBottomWidth: 1,
+                borderBottomColor: "#e2e8f0",
+                paddingBottom: moderateScale(8),
+                marginBottom: moderateScale(10),
+                width: "100%",
+              }}
+            >
+              <Text testID="modalTitle" style={modalStyles.modalTitle}>
                 {modalMode === "add"
                   ? "유통기한 항목 추가"
                   : "유통기한 항목 수정"}
               </Text>
               <TouchableOpacity
                 testID="closeButton"
-                style={styles.closeButton}
+                style={{ padding: moderateScale(5) }}
                 onPress={() => setShowModal(false)}
               >
                 <XCircle size={24} color="#64748b" />
               </TouchableOpacity>
             </View>
 
-            <ScrollView testID="formContainer" style={styles.formContainer}>
+            <ScrollView
+              testID="formContainer"
+              style={{ width: "100%", paddingHorizontal: moderateScale(5) }}
+            >
               <View testID="formGroup" style={styles.formGroup}>
                 <Text testID="label" style={styles.label}>
                   품목 선택
@@ -1269,10 +1287,23 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 />
               </View>
 
-              <View testID="buttonGroup" style={styles.buttonGroup}>
+              <View
+                testID="buttonGroup"
+                style={[
+                  styles.buttonGroup,
+                  { width: "90%", alignSelf: "center" },
+                ]}
+              >
                 <TouchableOpacity
                   testID="cancelButton"
-                  style={styles.cancelButton}
+                  style={[
+                    styles.cancelButton,
+                    {
+                      flex: 1,
+                      marginRight: moderateScale(10),
+                      maxWidth: "45%",
+                    },
+                  ]}
                   onPress={() => setShowModal(false)}
                   disabled={isSubmitting}
                 >
@@ -1285,7 +1316,14 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                 </TouchableOpacity>
                 <TouchableOpacity
                   testID="submitButton"
-                  style={styles.submitButton}
+                  style={[
+                    styles.submitButton,
+                    {
+                      flex: 1,
+                      marginLeft: moderateScale(10),
+                      maxWidth: "45%",
+                    },
+                  ]}
                   onPress={handleSubmit}
                   disabled={isSubmitting}
                 >
@@ -1307,27 +1345,138 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
       </Modal>
 
       <Modal
-        visible={showSaveSuccessModal}
+        visible={showDeleteConfirmModal}
         transparent={true}
         animationType="fade"
       >
-        <View testID="modalOverlay" style={styles.modalOverlay}>
-          <View testID="saveSuccessModal" style={styles.saveSuccessModal}>
-            <Text testID="saveSuccessText" style={styles.saveSuccessText}>
-              저장이 완료되었습니다
+        <View testID="modalCenteredView" style={modalStyles.centeredView}>
+          <View testID="modalView" style={modalStyles.modalView}>
+            <Text testID="modalTitle" style={modalStyles.modalTitle}>
+              항목 삭제 확인
             </Text>
-            <TouchableOpacity
-              testID="saveSuccessButton"
-              style={styles.saveSuccessButton}
-              onPress={() => setShowSaveSuccessModal(false)}
+            <Text
+              testID="modalText"
+              style={[
+                modalStyles.modalText,
+                { marginBottom: moderateScale(10) },
+              ]}
             >
-              <Text
-                testID="saveSuccessButtonText"
-                style={styles.saveSuccessButtonText}
+              "{itemToDelete?.품목명}"의 유통기한 정보를 삭제하시겠습니까?
+            </Text>
+            <View
+              testID="buttonContainer"
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                width: "100%",
+                marginTop: moderateScale(15),
+              }}
+            >
+              <TouchableOpacity
+                testID="cancelButton"
+                style={{
+                  backgroundColor: "#f1f5f9",
+                  paddingVertical: moderateScale(12),
+                  paddingHorizontal: moderateScale(10),
+                  borderRadius: moderateScale(10),
+                  width: "48%",
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: "#e2e8f0",
+                }}
+                onPress={() => setShowDeleteConfirmModal(false)}
               >
-                확인
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  testID="cancelButtonText"
+                  style={{
+                    fontSize: RFValue(15),
+                    fontWeight: "600",
+                    color: "#334155",
+                  }}
+                >
+                  취소
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                testID="confirmButton"
+                style={{
+                  backgroundColor: "#0D326F",
+                  paddingVertical: moderateScale(12),
+                  paddingHorizontal: moderateScale(10),
+                  borderRadius: moderateScale(10),
+                  width: "48%",
+                  alignItems: "center",
+                }}
+                onPress={confirmDelete}
+              >
+                <Text
+                  testID="buttonText"
+                  style={{
+                    fontSize: RFValue(15),
+                    fontWeight: "600",
+                    color: "#ffffff",
+                  }}
+                >
+                  삭제
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showDeleteSuccessModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <View testID="modalCenteredView_2" style={modalStyles.centeredView}>
+          <View testID="modalView_2" style={modalStyles.modalView}>
+            <Text testID="modalTitle_2" style={modalStyles.modalTitle}>
+              완료
+            </Text>
+            <Text
+              testID="modalText_Complete"
+              style={[
+                modalStyles.modalText,
+                { marginBottom: moderateScale(10) },
+              ]}
+            >
+              {deleteSuccessMessage}
+            </Text>
+            <View
+              style={{
+                width: "100%",
+                marginTop: moderateScale(15),
+              }}
+            >
+              <TouchableOpacity
+                testID="closeButton_Complete"
+                style={{
+                  backgroundColor: "#0D326F",
+                  paddingVertical: moderateScale(12),
+                  paddingHorizontal: moderateScale(10),
+                  borderRadius: moderateScale(10),
+                  width: "100%",
+                  alignItems: "center",
+                }}
+                onPress={() => {
+                  setShowDeleteSuccessModal(false);
+                  setDeleteSuccessMessage("");
+                }}
+              >
+                <Text
+                  testID="textStyle_Complete"
+                  style={{
+                    fontSize: RFValue(15),
+                    fontWeight: "600",
+                    color: "#ffffff",
+                  }}
+                >
+                  확인
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

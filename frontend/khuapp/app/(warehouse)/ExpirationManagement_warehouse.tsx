@@ -40,6 +40,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import ExpirationItemAdd_warehouse from "./ExpirationItemAdd_warehouse";
 
 interface ExpirationManagementProps {
   warehouseId: string;
@@ -175,6 +176,9 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   const [showDeleteSuccessModal, setShowDeleteSuccessModal] =
     useState<boolean>(false);
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string>("");
+
+  // 항목 추가 화면 모달
+  const [showAddItemScreen, setShowAddItemScreen] = useState<boolean>(false);
 
   // 데이터 로딩 함수
   const fetchData = useCallback(async () => {
@@ -315,13 +319,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   }, []);
 
   const handleAddItem = () => {
-    setModalMode("add");
-    setFormData({
-      품목_id: "",
-      유통기한: new Date(),
-      창고_재고량: "",
-    });
-    setShowModal(true);
+    setShowAddItemScreen(true);
   };
 
   const handleEditItem = (item: ExpirationItem) => {
@@ -1479,6 +1477,23 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
             </View>
           </View>
         </View>
+      </Modal>
+
+      {/* 항목 추가 화면 모달 */}
+      <Modal
+        visible={showAddItemScreen}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowAddItemScreen(false)}
+      >
+        <ExpirationItemAdd_warehouse
+          warehouseId={warehouseId}
+          onAddComplete={() => {
+            setShowAddItemScreen(false);
+            refreshData();
+          }}
+          onCancel={() => setShowAddItemScreen(false)}
+        />
       </Modal>
     </View>
   );

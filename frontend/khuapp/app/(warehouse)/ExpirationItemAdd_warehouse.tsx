@@ -48,6 +48,10 @@ interface SelectedExpirationItem {
   창고_재고량: number;
   customQuantity: string;
   error?: string;
+  yearInput?: string;
+  monthInput?: string;
+  dayInput?: string;
+  batchId: string;
 }
 
 const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
@@ -157,14 +161,6 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
 
   // 항목 추가
   const addItem = (product: ProductItem) => {
-    const existingItem = selectedItems.find(
-      (item) => item.품목_id === product.품목_id
-    );
-
-    if (existingItem) {
-      return; // 이미 있는 항목이면 추가하지 않음
-    }
-
     const newItem: SelectedExpirationItem = {
       품목_id: product.품목_id,
       품목명: product.품목명,
@@ -172,16 +168,125 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
       유통기한: new Date(), // 기본값으로 현재 날짜 설정
       창고_재고량: 1,
       customQuantity: "1",
+      yearInput: new Date().getFullYear().toString(),
+      monthInput: (new Date().getMonth() + 1).toString().padStart(2, "0"),
+      dayInput: new Date().getDate().toString().padStart(2, "0"),
+      batchId:
+        Date.now().toString() + Math.random().toString(36).substring(2, 9), // 고유 ID 생성
     };
 
     setSelectedItems([...selectedItems, newItem]);
   };
 
-  // 수량 업데이트
-  const updateQuantity = (productId: string, increment: number) => {
+  // 유통기한 년/월/일 필드 변경 핸들러
+  const updateDateField = (
+    batchId: string,
+    field: "year" | "month" | "day",
+    value: string
+  ) => {
+    // 숫자만 입력 가능하도록 필터링
+    const numericValue = value.replace(/[^0-9]/g, "");
+
     setSelectedItems((prevItems) =>
       prevItems.map((item) => {
-        if (item.품목_id === productId) {
+        if (item.batchId === batchId) {
+          // 년/월/일 각 필드 업데이트
+          const updatedItem = {
+            ...item,
+            [field === "year"
+              ? "yearInput"
+              : field === "month"
+                ? "monthInput"
+                : "dayInput"]: numericValue,
+          };
+
+          // 유효한 날짜인지 검사
+          try {
+            // 입력된 년/월/일 값 가져오기
+            const year = parseInt(
+              field === "year"
+                ? numericValue
+                : item.yearInput || new Date().getFullYear().toString()
+            );
+            const month =
+              parseInt(
+                field === "month"
+                  ? numericValue
+                  : item.monthInput || (new Date().getMonth() + 1).toString()
+              ) - 1; // 0-11로 변환
+            const day = parseInt(
+              field === "day"
+                ? numericValue
+                : item.dayInput || new Date().getDate().toString()
+            );
+
+            // 유효한 날짜인지 확인
+            const newDate = new Date(year, month, day);
+
+            // 날짜가 유효한 경우에만 유통기한 업데이트
+            if (!isNaN(newDate.getTime())) {
+              updatedItem.유통기한 = newDate;
+            }
+          } catch (e) {
+            // 유효하지 않은 날짜인 경우 유통기한은 변경하지 않음
+            console.log("유효하지 않은 날짜 입력", e);
+          }
+
+          return updatedItem;
+        }
+        return item;
+      })
+    );
+  };
+
+  // 날짜 선택 모달 열기 (batchId 파라미터 추가)
+  const openDatePicker = (batchId: string) => {
+    const selectedItem = selectedItems.find((item) => item.batchId === batchId);
+    if (selectedItem) {
+      setSelectedDate(selectedItem.유통기한);
+      setSelectedProductId(batchId); // 이제 batchId를 사용
+      setShowDatePicker(true);
+    }
+  };
+
+  // 날짜 선택 핸들러 (productId 대신 batchId 사용)
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+
+    if (selectedDate && selectedProductId) {
+      setSelectedItems((prevItems) =>
+        prevItems.map((item) => {
+          if (item.batchId === selectedProductId) {
+            // batchId로 비교
+            // 선택된 날짜의 년/월/일 값 업데이트
+            return {
+              ...item,
+              유통기한: selectedDate,
+              yearInput: selectedDate.getFullYear().toString(),
+              monthInput: (selectedDate.getMonth() + 1)
+                .toString()
+                .padStart(2, "0"),
+              dayInput: selectedDate.getDate().toString().padStart(2, "0"),
+            };
+          }
+          return item;
+        })
+      );
+    }
+  };
+
+  // 항목 제거 (productId 대신 batchId 사용)
+  const removeItem = (batchId: string) => {
+    setSelectedItems((prevItems) =>
+      prevItems.filter((item) => item.batchId !== batchId)
+    );
+  };
+
+  // 수량 업데이트 (productId 대신 batchId 사용)
+  const updateQuantity = (batchId: string, increment: number) => {
+    setSelectedItems((prevItems) =>
+      prevItems.map((item) => {
+        if (item.batchId === batchId) {
           const newQuantity = item.창고_재고량 + increment;
           const validQuantity = Math.max(1, newQuantity); // 최소값은 1
           return {
@@ -195,11 +300,11 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
     );
   };
 
-  // 직접 수량 입력
-  const updateCustomQuantity = (productId: string, text: string) => {
+  // 직접 수량 입력 (productId 대신 batchId 사용)
+  const updateCustomQuantity = (batchId: string, text: string) => {
     setSelectedItems((prevItems) =>
       prevItems.map((item) => {
-        if (item.품목_id === productId) {
+        if (item.batchId === batchId) {
           // 숫자만 입력 가능하도록 필터링
           const numericValue = text.replace(/[^0-9]/g, "");
           const quantity = numericValue === "" ? 0 : parseInt(numericValue, 10);
@@ -213,38 +318,6 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
         return item;
       })
     );
-  };
-
-  // 항목 제거
-  const removeItem = (productId: string) => {
-    setSelectedItems((prevItems) =>
-      prevItems.filter((item) => item.품목_id !== productId)
-    );
-  };
-
-  // 날짜 선택 핸들러
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(false);
-
-    if (selectedDate && selectedProductId) {
-      setSelectedItems((prevItems) =>
-        prevItems.map((item) => {
-          if (item.품목_id === selectedProductId) {
-            return {
-              ...item,
-              유통기한: selectedDate,
-            };
-          }
-          return item;
-        })
-      );
-    }
-  };
-
-  // 날짜 선택 모달 열기
-  const openDatePicker = (productId: string) => {
-    setSelectedProductId(productId);
-    setShowDatePicker(true);
   };
 
   // 확인 버튼 핸들러
@@ -346,20 +419,22 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
     navigation.goBack();
   };
 
-  // 제품 카드 렌더링
+  // 제품 카드 렌더링 수정 - 선택된 항목들 그룹화하여 표시
   const renderProductCard = (product: ProductItem) => {
-    const selected = selectedItems.find(
+    // 해당 상품의 모든 배치 항목 찾기
+    const selectedBatches = selectedItems.filter(
       (item) => item.품목_id === product.품목_id
     );
-    const cardStyle = selected
-      ? [ItemAddPageStyle.selectItemCard, ItemAddPageStyle.selectedItemCard]
-      : ItemAddPageStyle.selectItemCard;
 
-    if (selected) {
+    // 선택된 배치가 있는 경우
+    if (selectedBatches.length > 0) {
       return (
         <View
           key={product.품목_id}
-          style={cardStyle}
+          style={[
+            ItemAddPageStyle.selectItemCard,
+            ItemAddPageStyle.selectedItemCard,
+          ]}
           testID={"selectedItemCard"}
         >
           <View style={ItemAddPageStyle.cardContent} testID={"cardContent"}>
@@ -383,177 +458,250 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                   </Text>
                 </View>
                 <TouchableOpacity
-                  testID={"orderButton_cancelButton"}
+                  testID={"addBatchButton"}
                   style={[
                     ItemAddPageStyle.orderButton,
-                    ItemAddPageStyle.cancelButton,
+                    { backgroundColor: "#0D326F" },
                   ]}
-                  onPress={() => removeItem(product.품목_id)}
+                  onPress={() => addItem(product)}
                 >
-                  <Text
-                    style={ItemAddPageStyle.cancelButtonText}
-                    testID={"cancelButtonText"}
-                  >
-                    취소
-                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Plus size={14} color="#fff" style={{ marginRight: 4 }} />
+                    <Text style={{ color: "#fff", fontWeight: "600" }}>
+                      배치 추가
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               </View>
             </View>
-            <View
-              style={ItemAddPageStyle.additionalRowContainer}
-              testID={"additionalRowContainer"}
-            >
+
+            {/* 각 배치 항목 렌더링 */}
+            {selectedBatches.map((batch, index) => (
               <View
+                key={batch.batchId}
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  width: "100%",
-                  paddingHorizontal: moderateScale(10),
+                  borderTopWidth: index > 0 ? 1 : 0,
+                  borderTopColor: "#e2e8f0",
+                  paddingTop: index > 0 ? moderateScale(10) : 0,
+                  marginTop: index > 0 ? moderateScale(10) : 0,
                 }}
-                testID={"rowContainer"}
               >
                 <View
-                  style={{ flex: 1, marginRight: moderateScale(10) }}
-                  testID={"expirationInputContainer"}
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: moderateScale(10),
+                    paddingHorizontal: moderateScale(10),
+                  }}
                 >
                   <Text
                     style={{
+                      fontWeight: "600",
                       fontSize: RFValue(13),
-                      color: "#64748b",
-                      marginBottom: moderateScale(5),
+                      color: "#475569",
                     }}
-                    testID={"expirationInputLabel"}
                   >
-                    유통기한
+                    배치 #{index + 1}
                   </Text>
                   <TouchableOpacity
-                    testID={"expirationInput"}
-                    style={ItemAddPageStyle.expirationInput}
-                    onPress={() => openDatePicker(product.품목_id)}
+                    style={{
+                      padding: moderateScale(5),
+                    }}
+                    onPress={() => removeItem(batch.batchId)}
                   >
+                    <X size={16} color="#ef4444" />
+                  </TouchableOpacity>
+                </View>
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    paddingHorizontal: moderateScale(10),
+                  }}
+                  testID={"rowContainer"}
+                >
+                  {/* 년/월/일 개별 입력 UI */}
+                  <View
+                    style={{ flex: 1, marginRight: moderateScale(10) }}
+                    testID={"expirationInputContainer"}
+                  >
+                    <Text
+                      style={{
+                        fontSize: RFValue(13),
+                        color: "#64748b",
+                        marginBottom: moderateScale(5),
+                      }}
+                      testID={"expirationInputLabel"}
+                    >
+                      유통기한
+                    </Text>
                     <View
                       style={{
                         flexDirection: "row",
-                        alignItems: "center",
                         justifyContent: "space-between",
                       }}
-                      testID={"expirationInputView"}
                     >
-                      <Text
-                        style={{ fontSize: RFValue(14), color: "#1e293b" }}
-                        testID={"expirationInputText"}
-                      >
-                        {formatDateForDisplay(selected.유통기한)}
-                      </Text>
-                      <Calendar
-                        size={20}
-                        color="#64748b"
-                        testID={"calendarIcon"}
+                      {/* 년 */}
+                      <TextInput
+                        style={{
+                          height: moderateScale(40),
+                          borderWidth: 1,
+                          borderColor: "#cbd5e1",
+                          borderRadius: moderateScale(6),
+                          paddingHorizontal: moderateScale(5),
+                          backgroundColor: "#ffffff",
+                          textAlign: "center",
+                          width: "32%",
+                        }}
+                        placeholder="년도"
+                        value={batch.yearInput}
+                        onChangeText={(text) =>
+                          updateDateField(batch.batchId, "year", text)
+                        }
+                        keyboardType="numeric"
+                        maxLength={4}
+                      />
+
+                      {/* 월 */}
+                      <TextInput
+                        style={{
+                          height: moderateScale(40),
+                          borderWidth: 1,
+                          borderColor: "#cbd5e1",
+                          borderRadius: moderateScale(6),
+                          paddingHorizontal: moderateScale(5),
+                          backgroundColor: "#ffffff",
+                          textAlign: "center",
+                          width: "32%",
+                        }}
+                        placeholder="월"
+                        value={batch.monthInput}
+                        onChangeText={(text) =>
+                          updateDateField(batch.batchId, "month", text)
+                        }
+                        keyboardType="numeric"
+                        maxLength={2}
+                      />
+
+                      {/* 일 */}
+                      <TextInput
+                        style={{
+                          height: moderateScale(40),
+                          borderWidth: 1,
+                          borderColor: "#cbd5e1",
+                          borderRadius: moderateScale(6),
+                          paddingHorizontal: moderateScale(5),
+                          backgroundColor: "#ffffff",
+                          textAlign: "center",
+                          width: "32%",
+                        }}
+                        placeholder="일"
+                        value={batch.dayInput}
+                        onChangeText={(text) =>
+                          updateDateField(batch.batchId, "day", text)
+                        }
+                        keyboardType="numeric"
+                        maxLength={2}
                       />
                     </View>
-                  </TouchableOpacity>
-                </View>
-                <View style={{ flex: 1 }} testID={"quantityContainer"}>
-                  <Text
-                    style={{
-                      fontSize: RFValue(13),
-                      color: "#64748b",
-                      marginBottom: moderateScale(5),
-                    }}
-                    testID={"quantityLabel"}
-                  >
-                    수량
-                  </Text>
-                  <View
-                    style={ItemAddPageStyle.quantityControlContainer}
-                    testID={"quantityControlContainer"}
-                  >
-                    <TouchableOpacity
-                      testID={"quantityButton_minus"}
-                      style={[
-                        ItemAddPageStyle.quantityButton,
-                        selected.창고_재고량 <= 1 &&
-                          ItemAddPageStyle.disabledButton,
-                      ]}
-                      onPress={() => updateQuantity(product.품목_id, -1)}
-                      disabled={selected.창고_재고량 <= 1}
+                  </View>
+
+                  <View style={{ flex: 1 }} testID={"quantityContainer"}>
+                    <Text
+                      style={{
+                        fontSize: RFValue(13),
+                        color: "#64748b",
+                        marginBottom: moderateScale(5),
+                      }}
+                      testID={"quantityLabel"}
                     >
-                      <Minus color="#333" size={20} testID={"minusIcon"} />
-                    </TouchableOpacity>
-                    <TextInput
-                      testID={"quantityText"}
-                      style={ItemAddPageStyle.quantityText}
-                      value={selected.customQuantity}
-                      keyboardType="numeric"
-                      onChangeText={(text) =>
-                        updateCustomQuantity(product.품목_id, text)
-                      }
-                    />
-                    <TouchableOpacity
-                      testID={"quantityButton_plus"}
-                      style={ItemAddPageStyle.quantityButton}
-                      onPress={() => updateQuantity(product.품목_id, 1)}
+                      수량
+                    </Text>
+                    <View
+                      style={ItemAddPageStyle.quantityControlContainer}
+                      testID={"quantityControlContainer"}
                     >
-                      <Plus color="#333" size={20} testID={"plusIcon"} />
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        testID={"quantityButton_minus"}
+                        style={[
+                          ItemAddPageStyle.quantityButton,
+                          batch.창고_재고량 <= 1 &&
+                            ItemAddPageStyle.disabledButton,
+                        ]}
+                        onPress={() => updateQuantity(batch.batchId, -1)}
+                        disabled={batch.창고_재고량 <= 1}
+                      >
+                        <Minus color="#333" size={20} testID={"minusIcon"} />
+                      </TouchableOpacity>
+                      <TextInput
+                        testID={"quantityText"}
+                        style={ItemAddPageStyle.quantityText}
+                        value={batch.customQuantity}
+                        keyboardType="numeric"
+                        onChangeText={(text) =>
+                          updateCustomQuantity(batch.batchId, text)
+                        }
+                      />
+                      <TouchableOpacity
+                        testID={"quantityButton_plus"}
+                        style={ItemAddPageStyle.quantityButton}
+                        onPress={() => updateQuantity(batch.batchId, 1)}
+                      >
+                        <Plus color="#333" size={20} testID={"plusIcon"} />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
+            ))}
           </View>
         </View>
       );
-    } else {
-      return (
-        <TouchableOpacity
-          key={product.품목_id}
-          testID={"selectItemCard"}
-          style={cardStyle}
-          onPress={() => addItem(product)}
-        >
+    }
+
+    // 선택되지 않은 일반 카드 렌더링
+    const cardStyle = ItemAddPageStyle.selectItemCard;
+    return (
+      <TouchableOpacity
+        key={product.품목_id}
+        style={cardStyle}
+        testID={"itemCard"}
+        onPress={() => addItem(product)}
+      >
+        <View style={ItemAddPageStyle.cardContent} testID={"cardContent"}>
           <View
-            style={ItemAddPageStyle.productCardContent}
-            testID={"productCardContent"}
+            style={ItemAddPageStyle.productInfoContainer}
+            testID={"productInfoContainer"}
           >
             <View
-              style={ItemAddPageStyle.productCardRow}
-              testID={"productCardRow"}
+              style={ItemAddPageStyle.selectedItemRowContainer}
+              testID={"itemRowContainer"}
             >
               <View
                 style={ItemAddPageStyle.nameWithFavoriteContainer}
                 testID={"nameWithFavoriteContainer"}
               >
                 <Text
-                  style={ItemAddPageStyle.productName}
-                  testID={"productName"}
+                  style={ItemAddPageStyle.selectItemName}
+                  testID={"selectItemName"}
                 >
                   {product.품목명}
-                  {"\n"}
-                  <Text
-                    style={{ fontSize: RFValue(12), color: "#64748b" }}
-                    testID={"supplierName"}
-                  >
-                    {product.협력사명} | {product.종류}
-                  </Text>
                 </Text>
               </View>
-              <TouchableOpacity
-                testID={"orderButton"}
-                style={ItemAddPageStyle.orderButton}
-                onPress={() => addItem(product)}
+              <Text
+                style={{ fontSize: RFValue(12), color: "#64748b" }}
+                testID={"suppplierName"}
               >
-                <Text
-                  style={ItemAddPageStyle.orderButtonText}
-                  testID={"orderButtonText"}
-                >
-                  선택
-                </Text>
-              </TouchableOpacity>
+                {product.협력사명}
+              </Text>
             </View>
           </View>
-        </TouchableOpacity>
-      );
-    }
+        </View>
+      </TouchableOpacity>
+    );
   };
 
   // 실제 콘텐츠 렌더링

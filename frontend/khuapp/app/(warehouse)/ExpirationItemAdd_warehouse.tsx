@@ -78,6 +78,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
+  // 성공 모달 상태 추가
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string>("");
+
   // 현재 활성화된 뷰 상태 - 기본값을 'expiration'으로 설정
   const [activeView, setActiveView] = useState<ViewType>("expiration");
 
@@ -389,20 +393,9 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
 
       await Promise.all(submissionPromises);
 
-      // 성공 후 초기화 및 완료 콜백 호출
-      Alert.alert("성공", "유통기한 항목이 성공적으로 추가되었습니다.", [
-        {
-          text: "확인",
-          onPress: () => {
-            // onReturn 콜백 실행
-            if (onReturn) {
-              onReturn();
-            }
-            // 이전 화면으로 이동
-            navigation.goBack();
-          },
-        },
-      ]);
+      // Alert.alert 대신 모달 표시
+      setSuccessMessage("유통기한 항목이 성공적으로 추가되었습니다.");
+      setShowSuccessModal(true);
     } catch (error) {
       console.error("항목 제출 오류:", error);
       Alert.alert(
@@ -412,6 +405,18 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // 완료 버튼 핸들러 - 모달에서 사용
+  const handleCompletionConfirm = () => {
+    // 모달 닫기
+    setShowSuccessModal(false);
+    // onReturn 콜백 실행
+    if (onReturn) {
+      onReturn();
+    }
+    // 이전 화면으로 이동
+    navigation.goBack();
   };
 
   // 취소 버튼 핸들러 - 이전 화면으로 이동
@@ -1063,6 +1068,60 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
     }
   };
 
+  // 성공 모달 렌더링
+  const renderSuccessModal = () => {
+    return (
+      <Modal
+        visible={showSuccessModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSuccessModal(false)}
+      >
+        <View style={modalStyles.centeredView}>
+          <View style={modalStyles.modalView}>
+            <Text style={modalStyles.modalTitle}>완료</Text>
+            <Text
+              style={[
+                modalStyles.modalText,
+                { marginBottom: moderateScale(10) },
+              ]}
+            >
+              {successMessage}
+            </Text>
+            <View
+              style={{
+                width: "100%",
+                marginTop: moderateScale(15),
+              }}
+            >
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#0D326F",
+                  paddingVertical: moderateScale(12),
+                  paddingHorizontal: moderateScale(10),
+                  borderRadius: moderateScale(10),
+                  width: "100%",
+                  alignItems: "center",
+                }}
+                onPress={handleCompletionConfirm}
+              >
+                <Text
+                  style={{
+                    fontSize: RFValue(15),
+                    fontWeight: "600",
+                    color: "#ffffff",
+                  }}
+                >
+                  확인
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Layout_warehouse
@@ -1071,6 +1130,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
         setActiveView={handleViewChange}
       >
         {renderContent()}
+        {renderSuccessModal()}
       </Layout_warehouse>
     </SafeAreaView>
   );

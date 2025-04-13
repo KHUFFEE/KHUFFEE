@@ -26,13 +26,10 @@ import {
 } from "react-native-responsive-screen";
 import { RFValue } from "react-native-responsive-fontsize";
 import Layout_warehouse from "../../src/components/ui/Layout_warehouse";
-import { useRouter } from "expo-router";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
-interface ExpirationItemAddProps {
-  warehouseId: string;
-  onAddComplete: () => void;
-  onCancel: () => void;
-}
+// 독립적인 페이지로 변경하므로 props 인터페이스 수정
+interface ExpirationItemAddProps {}
 
 interface ProductItem {
   품목_id: string;
@@ -53,12 +50,14 @@ interface SelectedExpirationItem {
   error?: string;
 }
 
-const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
-  warehouseId,
-  onAddComplete,
-  onCancel,
-}) => {
-  const router = useRouter();
+const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+
+  // route.params에서 필요한 데이터 추출
+  const warehouseId = route.params?.warehouseId || "";
+  const onReturn = route.params?.onReturn;
+
   const [productItems, setProductItems] = useState<ProductItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<SelectedExpirationItem[]>(
     []
@@ -80,13 +79,11 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
 
   // 뷰 변경 함수 - 화면 이동 처리
   const handleViewChange = (view: ViewType) => {
-    setActiveView(view);
-
-    // 뷰에 따라 다른 경로로 이동
-    if (view === "stock") {
-      router.push("/(warehouse)/main?activeView=stock");
-    } else if (view === "expiration") {
-      router.push("/(warehouse)/main?activeView=expiration");
+    // 하단 네비게이션 클릭 시 처리
+    if (view !== activeView) {
+      // 이전에는 handleCancel() 호출 후 setTimeout으로 처리했지만,
+      // 이제 바로 직접 main으로 이동하면서 activeView 파라미터 전달
+      navigation.navigate("main", { activeView: view });
     }
   };
 
@@ -321,7 +318,17 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
 
       // 성공 후 초기화 및 완료 콜백 호출
       Alert.alert("성공", "유통기한 항목이 성공적으로 추가되었습니다.", [
-        { text: "확인", onPress: onAddComplete },
+        {
+          text: "확인",
+          onPress: () => {
+            // onReturn 콜백 실행
+            if (onReturn) {
+              onReturn();
+            }
+            // 이전 화면으로 이동
+            navigation.goBack();
+          },
+        },
       ]);
     } catch (error) {
       console.error("항목 제출 오류:", error);
@@ -332,6 +339,11 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // 취소 버튼 핸들러 - 이전 화면으로 이동
+  const handleCancel = () => {
+    navigation.goBack();
   };
 
   // 제품 카드 렌더링
@@ -760,7 +772,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
                       marginRight: moderateScale(5),
                     },
                   ]}
-                  onPress={onCancel}
+                  onPress={handleCancel}
                 >
                   <Text
                     style={[
@@ -904,13 +916,15 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
   };
 
   return (
-    <Layout_warehouse
-      storeName="창고"
-      activeView={activeView}
-      setActiveView={handleViewChange}
-    >
-      {renderContent()}
-    </Layout_warehouse>
+    <SafeAreaView style={{ flex: 1 }}>
+      <Layout_warehouse
+        storeName="창고"
+        activeView={activeView}
+        setActiveView={handleViewChange}
+      >
+        {renderContent()}
+      </Layout_warehouse>
+    </SafeAreaView>
   );
 };
 

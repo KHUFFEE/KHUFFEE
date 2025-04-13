@@ -62,7 +62,13 @@ const WarehouseEmployeeDashboard_warehouse: React.FC<
   const renderView = () => {
     switch (activeView) {
       case "expiration":
-        return <ExpirationManagement_warehouse warehouseId={warehouseId} />;
+        return (
+          <ExpirationManagement_warehouse
+            warehouseId={warehouseId}
+            activeView={activeView}
+            setActiveView={setActiveView}
+          />
+        );
       case "stock":
         return <StockManagement_warehouse storeId={warehouseId} />;
       default:

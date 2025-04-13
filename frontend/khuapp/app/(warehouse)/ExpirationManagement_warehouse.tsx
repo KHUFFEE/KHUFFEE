@@ -13,7 +13,7 @@ import {
   Keyboard,
 } from "react-native";
 import { RN_API_URL } from "@env";
-import { APIProduct } from "../../src/components/ui/common/types";
+import { APIProduct, ViewType } from "../../src/components/ui/common/types";
 import {
   Search,
   X,
@@ -41,9 +41,12 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import ExpirationItemAdd_warehouse from "./ExpirationItemAdd_warehouse";
+import { useNavigation } from "@react-navigation/native";
 
 interface ExpirationManagementProps {
   warehouseId: string;
+  activeView?: ViewType;
+  setActiveView?: (view: ViewType) => void;
 }
 
 interface ExpirationItem {
@@ -136,6 +139,8 @@ const getExpirationTextColor = (expirationDate: string) => {
 
 const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   warehouseId,
+  activeView,
+  setActiveView,
 }) => {
   const [expirationData, setExpirationData] = useState<ExpirationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -179,6 +184,8 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
 
   // 항목 추가 화면 모달
   const [showAddItemScreen, setShowAddItemScreen] = useState<boolean>(false);
+
+  const navigation = useNavigation<any>();
 
   // 데이터 로딩 함수
   const fetchData = useCallback(async () => {
@@ -319,7 +326,24 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   }, []);
 
   const handleAddItem = () => {
-    setShowAddItemScreen(true);
+    // 모달 대신 네비게이션 사용
+    if (setActiveView) {
+      // activeView 상태 백업(임시 저장)
+      const currentView = activeView;
+
+      // 라우터를 통해 ExpirationItemAdd_warehouse 페이지로 이동
+      navigation.navigate("ExpirationItemAdd_warehouse", {
+        warehouseId,
+        onReturn: () => {
+          // 돌아왔을 때 데이터 새로고침
+          refreshData();
+          // 원래 뷰로 복원
+          if (setActiveView && currentView) {
+            setActiveView(currentView);
+          }
+        },
+      });
+    }
   };
 
   const handleEditItem = (item: ExpirationItem) => {
@@ -1477,23 +1501,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
             </View>
           </View>
         </View>
-      </Modal>
-
-      {/* 항목 추가 화면 모달 */}
-      <Modal
-        visible={showAddItemScreen}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowAddItemScreen(false)}
-      >
-        <ExpirationItemAdd_warehouse
-          warehouseId={warehouseId}
-          onAddComplete={() => {
-            setShowAddItemScreen(false);
-            refreshData();
-          }}
-          onCancel={() => setShowAddItemScreen(false)}
-        />
       </Modal>
     </View>
   );

@@ -8,10 +8,11 @@ import {
   Modal,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import { Plus, Minus, X, Search, Calendar } from "lucide-react-native";
 import { RN_API_URL } from "@env";
-import { APIProduct } from "../../src/components/ui/common/types";
+import { APIProduct, ViewType } from "../../src/components/ui/common/types";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   styles,
@@ -24,6 +25,8 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { RFValue } from "react-native-responsive-fontsize";
+import Layout_warehouse from "../../src/components/ui/Layout_warehouse";
+import { useRouter } from "expo-router";
 
 interface ExpirationItemAddProps {
   warehouseId: string;
@@ -37,6 +40,7 @@ interface ProductItem {
   협력사명: string;
   단위: string;
   품목분류?: string;
+  종류: string;
 }
 
 interface SelectedExpirationItem {
@@ -54,6 +58,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
   onAddComplete,
   onCancel,
 }) => {
+  const router = useRouter();
   const [productItems, setProductItems] = useState<ProductItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<SelectedExpirationItem[]>(
     []
@@ -70,7 +75,22 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  // 제품 목록 가져오기
+  // 현재 활성화된 뷰 상태 - 기본값을 'expiration'으로 설정
+  const [activeView, setActiveView] = useState<ViewType>("expiration");
+
+  // 뷰 변경 함수 - 화면 이동 처리
+  const handleViewChange = (view: ViewType) => {
+    setActiveView(view);
+
+    // 뷰에 따라 다른 경로로 이동
+    if (view === "stock") {
+      router.push("/(warehouse)/main?activeView=stock");
+    } else if (view === "expiration") {
+      router.push("/(warehouse)/main?activeView=expiration");
+    }
+  };
+
+  // 제품 목록 가져오기 - 소모품 제외
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -79,7 +99,12 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
         if (!response.ok)
           throw new Error("제품 데이터를 불러오는 중 오류 발생");
         const data = await response.json();
-        setProductItems(data);
+
+        // 소모품을 제외한 품목만 필터링
+        const filteredData = data.filter(
+          (item: ProductItem) => item.종류 !== "소모품"
+        );
+        setProductItems(filteredData);
       } catch (error) {
         console.error("제품 데이터 불러오기 오류:", error);
         Alert.alert("오류", "제품 데이터를 불러오는 중 오류가 발생했습니다.");
@@ -91,15 +116,14 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
     fetchProducts();
   }, []);
 
-  // 카테고리 정렬
+  // 카테고리 정렬 - 종류 필드 기준으로 유니크한 값만 추출
   const sortedCategories = useMemo(() => {
     if (!productItems || productItems.length === 0) return [];
 
-    // 품목분류가 있는 항목만 필터링하고, 중복 제거 후 정렬
+    // 종류 필드에서 유니크한 값만 추출하고 정렬
     const categories = productItems
-      .map((item) => item.품목분류)
-      .filter((category): category is string => category !== undefined) // undefined 제거
-      .filter((value, index, self) => self.indexOf(value) === index); // 중복 제거
+      .map((item) => item.종류)
+      .filter((value, index, self) => value && self.indexOf(value) === index); // 중복 및 null/undefined 제거
 
     categories.sort((a, b) => a.localeCompare(b, "ko"));
     return categories;
@@ -113,7 +137,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
 
     if (selectedCategory) {
       products = products.filter(
-        (product) => product.품목분류 === selectedCategory
+        (product) => product.종류 === selectedCategory
       );
     }
 
@@ -321,27 +345,52 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
 
     if (selected) {
       return (
-        <View key={product.품목_id} style={cardStyle}>
-          <View style={ItemAddPageStyle.cardContent}>
-            <View style={ItemAddPageStyle.productInfoContainer}>
-              <View style={ItemAddPageStyle.selectedItemRowContainer}>
-                <View style={ItemAddPageStyle.nameWithFavoriteContainer}>
-                  <Text style={ItemAddPageStyle.selectItemName}>
+        <View
+          key={product.품목_id}
+          style={cardStyle}
+          testID={"selectedItemCard"}
+        >
+          <View style={ItemAddPageStyle.cardContent} testID={"cardContent"}>
+            <View
+              style={ItemAddPageStyle.productInfoContainer}
+              testID={"productInfoContainer"}
+            >
+              <View
+                style={ItemAddPageStyle.selectedItemRowContainer}
+                testID={"selectedItemRowContainer"}
+              >
+                <View
+                  style={ItemAddPageStyle.nameWithFavoriteContainer}
+                  testID={"nameWithFavoriteContainer"}
+                >
+                  <Text
+                    style={ItemAddPageStyle.selectItemName}
+                    testID={"selectItemName"}
+                  >
                     {product.품목명}
                   </Text>
                 </View>
                 <TouchableOpacity
+                  testID={"orderButton_cancelButton"}
                   style={[
                     ItemAddPageStyle.orderButton,
                     ItemAddPageStyle.cancelButton,
                   ]}
                   onPress={() => removeItem(product.품목_id)}
                 >
-                  <Text style={ItemAddPageStyle.cancelButtonText}>취소</Text>
+                  <Text
+                    style={ItemAddPageStyle.cancelButtonText}
+                    testID={"cancelButtonText"}
+                  >
+                    취소
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
-            <View style={ItemAddPageStyle.additionalRowContainer}>
+            <View
+              style={ItemAddPageStyle.additionalRowContainer}
+              testID={"additionalRowContainer"}
+            >
               <View
                 style={{
                   flexDirection: "row",
@@ -349,18 +398,24 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
                   width: "100%",
                   paddingHorizontal: moderateScale(10),
                 }}
+                testID={"rowContainer"}
               >
-                <View style={{ flex: 1, marginRight: moderateScale(10) }}>
+                <View
+                  style={{ flex: 1, marginRight: moderateScale(10) }}
+                  testID={"expirationInputContainer"}
+                >
                   <Text
                     style={{
                       fontSize: RFValue(13),
                       color: "#64748b",
                       marginBottom: moderateScale(5),
                     }}
+                    testID={"expirationInputLabel"}
                   >
                     유통기한
                   </Text>
                   <TouchableOpacity
+                    testID={"expirationInput"}
                     style={ItemAddPageStyle.expirationInput}
                     onPress={() => openDatePicker(product.품목_id)}
                   >
@@ -370,26 +425,39 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
                         alignItems: "center",
                         justifyContent: "space-between",
                       }}
+                      testID={"expirationInputView"}
                     >
-                      <Text style={{ fontSize: RFValue(14), color: "#1e293b" }}>
+                      <Text
+                        style={{ fontSize: RFValue(14), color: "#1e293b" }}
+                        testID={"expirationInputText"}
+                      >
                         {formatDateForDisplay(selected.유통기한)}
                       </Text>
-                      <Calendar size={20} color="#64748b" />
+                      <Calendar
+                        size={20}
+                        color="#64748b"
+                        testID={"calendarIcon"}
+                      />
                     </View>
                   </TouchableOpacity>
                 </View>
-                <View style={{ flex: 1 }}>
+                <View style={{ flex: 1 }} testID={"quantityContainer"}>
                   <Text
                     style={{
                       fontSize: RFValue(13),
                       color: "#64748b",
                       marginBottom: moderateScale(5),
                     }}
+                    testID={"quantityLabel"}
                   >
                     수량
                   </Text>
-                  <View style={ItemAddPageStyle.quantityControlContainer}>
+                  <View
+                    style={ItemAddPageStyle.quantityControlContainer}
+                    testID={"quantityControlContainer"}
+                  >
                     <TouchableOpacity
+                      testID={"quantityButton_minus"}
                       style={[
                         ItemAddPageStyle.quantityButton,
                         selected.창고_재고량 <= 1 &&
@@ -398,9 +466,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
                       onPress={() => updateQuantity(product.품목_id, -1)}
                       disabled={selected.창고_재고량 <= 1}
                     >
-                      <Minus color="#333" size={20} />
+                      <Minus color="#333" size={20} testID={"minusIcon"} />
                     </TouchableOpacity>
                     <TextInput
+                      testID={"quantityText"}
                       style={ItemAddPageStyle.quantityText}
                       value={selected.customQuantity}
                       keyboardType="numeric"
@@ -409,10 +478,11 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
                       }
                     />
                     <TouchableOpacity
+                      testID={"quantityButton_plus"}
                       style={ItemAddPageStyle.quantityButton}
                       onPress={() => updateQuantity(product.품목_id, 1)}
                     >
-                      <Plus color="#333" size={20} />
+                      <Plus color="#333" size={20} testID={"plusIcon"} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -425,25 +495,47 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
       return (
         <TouchableOpacity
           key={product.품목_id}
+          testID={"selectItemCard"}
           style={cardStyle}
           onPress={() => addItem(product)}
         >
-          <View style={ItemAddPageStyle.productCardContent}>
-            <View style={ItemAddPageStyle.productCardRow}>
-              <View style={ItemAddPageStyle.nameWithFavoriteContainer}>
-                <Text style={ItemAddPageStyle.productName}>
+          <View
+            style={ItemAddPageStyle.productCardContent}
+            testID={"productCardContent"}
+          >
+            <View
+              style={ItemAddPageStyle.productCardRow}
+              testID={"productCardRow"}
+            >
+              <View
+                style={ItemAddPageStyle.nameWithFavoriteContainer}
+                testID={"nameWithFavoriteContainer"}
+              >
+                <Text
+                  style={ItemAddPageStyle.productName}
+                  testID={"productName"}
+                >
                   {product.품목명}
                   {"\n"}
-                  <Text style={{ fontSize: RFValue(12), color: "#64748b" }}>
-                    {product.협력사명}
+                  <Text
+                    style={{ fontSize: RFValue(12), color: "#64748b" }}
+                    testID={"supplierName"}
+                  >
+                    {product.협력사명} | {product.종류}
                   </Text>
                 </Text>
               </View>
               <TouchableOpacity
+                testID={"orderButton"}
                 style={ItemAddPageStyle.orderButton}
                 onPress={() => addItem(product)}
               >
-                <Text style={ItemAddPageStyle.orderButtonText}>선택</Text>
+                <Text
+                  style={ItemAddPageStyle.orderButtonText}
+                  testID={"orderButtonText"}
+                >
+                  선택
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -452,272 +544,374 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = ({
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loading_Container}>
-        <ActivityIndicator size="large" color="#0D326F80" />
-        <Text style={styles.loading_Text}>로딩 중...</Text>
-      </View>
-    );
-  }
+  // 실제 콘텐츠 렌더링
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={styles.loading_Container} testID={"loading_Container"}>
+          <ActivityIndicator
+            size="large"
+            color="#0D326F80"
+            testID={"activityIndicator"}
+          />
+          <Text style={styles.loading_Text} testID={"loading_Text"}>
+            로딩 중...
+          </Text>
+        </View>
+      );
+    }
 
-  if (!isConfirmation) {
-    return (
-      <View style={ItemAddPageStyle.container}>
-        <ScrollView
-          contentContainerStyle={ItemAddPageStyle.scrollContainer}
-          stickyHeaderIndices={[0]}
-        >
-          <View style={ItemAddPageStyle.fixedHeaderContainer}>
-            <View style={ItemAddPageStyle.categorySection}>
-              <Text style={ItemAddPageStyle.sectionTitle}>상품 유형 선택</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={ItemAddPageStyle.categoryList}
-                contentContainerStyle={{
-                  flexGrow: 1,
-                  justifyContent: "flex-start",
-                  alignItems: "center",
-                }}
+    if (!isConfirmation) {
+      return (
+        <View style={ItemAddPageStyle.container} testID={"container"}>
+          <ScrollView
+            contentContainerStyle={ItemAddPageStyle.scrollContainer}
+            stickyHeaderIndices={[0]}
+            testID={"scrollContainer"}
+          >
+            <View
+              style={ItemAddPageStyle.fixedHeaderContainer}
+              testID={"fixedHeaderContainer"}
+            >
+              <View
+                style={ItemAddPageStyle.categorySection}
+                testID={"categorySection"}
               >
-                <TouchableOpacity
-                  style={[
-                    ItemAddPageStyle.categoryButton,
-                    selectedCategory === null &&
-                      ItemAddPageStyle.categoryButtonActive,
-                  ]}
-                  onPress={() => setSelectedCategory(null)}
+                <Text
+                  style={ItemAddPageStyle.sectionTitle}
+                  testID={"sectionTitle"}
                 >
-                  <Text
-                    style={[
-                      ItemAddPageStyle.categoryButtonText,
-                      selectedCategory === null &&
-                        ItemAddPageStyle.categoryButtonTextActive,
-                    ]}
-                  >
-                    전체
-                  </Text>
-                </TouchableOpacity>
-                {sortedCategories.map((cat, idx) => (
+                  상품 유형 선택
+                </Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={ItemAddPageStyle.categoryList}
+                  contentContainerStyle={{
+                    flexGrow: 1,
+                    justifyContent: "flex-start",
+                    alignItems: "center",
+                  }}
+                  testID={"categoryList"}
+                >
                   <TouchableOpacity
-                    key={idx}
+                    testID={"categoryButton_all"}
                     style={[
                       ItemAddPageStyle.categoryButton,
-                      selectedCategory === cat &&
+                      selectedCategory === null &&
                         ItemAddPageStyle.categoryButtonActive,
                     ]}
-                    onPress={() => setSelectedCategory(cat)}
+                    onPress={() => setSelectedCategory(null)}
                   >
                     <Text
                       style={[
                         ItemAddPageStyle.categoryButtonText,
-                        selectedCategory === cat &&
+                        selectedCategory === null &&
                           ItemAddPageStyle.categoryButtonTextActive,
                       ]}
+                      testID={"categoryButtonText_all"}
                     >
-                      {cat}
+                      전체
                     </Text>
                   </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-            <View style={ItemAddPageStyle.sectionContainer}>
+                  {sortedCategories.map((cat, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      testID={`categoryButton_${cat}`}
+                      style={[
+                        ItemAddPageStyle.categoryButton,
+                        selectedCategory === cat &&
+                          ItemAddPageStyle.categoryButtonActive,
+                      ]}
+                      onPress={() => setSelectedCategory(cat)}
+                    >
+                      <Text
+                        style={[
+                          ItemAddPageStyle.categoryButtonText,
+                          selectedCategory === cat &&
+                            ItemAddPageStyle.categoryButtonTextActive,
+                        ]}
+                        testID={`categoryButtonText_${cat}`}
+                      >
+                        {cat}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
               <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
+                style={ItemAddPageStyle.sectionContainer}
+                testID={"sectionContainer"}
               >
-                <Text style={ItemAddPageStyle.sectionTitle_2}>
-                  상품 선택하기
-                </Text>
-                <TouchableOpacity
-                  style={ItemAddPageStyle.searchIconContainer}
-                  onPress={() => setIsSearchActive(!isSearchActive)}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                  testID={"rowContainer_header"}
                 >
-                  <Search
-                    color="#0D326F"
-                    style={ItemAddPageStyle.searchIconSize}
-                  />
+                  <Text
+                    style={ItemAddPageStyle.sectionTitle_2}
+                    testID={"sectionTitle_2"}
+                  >
+                    상품 선택하기
+                  </Text>
+                  <TouchableOpacity
+                    testID={"searchIconContainer"}
+                    style={ItemAddPageStyle.searchIconContainer}
+                    onPress={() => setIsSearchActive(!isSearchActive)}
+                  >
+                    <Search
+                      color="#0D326F"
+                      style={ItemAddPageStyle.searchIconSize}
+                      testID={"searchIcon"}
+                    />
+                  </TouchableOpacity>
+                </View>
+                {isSearchActive && (
+                  <View
+                    style={ItemAddPageStyle.searchContainer}
+                    testID={"searchContainer"}
+                  >
+                    <Search
+                      color="#64748b"
+                      style={ItemAddPageStyle.searchIconSize}
+                      testID={"searchIcon_small"}
+                    />
+                    <TextInput
+                      testID={"searchInput"}
+                      style={ItemAddPageStyle.searchInput}
+                      placeholder="상품명을 입력하세요"
+                      value={searchText}
+                      onChangeText={(text) => setSearchText(text)}
+                      placeholderTextColor="#94a3b8"
+                      autoFocus={true}
+                    />
+                    {searchText.length > 0 && (
+                      <TouchableOpacity
+                        testID={"searchIcon_clear"}
+                        style={ItemAddPageStyle.searchIcon}
+                        onPress={() => setSearchText("")}
+                      >
+                        <X
+                          color="#64748b"
+                          style={ItemAddPageStyle.searchIconSize}
+                          testID={"clearIcon"}
+                        />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
+                <View
+                  style={ItemAddPageStyle.headerContainer}
+                  testID={"headerContainer"}
+                >
+                  <Text
+                    style={ItemAddPageStyle.item_headerText}
+                    testID={"item_headerText"}
+                  >
+                    상품명
+                  </Text>
+                  <Text style={{ width: "10%" }} testID={"emptyText"}></Text>
+                </View>
+              </View>
+            </View>
+            <View
+              style={ItemAddPageStyle.listContainer}
+              testID={"listContainer"}
+            >
+              {sortedProducts.map((product) => renderProductCard(product))}
+            </View>
+          </ScrollView>
+          <View
+            style={ItemAddPageStyle.footerContainer}
+            testID={"footerContainer"}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+              }}
+              testID={"footerRowContainer"}
+            >
+              <View style={{ flexDirection: "column" }} testID={"footerColumn"}>
+                <Text
+                  style={ItemAddPageStyle.footerPriceText}
+                  testID={"footerPriceText"}
+                >
+                  {selectedItems.length > 0
+                    ? `선택된 항목: ${selectedItems.length}개`
+                    : "선택된 항목: 0개"}
+                </Text>
+              </View>
+              <View
+                style={{ flexDirection: "row" }}
+                testID={"footerButtonsContainer"}
+              >
+                <TouchableOpacity
+                  testID={"footerButton_cancel"}
+                  style={[
+                    ItemAddPageStyle.footerButton,
+                    {
+                      backgroundColor: "#f1f5f9",
+                      marginRight: moderateScale(5),
+                    },
+                  ]}
+                  onPress={onCancel}
+                >
+                  <Text
+                    style={[
+                      ItemAddPageStyle.footerButtonText,
+                      { color: "#64748b" },
+                    ]}
+                    testID={"footerButtonText_cancel"}
+                  >
+                    취소
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  testID={"footerButton_confirm"}
+                  style={[
+                    ItemAddPageStyle.footerButton,
+                    selectedItems.length === 0 &&
+                      ItemAddPageStyle.footerButtonDisabled,
+                  ]}
+                  onPress={handleConfirmItems}
+                  disabled={selectedItems.length === 0}
+                >
+                  <Text
+                    style={ItemAddPageStyle.footerButtonText}
+                    testID={"footerButtonText_confirm"}
+                  >
+                    항목확인
+                  </Text>
                 </TouchableOpacity>
               </View>
-              {isSearchActive && (
-                <View style={ItemAddPageStyle.searchContainer}>
-                  <Search
-                    color="#64748b"
-                    style={ItemAddPageStyle.searchIconSize}
-                  />
-                  <TextInput
-                    style={ItemAddPageStyle.searchInput}
-                    placeholder="상품명을 입력하세요"
-                    value={searchText}
-                    onChangeText={(text) => setSearchText(text)}
-                    placeholderTextColor="#94a3b8"
-                    autoFocus={true}
-                  />
-                  {searchText.length > 0 && (
-                    <TouchableOpacity
-                      style={ItemAddPageStyle.searchIcon}
-                      onPress={() => setSearchText("")}
-                    >
-                      <X
-                        color="#64748b"
-                        style={ItemAddPageStyle.searchIconSize}
-                      />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
-              <View style={ItemAddPageStyle.headerContainer}>
-                <Text style={ItemAddPageStyle.item_headerText}>상품명</Text>
-                <Text style={{ width: "10%" }}></Text>
-              </View>
             </View>
           </View>
-          <View style={ItemAddPageStyle.listContainer}>
-            {sortedProducts.map((product) => renderProductCard(product))}
-          </View>
-        </ScrollView>
-        <View style={ItemAddPageStyle.footerContainer}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              width: "100%",
-            }}
-          >
-            <View style={{ flexDirection: "column" }}>
-              <Text style={ItemAddPageStyle.footerPriceText}>
-                {selectedItems.length > 0
-                  ? `선택된 항목: ${selectedItems.length}개`
-                  : "선택된 항목: 0개"}
-              </Text>
-            </View>
-            <View style={{ flexDirection: "row" }}>
-              <TouchableOpacity
-                style={[
-                  ItemAddPageStyle.footerButton,
-                  { backgroundColor: "#f1f5f9", marginRight: moderateScale(5) },
-                ]}
-                onPress={onCancel}
-              >
-                <Text
-                  style={[
-                    ItemAddPageStyle.footerButtonText,
-                    { color: "#64748b" },
-                  ]}
-                >
-                  취소
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  ItemAddPageStyle.footerButton,
-                  selectedItems.length === 0 &&
-                    ItemAddPageStyle.footerButtonDisabled,
-                ]}
-                onPress={handleConfirmItems}
-                disabled={selectedItems.length === 0}
-              >
-                <Text style={ItemAddPageStyle.footerButtonText}>항목확인</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          {showDatePicker && (
+            <DateTimePicker
+              testID={"dateTimePicker"}
+              value={selectedDate}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+            />
+          )}
         </View>
-        {showDatePicker && (
-          <DateTimePicker
-            value={selectedDate}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-          />
-        )}
-      </View>
-    );
-  } else {
-    // 확인 페이지
-    return (
-      <ScrollView style={{ flex: 1, backgroundColor: "#fff" }}>
-        <View style={ItemAddPageStyle.confirm_selectedItemsSection}>
-          <Text
-            style={[
-              ItemAddPageStyle.confirm_sectionTitle,
-              { textAlign: "center" },
-            ]}
-          >
-            최종 항목 확인
-          </Text>
-          {selectedItems.map((item) => (
-            <View
-              key={item.품목_id}
-              style={[
-                ItemAddPageStyle.confirmationItemRow,
-                {
-                  flexDirection: "row",
-                  alignItems: "center",
-                  paddingVertical: moderateScale(5),
-                },
-              ]}
-            >
-              <Text
-                style={[ItemAddPageStyle.confirm_selectItemName, { flex: 2 }]}
-              >
-                {item.품목명}
-              </Text>
-              <Text
-                style={[
-                  ItemAddPageStyle.confirm_unitText,
-                  { flex: 1, textAlign: "center" },
-                ]}
-              >
-                {formatDateForDisplay(item.유통기한)}
-              </Text>
-              <Text
-                style={[
-                  ItemAddPageStyle.confirm_priceText,
-                  { flex: 1, textAlign: "right" },
-                ]}
-              >
-                {item.창고_재고량}개
-              </Text>
-            </View>
-          ))}
-          <TouchableOpacity
-            style={ItemAddPageStyle.order_request_Button}
-            onPress={handleSubmitItems}
-            disabled={submitting}
-          >
-            <Text style={ItemAddPageStyle.order_request_ButtonText}>
-              {submitting ? "처리 중..." : "항목 추가하기"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              ItemAddPageStyle.order_request_Button,
-              { backgroundColor: "white" },
-              { borderColor: "#0D326F" },
-              { borderWidth: 1 },
-              { marginTop: moderateScale(5) },
-            ]}
-            onPress={() => setIsConfirmation(false)}
-            disabled={submitting}
+      );
+    } else {
+      // 확인 페이지
+      return (
+        <ScrollView
+          style={{ flex: 1, backgroundColor: "#fff" }}
+          testID={"confirmationScrollView"}
+        >
+          <View
+            style={ItemAddPageStyle.confirm_selectedItemsSection}
+            testID={"confirm_selectedItemsSection"}
           >
             <Text
               style={[
-                ItemAddPageStyle.order_request_ButtonText,
-                { color: "#0D326F" },
+                ItemAddPageStyle.confirm_sectionTitle,
+                { textAlign: "center" },
               ]}
+              testID={"confirm_sectionTitle"}
             >
-              뒤로가기
+              최종 항목 확인
             </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    );
-  }
+            {selectedItems.map((item) => (
+              <View
+                key={item.품목_id}
+                style={[
+                  ItemAddPageStyle.confirmationItemRow,
+                  {
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: moderateScale(5),
+                  },
+                ]}
+                testID={"confirmationItemRow"}
+              >
+                <Text
+                  style={[ItemAddPageStyle.confirm_selectItemName, { flex: 2 }]}
+                  testID={"confirm_selectItemName"}
+                >
+                  {item.품목명}
+                </Text>
+                <Text
+                  style={[
+                    ItemAddPageStyle.confirm_unitText,
+                    { flex: 1, textAlign: "center" },
+                  ]}
+                  testID={"confirm_unitText"}
+                >
+                  {formatDateForDisplay(item.유통기한)}
+                </Text>
+                <Text
+                  style={[
+                    ItemAddPageStyle.confirm_priceText,
+                    { flex: 1, textAlign: "right" },
+                  ]}
+                  testID={"confirm_priceText"}
+                >
+                  {item.창고_재고량}개
+                </Text>
+              </View>
+            ))}
+            <TouchableOpacity
+              testID={"order_request_Button"}
+              style={ItemAddPageStyle.order_request_Button}
+              onPress={handleSubmitItems}
+              disabled={submitting}
+            >
+              <Text
+                style={ItemAddPageStyle.order_request_ButtonText}
+                testID={"order_request_ButtonText"}
+              >
+                {submitting ? "처리 중..." : "항목 추가하기"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              testID={"backButton"}
+              style={[
+                ItemAddPageStyle.order_request_Button,
+                { backgroundColor: "white" },
+                { borderColor: "#0D326F" },
+                { borderWidth: 1 },
+                { marginTop: moderateScale(5) },
+              ]}
+              onPress={() => setIsConfirmation(false)}
+              disabled={submitting}
+            >
+              <Text
+                style={[
+                  ItemAddPageStyle.order_request_ButtonText,
+                  { color: "#0D326F" },
+                ]}
+                testID={"backButtonText"}
+              >
+                뒤로가기
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      );
+    }
+  };
+
+  return (
+    <Layout_warehouse
+      storeName="창고"
+      activeView={activeView}
+      setActiveView={handleViewChange}
+    >
+      {renderContent()}
+    </Layout_warehouse>
+  );
 };
 
 export default ExpirationItemAdd_warehouse;

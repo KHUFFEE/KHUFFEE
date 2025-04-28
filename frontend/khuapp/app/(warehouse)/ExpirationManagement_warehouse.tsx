@@ -88,33 +88,49 @@ function formatDateForDisplay(dateString: string): string {
 
 // 남은 일수 계산 함수
 const calculateDaysRemaining = (expirationDate: string): string => {
+  // 유통기한 날짜 파싱
   const expDate = parseDateStringToJSDate(expirationDate);
-  const today = new Date();
-  const diffTime = expDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const now = new Date();
 
-  if (diffDays < 0) {
-    return "만료";
-  } else if (diffDays === 0) {
-    return "만료";
-  } else if (diffDays <= 30) {
-    return `${diffDays.toString().padStart(2, "0")}일`;
-  } else {
-    let months =
-      (expDate.getFullYear() - today.getFullYear()) * 12 +
-      (expDate.getMonth() - today.getMonth());
+  // 시간 비교를 위해 현재 날짜의 시,분,초는 0으로 초기화
+  const currentDate = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
 
-    if (today.getDate() > expDate.getDate()) {
-      months--;
-      const lastMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      const remainingDays =
-        lastMonth.getDate() - today.getDate() + expDate.getDate();
-      return `${months}개월 ${remainingDays.toString().padStart(2, "0")}일`;
-    } else {
-      const remainingDays = expDate.getDate() - today.getDate();
-      return `${months}개월 ${remainingDays.toString().padStart(2, "0")}일`;
-    }
+  // 유통기한이 현재 날짜와 같거나 이전이면 "만료" 반환
+  if (expDate <= currentDate) {
+    return "만료";
   }
+
+  // 연도, 월, 일 차이 계산
+  let years = expDate.getFullYear() - currentDate.getFullYear();
+  let months = expDate.getMonth() - currentDate.getMonth() + years * 12;
+  let days = expDate.getDate() - currentDate.getDate();
+
+  if (days < 0) {
+    months -= 1;
+    // expDate의 직전 달의 마지막 날짜 구하기
+    const previousMonthDate = new Date(
+      expDate.getFullYear(),
+      expDate.getMonth(),
+      0
+    );
+    days =
+      expDate.getDate() + (previousMonthDate.getDate() - currentDate.getDate());
+  }
+
+  // 숫자를 두 자리로 포맷 (한 자리일 경우 앞에 0 추가)
+  const formattedMonths = months < 10 ? `0${months}` : months;
+  const formattedDays = days < 10 ? `0${days}` : days;
+
+  // 0개월인 경우, 남은 일수만 출력
+  if (months === 0) {
+    return `${formattedDays}일`;
+  }
+
+  return `${formattedMonths}개월 ${formattedDays}일`;
 };
 
 // 숫자 포맷팅 함수

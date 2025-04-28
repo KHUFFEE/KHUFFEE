@@ -41,7 +41,7 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import ExpirationItemAdd_warehouse from "./ExpirationItemAdd_warehouse";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 interface ExpirationManagementProps {
   warehouseId: string;
@@ -88,33 +88,49 @@ function formatDateForDisplay(dateString: string): string {
 
 // 남은 일수 계산 함수
 const calculateDaysRemaining = (expirationDate: string): string => {
+  // 유통기한 날짜 파싱
   const expDate = parseDateStringToJSDate(expirationDate);
-  const today = new Date();
-  const diffTime = expDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const now = new Date();
 
-  if (diffDays < 0) {
-    return "만료";
-  } else if (diffDays === 0) {
-    return "만료";
-  } else if (diffDays <= 30) {
-    return `${diffDays.toString().padStart(2, "0")}일`;
-  } else {
-    let months =
-      (expDate.getFullYear() - today.getFullYear()) * 12 +
-      (expDate.getMonth() - today.getMonth());
+  // 시간 비교를 위해 현재 날짜의 시,분,초는 0으로 초기화
+  const currentDate = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
 
-    if (today.getDate() > expDate.getDate()) {
-      months--;
-      const lastMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      const remainingDays =
-        lastMonth.getDate() - today.getDate() + expDate.getDate();
-      return `${months}개월 ${remainingDays.toString().padStart(2, "0")}일`;
-    } else {
-      const remainingDays = expDate.getDate() - today.getDate();
-      return `${months}개월 ${remainingDays.toString().padStart(2, "0")}일`;
-    }
+  // 유통기한이 현재 날짜와 같거나 이전이면 "만료" 반환
+  if (expDate <= currentDate) {
+    return "만료";
   }
+
+  // 연도, 월, 일 차이 계산
+  let years = expDate.getFullYear() - currentDate.getFullYear();
+  let months = expDate.getMonth() - currentDate.getMonth() + years * 12;
+  let days = expDate.getDate() - currentDate.getDate();
+
+  if (days < 0) {
+    months -= 1;
+    // expDate의 직전 달의 마지막 날짜 구하기
+    const previousMonthDate = new Date(
+      expDate.getFullYear(),
+      expDate.getMonth(),
+      0
+    );
+    days =
+      expDate.getDate() + (previousMonthDate.getDate() - currentDate.getDate());
+  }
+
+  // 숫자를 두 자리로 포맷 (한 자리일 경우 앞에 0 추가)
+  const formattedMonths = months < 10 ? `0${months}` : months;
+  const formattedDays = days < 10 ? `0${days}` : days;
+
+  // 0개월인 경우, 남은 일수만 출력
+  if (months === 0) {
+    return `${formattedDays}일`;
+  }
+
+  return `${formattedMonths}개월 ${formattedDays}일`;
 };
 
 // 숫자 포맷팅 함수
@@ -185,7 +201,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   // 항목 추가 화면 모달
   const [showAddItemScreen, setShowAddItemScreen] = useState<boolean>(false);
 
-  const navigation = useNavigation<any>();
+  const router = useRouter();
 
   // 데이터 로딩 함수
   const fetchData = useCallback(async () => {
@@ -326,23 +342,18 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   }, []);
 
   const handleAddItem = () => {
-    // 모달 대신 네비게이션 사용
-    if (setActiveView) {
-      // activeView 상태 백업(임시 저장)
-      const currentView = activeView;
+    try {
+      // 가장 기본적인 형태의 라우팅 사용
+      router.push(`/ExpirationItemAdd_warehouse?warehouseId=${warehouseId}`);
 
-      // 라우터를 통해 ExpirationItemAdd_warehouse 페이지로 이동
-      navigation.navigate("ExpirationItemAdd_warehouse", {
-        warehouseId,
-        onReturn: () => {
-          // 돌아왔을 때 데이터 새로고침
-          refreshData();
-          // 원래 뷰로 복원
-          if (setActiveView && currentView) {
-            setActiveView(currentView);
-          }
-        },
-      });
+      // 디버깅용 Alert 추가
+      Alert.alert(
+        "라우팅 시도",
+        `ExpirationItemAdd_warehouse로 이동을 시도합니다. warehouseId: ${warehouseId}`
+      );
+    } catch (error) {
+      console.error("페이지 이동 실패:", error);
+      Alert.alert("오류", "페이지 이동 중 문제가 발생했습니다.");
     }
   };
 

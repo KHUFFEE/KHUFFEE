@@ -41,7 +41,7 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import ExpirationItemAdd_warehouse from "./ExpirationItemAdd_warehouse";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 interface ExpirationManagementProps {
   warehouseId: string;
@@ -185,7 +185,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   // 항목 추가 화면 모달
   const [showAddItemScreen, setShowAddItemScreen] = useState<boolean>(false);
 
-  const navigation = useNavigation<any>();
+  const router = useRouter();
 
   // 데이터 로딩 함수
   const fetchData = useCallback(async () => {
@@ -326,23 +326,18 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
   }, []);
 
   const handleAddItem = () => {
-    // 모달 대신 네비게이션 사용
-    if (setActiveView) {
-      // activeView 상태 백업(임시 저장)
-      const currentView = activeView;
+    try {
+      // 가장 기본적인 형태의 라우팅 사용
+      router.push(`/ExpirationItemAdd_warehouse?warehouseId=${warehouseId}`);
 
-      // 라우터를 통해 ExpirationItemAdd_warehouse 페이지로 이동
-      navigation.navigate("ExpirationItemAdd_warehouse", {
-        warehouseId,
-        onReturn: () => {
-          // 돌아왔을 때 데이터 새로고침
-          refreshData();
-          // 원래 뷰로 복원
-          if (setActiveView && currentView) {
-            setActiveView(currentView);
-          }
-        },
-      });
+      // 디버깅용 Alert 추가
+      Alert.alert(
+        "라우팅 시도",
+        `ExpirationItemAdd_warehouse로 이동을 시도합니다. warehouseId: ${warehouseId}`
+      );
+    } catch (error) {
+      console.error("페이지 이동 실패:", error);
+      Alert.alert("오류", "페이지 이동 중 문제가 발생했습니다.");
     }
   };
 

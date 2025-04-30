@@ -42,6 +42,7 @@ import {
 } from "react-native-responsive-screen";
 import ExpirationItemAdd_warehouse from "./ExpirationItemAdd_warehouse";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface ExpirationManagementProps {
   warehouseId: string;
@@ -203,63 +204,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
 
   const router = useRouter();
 
-  // 데이터 로딩 함수
-  const fetchData = useCallback(async () => {
-    if (!warehouseId) return;
-
-    try {
-      setLoading(true);
-      const [itemsResponse, stockResponse, expirationResponse] =
-        await Promise.all([
-          fetch(`${RN_API_URL}/api/suppliers/items/`),
-          fetch(`${RN_API_URL}/api/inventory/warehouse/`),
-          fetch(`${RN_API_URL}/api/inventory/warehouse_expiration_list/`),
-        ]);
-
-      if (!itemsResponse.ok || !stockResponse.ok || !expirationResponse.ok) {
-        throw new Error("데이터를 가져오는데 실패했습니다.");
-      }
-
-      const [itemsData, stockData, expirationData] = await Promise.all([
-        itemsResponse.json(),
-        stockResponse.json(),
-        expirationResponse.json(),
-      ]);
-
-      const filteredItems = itemsData.filter(
-        (item: APIProduct) => item.종류 !== "소모품"
-      );
-      setProducts(filteredItems);
-
-      const stockMap: { [key: string]: number } = {};
-      stockData.forEach((item: any) => {
-        stockMap[item.품목_id] = item.창고_재고량;
-      });
-      setCurrentStockData(stockMap);
-
-      const mergedData: ExpirationItem[] = expirationData.map((exp: any) => {
-        const matchedProduct = filteredItems.find(
-          (item: APIProduct) => item.품목_id === exp.품목_id
-        );
-        return {
-          품목_id: exp.품목_id,
-          품목명: matchedProduct?.품목명 || "알 수 없는 상품",
-          협력사명: matchedProduct?.협력사명 || "알 수 없는 협력사",
-          유통기한: exp.유통기한,
-          창고_재고량: exp.창고_재고량 || 0,
-          현재고: stockMap[exp.품목_id] || 0,
-        };
-      });
-
-      setExpirationData(mergedData);
-      setFilteredData(mergedData);
-    } catch (error) {
-      console.error("데이터 조회 중 오류:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [warehouseId]);
-
   // 협력사 데이터 로딩
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -276,16 +220,16 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     fetchSuppliers();
   }, []);
 
-  // 초기 데이터 로딩
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
   // 정렬된 협력사 목록
   const sortedSuppliers = useMemo(() => {
     const suppliers = suppliersData.map((supplier) => supplier.협력사명 || "");
     return suppliers.sort((a, b) => a.localeCompare(b, "ko"));
   }, [suppliersData]);
+
+  // 날짜 포맷팅(YY.MM.DD)
+  const formatDate = useCallback((dateString: string) => {
+    return formatDateForDisplay(dateString);
+  }, []);
 
   // 필터링 및 정렬 로직
   useEffect(() => {
@@ -336,14 +280,100 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
     return styles.normal;
   };
 
-  // 날짜 포맷팅(YY.MM.DD)
-  const formatDate = useCallback((dateString: string) => {
-    return formatDateForDisplay(dateString);
+  // 데이터 새로고침 함수
+  const refreshData = async () => {
+    try {
+      setLoading(true);
+
+      // 모든 데이터를 순차적으로 가져옵니다 (Promise.all 대신)
+      // 1. 품목 데이터 먼저 가져오기
+      const itemsResponse = await fetch(`${RN_API_URL}/api/suppliers/items/`);
+      if (!itemsResponse.ok) {
+        throw new Error("품목 데이터를 가져오는데 실패했습니다.");
+      }
+      const itemsData = await itemsResponse.json();
+
+      // 소모품 제외 필터링
+      const filteredItems = itemsData.filter(
+        (item: APIProduct) => item.종류 !== "소모품"
+      );
+      setProducts(filteredItems);
+
+      // 2. 재고 데이터 가져오기
+      const stockResponse = await fetch(
+        `${RN_API_URL}/api/inventory/warehouse/`
+      );
+      if (!stockResponse.ok) {
+        throw new Error("재고 데이터를 가져오는데 실패했습니다.");
+      }
+      const stockData = await stockResponse.json();
+
+      const stockMap: { [key: string]: number } = {};
+      stockData.forEach((item: any) => {
+        stockMap[item.품목_id] = item.창고_재고량;
+      });
+      setCurrentStockData(stockMap);
+
+      // 3. 유통기한 데이터 가져오기
+      const expirationResponse = await fetch(
+        `${RN_API_URL}/api/inventory/warehouse_expiration_list/`
+      );
+      if (!expirationResponse.ok) {
+        throw new Error("유통기한 데이터를 가져오는데 실패했습니다.");
+      }
+      const expirationData = await expirationResponse.json();
+
+      // 데이터 병합
+      const mergedData: ExpirationItem[] = expirationData.map((exp: any) => {
+        // 이미 로드된 filteredItems에서 품목 정보 찾기
+        const matchedProduct = filteredItems.find(
+          (item: APIProduct) => item.품목_id === exp.품목_id
+        );
+
+        if (!matchedProduct) {
+          console.warn(
+            `품목 ID: ${exp.품목_id}에 대한 정보를 찾을 수 없습니다.`
+          );
+        }
+
+        return {
+          품목_id: exp.품목_id,
+          품목명: matchedProduct?.품목명 || "알 수 없는 상품",
+          협력사명: matchedProduct?.협력사명 || "알 수 없는 협력사",
+          유통기한: exp.유통기한,
+          창고_재고량: exp.창고_재고량 || 0,
+          현재고: stockMap[exp.품목_id] || 0,
+        };
+      });
+
+      setExpirationData(mergedData);
+      setFilteredData(mergedData);
+    } catch (error) {
+      console.error("데이터 새로고침 중 오류:", error);
+      Alert.alert("오류", "데이터를 새로고침하는 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 초기 데이터 로딩
+  useEffect(() => {
+    refreshData();
   }, []);
+
+  // 화면에 포커스가 올 때마다 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+      return () => {
+        // 화면을 떠날 때 정리 작업이 필요하면 여기에 작성
+      };
+    }, [])
+  );
 
   const handleAddItem = () => {
     try {
-      // 가장 기본적인 형태의 라우팅 사용
+      // 기본 쿼리 파라미터 전달
       router.push(`/ExpirationItemAdd_warehouse?warehouseId=${warehouseId}`);
 
       // 디버깅용 Alert 추가
@@ -482,44 +512,6 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
       Alert.alert("오류", "데이터 제출 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const refreshData = async () => {
-    try {
-      setLoading(true);
-
-      const expirationResponse = await fetch(
-        `${RN_API_URL}/api/inventory/warehouse_expiration_list/`
-      );
-
-      if (!expirationResponse.ok) {
-        throw new Error("유통기한 데이터를 가져오는데 실패했습니다.");
-      }
-
-      const expirationData = await expirationResponse.json();
-
-      const mergedData: ExpirationItem[] = expirationData.map((exp: any) => {
-        const matchedProduct = products.find(
-          (item: APIProduct) => item.품목_id === exp.품목_id
-        );
-        return {
-          품목_id: exp.품목_id,
-          품목명: matchedProduct?.품목명 || "알 수 없는 상품",
-          협력사명: matchedProduct?.협력사명 || "알 수 없는 협력사",
-          유통기한: exp.유통기한,
-          창고_재고량: exp.창고_재고량 || 0,
-          현재고: currentStockData[exp.품목_id] || 0,
-        };
-      });
-
-      setExpirationData(mergedData);
-      setFilteredData(mergedData);
-    } catch (error) {
-      console.error("데이터 새로고침 중 오류:", error);
-      Alert.alert("오류", "데이터를 새로고침하는 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
     }
   };
 

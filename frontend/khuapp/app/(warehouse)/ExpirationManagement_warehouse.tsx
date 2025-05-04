@@ -922,7 +922,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
 
             <View style={styles.buttonGroup}>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={[styles.cancelButton]}
                 onPress={() => setShowDatePicker(false)}
               >
                 <Text style={styles.cancelButtonText}>취소</Text>
@@ -1067,14 +1067,19 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
               <>
                 <TouchableOpacity
                   testID="addButton"
-                  style={headerRowStyles.smallButton}
+                  style={[
+                    headerRowStyles.smallButton,
+                    { marginRight: moderateScale(5) },
+                  ]}
                   onPress={handleAddItem}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Plus
                       size={14}
                       color="#0D326F"
-                      style={{ marginRight: 4 }}
+                      style={{
+                        marginRight: moderateScale(4),
+                      }}
                     />
                     <Text style={headerRowStyles.buttonText}>항목 추가</Text>
                   </View>
@@ -1088,7 +1093,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                     <Edit2
                       size={14}
                       color="#0D326F"
-                      style={{ marginRight: 4 }}
+                      style={{ marginRight: moderateScale(4) }}
                     />
                     <Text style={headerRowStyles.buttonText}>편집모드</Text>
                   </View>
@@ -1118,7 +1123,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                     headerRowStyles.activeButton,
                     {
                       flex: 1,
-                      marginLeft: moderateScale(10),
+                      marginLeft: moderateScale(-5),
                       maxWidth: "45%",
                     },
                   ]}
@@ -1129,7 +1134,7 @@ const ExpirationManagement_warehouse: React.FC<ExpirationManagementProps> = ({
                     <Save
                       size={14}
                       color="#FFFFFF"
-                      style={{ marginRight: 4 }}
+                      style={{ marginRight: moderateScale(5) }}
                     />
                     <Text style={headerRowStyles.activeButtonText}>저장</Text>
                   </View>

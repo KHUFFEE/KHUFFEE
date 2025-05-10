@@ -30,3 +30,6 @@ celerybeat-schedule*
 
 # Ignore migrations directory
 /backend/config/settings.py
+
+# Ignore migrations directory
+backend/staticfiles

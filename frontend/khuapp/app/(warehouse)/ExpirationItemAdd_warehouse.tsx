@@ -81,6 +81,12 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
   // 성공 모달 상태 추가
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>("");
+  // 에러 모달 상태 추가
+  const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [errorItem, setErrorItem] = useState<SelectedExpirationItem | null>(
+    null
+  );
 
   // 현재 활성화된 뷰 상태 - 기본값을 'expiration'으로 설정
   const [activeView, setActiveView] = useState<ViewType>("expiration");
@@ -383,28 +389,43 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
           }
         );
 
+        const responseData = await response.json();
+
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "항목 추가 실패");
+          setErrorItem(item);
+          setErrorMessage(responseData.message || "항목 추가에 실패했습니다.");
+          setShowErrorModal(true);
+          throw new Error(responseData.message || "항목 추가 실패");
         }
 
-        return await response.json();
+        return responseData;
       });
 
       await Promise.all(submissionPromises);
 
-      // Alert.alert 대신 모달 표시
+      // 성공 시 모달 표시
       setSuccessMessage("유통기한 항목이 성공적으로 추가되었습니다.");
       setShowSuccessModal(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("항목 제출 오류:", error);
-      Alert.alert(
-        "오류",
-        "항목 추가 중 오류가 발생했습니다. 다시 시도해주세요."
-      );
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // 에러 모달 닫기 핸들러
+  const handleErrorModalClose = () => {
+    setShowErrorModal(false);
+    setErrorItem(null);
+    setErrorMessage("");
+  };
+
+  // 에러 모달에서 유통기한 관리 페이지로 이동
+  const handleNavigateToExpirationManagement = () => {
+    setShowErrorModal(false);
+    navigation.navigate("ExpirationManagement_warehouse", {
+      warehouseId: warehouseId,
+    });
   };
 
   // 완료 버튼 핸들러 - 모달에서 사용
@@ -1122,6 +1143,118 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
     );
   };
 
+  // 에러 모달 렌더링
+  const renderErrorModal = () => {
+    return (
+      <Modal
+        visible={showErrorModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleErrorModalClose}
+      >
+        <View style={modalStyles.centeredView}>
+          <View style={modalStyles.modalView}>
+            <Text style={[modalStyles.modalTitle, { color: "#ef4444" }]}>
+              알림
+            </Text>
+            <Text
+              style={[
+                modalStyles.modalText,
+                { marginBottom: moderateScale(10) },
+              ]}
+            >
+              {errorMessage}
+            </Text>
+            {errorItem && (
+              <View style={{ width: "100%", marginBottom: moderateScale(15) }}>
+                <Text
+                  style={{
+                    fontSize: RFValue(13),
+                    color: "#64748b",
+                    marginBottom: moderateScale(5),
+                  }}
+                >
+                  상품 정보
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: "#f8fafc",
+                    padding: moderateScale(10),
+                    borderRadius: moderateScale(6),
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: RFValue(14),
+                      color: "#1e293b",
+                      fontWeight: "500",
+                    }}
+                  >
+                    {errorItem.품목명}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: RFValue(13),
+                      color: "#64748b",
+                      marginTop: moderateScale(4),
+                    }}
+                  >
+                    유통기한: {formatDateForDisplay(errorItem.유통기한)}
+                  </Text>
+                </View>
+              </View>
+            )}
+            <View style={{ width: "100%", marginTop: moderateScale(15) }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#0D326F",
+                  paddingVertical: moderateScale(12),
+                  paddingHorizontal: moderateScale(10),
+                  borderRadius: moderateScale(10),
+                  width: "100%",
+                  alignItems: "center",
+                  marginBottom: moderateScale(8),
+                }}
+                onPress={handleNavigateToExpirationManagement}
+              >
+                <Text
+                  style={{
+                    fontSize: RFValue(15),
+                    fontWeight: "600",
+                    color: "#ffffff",
+                  }}
+                >
+                  유통기한 관리로 이동
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#f1f5f9",
+                  paddingVertical: moderateScale(12),
+                  paddingHorizontal: moderateScale(10),
+                  borderRadius: moderateScale(10),
+                  width: "100%",
+                  alignItems: "center",
+                }}
+                onPress={handleErrorModalClose}
+              >
+                <Text
+                  style={{
+                    fontSize: RFValue(15),
+                    fontWeight: "600",
+                    color: "#64748b",
+                  }}
+                >
+                  닫기
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Layout_warehouse
@@ -1131,6 +1264,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
       >
         {renderContent()}
         {renderSuccessModal()}
+        {renderErrorModal()}
       </Layout_warehouse>
     </SafeAreaView>
   );

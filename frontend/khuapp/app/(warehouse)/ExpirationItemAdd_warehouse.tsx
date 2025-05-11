@@ -473,7 +473,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Plus size={14} color="#fff" style={{ marginRight: 4 }} />
                     <Text style={{ color: "#fff", fontWeight: "600" }}>
-                      배치 추가
+                      기한 추가
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -507,7 +507,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                       color: "#475569",
                     }}
                   >
-                    배치 #{index + 1}
+                    항목 {index + 1}
                   </Text>
                   <TouchableOpacity
                     style={{

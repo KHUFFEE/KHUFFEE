@@ -423,8 +423,18 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
   // 에러 모달에서 유통기한 관리 페이지로 이동
   const handleNavigateToExpirationManagement = () => {
     setShowErrorModal(false);
-    navigation.navigate("ExpirationManagement_warehouse", {
-      warehouseId: warehouseId,
+    // 메인 화면으로 이동하면서 activeView를 'expiration'으로 설정
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: "main",
+          params: {
+            activeView: "expiration",
+            warehouseId: warehouseId,
+          },
+        },
+      ],
     });
   };
 

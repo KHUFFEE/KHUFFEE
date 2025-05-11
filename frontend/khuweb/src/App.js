@@ -48,11 +48,12 @@ function App() {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // 현재 경로와 비교하여 동일하면 새로고침 실행
   const handleNavLinkClick = (targetPath) => {
     if (location.pathname === targetPath) {
-      window.location.reload();
+      setRefreshKey((prev) => prev + 1);
     }
   };
 
@@ -271,14 +272,13 @@ function App() {
               </nav>
             </aside>
             <main className="app-main">
-              <Routes>
+              <Routes key={refreshKey}>
                 <Route
                   path="/login"
                   element={<Login setIsLoggedIn={setIsLoggedIn} />}
                 />
                 <Route path="/" element={<Home />} />
                 <Route path="/store/inventory" element={<StoreInventory />} />
-                {/* 월말 재고 페이지 라우트 */}
                 <Route
                   path="/store/inventory_monthend"
                   element={<StoreInventoryMonthEnd />}
@@ -293,8 +293,7 @@ function App() {
                 <Route
                   path="/warehouse/expiration"
                   element={<WarehouseExpiration />}
-                />{" "}
-                {/* 추가된 유통기한 관리 라우트 */}
+                />
                 <Route
                   path="/warehouse/incoming"
                   element={<WarehouseIncoming />}

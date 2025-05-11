@@ -1,3 +1,37 @@
 {
-  "plugins": ["expo-font"]
+  "expo": {
+    "name": "KHUFFEE",
+    "slug": "khuffee",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/img/logo2.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/img/logo2.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/img/logo2.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "experiments": {
+      "baseUrl": "/khuapp"
+    },
+    "web": {
+      "favicon": "./assets/img/logo2.png",
+      "build": {
+        "publicPath": "/khuapp/"
+      }
+    },
+    "plugins": ["expo-font"]
+  }
 }

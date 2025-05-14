@@ -562,7 +562,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                   <Text
                     style={{
                       fontSize: RFValue(13),
-                      color: "#475569",
+                      color: "#0D326F",
                       ...commonTextStyle({ fontWeight: "500" }),
                     }}
                     testID={`itemNumber_${index}`}
@@ -601,7 +601,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                         fontSize: RFValue(13),
                         color: "#64748b",
                         marginBottom: moderateScale(5),
-                        ...commonTextStyle(),
+                        ...commonTextStyle({ fontWeight: "500" }),
                       }}
                       testID={"expirationInputLabel"}
                     >
@@ -687,7 +687,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                         fontSize: RFValue(13),
                         color: "#64748b",
                         marginBottom: moderateScale(5),
-                        ...commonTextStyle(),
+                        ...commonTextStyle({ fontWeight: "500" }),
                       }}
                       testID={"quantityLabel"}
                     >
@@ -828,7 +828,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
               <Text
                 style={[
                   ItemAddPageStyle.sectionTitle,
-                  commonTextStyle({ fontWeight: "700" }),
+                  commonTextStyle({ fontWeight: "600" }),
                 ]}
                 testID={"sectionTitle"}
               >
@@ -907,7 +907,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 <Text
                   style={[
                     ItemAddPageStyle.sectionTitle_2,
-                    commonTextStyle({ fontWeight: "500" }),
+                    commonTextStyle({ fontWeight: "600" }),
                   ]}
                   testID={"sectionTitle_2"}
                 >
@@ -1005,7 +1005,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
             >
               <View style={{ flexDirection: "column" }} testID={"footerColumn"}>
                 <Text
-                  style={[ItemAddPageStyle.footerPriceText, commonTextStyle()]}
+                  style={[
+                    ItemAddPageStyle.footerPriceText,
+                    commonTextStyle({ fontWeight: "600" }),
+                  ]}
                   testID={"footerPriceText"}
                 >
                   {selectedItems.length > 0

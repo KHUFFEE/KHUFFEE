@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
+  TextStyle,
 } from "react-native";
 import { Plus, Minus, X, Search, Calendar } from "lucide-react-native";
 import { RN_API_URL } from "@env";
@@ -27,6 +28,13 @@ import {
 import { RFValue } from "react-native-responsive-fontsize";
 import Layout_warehouse from "../../src/components/ui/Layout_warehouse";
 import { useNavigation, useRoute } from "@react-navigation/native";
+
+// 공통 텍스트 스타일 함수 추가
+const commonTextStyle = (customStyle: Partial<TextStyle> = {}): TextStyle => ({
+  fontFamily: "PretendardVariable",
+  fontWeight: customStyle.fontWeight ? customStyle.fontWeight : "400",
+  ...customStyle,
+});
 
 // 독립적인 페이지로 변경하므로 props 인터페이스 수정
 interface ExpirationItemAddProps {}
@@ -498,7 +506,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                   testID={"nameWithFavoriteContainer"}
                 >
                   <Text
-                    style={ItemAddPageStyle.selectItemName}
+                    style={[
+                      ItemAddPageStyle.selectItemName,
+                      commonTextStyle({ fontWeight: "500" }),
+                    ]}
                     testID={"selectItemName"}
                   >
                     {product.품목명}
@@ -513,8 +524,14 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                   onPress={() => addItem(product)}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Plus size={14} color="#fff" style={{ marginRight: 4 }} />
-                    <Text style={{ color: "#fff", fontWeight: "600" }}>
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontWeight: "600",
+                        fontFamily: "Pretendard-Medium",
+                      }}
+                      testID={"addBatchButtonText"}
+                    >
                       기한 추가
                     </Text>
                   </View>
@@ -544,10 +561,11 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 >
                   <Text
                     style={{
-                      fontWeight: "600",
                       fontSize: RFValue(13),
-                      color: "#475569",
+                      color: "#0D326F",
+                      ...commonTextStyle({ fontWeight: "500" }),
                     }}
+                    testID={`itemNumber_${index}`}
                   >
                     항목 {index + 1}
                   </Text>
@@ -583,6 +601,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                         fontSize: RFValue(13),
                         color: "#64748b",
                         marginBottom: moderateScale(5),
+                        ...commonTextStyle({ fontWeight: "500" }),
                       }}
                       testID={"expirationInputLabel"}
                     >
@@ -605,6 +624,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                           backgroundColor: "#ffffff",
                           textAlign: "center",
                           width: "32%",
+                          ...commonTextStyle(),
                         }}
                         placeholder="년도"
                         value={batch.yearInput}
@@ -626,6 +646,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                           backgroundColor: "#ffffff",
                           textAlign: "center",
                           width: "32%",
+                          ...commonTextStyle(),
                         }}
                         placeholder="월"
                         value={batch.monthInput}
@@ -647,6 +668,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                           backgroundColor: "#ffffff",
                           textAlign: "center",
                           width: "32%",
+                          ...commonTextStyle(),
                         }}
                         placeholder="일"
                         value={batch.dayInput}
@@ -665,6 +687,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                         fontSize: RFValue(13),
                         color: "#64748b",
                         marginBottom: moderateScale(5),
+                        ...commonTextStyle({ fontWeight: "500" }),
                       }}
                       testID={"quantityLabel"}
                     >
@@ -688,7 +711,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                       </TouchableOpacity>
                       <TextInput
                         testID={"quantityText"}
-                        style={ItemAddPageStyle.quantityText}
+                        style={[
+                          ItemAddPageStyle.quantityText,
+                          commonTextStyle(),
+                        ]}
                         value={batch.customQuantity}
                         keyboardType="numeric"
                         onChangeText={(text) =>
@@ -735,14 +761,21 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 testID={"nameWithFavoriteContainer"}
               >
                 <Text
-                  style={ItemAddPageStyle.selectItemName}
+                  style={[
+                    ItemAddPageStyle.selectItemName,
+                    commonTextStyle({ fontWeight: "500" }),
+                  ]}
                   testID={"selectItemName"}
                 >
                   {product.품목명}
                 </Text>
               </View>
               <Text
-                style={{ fontSize: RFValue(12), color: "#64748b" }}
+                style={{
+                  fontSize: RFValue(12),
+                  color: "#64748b",
+                  ...commonTextStyle(),
+                }}
                 testID={"suppplierName"}
               >
                 {product.협력사명}
@@ -764,7 +797,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
             color="#0D326F80"
             testID={"activityIndicator"}
           />
-          <Text style={styles.loading_Text} testID={"loading_Text"}>
+          <Text
+            style={[styles.loading_Text, commonTextStyle()]}
+            testID={"loading_Text"}
+          >
             로딩 중...
           </Text>
         </View>
@@ -790,7 +826,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
               testID={"categorySection"}
             >
               <Text
-                style={ItemAddPageStyle.sectionTitle}
+                style={[
+                  ItemAddPageStyle.sectionTitle,
+                  commonTextStyle({ fontWeight: "600" }),
+                ]}
                 testID={"sectionTitle"}
               >
                 상품 유형 선택
@@ -820,6 +859,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                       ItemAddPageStyle.categoryButtonText,
                       selectedCategory === null &&
                         ItemAddPageStyle.categoryButtonTextActive,
+                      commonTextStyle(),
                     ]}
                     testID={"categoryButtonText_all"}
                   >
@@ -842,6 +882,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                         ItemAddPageStyle.categoryButtonText,
                         selectedCategory === cat &&
                           ItemAddPageStyle.categoryButtonTextActive,
+                        commonTextStyle(),
                       ]}
                       testID={`categoryButtonText_${cat}`}
                     >
@@ -864,7 +905,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 testID={"rowContainer_header"}
               >
                 <Text
-                  style={ItemAddPageStyle.sectionTitle_2}
+                  style={[
+                    ItemAddPageStyle.sectionTitle_2,
+                    commonTextStyle({ fontWeight: "600" }),
+                  ]}
                   testID={"sectionTitle_2"}
                 >
                   상품 선택하기
@@ -893,7 +937,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                   />
                   <TextInput
                     testID={"searchInput"}
-                    style={ItemAddPageStyle.searchInput}
+                    style={[ItemAddPageStyle.searchInput, commonTextStyle()]}
                     placeholder="상품명을 입력하세요"
                     value={searchText}
                     onChangeText={(text) => setSearchText(text)}
@@ -920,12 +964,18 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 testID={"headerContainer"}
               >
                 <Text
-                  style={ItemAddPageStyle.item_headerText}
+                  style={[
+                    ItemAddPageStyle.item_headerText,
+                    commonTextStyle({ fontWeight: "500" }),
+                  ]}
                   testID={"item_headerText"}
                 >
                   상품명
                 </Text>
-                <Text style={{ width: "10%" }} testID={"emptyText"}></Text>
+                <Text
+                  style={{ width: "10%", fontFamily: "Pretendard-Regular" }}
+                  testID={"emptyText"}
+                ></Text>
               </View>
             </View>
           </View>
@@ -955,7 +1005,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
             >
               <View style={{ flexDirection: "column" }} testID={"footerColumn"}>
                 <Text
-                  style={ItemAddPageStyle.footerPriceText}
+                  style={[
+                    ItemAddPageStyle.footerPriceText,
+                    commonTextStyle({ fontWeight: "600" }),
+                  ]}
                   testID={"footerPriceText"}
                 >
                   {selectedItems.length > 0
@@ -981,7 +1034,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                   <Text
                     style={[
                       ItemAddPageStyle.footerButtonText,
-                      { color: "#64748b" },
+                      { color: "#64748b", fontFamily: "Pretendard-Medium" },
                     ]}
                     testID={"footerButtonText_cancel"}
                   >
@@ -999,7 +1052,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                   disabled={selectedItems.length === 0}
                 >
                   <Text
-                    style={ItemAddPageStyle.footerButtonText}
+                    style={[
+                      ItemAddPageStyle.footerButtonText,
+                      commonTextStyle({ fontWeight: "500" }),
+                    ]}
                     testID={"footerButtonText_confirm"}
                   >
                     항목확인
@@ -1033,7 +1089,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
             <Text
               style={[
                 ItemAddPageStyle.confirm_sectionTitle,
-                { textAlign: "center" },
+                {
+                  textAlign: "center",
+                  ...commonTextStyle({ fontWeight: "700" }),
+                },
               ]}
               testID={"confirm_sectionTitle"}
             >
@@ -1053,7 +1112,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 testID={"confirmationItemRow"}
               >
                 <Text
-                  style={[ItemAddPageStyle.confirm_selectItemName, { flex: 2 }]}
+                  style={[
+                    ItemAddPageStyle.confirm_selectItemName,
+                    { flex: 2, ...commonTextStyle({ fontWeight: "500" }) },
+                  ]}
                   testID={"confirm_selectItemName"}
                 >
                   {item.품목명}
@@ -1061,7 +1123,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 <Text
                   style={[
                     ItemAddPageStyle.confirm_unitText,
-                    { flex: 1, textAlign: "center" },
+                    { flex: 1, textAlign: "center", ...commonTextStyle() },
                   ]}
                   testID={"confirm_unitText"}
                 >
@@ -1070,7 +1132,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 <Text
                   style={[
                     ItemAddPageStyle.confirm_priceText,
-                    { flex: 1, textAlign: "right" },
+                    { flex: 1, textAlign: "right", ...commonTextStyle() },
                   ]}
                   testID={"confirm_priceText"}
                 >
@@ -1085,7 +1147,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
               disabled={submitting}
             >
               <Text
-                style={ItemAddPageStyle.order_request_ButtonText}
+                style={[
+                  ItemAddPageStyle.order_request_ButtonText,
+                  commonTextStyle({ fontWeight: "600" }),
+                ]}
                 testID={"order_request_ButtonText"}
               >
                 {submitting ? "처리 중..." : "항목 추가하기"}
@@ -1106,7 +1171,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
               <Text
                 style={[
                   ItemAddPageStyle.order_request_ButtonText,
-                  { color: "#0D326F" },
+                  {
+                    color: "#0D326F",
+                    ...commonTextStyle({ fontWeight: "600" }),
+                  },
                 ]}
                 testID={"backButtonText"}
               >
@@ -1130,12 +1198,24 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
       >
         <View style={modalStyles.centeredView}>
           <View style={modalStyles.modalView}>
-            <Text style={modalStyles.modalTitle}>완료</Text>
+            <Text
+              style={[
+                modalStyles.modalTitle,
+                { color: "#ef4444", ...commonTextStyle({ fontWeight: "700" }) },
+              ]}
+              testID="successModal_title"
+            >
+              완료
+            </Text>
             <Text
               style={[
                 modalStyles.modalText,
-                { marginBottom: moderateScale(10) },
+                {
+                  marginBottom: moderateScale(10),
+                  ...commonTextStyle(),
+                },
               ]}
+              testID="successModal_message"
             >
               {successMessage}
             </Text>
@@ -1159,9 +1239,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 <Text
                   style={{
                     fontSize: RFValue(15),
-                    fontWeight: "600",
                     color: "#ffffff",
+                    ...commonTextStyle({ fontWeight: "600" }),
                   }}
+                  testID="successModal_confirmButton"
                 >
                   확인
                 </Text>
@@ -1189,7 +1270,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
           <View testID={"errorModal_modalView"} style={modalStyles.modalView}>
             <Text
               testID={"errorModal_modalTitle"}
-              style={[modalStyles.modalTitle, { color: "#ef4444" }]}
+              style={[
+                modalStyles.modalTitle,
+                { color: "#ef4444", ...commonTextStyle({ fontWeight: "700" }) },
+              ]}
             >
               오류
             </Text>
@@ -1197,7 +1281,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
               testID={"errorModal_modalText"}
               style={[
                 modalStyles.modalText,
-                { marginBottom: moderateScale(10) },
+                { marginBottom: moderateScale(10), ...commonTextStyle() },
               ]}
             >
               {errorMessage?.split("##").map((part, index) => {
@@ -1206,7 +1290,11 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                   return (
                     <Text
                       key={index}
-                      style={{ color: "#0D326F", fontWeight: "bold" }}
+                      style={{
+                        color: "#0D326F",
+                        ...commonTextStyle({ fontWeight: "600" }),
+                      }}
+                      testID={`errorModal_highlightedText_${index}`}
                     >
                       {part}
                     </Text>
@@ -1272,9 +1360,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 <Text
                   style={{
                     fontSize: RFValue(15),
-                    fontWeight: "600",
                     color: "#ffffff",
+                    ...commonTextStyle({ fontWeight: "600" }),
                   }}
+                  testID="errorModal_confirmButton"
                 >
                   확인
                 </Text>

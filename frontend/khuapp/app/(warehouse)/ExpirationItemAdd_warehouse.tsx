@@ -393,7 +393,11 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
 
         if (!response.ok) {
           setErrorItem(item);
-          setErrorMessage(responseData.message || "항목 추가에 실패했습니다.");
+          // 특수 마커를 사용하여 "편집모드" 단어를 식별
+          setErrorMessage(
+            responseData.message ||
+              "다음 상품은 \n ##편집모드##를 사용해서 \n 수량을 변경해주세요."
+          );
           setShowErrorModal(true);
           throw new Error(responseData.message || "항목 추가 실패");
         }
@@ -418,6 +422,13 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
     setShowErrorModal(false);
     setErrorItem(null);
     setErrorMessage("");
+
+    // 완료 버튼과 동일한 로직 추가
+    if (onReturn) {
+      onReturn();
+    }
+    // 이전 화면으로 이동
+    navigation.goBack();
   };
 
   // 에러 모달에서 유통기한 관리 페이지로 이동
@@ -1162,18 +1173,38 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
         animationType="fade"
         onRequestClose={handleErrorModalClose}
       >
-        <View style={modalStyles.centeredView}>
-          <View style={modalStyles.modalView}>
-            <Text style={[modalStyles.modalTitle, { color: "#ef4444" }]}>
-              알림
+        <View
+          testID={"errorModal_centeredView"}
+          style={modalStyles.centeredView}
+        >
+          <View testID={"errorModal_modalView"} style={modalStyles.modalView}>
+            <Text
+              testID={"errorModal_modalTitle"}
+              style={[modalStyles.modalTitle, { color: "#ef4444" }]}
+            >
+              오류
             </Text>
             <Text
+              testID={"errorModal_modalText"}
               style={[
                 modalStyles.modalText,
                 { marginBottom: moderateScale(10) },
               ]}
             >
-              {errorMessage}
+              {errorMessage?.split("##").map((part, index) => {
+                // 홀수 인덱스는 강조 표시할 부분 (마커 사이에 있는 텍스트)
+                if (index % 2 === 1) {
+                  return (
+                    <Text
+                      key={index}
+                      style={{ color: "#0D326F", fontWeight: "bold" }}
+                    >
+                      {part}
+                    </Text>
+                  );
+                }
+                return part;
+              })}
             </Text>
             {errorItem && (
               <View style={{ width: "100%", marginBottom: moderateScale(15) }}>
@@ -1214,32 +1245,13 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                 </View>
               </View>
             )}
-            <View style={{ width: "100%", marginTop: moderateScale(15) }}>
+            <View
+              testID={"errorModal_buttonContainer"}
+              style={{ width: "100%", marginTop: moderateScale(15) }}
+            >
               <TouchableOpacity
                 style={{
                   backgroundColor: "#0D326F",
-                  paddingVertical: moderateScale(12),
-                  paddingHorizontal: moderateScale(10),
-                  borderRadius: moderateScale(10),
-                  width: "100%",
-                  alignItems: "center",
-                  marginBottom: moderateScale(8),
-                }}
-                onPress={handleNavigateToExpirationManagement}
-              >
-                <Text
-                  style={{
-                    fontSize: RFValue(15),
-                    fontWeight: "600",
-                    color: "#ffffff",
-                  }}
-                >
-                  유통기한 관리로 이동
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#f1f5f9",
                   paddingVertical: moderateScale(12),
                   paddingHorizontal: moderateScale(10),
                   borderRadius: moderateScale(10),
@@ -1252,10 +1264,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                   style={{
                     fontSize: RFValue(15),
                     fontWeight: "600",
-                    color: "#64748b",
+                    color: "#ffffff",
                   }}
                 >
-                  닫기
+                  확인
                 </Text>
               </TouchableOpacity>
             </View>

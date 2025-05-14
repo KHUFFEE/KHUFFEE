@@ -560,7 +560,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                     }}
                     onPress={() => removeItem(batch.batchId)}
                   >
-                    <X size={14} testID="removeItemButton" color="#ffffff" />
+                    <X size={16} testID="removeItemButton" color="#ffffff" />
                   </TouchableOpacity>
                 </View>
 

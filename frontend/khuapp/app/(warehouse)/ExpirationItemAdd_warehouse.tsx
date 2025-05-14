@@ -527,10 +527,10 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
               <View
                 key={batch.batchId}
                 style={{
-                  borderTopWidth: index > 0 ? 1 : 0,
+                  borderTopWidth: 1,
                   borderTopColor: "#e2e8f0",
-                  paddingTop: index > 0 ? moderateScale(10) : 0,
-                  marginTop: index > 0 ? moderateScale(10) : 0,
+                  paddingTop: moderateScale(10),
+                  marginTop: moderateScale(10),
                 }}
               >
                 <View
@@ -560,7 +560,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                     }}
                     onPress={() => removeItem(batch.batchId)}
                   >
-                    <X size={16} testID="removeItemButton" color="#ffffff" />
+                    <X size={14} testID="removeItemButton" color="#ffffff" />
                   </TouchableOpacity>
                 </View>
 

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { fetchOrders } from "../api/api";
 import "../styles/Home.css";
 import "../styles/StoreOrders.css"; // StoreOrders와 동일한 스타일 적용
+import { IODownloadExcel } from "../utils/IODownloadExcel";
 
 const Home = () => {
   // 기간 드롭다운 관련 상태
@@ -125,7 +126,7 @@ const Home = () => {
             </button>
             <button
               className="download-button"
-              // onClick={() => warehouseExpirationDownloadExcel({ tableRows })}
+              onClick={() => IODownloadExcel({ selectedPeriod })}
             >
               Excel 다운
             </button>

@@ -556,6 +556,7 @@ const ExpirationItemAdd_warehouse: React.FC<ExpirationItemAddProps> = () => {
                       padding: moderateScale(5),
                       backgroundColor: "#ef4444",
                       borderRadius: moderateScale(20),
+                      left: wp(1.5),
                     }}
                     onPress={() => removeItem(batch.batchId)}
                   >

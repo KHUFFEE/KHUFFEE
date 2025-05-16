@@ -219,7 +219,7 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
     row[1] = item.품목명;
     row[2] = item.규격;
     row[3] = item.단위;
-    row[4] = item.입고단가;
+    row[4] = Number(item.입고단가);
     row[5] = item.입고단위;
     row[6] = item.입고단위단가;
     row[7] = prevMap[item.품목_id] || 0;
@@ -277,6 +277,21 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
   // 8) 워크시트 생성 & 스타일
   const ws = XLSX.utils.aoa_to_sheet(ws_data);
   ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 1, c: headerCount - 1 } }];
+  // ─── totals row A–G 병합 & 가운데 정렬 ───
+  // totals row index는 ws_data.length-1 (마지막 요소)
+  const totalRow = ws_data.length - 1;
+  // A열(col 0)부터 G열(col 6)까지 병합
+  ws["!merges"].push({
+    s: { r: totalRow, c: 0 },
+    e: { r: totalRow, c: 6 },
+  });
+  // 병합된 셀(0,0)에 합계 텍스트가 이미 들어있으니 스타일만 지정
+  const totalLabelCell = XLSX.utils.encode_cell({ r: totalRow, c: 0 });
+  ws[totalLabelCell].s = {
+    alignment: { horizontal: "center", vertical: "center" },
+  };
+  // ───────────────────────────────────────────
+
   // 상단/헤더 스타일
   for (let r = 0; r <= 1; r++) {
     for (let c = 0; c < headerCount; c++) {
@@ -338,10 +353,16 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
         t: "n",
         f: `SUM(${XLSX.utils.encode_col(orderColIdx + 1)}${groupStart + 1}:${XLSX.utils.encode_col(orderColIdx + 1)}${end + 1})`,
       };
+      ws[addrEx].s = {
+        alignment: { horizontal: "center", vertical: "center" },
+      };
       const addrInc = XLSX.utils.encode_cell({ r: groupStart, c: incCol });
       ws[addrInc] = {
         t: "n",
         f: `SUM(${XLSX.utils.encode_col(orderColIdx + 1)}${groupStart + 1}:${XLSX.utils.encode_col(orderColIdx + 1)}${end + 1})*1.1`,
+      };
+      ws[addrInc].s = {
+        alignment: { horizontal: "center", vertical: "center" },
       };
       groupStart = r;
       prevName = ws_data[groupStart]?.[0];
@@ -377,6 +398,31 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
       f: `${pE}${rowNum}*${XLSX.utils.encode_col(22)}${rowNum}`,
       t: "n",
     };
+  }
+
+  // ─── 사용자 지정 숫자 서식 적용 (H열 전월 재고 ~ AE열 발주합계 포함) ───
+  // H열(인덱스 7)부터 AE열(인덱스 30)까지,
+  // 헤더(3행) 아래부터 총합계 행(totalsRowIndex) 까지
+  const fmtStartCol = 7; // 'H' 열
+  const fmtEndCol = 30; // 'AE' 열
+  for (let r = dataStart; r <= totalsRowIndex; r++) {
+    for (let c = fmtStartCol; c <= fmtEndCol; c++) {
+      const addr = XLSX.utils.encode_cell({ r, c });
+      if (ws[addr]) {
+        // 사용자 지정 표시 형식 지정
+        ws[addr].z = '_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-';
+      }
+    }
+  }
+  // ─── 입고단가 열(‘입고단가’ 헤더 아래 값들) 소수 4자리 사용자 지정 서식 ───
+  // ‘입고단가’는 0-based index 기준으로 4번째 열입니다.
+  const priceCol = 4; // E열 (입고단가)
+  for (let r = dataStart; r <= dataEnd; r++) {
+    const addr = XLSX.utils.encode_cell({ r, c: priceCol });
+    if (ws[addr]) {
+      // 소수점 넉넉히 4자리까지 표시하는 사용자 서식
+      ws[addr].z = '_-* #,##0.####_-;-* #,##0.####_-;_-* "-"_-;_-@_-';
+    }
   }
 
   // 11) 워크북 생성 & 저장

@@ -256,6 +256,24 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
     ws_data.push(row);
   });
 
+  // --- 합계 행 추가 (전월 재고~발주금액) ---
+  const totalsRowIndex = ws_data.length;
+  const totalsRow = new Array(headerCount).fill("");
+  // 협력사~입고단위단가(0~6) 병합하여 "합계"
+  totalsRow[0] = "합계";
+  for (let c = 1; c <= 6; c++) totalsRow[c] = "";
+  // 전월 재고(7)부터 발주금액(28)까지 SUM 수식
+  const firstDataRow = 5;
+  const lastDataRow = totalsRowIndex;
+  for (let c = 7; c <= 28; c++) {
+    const colLetter = XLSX.utils.encode_col(c);
+    totalsRow[c] = {
+      f: `SUM(${colLetter}${firstDataRow}:${colLetter}${lastDataRow})`,
+      t: "n",
+    };
+  }
+  ws_data.push(totalsRow);
+
   // 8) 워크시트 생성 & 스타일
   const ws = XLSX.utils.aoa_to_sheet(ws_data);
   ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 1, c: headerCount - 1 } }];
@@ -280,7 +298,7 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
   // 공급업체 병합
   const merges = ws["!merges"];
   const dataStart = 4,
-    dataEnd = ws_data.length - 1;
+    dataEnd = ws_data.length - 2; // 최종 합계 전까지
   let groupStart = dataStart,
     prevName = ws_data[dataStart][0];
   for (let r = dataStart + 1; r <= dataEnd; r++) {
@@ -303,13 +321,11 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
 
   // 9) 발주합계 (부가세 별도/포함) 병합 & 수식
   const orderColIdx = 24 + prevMonths.length;
-  const colAmt = XLSX.utils.encode_col(orderColIdx + 1);
   groupStart = dataStart;
   prevName = ws_data[dataStart][0];
   for (let r = dataStart + 1; r <= dataEnd + 1; r++) {
     const end = r === dataEnd + 1 || ws_data[r][0] !== prevName ? r - 1 : null;
     if (end !== null) {
-      // merge and formula
       const exCol = orderColIdx + 2,
         incCol = orderColIdx + 3;
       merges.push({ s: { r: groupStart, c: exCol }, e: { r: end, c: exCol } });
@@ -320,12 +336,12 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
       const addrEx = XLSX.utils.encode_cell({ r: groupStart, c: exCol });
       ws[addrEx] = {
         t: "n",
-        f: `SUM(${colAmt}${groupStart + 1}:${colAmt}${end + 1})`,
+        f: `SUM(${XLSX.utils.encode_col(orderColIdx + 1)}${groupStart + 1}:${XLSX.utils.encode_col(orderColIdx + 1)}${end + 1})`,
       };
       const addrInc = XLSX.utils.encode_cell({ r: groupStart, c: incCol });
       ws[addrInc] = {
         t: "n",
-        f: `SUM(${colAmt}${groupStart + 1}:${colAmt}${end + 1})*1.1`,
+        f: `SUM(${XLSX.utils.encode_col(orderColIdx + 1)}${groupStart + 1}:${XLSX.utils.encode_col(orderColIdx + 1)}${end + 1})*1.1`,
       };
       groupStart = r;
       prevName = ws_data[groupStart]?.[0];

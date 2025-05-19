@@ -88,7 +88,11 @@ function App() {
         <div className={darkMode ? "dark-mode" : ""}>
           <header className="app-header">
             <div className="logo-container">
-              <img src="/assets/images/logo2.png" alt="Logo" className="logo" />
+              <img
+                src={`${process.env.PUBLIC_URL}/assets/images/logo2.png`}
+                alt="Logo"
+                className="logo"
+              />
               <span className="logo-text">cafeKHUFFEE</span>
             </div>
             <div className="header-buttons">

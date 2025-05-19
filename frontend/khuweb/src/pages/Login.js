@@ -20,7 +20,7 @@ const Login = ({ setIsLoggedIn }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ 매장명, 매장_비밀번호 }),
-        },
+        }
       );
 
       if (response.ok) {
@@ -45,7 +45,10 @@ const Login = ({ setIsLoggedIn }) => {
   return (
     <div className="login-page">
       <div className="login-logo">
-        <img src="/assets/images/logo.png" alt="Logo" />
+        <img
+          src={`${process.env.PUBLIC_URL}/assets/images/logo.png`}
+          alt="Logo"
+        />
       </div>
       <div className="vertical-line"></div>
       <div className="login-container">

@@ -588,7 +588,7 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
   // ───────────────────────────────────────────
   const extraSheetNames = [
     "캠퍼스타운_외부원두영업",
-    "본사 샘플",
+    "본사샘플",
     "푸른솔",
     "의과대학",
     "중앙도서관",
@@ -633,6 +633,18 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
         subWs[addr].s = ws[addr].s;
       }
     });
+
+    // ─── 전월 재고·1~5주차 입고 값 0으로 초기화 ───
+    const zeroCols = [7, 8, 9, 10, 11, 12]; // H~M열 인덱스
+    const startRow = 4; // 0-based: 실제 데이터가 시작되는 5번째 행
+    const endRow = subData.length - 1; // 마지막 행까지 (합계 포함 필요 없으면 -2로 조정)
+    for (let r = startRow; r <= endRow; r++) {
+      zeroCols.forEach((c) => {
+        const addr = XLSX.utils.encode_cell({ r, c });
+        // 기존 스타일 유지하면서 값만 0으로 덮어쓰기
+        subWs[addr] = Object.assign({}, subWs[addr], { t: "n", v: 0 });
+      });
+    }
 
     // ────────────────────────────────────────────────
 

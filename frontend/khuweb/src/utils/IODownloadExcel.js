@@ -351,6 +351,12 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
       font: { name: "맑은 고딕", bold: true, sz: 10 },
     };
   }
+  [29, 30].forEach((colIdx) => {
+    const addr = XLSX.utils.encode_cell({ r: 3, c: colIdx });
+    if (ws[addr] && ws[addr].s && ws[addr].s.font) {
+      ws[addr].s.font.sz = 8;
+    }
+  });
 
   // 공급업체 병합
   const merges = ws["!merges"];

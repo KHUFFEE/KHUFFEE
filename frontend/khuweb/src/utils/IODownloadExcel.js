@@ -324,14 +324,14 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
       if (!ws[a]) ws[a] = { t: "s", v: "" };
       ws[a].s = { alignment: { horizontal: "center", vertical: "center" } };
       if (r === 0) ws[a].s.font = { name: "맑은 고딕", sz: 14, bold: true };
-      if (c <= 6) {
-        ws[a].s.border = {
-          top: { style: "medium" },
-          bottom: { style: "medium" },
-          left: { style: "medium" },
-          right: { style: "medium" },
-        };
-      }
+      // if (c <= 6) {
+      //   ws[a].s.border = {
+      //     top: { style: "medium" },
+      //     bottom: { style: "medium" },
+      //     left: { style: "medium" },
+      //     right: { style: "medium" },
+      //   };
+      // }
     }
   }
 
@@ -586,9 +586,59 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
     }
   }
   // ───────────────────────────────────────────
+  const extraSheetNames = [
+    "캠퍼스타운_외부원두영업",
+    "본사 샘플",
+    "푸른솔",
+    "의과대학",
+    "중앙도서관",
+    "학생회관",
+    "예술디자인대",
+    "선승관",
+    "멀티미디어관",
+    "공학관",
+    "제2기숙사",
+  ];
 
   // 11) 워크북 생성 & 저장
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+  extraSheetNames.forEach((loc) => {
+    // 1) 원본 ws_data에서 앞 15개 컬럼만 잘라서 복제
+    const subData = ws_data.map((row) => row.slice(0, 15));
+
+    // 2) 타이틀 수정: A1·A2 셀에 시트명 반영
+    const title = `카페 쿠피 ${monthPadded}월 입출고 관리 대장 (${loc})`;
+    subData[0][0] = title;
+    subData[1][0] = title;
+
+    // 3) 워크시트 생성
+    const subWs = XLSX.utils.aoa_to_sheet(subData);
+
+    // 4) 열 너비·행 높이 복사 (본사창고 ws["!cols"], ws["!rows"]에서 앞 15개만)
+    subWs["!cols"] = ws["!cols"].slice(0, 15);
+    subWs["!rows"] = ws["!rows"];
+
+    // 5) 병합 범위 복사 (본사창고 ws["!merges"]에서 c<15인 것만)
+    subWs["!merges"] = ws["!merges"]
+      .filter((m) => m.s.c < 15 && m.e.c < 15)
+      .map((m) => ({ s: m.s, e: m.e }));
+
+    // 6) 셀 스타일 복사
+    Object.keys(ws).forEach((addr) => {
+      const { r, c } = XLSX.utils.decode_cell(addr);
+      if (c < 15 && ws[addr].s) {
+        subWs[addr] = subWs[addr] || { t: ws[addr].t, v: subData[r]?.[c] };
+        subWs[addr].s = ws[addr].s;
+      }
+    });
+
+    // ────────────────────────────────────────────────
+
+    // 7) 시트 추가
+    XLSX.utils.book_append_sheet(wb, subWs, loc);
+  });
+
   XLSX.writeFile(wb, filename);
 };

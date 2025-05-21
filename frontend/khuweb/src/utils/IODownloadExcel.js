@@ -7,6 +7,7 @@ import {
   fetchWarehouseIncoming,
   fetchWarehouseOutgoing,
   fetchWarehouseOrders,
+  fetchOrders,
 } from "../api/api";
 
 export const IODownloadExcel = async ({ selectedPeriod }) => {
@@ -599,12 +600,23 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
     "공학관",
     "제2기숙사",
   ];
+  const locToStoreId = {
+    푸른솔: "ST_103",
+    의과대학: "ST_104",
+    중앙도서관: "ST_105",
+    학생회관: "ST_106",
+    예술디자인대: "ST_107",
+    선승관: "ST_108",
+    공학관: "ST_109",
+    멀티미디어관: "ST_110",
+    제2기숙사: "ST_111",
+  };
 
   // 11) 워크북 생성 & 저장
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-  extraSheetNames.forEach((loc) => {
+  for (const loc of extraSheetNames) {
     // 1) 원본 ws_data에서 앞 15개 컬럼만 잘라서 복제
     const subData = ws_data.map((row) => row.slice(0, 15));
 
@@ -645,12 +657,50 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
         subWs[addr] = Object.assign({}, subWs[addr], { t: "n", v: 0 });
       });
     }
+    // ───── 주차별 매장 발주량 합산 ─────
+    if (locToStoreId[loc]) {
+      const storeId = locToStoreId[loc];
+      const weeklyStoreMap = {};
+
+      // 1) 주차별로 해당 매장의 모든 회차 발주량 합산
+      for (let wk = 1; wk <= 5; wk++) {
+        const periodParam = `${year}.${monthPadded}.${wk}`;
+        let res;
+        try {
+          res = await fetchOrders({
+            기간: periodParam,
+            store_id: storeId,
+          });
+        } catch (e) {
+          console.error("주차별 매장 발주량 조회 실패:", e);
+          continue;
+        }
+        (res.orders || []).forEach((o) => {
+          weeklyStoreMap[wk] = weeklyStoreMap[wk] || {};
+          weeklyStoreMap[wk][o.품목_id] =
+            (weeklyStoreMap[wk][o.품목_id] || 0) + Number(o.매장_발주량);
+        });
+      }
+
+      // 2) 합산된 발주량을 '1~5주차 입고'(c=8~12)에 채우기
+      const dataStartRow = 4; // 실제 데이터가 시작되는 5번째 행(0-based)
+      items.forEach((item, idx) => {
+        const itemId = item.품목_id;
+        const r = dataStartRow + idx;
+        for (let wk = 1; wk <= 5; wk++) {
+          const c = 7 + wk; // wk=1→c=8, …, wk=5→c=12
+          const addr = XLSX.utils.encode_cell({ r, c });
+          const qty = weeklyStoreMap[wk]?.[itemId] || 0;
+          subWs[addr] = { t: "n", v: qty, s: ws[addr]?.s };
+        }
+      });
+    }
 
     // ────────────────────────────────────────────────
 
     // 7) 시트 추가
     XLSX.utils.book_append_sheet(wb, subWs, loc);
-  });
+  }
 
   XLSX.writeFile(wb, filename);
 };

@@ -7,6 +7,8 @@ import {
   fetchWarehouseIncoming,
   fetchWarehouseOutgoing,
   fetchWarehouseOrders,
+  fetchOrders,
+  fetchStoreMonthEndInventory,
 } from "../api/api";
 
 export const IODownloadExcel = async ({ selectedPeriod }) => {
@@ -599,12 +601,23 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
     "공학관",
     "제2기숙사",
   ];
+  const locToStoreId = {
+    푸른솔: "ST_103",
+    의과대학: "ST_104",
+    중앙도서관: "ST_105",
+    학생회관: "ST_106",
+    예술디자인대: "ST_107",
+    선승관: "ST_108",
+    공학관: "ST_109",
+    멀티미디어관: "ST_110",
+    제2기숙사: "ST_111",
+  };
 
   // 11) 워크북 생성 & 저장
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-  extraSheetNames.forEach((loc) => {
+  for (const loc of extraSheetNames) {
     // 1) 원본 ws_data에서 앞 15개 컬럼만 잘라서 복제
     const subData = ws_data.map((row) => row.slice(0, 15));
 
@@ -637,12 +650,102 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
     // ─── 전월 재고·1~5주차 입고 값 0으로 초기화 ───
     const zeroCols = [7, 8, 9, 10, 11, 12]; // H~M열 인덱스
     const startRow = 4; // 0-based: 실제 데이터가 시작되는 5번째 행
-    const endRow = subData.length - 1; // 마지막 행까지 (합계 포함 필요 없으면 -2로 조정)
+    const endRow = subData.length - 1; // 마지막 행까지
     for (let r = startRow; r <= endRow; r++) {
       zeroCols.forEach((c) => {
         const addr = XLSX.utils.encode_cell({ r, c });
         // 기존 스타일 유지하면서 값만 0으로 덮어쓰기
         subWs[addr] = Object.assign({}, subWs[addr], { t: "n", v: 0 });
+        // H열(c=7)에만 사용자 지정 숫자 서식 적용
+        if (c === 7) {
+          subWs[addr].z = '_-* #,##0.####_-;-* #,##0.####_-;_-* "-"_-;_-@_-';
+        }
+      });
+    }
+
+    // ───── 주차별 매장 발주량 합산 ─────
+    if (locToStoreId[loc]) {
+      const storeId = locToStoreId[loc];
+      const weeklyStoreMap = {};
+
+      // 1) 주차별로 해당 매장의 모든 회차 발주량 합산
+      for (let wk = 1; wk <= 5; wk++) {
+        const periodParam = `${year}.${monthPadded}.${wk}`;
+        let res;
+        try {
+          res = await fetchOrders({
+            기간: periodParam,
+            store_id: storeId,
+          });
+        } catch (e) {
+          console.error("주차별 매장 발주량 조회 실패:", e);
+          continue;
+        }
+        (res.orders || []).forEach((o) => {
+          weeklyStoreMap[wk] = weeklyStoreMap[wk] || {};
+          weeklyStoreMap[wk][o.품목_id] =
+            (weeklyStoreMap[wk][o.품목_id] || 0) + Number(o.매장_발주량);
+        });
+      }
+
+      // 2) 합산된 발주량을 '1~5주차 입고'(c=8~12)에 채우기
+      const dataStartRow = 4; // 실제 데이터가 시작되는 5번째 행(0-based)
+      items.forEach((item, idx) => {
+        const itemId = item.품목_id;
+        const r = dataStartRow + idx;
+        for (let wk = 1; wk <= 5; wk++) {
+          const c = 7 + wk; // wk=1→c=8, …, wk=5→c=12
+          const addr = XLSX.utils.encode_cell({ r, c });
+          const qty = weeklyStoreMap[wk]?.[itemId] || 0;
+          subWs[addr] = { t: "n", v: qty, s: ws[addr]?.s };
+        }
+      });
+
+      // ─── 전월 재고 조회 및 적용 ───
+      // 1) 이전 달 계산
+      const prevYearNum = parseInt(year, 10);
+      let prevMonthNum = parseInt(month, 10) - 1;
+      let prevYearAdj = prevYearNum;
+      if (prevMonthNum === 0) {
+        prevMonthNum = 12;
+        prevYearAdj -= 1;
+      }
+      const prevMonthStr = prevMonthNum.toString().padStart(2, "0");
+      const prevPeriod = `${prevYearAdj}.${prevMonthStr}`;
+
+      // 2) API 호출로 기간 전체 재고 가져오기
+      let allPrev = [];
+      try {
+        const resPrev = await fetchStoreMonthEndInventory({
+          기간: prevPeriod,
+          // 매장_id 파라미터는 무시될 수 있으니, 아래에서 필터링
+        });
+        allPrev = resPrev.inventories || resPrev;
+      } catch (e) {
+        console.error("전월 월말재고 조회 실패:", e);
+      }
+
+      // 3) 반드시 해당 시트(storeId) 데이터만 골라내기
+      const prevData = allPrev.filter((rec) => rec.매장_id === storeId);
+
+      // 4) 품목별 재고량 매핑
+      const prevMap = prevData.reduce((acc, cur) => {
+        acc[cur.품목_id] = Number(cur.월말_재고량);
+        return acc;
+      }, {});
+
+      // 5) '전월 재고'(H열, c=7)에 값 채우기
+      const dataStart = 4; // 0-based: 5번째 행
+      items.forEach((item, idx) => {
+        const r = dataStart + idx;
+        const c = 7;
+        const addr = XLSX.utils.encode_cell({ r, c });
+        const val = prevMap[item.품목_id] || 0;
+        subWs[addr] = {
+          t: "n",
+          v: val,
+          s: ws[addr]?.s, // 기존 스타일 유지
+        };
       });
     }
 
@@ -650,7 +753,7 @@ export const IODownloadExcel = async ({ selectedPeriod }) => {
 
     // 7) 시트 추가
     XLSX.utils.book_append_sheet(wb, subWs, loc);
-  });
+  }
 
   XLSX.writeFile(wb, filename);
 };

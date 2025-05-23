@@ -82,7 +82,7 @@ const StoreInventory = () => {
         options.push(ym);
         current.setMonth(current.getMonth() - 1);
       }
-      setYearMonthOptions(options);
+      setYearMonthOptions([...new Set(options)]);
       const today = new Date();
       const defaultYM = `${today.getFullYear()}.${(today.getMonth() + 1)
         .toString()

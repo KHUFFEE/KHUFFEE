@@ -6,6 +6,7 @@ import {
   NavLink,
   useNavigate,
   useLocation,
+  Navigate,
 } from "react-router-dom";
 import Home from "./pages/Home";
 import Orders from "./pages/StoreOrders";
@@ -61,12 +62,12 @@ function App() {
     const accessToken = localStorage.getItem("access");
     if (accessToken) {
       setIsLoggedIn(true);
-      if (location.pathname === "/login") {
+      if (location.pathname === "/khuweb/login") {
         navigate("/"); // 로그인 상태에서 로그인 페이지 접근 방지
       }
     } else {
       setIsLoggedIn(false);
-      navigate("/login");
+      navigate("/khuweb/login");
     }
   }, [navigate, location.pathname]);
 
@@ -74,7 +75,7 @@ function App() {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
     setIsLoggedIn(false);
-    navigate("/login");
+    navigate("/khuweb/login");
   };
 
   const handleToggleDarkMode = () => {
@@ -115,8 +116,8 @@ function App() {
               <nav>
                 {/* 1. 홈 */}
                 <NavLink
-                  to="/"
-                  onClick={() => handleNavLinkClick("/")}
+                  to="/khuweb/home"
+                  onClick={() => handleNavLinkClick("/khuweb/home")}
                   className={({ isActive }) =>
                     isActive ? "menu-link active" : "menu-link"
                   }
@@ -144,16 +145,18 @@ function App() {
                   {showIntegrationMenu && (
                     <div className="submenu">
                       <NavLink
-                        to="/integration/item"
-                        onClick={() => handleNavLinkClick("/integration/item")}
+                        to="/khuweb/integration/item"
+                        onClick={() =>
+                          handleNavLinkClick("/khuweb/integration/item")
+                        }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         제품 관리
                       </NavLink>
                       <NavLink
-                        to="/integration/suppliers"
+                        to="/khuweb/integration/suppliers"
                         onClick={() =>
-                          handleNavLinkClick("/integration/suppliers")
+                          handleNavLinkClick("/khuweb/integration/suppliers")
                         }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
@@ -182,25 +185,29 @@ function App() {
                   {showStoreMenu && (
                     <div className="submenu">
                       <NavLink
-                        to="/store/inventory"
-                        onClick={() => handleNavLinkClick("/store/inventory")}
+                        to="/khuweb/store/inventory"
+                        onClick={() =>
+                          handleNavLinkClick("/khuweb/store/inventory")
+                        }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         일별 재고
                       </NavLink>
                       {/* 추가: 월말 재고 탭 */}
                       <NavLink
-                        to="/store/inventory_monthend"
+                        to="/khuweb/store/inventory_monthend"
                         onClick={() =>
-                          handleNavLinkClick("/store/inventory_monthend")
+                          handleNavLinkClick("/khuweb/store/inventory_monthend")
                         }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         월말 재고
                       </NavLink>
                       <NavLink
-                        to="/store/orders"
-                        onClick={() => handleNavLinkClick("/store/orders")}
+                        to="/khuweb/store/orders"
+                        onClick={() =>
+                          handleNavLinkClick("/khuweb/store/orders")
+                        }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         발주 취합서
@@ -228,43 +235,45 @@ function App() {
                   {showWarehouseMenu && (
                     <div className="submenu">
                       <NavLink
-                        to="/warehouse/inventory"
+                        to="/khuweb/warehouse/inventory"
                         onClick={() =>
-                          handleNavLinkClick("/warehouse/inventory")
+                          handleNavLinkClick("/khuweb/warehouse/inventory")
                         }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         일별 재고
                       </NavLink>
                       <NavLink
-                        to="/warehouse/expiration"
+                        to="/khuweb/warehouse/expiration"
                         onClick={() =>
-                          handleNavLinkClick("/warehouse/expiration")
+                          handleNavLinkClick("/khuweb/warehouse/expiration")
                         }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         유통기한 관리
                       </NavLink>
                       <NavLink
-                        to="/warehouse/orders"
-                        onClick={() => handleNavLinkClick("/warehouse/orders")}
+                        to="/khuweb/warehouse/orders"
+                        onClick={() =>
+                          handleNavLinkClick("/khuweb/warehouse/orders")
+                        }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         발주
                       </NavLink>
                       <NavLink
-                        to="/warehouse/incoming"
+                        to="/khuweb/warehouse/incoming"
                         onClick={() =>
-                          handleNavLinkClick("/warehouse/incoming")
+                          handleNavLinkClick("/khuweb/warehouse/incoming")
                         }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
                         입고
                       </NavLink>
                       <NavLink
-                        to="/warehouse/outgoing"
+                        to="/khuweb/warehouse/outgoing"
                         onClick={() =>
-                          handleNavLinkClick("/warehouse/outgoing")
+                          handleNavLinkClick("/khuweb/warehouse/outgoing")
                         }
                         className={({ isActive }) => (isActive ? "active" : "")}
                       >
@@ -278,35 +287,52 @@ function App() {
             <main className="app-main">
               <Routes key={refreshKey}>
                 <Route
-                  path="/login"
+                  path="/"
+                  element={<Navigate to="/khuweb/home" replace />}
+                />
+                <Route
+                  path="/khuweb"
+                  element={<Navigate to="/khuweb/home" replace />}
+                />
+                <Route
+                  path="/khuweb/login"
                   element={<Login setIsLoggedIn={setIsLoggedIn} />}
                 />
-                <Route path="/" element={<Home />} />
-                <Route path="/store/inventory" element={<StoreInventory />} />
+                <Route path="khuweb/home" element={<Home />} />
                 <Route
-                  path="/store/inventory_monthend"
+                  path="khuweb/store/inventory"
+                  element={<StoreInventory />}
+                />
+                <Route
+                  path="khuweb/store/inventory_monthend"
                   element={<StoreInventoryMonthEnd />}
                 />
-                <Route path="/store/orders" element={<Orders />} />
-                <Route path="/integration/suppliers" element={<Suppliers />} />
-                <Route path="/integration/item" element={<Item />} />
+                <Route path="khuweb/store/orders" element={<Orders />} />
                 <Route
-                  path="/warehouse/inventory"
+                  path="khuweb/integration/suppliers"
+                  element={<Suppliers />}
+                />
+                <Route path="khuweb/integration/item" element={<Item />} />
+                <Route
+                  path="khuweb/warehouse/inventory"
                   element={<WarehouseInventory />}
                 />
                 <Route
-                  path="/warehouse/expiration"
+                  path="khuweb/warehouse/expiration"
                   element={<WarehouseExpiration />}
                 />
                 <Route
-                  path="/warehouse/incoming"
+                  path="khuweb/warehouse/incoming"
                   element={<WarehouseIncoming />}
                 />
                 <Route
-                  path="/warehouse/outgoing"
+                  path="khuweb/warehouse/outgoing"
                   element={<WarehouseOutgoing />}
                 />
-                <Route path="/warehouse/orders" element={<WarehouseOrder />} />
+                <Route
+                  path="khuweb/warehouse/orders"
+                  element={<WarehouseOrder />}
+                />
               </Routes>
             </main>
           </div>
@@ -315,7 +341,7 @@ function App() {
       {!isLoggedIn && (
         <Routes>
           <Route
-            path="/login"
+            path="/khuweb/login"
             element={<Login setIsLoggedIn={setIsLoggedIn} />}
           />
         </Routes>

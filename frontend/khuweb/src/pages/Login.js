@@ -30,7 +30,7 @@ const Login = ({ setIsLoggedIn }) => {
           localStorage.setItem("access", data.access);
           localStorage.setItem("refresh", data.refresh);
           setIsLoggedIn(true);
-          navigate("/"); // 홈 페이지로 이동
+          navigate("/khuweb/home"); // 홈 페이지로 이동
         } else {
           setError("아이디 또는 비밀번호가 올바르지 않습니다.");
         }

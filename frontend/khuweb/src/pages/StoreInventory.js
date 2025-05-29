@@ -213,6 +213,15 @@ const StoreInventory = () => {
     return Number(num).toLocaleString();
   };
 
+  const totalInventory = tableRows.reduce(
+    (sum, row) => sum + Number(row.inventory),
+    0
+  );
+  const totalCost = tableRows.reduce(
+    (sum, row) => sum + Number(row.inventory) * row.unitPrice,
+    0
+  );
+
   // 헬퍼: "YYYY.MM" → "YYYY년 MM월" 형식 변환
   const formatYMLabel = (ymStr) => {
     const [y, m] = ymStr.split(".");
@@ -373,6 +382,20 @@ const StoreInventory = () => {
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr>
+            <td className="si-number-col"></td>
+            <td
+              className="si-supplier-col"
+              colSpan="2"
+              style={{ textAlign: "center" }}
+            >
+              합계
+            </td>
+            <td className="si-sum-col">{formatNumber(totalInventory)}</td>
+            <td className="si-cost-col">{formatNumber(totalCost)}</td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );

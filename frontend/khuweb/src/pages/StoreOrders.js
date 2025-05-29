@@ -967,8 +967,8 @@ const StoreOrders = () => {
                 {formatStoreName(store.매장명)}
               </th>
             ))}
-            <th className="so-warehouse-col">창고</th>
             <th className="so-sum-col">합계</th>
+            {isLatestPeriodFlag && <th className="so-warehouse-col">창고</th>}
           </tr>
         </thead>
         <tbody>
@@ -1020,19 +1020,24 @@ const StoreOrders = () => {
                   )}
                 </td>
               ))}
+
+              {isLatestPeriodFlag && (
+                <td
+                  className={`so-warehouse-col ${
+                    getDifference(row) < 0 ? "negative-difference" : ""
+                  }`}
+                >
+                  {formatNumber(
+                    warehouseData.find((rec) => rec.품목_id === row.itemId)
+                      ?.창고_재고량 || 0
+                  )}
+                </td>
+              )}
+
               <td
-                className={`so-warehouse-col ${getDifference(row) < 0 ? "negative-difference" : ""}`}
-              >
-                {formatNumber(
-                  warehouseData && warehouseData.length > 0
-                    ? warehouseData.filter(
-                        (record) => record.품목_id === row.itemId
-                      )[0]?.창고_재고량 || 0
-                    : 0
-                )}
-              </td>
-              <td
-                className={`so-sum-col ${getDifference(row) < 0 ? "negative-difference" : ""}`}
+                className={`so-sum-col ${
+                  getDifference(row) < 0 ? "negative-difference" : ""
+                }`}
               >
                 {getRowSum(row) === 0 ? "-" : formatNumber(getRowSum(row))}
               </td>
@@ -1054,25 +1059,27 @@ const StoreOrders = () => {
                 {storeTotals[idx] === 0 ? "-" : formatNumber(storeTotals[idx])}
               </td>
             ))}
-            <td className="so-warehouse-col">
-              {warehouseData && warehouseData.length > 0
-                ? formatNumber(
-                    sortedTableRows.reduce((sum, row) => {
-                      const matchingRecords = warehouseData.filter(
-                        (record) => record.품목_id === row.itemId
-                      );
-                      const value =
-                        matchingRecords.length > 0
-                          ? Number(matchingRecords[0].창고_재고량 || 0)
-                          : 0;
-                      return sum + value;
-                    }, 0)
-                  )
-                : "-"}
-            </td>
             <td className="so-sum-col">
               {grandTotal === 0 ? "-" : formatNumber(grandTotal)}
             </td>
+            {isLatestPeriodFlag && (
+              <td className="so-warehouse-col">
+                {warehouseData && warehouseData.length > 0
+                  ? formatNumber(
+                      sortedTableRows.reduce((sum, row) => {
+                        const matchingRecords = warehouseData.filter(
+                          (record) => record.품목_id === row.itemId
+                        );
+                        const value =
+                          matchingRecords.length > 0
+                            ? Number(matchingRecords[0].창고_재고량 || 0)
+                            : 0;
+                        return sum + value;
+                      }, 0)
+                    )
+                  : "-"}
+              </td>
+            )}
           </tr>
         </tfoot>
       </table>

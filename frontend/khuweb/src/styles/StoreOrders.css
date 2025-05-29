@@ -12,8 +12,7 @@
 }
 
 /* 매장 헤더 칼럼 전용 스타일 */
-.big-table thead th.so-order-col,
-.big-table thead th.so-warehouse-col {
+.big-table thead th.so-order-col {
   vertical-align: middle;
   font-size: 14px;
   line-height: 1.2;

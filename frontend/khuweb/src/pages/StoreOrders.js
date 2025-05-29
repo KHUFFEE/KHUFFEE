@@ -967,8 +967,8 @@ const StoreOrders = () => {
                 {formatStoreName(store.매장명)}
               </th>
             ))}
-            <th className="so-warehouse-col">창고</th>
             <th className="so-sum-col">합계</th>
+            <th className="so-warehouse-col">창고</th>
           </tr>
         </thead>
         <tbody>
@@ -1054,6 +1054,9 @@ const StoreOrders = () => {
                 {storeTotals[idx] === 0 ? "-" : formatNumber(storeTotals[idx])}
               </td>
             ))}
+            <td className="so-sum-col">
+              {grandTotal === 0 ? "-" : formatNumber(grandTotal)}
+            </td>
             <td className="so-warehouse-col">
               {warehouseData && warehouseData.length > 0
                 ? formatNumber(
@@ -1069,9 +1072,6 @@ const StoreOrders = () => {
                     }, 0)
                   )
                 : "-"}
-            </td>
-            <td className="so-sum-col">
-              {grandTotal === 0 ? "-" : formatNumber(grandTotal)}
             </td>
           </tr>
         </tfoot>

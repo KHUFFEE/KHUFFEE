@@ -62,42 +62,54 @@ const WarehouseInventory = () => {
   // 전체 기간 옵션 갱신 함수 (페이지 로드 및 최신 조회 시)
   const refreshPeriods = async () => {
     try {
-      const res = await fetchWarehouseInventory({}); // 기간 필터 없이 전체 조회
-      const allPeriods = res.map((record) => record.기간);
-      if (allPeriods.length === 0) return;
-      const dateObjs = allPeriods.map((period) => {
-        const parts = period.split(".");
-        return new Date(
-          parseInt(parts[0], 10),
-          parseInt(parts[1], 10) - 1,
-          parseInt(parts[2], 10)
-        );
-      });
-      const minDate = new Date(Math.min(...dateObjs));
-      const maxDate = new Date(Math.max(...dateObjs));
-      let current = new Date(maxDate);
+      setLoading(true);
+      const resp = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/inventory/warehouse/?range=first_last`
+      );
+      if (!resp.ok) {
+        throw new Error("Failed to fetch period range");
+      }
+      const { earliest_period, latest_period } = await resp.json();
+      if (!earliest_period || !latest_period) return;
+
+      const parsePeriod = (str) => {
+        const [year, month, day] = str.split(".").map(Number);
+        return new Date(year, month - 1, day);
+      };
+
+      const minDate = parsePeriod(earliest_period);
+      const maxDate = parsePeriod(latest_period);
+      const minMonth = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+      // current도 1일로 초기화해서 '말일→월말 없는 달' 오버플로우 방지
+      let currentMonth = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
       const options = [];
-      while (current >= minDate) {
-        const y = current.getFullYear();
-        const m = (current.getMonth() + 1).toString().padStart(2, "0");
+
+      while (currentMonth >= minMonth) {
+        const y = currentMonth.getFullYear();
+        const m = String(currentMonth.getMonth() + 1).padStart(2, "0");
         const ym = `${y}.${m}`;
+        // 중복 방지
         if (!options.includes(ym)) {
           options.push(ym);
         }
-        current.setMonth(current.getMonth() - 1);
+        // 한 달 뒤로 이동 (항상 1일 기준)
+        currentMonth = new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth() - 1,
+          1
+        );
       }
+
       setYearMonthOptions(options);
       const today = new Date();
-      const defaultYM = `${today.getFullYear()}.${(today.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}`;
-      if (options.includes(defaultYM)) {
-        setSelectedYearMonth(defaultYM);
-      } else {
-        setSelectedYearMonth(options[0]);
-      }
+      const defaultYM = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}`;
+      setSelectedYearMonth(
+        options.includes(defaultYM) ? defaultYM : options[0]
+      );
     } catch (err) {
       console.error("Failed to fetch all periods:", err);
+    } finally {
+      setLoading(false);
     }
   };
 

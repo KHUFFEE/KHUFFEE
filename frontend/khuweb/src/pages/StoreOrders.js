@@ -1020,11 +1020,21 @@ const StoreOrders = () => {
                   )}
                 </td>
               ))}
-
+              <td
+                className={`so-sum-col ${
+                  isLatestPeriodFlag && getDifference(row) < 0
+                    ? "negative-difference"
+                    : ""
+                }`}
+              >
+                {getRowSum(row) === 0 ? "-" : formatNumber(getRowSum(row))}
+              </td>
               {isLatestPeriodFlag && (
                 <td
                   className={`so-warehouse-col ${
-                    getDifference(row) < 0 ? "negative-difference" : ""
+                    isLatestPeriodFlag && getDifference(row) < 0
+                      ? "negative-difference"
+                      : ""
                   }`}
                 >
                   {formatNumber(
@@ -1033,14 +1043,6 @@ const StoreOrders = () => {
                   )}
                 </td>
               )}
-
-              <td
-                className={`so-sum-col ${
-                  getDifference(row) < 0 ? "negative-difference" : ""
-                }`}
-              >
-                {getRowSum(row) === 0 ? "-" : formatNumber(getRowSum(row))}
-              </td>
             </tr>
           ))}
         </tbody>

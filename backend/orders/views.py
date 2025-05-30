@@ -502,7 +502,7 @@ class WarehouseOutgoingListView(APIView):
         qs = WarehouseOutgoing.objects.all()
         if store_id:
             qs = qs.filter(매장_id=store_id)
-        qs = qs.exclude(창고_출고량=0)
+        # qs = qs.exclude(창고_출고량=0)
 
         period_param = request.GET.get("기간")
         # 기간 범위 조회 (ex: "2025.03.1~2025.03.4")

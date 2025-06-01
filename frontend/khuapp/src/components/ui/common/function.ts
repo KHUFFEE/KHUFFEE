@@ -13,7 +13,18 @@ import {
 // f.ts (유틸리티 함수 파일)
 export const formatPrice = (value: number | undefined | null): string => {
   const num = value ?? 0; // value가 undefined 혹은 null이면 0을 사용
-  return num.toLocaleString();
+
+  // 소수점이 있는 경우와 없는 경우를 구분하여 처리
+  if (num === Math.floor(num)) {
+    // 정수인 경우
+    return num.toLocaleString();
+  } else {
+    // 소수점이 있는 경우 - 소수점 둘째 자리까지 표시
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  }
 };
 
 /** "YYYY.MM.W" -> "YYYY년 M월 W주차" (화면 표시용) */
@@ -29,7 +40,7 @@ export function formatWeekString(dateKey: string): string {
 export function buildPeriodString(
   y: number | null,
   m: number | null,
-  w: number | null,
+  w: number | null
 ): string {
   if (y === null || m === null || w === null) {
     return "";
@@ -54,7 +65,7 @@ export const getUniqueCategories = (apiItems: any[]): string[] => {
 /** 선택된 카테고리에 따라 상품 필터링 */
 export const getFilteredProducts = (
   apiItems: any[],
-  selectedCategory: string | null,
+  selectedCategory: string | null
 ): any[] => {
   return selectedCategory
     ? apiItems.filter((item) => item.종류 === selectedCategory)
@@ -101,10 +112,10 @@ export const fetchSuppliers = async (): Promise<any[]> => {
 /** 협력사 목록에서 특정 품목의 협력사 찾는 헬퍼  */
 export const getSupplierName = (
   product: APIProduct,
-  suppliers: any[],
+  suppliers: any[]
 ): string => {
   const supplier = suppliers.find(
-    (s: any) => s.협력사_id === product.협력사_id,
+    (s: any) => s.협력사_id === product.협력사_id
   );
   return supplier ? supplier.협력사명 : product.협력사명; // 사용방법: getSupplierName(product, suppliers)
 };
@@ -112,7 +123,7 @@ export const getSupplierName = (
 /** 품목 리스트를 협력사명, 종류, 품목명 기준으로 오름차순 정렬하는 함수 */
 export const sortProductsBySupplierAndName = (
   filteredProducts: APIProduct[],
-  suppliers: any[],
+  suppliers: any[]
 ): APIProduct[] => {
   return filteredProducts.slice().sort((a, b) => {
     const supplierA = getSupplierName(a, suppliers);
@@ -137,10 +148,10 @@ export const sortProductsBySupplierAndName = (
 /** 품목을 선택된 리스트에 추가하는 함수 */
 export const addItemToSelectedItems = (
   selectedItems: SelectedItem[],
-  product: APIProduct,
+  product: APIProduct
 ): SelectedItem[] => {
   const existingItem = selectedItems.find(
-    (item) => item.품목_id === product.품목_id,
+    (item) => item.품목_id === product.품목_id
   );
 
   if (existingItem) {
@@ -152,7 +163,7 @@ export const addItemToSelectedItems = (
             customQuantity: (item.quantity + product.출고단위).toString(),
             error: null,
           }
-        : item,
+        : item
     );
   } else {
     return [
@@ -171,7 +182,7 @@ export const addItemToSelectedItems = (
 export const updateQuantity = (
   selectedItems: SelectedItem[],
   productId: string,
-  increment: number,
+  increment: number
 ): SelectedItem[] => {
   return selectedItems.map((item) => {
     if (item.품목_id === productId) {
@@ -193,7 +204,7 @@ export const updateQuantity = (
 export const updateCustomQuantityUtil = (
   selectedItems: SelectedItem[],
   productId: string,
-  text: string,
+  text: string
 ): SelectedItem[] => {
   return selectedItems.map((item) => {
     if (item.품목_id === productId) {
@@ -235,14 +246,14 @@ export const updateCustomQuantityUtil = (
 /** 품목 제거 함수 */
 export const removeItemUtil = (
   selectedItems: SelectedItem[],
-  productId: string,
+  productId: string
 ): SelectedItem[] => {
   return selectedItems.filter((item) => item.품목_id !== productId);
 };
 
 // 발주 확인 (상품 선택 유무 / 각종 유효성 체크)
 export const handleConfirmOrderUtil = (
-  selectedItems: SelectedItem[],
+  selectedItems: SelectedItem[]
 ): string[] => {
   const errors: string[] = [];
 
@@ -253,12 +264,12 @@ export const handleConfirmOrderUtil = (
   selectedItems.forEach((item) => {
     if (item.quantity === 0) {
       errors.push(
-        `${item.품목명}의 수량이 0입니다. 최소 수량은 ${item.출고단위}${item.단위}입니다.`,
+        `${item.품목명}의 수량이 0입니다. 최소 수량은 ${item.출고단위}${item.단위}입니다.`
       );
     }
     if (item.quantity % item.출고단위 !== 0) {
       errors.push(
-        `${item.품목명}의 수량은 ${item.출고단위}${item.단위}의 배수여야 합니다.`,
+        `${item.품목명}의 수량은 ${item.출고단위}${item.단위}의 배수여야 합니다.`
       );
     }
     if (item.error) {
@@ -274,7 +285,7 @@ export const handleConfirmOrderUtil = (
  */
 export const handleOrderSubmitUtil = async (
   storeId: string,
-  selectedItems: SelectedItem[],
+  selectedItems: SelectedItem[]
 ): Promise<{ newOrder?: LocalOrder; failures?: string[] }> => {
   const failures: string[] = [];
 
@@ -285,7 +296,7 @@ export const handleOrderSubmitUtil = async (
   // 먼저 store_order_list에서 기간 정보를 가져오기 (회차는 여기서 사용하지 않음)
   try {
     const orderListResponse = await fetch(
-      `${RN_API_URL}/api/orders/store_order_list?store_id=${storeId}&page=1&order=desc`,
+      `${RN_API_URL}/api/orders/store_order_list?store_id=${storeId}&page=1&order=desc`
     );
     if (orderListResponse.ok) {
       const orderListData = await orderListResponse.json();
@@ -300,13 +311,13 @@ export const handleOrderSubmitUtil = async (
   // table_status_list에서 "매장_발주"의 상태 값을 회차로 사용
   try {
     const tableStatusResponse = await fetch(
-      `${RN_API_URL}/api/management/table_status_list/`,
+      `${RN_API_URL}/api/management/table_status_list/`
     );
     if (tableStatusResponse.ok) {
       const tableStatusData = await tableStatusResponse.json();
       // "매장_발주"에 해당하는 항목 찾기
       const 매장발주Status = tableStatusData.find(
-        (item: any) => item.테이블 === "매장_발주",
+        (item: any) => item.테이블 === "매장_발주"
       );
       if (매장발주Status && 매장발주Status.상태 !== undefined) {
         currentRound = parseInt(매장발주Status.상태, 10);
@@ -315,7 +326,7 @@ export const handleOrderSubmitUtil = async (
   } catch (error) {
     console.error(
       "테이블 상태 정보를 가져오는 중 오류 발생, 기본 회차 사용:",
-      error,
+      error
     );
   }
 
@@ -337,7 +348,7 @@ export const handleOrderSubmitUtil = async (
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        },
+        }
       );
       if (!response.ok) {
         failures.push(`${item.품목명} 발주 전송 실패`);

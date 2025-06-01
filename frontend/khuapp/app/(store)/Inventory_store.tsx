@@ -167,17 +167,22 @@ const InventoryItemRow = forwardRef<
                 onChangeText={(text) => {
                   // 현재 입력된 텍스트에서 콤마 제거
                   const rawText = text.replace(/,/g, "");
-                  // 숫자로 파싱
-                  const parsed = parseFloat(rawText);
-                  // 숫자면 포맷 적용, 아니면 그대로 사용 (예: 빈 문자열)
-                  const formatted = isNaN(parsed)
-                    ? rawText
-                    : f.formatPrice(parsed);
-                  setLocalInput(formatted);
-                  onValueChange(
-                    item.품목_id,
-                    isNaN(parsed) ? "0" : parsed.toString()
-                  );
+
+                  // 소수점 2자리까지만 허용하는 정규식 검사
+                  if (rawText === "" || /^(\d+)?(\.\d{0,2})?$/.test(rawText)) {
+                    // 숫자로 파싱
+                    const parsed = parseFloat(rawText);
+
+                    // 숫자면 포맷 적용, 아니면 그대로 사용 (예: 빈 문자열, ".")
+                    const formatted = isNaN(parsed) ? rawText : rawText;
+                    setLocalInput(formatted);
+
+                    // 부모 컴포넌트에 값 전달 (숫자 또는 0)
+                    onValueChange(
+                      item.품목_id,
+                      isNaN(parsed) ? "0" : rawText.toString()
+                    );
+                  }
                 }}
                 onFocus={() => {
                   setIsFocused(true);
@@ -187,17 +192,34 @@ const InventoryItemRow = forwardRef<
                 }}
                 onBlur={() => {
                   setIsFocused(false);
+                  // 소수점만 입력된 경우 처리
+                  if (localInput === ".") {
+                    setLocalInput(editMode ? "0" : "");
+                    onValueChange(item.품목_id, "0");
+                    return;
+                  }
+
                   const parsed = parseFloat(localInput.replace(/,/g, ""));
                   const numericValue = isNaN(parsed) ? 0 : parsed;
-                  setLocalInput(
-                    numericValue === 0
-                      ? editMode
-                        ? "0"
-                        : ""
-                      : f.formatPrice(numericValue)
-                  );
+
+                  // 소수점 값 처리 (최대 소수점 2자리까지 표시)
+                  let formattedValue = "";
+                  if (numericValue === 0) {
+                    formattedValue = editMode ? "0" : "";
+                  } else if (numericValue === Math.floor(numericValue)) {
+                    // 정수인 경우
+                    formattedValue = numericValue.toString();
+                  } else {
+                    // 소수점이 있는 경우 - 소수점 둘째 자리까지만 표시
+                    formattedValue = numericValue
+                      .toFixed(2)
+                      .replace(/\.?0+$/, "");
+                  }
+
+                  setLocalInput(formattedValue);
+                  onValueChange(item.품목_id, formattedValue);
                 }}
-                keyboardType="numeric"
+                keyboardType="decimal-pad"
               />
               <TouchableOpacity
                 testID="incrementButton"
@@ -271,12 +293,16 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
             ? {
                 ...item,
                 매장_재고량:
-                  ((item as MergedInventoryItem).매장_재고량 || 0) + 1,
+                  (parseFloat(
+                    (item as MergedInventoryItem).매장_재고량.toString()
+                  ) || 0) + 1,
               }
             : {
                 ...item,
                 월말_재고량:
-                  ((item as MergedMonthInventoryItem).월말_재고량 || 0) + 1,
+                  (parseFloat(
+                    (item as MergedMonthInventoryItem).월말_재고량.toString()
+                  ) || 0) + 1,
               }
           : item
       )
@@ -288,11 +314,15 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
       prev.map((item) => {
         if (item.품목_id !== 품목_id) return item;
         if (inventoryType === "daily") {
-          const currentValue = (item as MergedInventoryItem).매장_재고량 || 0;
+          const currentValue =
+            parseFloat((item as MergedInventoryItem).매장_재고량.toString()) ||
+            0;
           return { ...item, 매장_재고량: Math.max(0, currentValue - 1) };
         } else {
           const currentValue =
-            (item as MergedMonthInventoryItem).월말_재고량 || 0;
+            parseFloat(
+              (item as MergedMonthInventoryItem).월말_재고량.toString()
+            ) || 0;
           return { ...item, 월말_재고량: Math.max(0, currentValue - 1) };
         }
       })

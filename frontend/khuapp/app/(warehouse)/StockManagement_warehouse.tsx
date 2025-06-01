@@ -1071,7 +1071,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                         testID="buttonText"
                         style={headerRowStyles.buttonText}
                       >
-                        재고조정
+                        재고수정
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -1127,7 +1127,7 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                         testID="buttonText"
                         style={headerRowStyles.buttonText}
                       >
-                        재고조정
+                        재고수정
                       </Text>
                     </TouchableOpacity>
                   )}

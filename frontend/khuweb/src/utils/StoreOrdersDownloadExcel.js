@@ -214,6 +214,9 @@ export const storeOrdersDownloadExcel = ({
       const cellAddr = XLSX.utils.encode_cell({ r, c });
       if (!ws[cellAddr]) continue;
       ws[cellAddr].s.font = { name: "Arial", sz: c === 0 ? 12 : 10 };
+      if (c === 0) {
+        ws[cellAddr].s.alignment = { horizontal: "center", vertical: "center" };
+      }
       if (c >= 2 && c < totalCols - 1) {
         ws[cellAddr].s.numFmt = '#,##0;(#,##0);"-"';
       }

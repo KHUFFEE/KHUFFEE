@@ -24,31 +24,27 @@ const WarehouseExpiration = () => {
   const calculateRemaining = (expirationStr) => {
     const parts = expirationStr.split(".");
     const expDate = new Date(
-      parseInt(parts[0]),
-      parseInt(parts[1]) - 1,
-      parseInt(parts[2])
+      parseInt(parts[0], 10),
+      parseInt(parts[1], 10) - 1,
+      parseInt(parts[2], 10)
     );
     const now = new Date();
-    // 시간 비교를 위해 현재 날짜의 시,분,초는 0으로 초기화
     const currentDate = new Date(
       now.getFullYear(),
       now.getMonth(),
       now.getDate()
     );
 
-    // 유통기한이 현재 날짜와 같거나 이전이면 "만료" 반환
     if (expDate <= currentDate) {
       return "만료";
     }
 
-    // 연도, 월, 일 차이 계산
     let years = expDate.getFullYear() - currentDate.getFullYear();
     let months = expDate.getMonth() - currentDate.getMonth() + years * 12;
     let days = expDate.getDate() - currentDate.getDate();
 
     if (days < 0) {
       months -= 1;
-      // expDate의 직전 달의 마지막 날짜 구하기
       const previousMonthDate = new Date(
         expDate.getFullYear(),
         expDate.getMonth(),
@@ -59,11 +55,9 @@ const WarehouseExpiration = () => {
         (previousMonthDate.getDate() - currentDate.getDate());
     }
 
-    // 숫자를 두 자리로 포맷 (한 자리일 경우 앞에 0 추가)
     const formattedMonths = months < 10 ? `0${months}` : months;
     const formattedDays = days < 10 ? `0${days}` : days;
 
-    // 0개월인 경우, 남은 일수만 출력
     if (months === 0) {
       return `${formattedDays}일`;
     }
@@ -134,7 +128,6 @@ const WarehouseExpiration = () => {
       );
       supplierName = supplier ? supplier.협력사명 : "N/A";
     }
-    // 동일 품목_id의 총 개수와 현재고 비교
     const totalCount = aggregatedCounts[itemId] || 0;
     const currentStock = inventoryMap[itemId] || 0;
     const isMismatch = totalCount !== currentStock;
@@ -151,6 +144,7 @@ const WarehouseExpiration = () => {
     };
   });
 
+  // 정렬: 협력사 → 품목명 → 종류 → 유통기한
   tableRows.sort((a, b) => {
     const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
     if (cmpSupplier !== 0) return cmpSupplier;
@@ -162,6 +156,15 @@ const WarehouseExpiration = () => {
     const dateB = new Date(b.expiration.replace(/\./g, "-"));
     return dateA - dateB;
   });
+
+  // rowCounts: 동일 품목_id(row.itemId)에 해당하는 행의 개수 (rowSpan 용)
+  const rowCounts = {};
+  tableRows.forEach((row) => {
+    rowCounts[row.itemId] = (rowCounts[row.itemId] || 0) + 1;
+  });
+
+  // JSX 렌더링 시 첫 등장 체크용
+  const seenItems = {};
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
@@ -194,43 +197,71 @@ const WarehouseExpiration = () => {
             <th className="we-item-col">품목명</th>
             <th className="we-expiration-col">유통기한</th>
             <th className="we-count-col">개수</th>
+            <th className="we-sum-col">합산</th>
             <th className="we-current-stock-col">현재고</th>
             <th className="we-remaining-days-col">남은 일수</th>
           </tr>
         </thead>
         <tbody>
-          {tableRows.map((row, index) => (
-            <tr key={index}>
-              <td className="we-number-col">{index + 1}</td>
-              <td className="we-supplier-col">
-                <div className="we-supplier-cell">{row.supplierName}</div>
-              </td>
-              <td className="we-item-col">
-                <div className="we-item-cell">{row.itemName}</div>
-              </td>
-              <td className="we-expiration-col">{row.expiration}</td>
-              <td
-                className={`we-count-col ${row.isMismatch ? "mismatch" : ""}`}
-              >
-                {row.count.toLocaleString()}
-              </td>
-              <td
-                className={`we-current-stock-col ${row.isMismatch ? "mismatch" : ""}`}
-              >
-                {row.currentStock.toLocaleString()}
-              </td>
-              <td
-                className={`we-remaining-days-col ${
-                  row.remainingDays === "만료" ||
-                  !row.remainingDays.includes("개월")
-                    ? "red-text"
-                    : ""
-                }`}
-              >
-                {row.remainingDays}
-              </td>
-            </tr>
-          ))}
+          {tableRows.map((row, index) => {
+            const {
+              itemId,
+              supplierName,
+              itemName,
+              type,
+              expiration,
+              count,
+              currentStock,
+              remainingDays,
+              isMismatch,
+            } = row;
+
+            // 첫 번째 등장인지 확인
+            const isFirstOccurrence = !seenItems[itemId];
+            if (isFirstOccurrence) {
+              seenItems[itemId] = true;
+            }
+
+            return (
+              <tr key={index}>
+                <td className="we-number-col">{index + 1}</td>
+                <td className="we-supplier-col">
+                  <div className="we-supplier-cell">{supplierName}</div>
+                </td>
+                <td className="we-item-col">
+                  <div className="we-item-cell">{itemName}</div>
+                </td>
+                <td className="we-expiration-col">{expiration}</td>
+                <td className="we-count-col">{count.toLocaleString()}</td>
+                {isFirstOccurrence ? (
+                  <td className="we-sum-col" rowSpan={rowCounts[itemId]}>
+                    <span className={isMismatch ? "red-text" : ""}>
+                      {(aggregatedCounts[itemId] || 0).toLocaleString()}
+                    </span>
+                  </td>
+                ) : null}
+                {isFirstOccurrence ? (
+                  <td
+                    className={`we-current-stock-col ${isMismatch ? "mismatch" : ""}`}
+                    rowSpan={rowCounts[itemId]}
+                  >
+                    <span className={isMismatch ? "red-text" : ""}>
+                      {currentStock.toLocaleString()}
+                    </span>
+                  </td>
+                ) : null}
+                <td
+                  className={`we-remaining-days-col ${
+                    remainingDays === "만료" || !remainingDays.includes("개월")
+                      ? "red-text"
+                      : ""
+                  }`}
+                >
+                  {remainingDays}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

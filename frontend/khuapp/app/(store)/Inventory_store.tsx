@@ -364,31 +364,70 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     // 변경된 값 강제 반영
     commitAllRows();
     setSaving(true);
+    setError(""); // 이전 오류 메시지 초기화
+
+    // 서버로 전송할 데이터 배열 생성
+    const payload = (inventoryData as MergedInventoryItem[]).map((item) => ({
+      매장_id: storeId, // storeId를 각 아이템에 포함
+      품목_id: item.품목_id,
+      기간: getCurrentDateString(), // 모든 아이템에 현재 날짜 적용
+      매장_재고량: parseFloat(String(item.매장_재고량)) || 0,
+    }));
+
     try {
-      await Promise.all(
-        (inventoryData as MergedInventoryItem[]).map((item) => {
-          const payload = {
-            매장_id: storeId,
-            품목_id: item.품목_id,
-            기간: getCurrentDateString(),
-            매장_재고량: item.매장_재고량,
-          };
-          return fetch(`${RN_API_URL}/api/inventory/store_inventory_update/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          }).then((response) => {
-            if (!response.ok) {
-              throw new Error(`품목 ${item.품목명} 업데이트 실패`);
-            }
-          });
-        })
+      const response = await fetch(
+        `${RN_API_URL}/api/inventory/store_inventory_update/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload), // 배열 전체를 전송
+        }
       );
-      setEditMode(false);
-      // 저장 성공 시 모달 표시
-      setSaveCompleteModalVisible(true);
+
+      const responseData = await response.json(); // 응답은 항상 JSON으로 가정
+
+      if (!response.ok) {
+        // responseData에 서버가 보낸 오류 상세 정보가 있을 수 있음
+        let errorMessage = `HTTP ${response.status} 오류가 발생했습니다.`;
+        if (responseData && responseData.error) {
+          errorMessage = responseData.error;
+        } else if (
+          responseData &&
+          responseData.errors &&
+          responseData.errors.length > 0
+        ) {
+          // 여러 오류 중 첫 번째 오류만 표시하거나, 모두 조합할 수 있음
+          const firstError = responseData.errors[0];
+          errorMessage = `품목 ${firstError.item_data?.품목_id || ""} 처리 중 오류: ${firstError.error}`;
+        }
+        console.error("저장 실패:", responseData);
+        throw new Error(errorMessage);
+      }
+
+      // 서버에서 success: true 응답을 받았을 때
+      if (responseData && responseData.success) {
+        setEditMode(false);
+        setSaveCompleteModalVisible(true);
+        // 선택적으로, 서버로부터 받은 results로 inventoryData를 업데이트 할 수 있습니다.
+        // 예: fetchInventoryData(); 또는 setInventoryData(responseData.results.map(...));
+      } else {
+        // success: false 또는 예상치 못한 응답 구조
+        console.error("저장 응답 오류:", responseData);
+        setError(
+          responseData.errors
+            ? responseData.errors
+                .map(
+                  (e: any) => `품목 ${e.item_data?.품목_id || ""}: ${e.error}`
+                )
+                .join("\n")
+            : "알 수 없는 저장 오류가 발생했습니다."
+        );
+      }
     } catch (err: any) {
-      setError(err.message);
+      console.error("저장 중 예외 발생:", err);
+      setError(
+        err.message || "네트워크 오류 또는 알 수 없는 문제가 발생했습니다."
+      );
     } finally {
       setSaving(false);
     }

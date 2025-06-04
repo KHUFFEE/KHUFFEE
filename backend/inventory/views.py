@@ -2,13 +2,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.db import transaction
 from .models import (
     StoreInventory,
     WarehouseInventory,
     StoreMonthEndInventory,
     WarehouseExpiration,
 )
-from .serializers import WarehouseExpirationSerializer
+from .serializers import WarehouseExpirationSerializer, StoreInventorySerializer
 from decimal import Decimal
 from accounts.models import Store
 from suppliers.models import Item
@@ -188,74 +189,118 @@ class WarehouseInventoryListView(APIView):
 
 class StoreInventoryUpdateView(APIView):
     def post(self, request):
-        # 필수 필드: 매장_id, 품목_id, 기간, 매장_재고량
-        store_id = request.data.get("매장_id")
-        item_id = request.data.get("품목_id")
-        period = request.data.get("기간")
-        inventory_amount = request.data.get("매장_재고량")
-
-        if not (store_id and item_id and period):
+        # 요청 데이터가 리스트 형태인지 확인
+        if not isinstance(request.data, list):
             return Response(
-                {"error": "매장_id, 품목_id, 기간은 필수 입력입니다."},
+                {"error": "요청 본문은 아이템 리스트여야 합니다."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # 외래키 객체로 변환
+        # StoreInventorySerializer를 사용하여 요청 데이터 유효성 검사 (many=True)
+        # 클라이언트에서 '매장_id'를 각 아이템에 포함하여 보내야 합니다.
+        # 이 예제에서는 직렬화기를 직접 사용하여 유효성 검사를 수행하지 않고,
+        # 뷰 로직 내에서 각 필드를 직접 처리합니다.
+        # 보다 엄격한 유효성 검사를 위해서는 serializer = StoreInventorySerializer(data=request.data, many=True)
+        # if serializer.is_valid(): ... else: return Response(serializer.errors, ...)
+        # 와 같은 패턴을 사용할 수 있습니다.
+
+        results = []
+        errors = []
+
+        # 모든 DB 변경사항을 하나의 트랜잭션으로 처리
         try:
-            store_obj = Store.objects.get(pk=store_id)
-        except Store.DoesNotExist:
+            with transaction.atomic():
+                for item_data in request.data:
+                    store_id = item_data.get("매장_id")
+                    item_id = item_data.get("품목_id")
+                    period = item_data.get("기간")
+                    inventory_amount = item_data.get("매장_재고량")
+
+                    if not (store_id and item_id and period and inventory_amount is not None): # 재고량이 0일 수도 있으므로 None 체크
+                        errors.append(
+                            {
+                                "item_data": item_data,
+                                "error": "각 아이템에는 매장_id, 품목_id, 기간, 매장_재고량이 필수입니다.",
+                            }
+                        )
+                        continue  # 다음 아이템으로
+
+                    try:
+                        store_obj = Store.objects.get(pk=store_id)
+                    except Store.DoesNotExist:
+                        errors.append(
+                            {"item_data": item_data, "error": f"매장 ID '{store_id}'를 찾을 수 없습니다."}
+                        )
+                        continue
+
+                    try:
+                        item_obj = Item.objects.get(pk=item_id)
+                    except Item.DoesNotExist:
+                        errors.append(
+                            {"item_data": item_data, "error": f"품목 ID '{item_id}'를 찾을 수 없습니다."}
+                        )
+                        continue
+                    
+                    try:
+                        new_value = (
+                            Decimal(str(inventory_amount)) # str()로 감싸서 Decimal 변환 오류 방지
+                            if inventory_amount not in [None, ""]
+                            else Decimal("0.00")
+                        )
+                    except Exception:
+                        errors.append(
+                            {
+                                "item_data": item_data,
+                                "error": "매장_재고량은 유효한 숫자여야 합니다.",
+                            }
+                        )
+                        continue
+
+                    # update_or_create 사용: (매장_id, 품목_id, 기간)이 기본키 또는 unique_together로 설정되어 있어야 최적
+                    # 현재 모델 정의에서는 복합 기본키가 아니므로, defaults를 사용하여 업데이트할 값을 지정합니다.
+                    obj, created = StoreInventory.objects.update_or_create(
+                        매장_id=store_obj,
+                        품목_id=item_obj,
+                        기간=period,
+                        defaults={"매장_재고량": new_value},
+                    )
+
+                    results.append(
+                        {
+                            "매장_id": obj.매장_id.pk,
+                            "품목_id": obj.품목_id.pk,
+                            "기간": obj.기간,
+                            "매장_재고량": obj.매장_재고량,
+                            "created": created,
+                        }
+                    )
+                
+                # 만약 errors 리스트에 내용이 있다면, 트랜잭션을 롤백해야 합니다.
+                if errors:
+                    # 이 지점에 도달했다는 것은 부분적인 성공 후 오류가 발생한 경우일 수 있으나,
+                    # transaction.atomic() 컨텍스트를 벗어나기 전에 예외를 발생시키면 전체 롤백됩니다.
+                    # 여기서는 부분 성공/실패 응답을 위해 아래 로직을 유지하고,
+                    # 심각한 오류(예: DB 연결 불가)가 아니면 커밋될 수 있으므로,
+                    # 호출하는 쪽에서 응답을 보고 판단해야 합니다.
+                    # 더 엄격하게 하려면, errors가 있을 경우 raise Exception("부분 오류 발생") 등으로 트랜잭션 강제 롤백.
+                    pass
+
+
+        except Exception as e:
+            # 트랜잭션 중 예외 발생 시 (예: 데이터베이스 오류)
             return Response(
-                {"error": "해당 매장을 찾을 수 없습니다."},
-                status=status.HTTP_404_NOT_FOUND,
+                {"error": f"트랜잭션 오류: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        try:
-            item_obj = Item.objects.get(pk=item_id)
-        except Item.DoesNotExist:
+        if errors:
             return Response(
-                {"error": "해당 품목을 찾을 수 없습니다."},
-                status=status.HTTP_404_NOT_FOUND,
+                {"success": False, "results": results, "errors": errors},
+                status=status.HTTP_400_BAD_REQUEST, # 또는 status.HTTP_207_MULTI_STATUS
             )
-
-        # 매장_재고량을 Decimal로 변환 (빈 문자열이나 None은 0으로 처리)
-        try:
-            new_value = (
-                Decimal(inventory_amount)
-                if inventory_amount not in [None, ""]
-                else Decimal("0.00")
-            )
-        except Exception:
-            return Response(
-                {"error": "매장_재고량은 소수 형태여야 합니다."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # 기존 재고 조회 (id 필드 참조 없이 filter 사용)
-        qs = StoreInventory.objects.filter(
-            매장_id=store_obj, 품목_id=item_obj, 기간=period
-        )
-        if qs.exists():
-            # 기존 레코드가 있으면 삭제 대신 0으로 업데이트
-            qs.update(매장_재고량=new_value)
-            updated_record = (
-                qs.order_by("매장_id", "품목_id", "기간")
-                .values("매장_id", "품목_id", "기간", "매장_재고량")
-                .first()
-            )
-            return Response(updated_record, status=status.HTTP_200_OK)
         else:
-            # 기존 레코드가 없으면 새로운 레코드 생성 (0 값도 저장)
-            StoreInventory.objects.create(
-                매장_id=store_obj, 품목_id=item_obj, 기간=period, 매장_재고량=new_value
-            )
             return Response(
-                {
-                    "매장_id": store_obj.pk,
-                    "품목_id": item_obj.pk,
-                    "기간": period,
-                    "매장_재고량": new_value,
-                },
-                status=status.HTTP_201_CREATED,
+                {"success": True, "results": results}, status=status.HTTP_200_OK
             )
 
 

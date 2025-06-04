@@ -167,17 +167,22 @@ const InventoryItemRow = forwardRef<
                 onChangeText={(text) => {
                   // 현재 입력된 텍스트에서 콤마 제거
                   const rawText = text.replace(/,/g, "");
-                  // 숫자로 파싱
-                  const parsed = parseFloat(rawText);
-                  // 숫자면 포맷 적용, 아니면 그대로 사용 (예: 빈 문자열)
-                  const formatted = isNaN(parsed)
-                    ? rawText
-                    : f.formatPrice(parsed);
-                  setLocalInput(formatted);
-                  onValueChange(
-                    item.품목_id,
-                    isNaN(parsed) ? "0" : parsed.toString()
-                  );
+
+                  // 소수점 2자리까지만 허용하는 정규식 검사
+                  if (rawText === "" || /^(\d+)?(\.\d{0,2})?$/.test(rawText)) {
+                    // 숫자로 파싱
+                    const parsed = parseFloat(rawText);
+
+                    // 숫자면 포맷 적용, 아니면 그대로 사용 (예: 빈 문자열, ".")
+                    const formatted = isNaN(parsed) ? rawText : rawText;
+                    setLocalInput(formatted);
+
+                    // 부모 컴포넌트에 값 전달 (숫자 또는 0)
+                    onValueChange(
+                      item.품목_id,
+                      isNaN(parsed) ? "0" : rawText.toString()
+                    );
+                  }
                 }}
                 onFocus={() => {
                   setIsFocused(true);
@@ -187,17 +192,34 @@ const InventoryItemRow = forwardRef<
                 }}
                 onBlur={() => {
                   setIsFocused(false);
+                  // 소수점만 입력된 경우 처리
+                  if (localInput === ".") {
+                    setLocalInput(editMode ? "0" : "");
+                    onValueChange(item.품목_id, "0");
+                    return;
+                  }
+
                   const parsed = parseFloat(localInput.replace(/,/g, ""));
                   const numericValue = isNaN(parsed) ? 0 : parsed;
-                  setLocalInput(
-                    numericValue === 0
-                      ? editMode
-                        ? "0"
-                        : ""
-                      : f.formatPrice(numericValue)
-                  );
+
+                  // 소수점 값 처리 (최대 소수점 2자리까지 표시)
+                  let formattedValue = "";
+                  if (numericValue === 0) {
+                    formattedValue = editMode ? "0" : "";
+                  } else if (numericValue === Math.floor(numericValue)) {
+                    // 정수인 경우
+                    formattedValue = numericValue.toString();
+                  } else {
+                    // 소수점이 있는 경우 - 소수점 둘째 자리까지만 표시
+                    formattedValue = numericValue
+                      .toFixed(2)
+                      .replace(/\.?0+$/, "");
+                  }
+
+                  setLocalInput(formattedValue);
+                  onValueChange(item.품목_id, formattedValue);
                 }}
-                keyboardType="numeric"
+                keyboardType="decimal-pad"
               />
               <TouchableOpacity
                 testID="incrementButton"
@@ -236,10 +258,6 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
   const [searchText, setSearchText] = useState<string>("");
   const [saveCompleteModalVisible, setSaveCompleteModalVisible] =
     useState<boolean>(false);
-  // 원본 데이터를 저장할 상태 추가
-  const [initialInventoryData, setInitialInventoryData] = useState<
-    InventoryItem[]
-  >([]);
 
   // 각 InventoryItemRow의 ref를 저장할 객체
   const rowRefs = useRef<{
@@ -275,12 +293,16 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
             ? {
                 ...item,
                 매장_재고량:
-                  ((item as MergedInventoryItem).매장_재고량 || 0) + 1,
+                  (parseFloat(
+                    (item as MergedInventoryItem).매장_재고량.toString()
+                  ) || 0) + 1,
               }
             : {
                 ...item,
                 월말_재고량:
-                  ((item as MergedMonthInventoryItem).월말_재고량 || 0) + 1,
+                  (parseFloat(
+                    (item as MergedMonthInventoryItem).월말_재고량.toString()
+                  ) || 0) + 1,
               }
           : item
       )
@@ -292,11 +314,15 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
       prev.map((item) => {
         if (item.품목_id !== 품목_id) return item;
         if (inventoryType === "daily") {
-          const currentValue = (item as MergedInventoryItem).매장_재고량 || 0;
+          const currentValue =
+            parseFloat((item as MergedInventoryItem).매장_재고량.toString()) ||
+            0;
           return { ...item, 매장_재고량: Math.max(0, currentValue - 1) };
         } else {
           const currentValue =
-            (item as MergedMonthInventoryItem).월말_재고량 || 0;
+            parseFloat(
+              (item as MergedMonthInventoryItem).월말_재고량.toString()
+            ) || 0;
           return { ...item, 월말_재고량: Math.max(0, currentValue - 1) };
         }
       })
@@ -338,57 +364,70 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     // 변경된 값 강제 반영
     commitAllRows();
     setSaving(true);
+    setError(""); // 이전 오류 메시지 초기화
 
-    console.time("FilterChangedItemsGlobal"); // 시간 측정 시작
-    // 변경된 아이템만 필터링
-    const changedItems = inventoryData.filter((currentItem) => {
-      const initialItem = initialInventoryData.find(
-        (item) => item.품목_id === currentItem.품목_id
-      );
-      if (!initialItem) {
-        // 초기 데이터에 없는 경우 (이론상 발생하지 않아야 함, 모든 품목이 로드되므로)
-        // 만약 새로운 아이템이 추가되는 로직이 있다면 이 경우는 변경된 것으로 간주
-        return true;
-      }
-      return (
-        (currentItem as MergedInventoryItem).매장_재고량 !==
-        (initialItem as MergedInventoryItem).매장_재고량
-      );
-    });
-    console.timeEnd("FilterChangedItemsGlobal"); // 시간 측정 종료
-
-    if (changedItems.length === 0) {
-      setSaving(false);
-      setEditMode(false);
-      setSaveCompleteModalVisible(true); // 변경된 것 없어도 완료 메시지 표시
-      return;
-    }
+    // 서버로 전송할 데이터 배열 생성
+    const payload = (inventoryData as MergedInventoryItem[]).map((item) => ({
+      매장_id: storeId, // storeId를 각 아이템에 포함
+      품목_id: item.품목_id,
+      기간: getCurrentDateString(), // 모든 아이템에 현재 날짜 적용
+      매장_재고량: parseFloat(String(item.매장_재고량)) || 0,
+    }));
 
     try {
-      await Promise.all(
-        (changedItems as MergedInventoryItem[]).map((item) => {
-          const payload = {
-            매장_id: storeId,
-            품목_id: item.품목_id,
-            기간: getCurrentDateString(),
-            매장_재고량: item.매장_재고량,
-          };
-          return fetch(`${RN_API_URL}/api/inventory/store_inventory_update/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          }).then((response) => {
-            if (!response.ok) {
-              throw new Error(`품목 ${item.품목명} 업데이트 실패`);
-            }
-          });
-        })
+      const response = await fetch(
+        `${RN_API_URL}/api/inventory/store_inventory_update/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload), // 배열 전체를 전송
+        }
       );
-      setEditMode(false);
-      // 저장 성공 시 모달 표시
-      setSaveCompleteModalVisible(true);
+
+      const responseData = await response.json(); // 응답은 항상 JSON으로 가정
+
+      if (!response.ok) {
+        // responseData에 서버가 보낸 오류 상세 정보가 있을 수 있음
+        let errorMessage = `HTTP ${response.status} 오류가 발생했습니다.`;
+        if (responseData && responseData.error) {
+          errorMessage = responseData.error;
+        } else if (
+          responseData &&
+          responseData.errors &&
+          responseData.errors.length > 0
+        ) {
+          // 여러 오류 중 첫 번째 오류만 표시하거나, 모두 조합할 수 있음
+          const firstError = responseData.errors[0];
+          errorMessage = `품목 ${firstError.item_data?.품목_id || ""} 처리 중 오류: ${firstError.error}`;
+        }
+        console.error("저장 실패:", responseData);
+        throw new Error(errorMessage);
+      }
+
+      // 서버에서 success: true 응답을 받았을 때
+      if (responseData && responseData.success) {
+        setEditMode(false);
+        setSaveCompleteModalVisible(true);
+        // 선택적으로, 서버로부터 받은 results로 inventoryData를 업데이트 할 수 있습니다.
+        // 예: fetchInventoryData(); 또는 setInventoryData(responseData.results.map(...));
+      } else {
+        // success: false 또는 예상치 못한 응답 구조
+        console.error("저장 응답 오류:", responseData);
+        setError(
+          responseData.errors
+            ? responseData.errors
+                .map(
+                  (e: any) => `품목 ${e.item_data?.품목_id || ""}: ${e.error}`
+                )
+                .join("\n")
+            : "알 수 없는 저장 오류가 발생했습니다."
+        );
+      }
     } catch (err: any) {
-      setError(err.message);
+      console.error("저장 중 예외 발생:", err);
+      setError(
+        err.message || "네트워크 오류 또는 알 수 없는 문제가 발생했습니다."
+      );
     } finally {
       setSaving(false);
     }
@@ -398,33 +437,9 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
     // 변경된 값 강제 반영
     commitAllRows();
     setSaving(true);
-
-    console.time("FilterChangedItemsMonthly"); // 시간 측정 시작
-    // 변경된 아이템만 필터링
-    const changedItems = inventoryData.filter((currentItem) => {
-      const initialItem = initialInventoryData.find(
-        (item) => item.품목_id === currentItem.품목_id
-      );
-      if (!initialItem) {
-        return true; // 초기 데이터에 없는 경우 변경된 것으로 간주
-      }
-      return (
-        (currentItem as MergedMonthInventoryItem).월말_재고량 !==
-        (initialItem as MergedMonthInventoryItem).월말_재고량
-      );
-    });
-    console.timeEnd("FilterChangedItemsMonthly"); // 시간 측정 종료
-
-    if (changedItems.length === 0) {
-      setSaving(false);
-      setEditMode(false);
-      setSaveCompleteModalVisible(true); // 변경된 것 없어도 완료 메시지 표시
-      return;
-    }
-
     try {
       await Promise.all(
-        (changedItems as MergedMonthInventoryItem[]).map((item) => {
+        (inventoryData as MergedMonthInventoryItem[]).map((item) => {
           const payload = {
             매장_id: storeId,
             품목_id: item.품목_id,
@@ -535,8 +550,6 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
         ) as InventoryItem[];
         setInventoryData(sortedData);
         setFilteredData(sortedData);
-        // 초기 데이터 설정
-        setInitialInventoryData(JSON.parse(JSON.stringify(sortedData)));
       } catch (err: any) {
         if (err.name !== "AbortError") {
           setError(err.message);
@@ -621,8 +634,6 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
 
         setInventoryData(sortedData);
         setFilteredData(sortedData);
-        // 취소 시 초기 데이터도 현재 불러온 데이터로 업데이트
-        setInitialInventoryData(JSON.parse(JSON.stringify(sortedData)));
       })
       .catch((err: any) => {
         if (err.name !== "AbortError") {

@@ -183,7 +183,9 @@
 .big-table td.wo-order-sum-ex-col,
 .big-table td.wo-order-sum-inc-col,
 .big-table td.wc-order-sum-ex-col,
-.big-table td.wc-order-sum-inc-col {
+.big-table td.wc-order-sum-inc-col,
+.big-table td.we-sum-col,
+.big-table td.we-current-stock-col {
   z-index: 1;
   vertical-align: middle !important;
   text-align: right !important;

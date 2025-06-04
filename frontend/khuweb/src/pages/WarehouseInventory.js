@@ -102,7 +102,9 @@ const WarehouseInventory = () => {
 
       setYearMonthOptions(options);
       const today = new Date();
-      const defaultYM = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}`;
+      const defaultYM = `${today.getFullYear()}.${String(
+        today.getMonth() + 1
+      ).padStart(2, "0")}`;
       setSelectedYearMonth(
         options.includes(defaultYM) ? defaultYM : options[0]
       );
@@ -170,9 +172,18 @@ const WarehouseInventory = () => {
     }
   };
 
+  // 필터링: 활성화=False인 품목이고 재고량=0인 레코드는 제외
+  const filteredInventoryData = inventoryData.filter((rec) => {
+    const matchedItem = items.find((i) => i.품목_id === rec.품목_id);
+    if (matchedItem && !matchedItem.활성화 && Number(rec.창고_재고량) === 0) {
+      return false;
+    }
+    return true;
+  });
+
   // 그룹화: 품목별 창고 재고 합산
   const groupedInventory = {};
-  inventoryData.forEach((record) => {
+  filteredInventoryData.forEach((record) => {
     const itemId = record.품목_id;
     groupedInventory[itemId] =
       (groupedInventory[itemId] || 0) + Number(record.창고_재고량);

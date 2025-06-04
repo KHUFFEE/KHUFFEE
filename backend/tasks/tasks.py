@@ -58,7 +58,8 @@ def store_inventory_rollover():
 def warehouse_inventory_rollover():
     """
     매일 실행: 어제의 창고 재고를 오늘 날짜(YYYY.MM.DD)로 이월 처리
-    (어제 기록이 있고 오늘 기록이 없으면 복사)
+    (어제 기록이 있고 오늘 기록이 없으면 복사,
+     단, 품목이 비활성화(활성화=False) 상태이며 창고_재고량이 0인 경우에는 이월하지 않음)
     """
     today = date.today()
     yesterday = today - timedelta(days=1)
@@ -68,6 +69,10 @@ def warehouse_inventory_rollover():
     records = WarehouseInventory.objects.filter(기간=yesterday_str)
     with transaction.atomic():
         for rec in records:
+            # 품목이 비활성화 상태이고 재고량이 0이면 이월하지 않음
+            if not rec.품목_id.활성화 and rec.창고_재고량 == 0:
+                continue
+
             if not WarehouseInventory.objects.filter(
                 매장_id=rec.매장_id, 품목_id=rec.품목_id, 기간=today_str
             ).exists():

@@ -612,6 +612,7 @@ const Item = () => {
                       <option value="고체류">고체류</option>
                       <option value="액체류">액체류</option>
                       <option value="상품">상품</option>
+                      <option value="미사용">미사용</option>
                     </select>
                   ) : (
                     item.종류
@@ -785,6 +786,7 @@ const Item = () => {
                           <option value="고체류">고체류</option>
                           <option value="액체류">액체류</option>
                           <option value="상품">상품</option>
+                          <option value="미사용">미사용</option>
                         </select>
                       </td>
                       <td>

@@ -145,13 +145,21 @@ const WarehouseExpiration = () => {
   });
 
   // 정렬: 협력사 → 품목명 → 종류 → 유통기한
+  // 정렬: 협력사 → 종류(type) → 품목명(itemName) → 유통기한
   tableRows.sort((a, b) => {
+    // 1) 협력사
     const cmpSupplier = a.supplierName.localeCompare(b.supplierName);
     if (cmpSupplier !== 0) return cmpSupplier;
-    const cmpItemName = a.itemName.localeCompare(b.itemName);
-    if (cmpItemName !== 0) return cmpItemName;
+
+    // 2) 종류(type)
     const cmpType = a.type.localeCompare(b.type);
     if (cmpType !== 0) return cmpType;
+
+    // 3) 품목명(itemName)
+    const cmpItemName = a.itemName.localeCompare(b.itemName);
+    if (cmpItemName !== 0) return cmpItemName;
+
+    // 4) 유통기한 (오래된 날짜가 먼저)
     const dateA = new Date(a.expiration.replace(/\./g, "-"));
     const dateB = new Date(b.expiration.replace(/\./g, "-"));
     return dateA - dateB;

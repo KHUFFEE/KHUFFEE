@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Login.css";
 
 const Login = ({ setIsLoggedIn }) => {
-  const [매장명, set매장명] = useState("");
+  const [매장_아이디, set매장_아이디] = useState("");
   const [매장_비밀번호, set매장_비밀번호] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -19,14 +19,14 @@ const Login = ({ setIsLoggedIn }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ 매장명, 매장_비밀번호 }),
+          body: JSON.stringify({ 매장_아이디, 매장_비밀번호 }),
         }
       );
 
       if (response.ok) {
         const data = await response.json();
 
-        if (매장명 === "admin") {
+        if (매장_아이디 === "kmc") {
           localStorage.setItem("access", data.access);
           localStorage.setItem("refresh", data.refresh);
           setIsLoggedIn(true);
@@ -58,8 +58,8 @@ const Login = ({ setIsLoggedIn }) => {
           <input
             type="text"
             placeholder="아이디"
-            value={매장명}
-            onChange={(e) => set매장명(e.target.value)}
+            value={매장_아이디}
+            onChange={(e) => set매장_아이디(e.target.value)}
             required
           />
           <input

@@ -24,7 +24,7 @@ const LoginScreen: React.FC = () => {
   // react-navigation 사용: 로그인 스크린에 맞는 네비게이션 타입 지정
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList, "Login">>();
-  const [매장명, set매장명] = useState("");
+  const [매장_아이디, set매장_아이디] = useState("");
   const [매장_비밀번호, set매장_비밀번호] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   // 포커스 상태를 관리하는 state 추가
@@ -34,7 +34,7 @@ const LoginScreen: React.FC = () => {
     // 이전 에러 메시지 초기화
     setErrorMessage("");
 
-    if (!매장명 || !매장_비밀번호) {
+    if (!매장_아이디 || !매장_비밀번호) {
       setErrorMessage("아이디와 비밀번호를 모두 입력해주세요.");
       return;
     }
@@ -45,7 +45,7 @@ const LoginScreen: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 매장명, 매장_비밀번호 }),
+        body: JSON.stringify({ 매장_아이디, 매장_비밀번호 }),
       });
 
       if (!response.ok) {
@@ -65,6 +65,8 @@ const LoginScreen: React.FC = () => {
 
       const data = await response.json();
       console.log("로그인 성공:", data);
+
+      const { 매장명, 매장_id } = data;
 
       // 매장 정보 조회
       try {
@@ -125,11 +127,11 @@ const LoginScreen: React.FC = () => {
                 <TextInput
                   style={[
                     styles.form_input_box,
-                    매장명 ? { color: "#000000" } : { color: "#B3B3B3" },
+                    매장_아이디 ? { color: "#000000" } : { color: "#B3B3B3" },
                   ]}
                   placeholder="매장명을 입력하세요"
-                  value={매장명}
-                  onChangeText={set매장명}
+                  value={매장_아이디}
+                  onChangeText={set매장_아이디}
                   autoCapitalize="none"
                   autoCorrect={false}
                 />

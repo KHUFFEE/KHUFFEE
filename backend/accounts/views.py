@@ -13,12 +13,14 @@ class StoreLoginView(APIView):
         serializer = StoreLoginSerializer(data=request.data)
 
         if serializer.is_valid():
-            store = serializer.validated_data  # 검증된 store 객체
-            refresh = RefreshToken()  # 직접 JWT 생성
+            store = serializer.validated_data  # validate에서 Store 객체를 돌려줌
+            refresh = RefreshToken()  # (필요하면 for_user 사용)
 
             return Response(
                 {
-                    "매장명": store.매장명,  # 아이디로 사용됨
+                    "매장_아이디": store.매장_아이디,
+                    "매장명": store.매장명,  # ← 화면 전환용
+                    "매장_id": store.매장_id,  # ← 창고(ST_102) 확인용
                     "refresh": str(refresh),
                     "access": str(refresh.access_token),
                 },

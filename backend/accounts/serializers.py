@@ -3,12 +3,12 @@ from .models import Store
 
 
 class StoreLoginSerializer(serializers.Serializer):
-    매장명 = serializers.CharField()
+    매장_아이디 = serializers.CharField()
     매장_비밀번호 = serializers.CharField(write_only=True)
 
     def validate(self, data):
         try:
-            store = Store.objects.get(매장명=data["매장명"])
+            store = Store.objects.get(매장_아이디=data["매장_아이디"])
         except Store.DoesNotExist:
             raise serializers.ValidationError("존재하지 않는 매장입니다.")
 
@@ -21,4 +21,4 @@ class StoreLoginSerializer(serializers.Serializer):
 class StoreListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
-        fields = ("매장_id", "매장명")
+        fields = ("매장_id", "매장명", "매장_아이디")

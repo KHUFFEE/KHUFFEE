@@ -1,4 +1,4 @@
-# ☕ 카페쿠피 IT 인프라 혁신 및 프로세스 최적화
+# ☕ 장애인표준사업장 IT 기반 물류 자동화 및 디지털 전환
 
 ## 📌 프로젝트 개요
 ![카페쿠피_v0 2_9](https://github.com/user-attachments/assets/2f7e4609-3dd0-4fb3-8ec3-18fe2fe80d20)

@@ -607,4 +607,25 @@ export const OrderRequeststyle = StyleSheet.create({
     marginRight: moderateScale(8),
     borderRadius: moderateScale(20),
   },
+  // 협력사 구분선 스타일 추가
+  supplierDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: moderateScale(6),
+    paddingHorizontal: moderateScale(6),
+    backgroundColor: "#ffffff",
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    borderWidth: 0.5,
+    backgroundColor: "#202020",
+  },
+  dividerText: {
+    marginHorizontal: moderateScale(15),
+    fontSize: RFValue(14),
+    fontWeight: "600",
+    color: "#64748b",
+    textAlign: "center",
+  },
 });

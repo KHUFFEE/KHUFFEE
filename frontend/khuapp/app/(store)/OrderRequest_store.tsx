@@ -572,6 +572,28 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
     }
   };
 
+  // 협력사별로 아이템을 그룹화하는 함수 추가
+  const groupProductsBySupplier = (products: APIProduct[]) => {
+    const grouped: { [key: string]: APIProduct[] } = {};
+
+    products.forEach((product) => {
+      const supplier = suppliers.find((s) => s.협력사_id === product.협력사_id);
+      const supplierName = supplier ? supplier.협력사명 : "기타";
+
+      if (!grouped[supplierName]) {
+        grouped[supplierName] = [];
+      }
+      grouped[supplierName].push(product);
+    });
+
+    return grouped;
+  };
+
+  // 협력사별로 그룹화된 제품 목록
+  const groupedProducts = useMemo(() => {
+    return groupProductsBySupplier(sortedProducts);
+  }, [sortedProducts, suppliers]);
+
   if (loading || !inventoryLoaded || !suppliersLoaded) {
     return (
       <View testID="loading_Container" style={styles.loading_Container}>
@@ -762,7 +784,27 @@ const OrderRequest_store: React.FC<StoreOrderRequestProps> = ({
               testID="listContainer"
               style={OrderRequeststyle.listContainer}
             >
-              {displayProducts.map((product) => renderProductCard(product))}
+              {Object.entries(groupedProducts).map(
+                ([supplierName, products], supplierIndex) => (
+                  <View key={supplierName}>
+                    {products.map((product, productIndex) => (
+                      <View key={product.품목_id}>
+                        {renderProductCard(product)}
+                        {/* 각 협력사 그룹의 마지막 아이템 아래에 구분선 추가 */}
+                        {productIndex === products.length - 1 &&
+                          supplierIndex <
+                            Object.keys(groupedProducts).length - 1 && (
+                            <View style={OrderRequeststyle.supplierDivider}>
+                              <View style={OrderRequeststyle.dividerLine} />
+
+                              <View style={OrderRequeststyle.dividerLine} />
+                            </View>
+                          )}
+                      </View>
+                    ))}
+                  </View>
+                )
+              )}
             </View>
           </ScrollView>
           <View

@@ -1163,18 +1163,48 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
               if (!rowRefs.current[item.품목_id]) {
                 rowRefs.current[item.품목_id] = React.createRef();
               }
+
+              // 현재 아이템이 해당 협력사의 마지막 아이템인지 확인
+              const isLastItemOfSupplier = (() => {
+                const currentSupplierId = item.협력사_id;
+                const currentIndex = filteredData.findIndex(
+                  (filteredItem) => filteredItem.품목_id === item.품목_id
+                );
+
+                // 다음 아이템이 다른 협력사인 경우에만 구분선 표시
+                // 마지막 협력사 다음에는 구분선 표시하지 않음
+                const nextItem = filteredData[currentIndex + 1];
+                return nextItem && nextItem.협력사_id !== currentSupplierId;
+              })();
+
               return (
-                <InventoryItemRow
-                  ref={rowRefs.current[item.품목_id]}
-                  item={item}
-                  inventoryType={inventoryType}
-                  editMode={editMode}
-                  onValueChange={handleValueChange}
-                  onIncrement={handleIncrement}
-                  onDecrement={handleDecrement}
-                  onDelete={handleDelete}
-                  index={index}
-                />
+                <>
+                  <InventoryItemRow
+                    ref={rowRefs.current[item.품목_id]}
+                    item={item}
+                    inventoryType={inventoryType}
+                    editMode={editMode}
+                    onValueChange={handleValueChange}
+                    onIncrement={handleIncrement}
+                    onDecrement={handleDecrement}
+                    onDelete={handleDelete}
+                    index={index}
+                  />
+                  {/* 협력사의 마지막 아이템 다음에 구분선 추가 */}
+                  {isLastItemOfSupplier && (
+                    <View
+                      style={{
+                        flex: 1,
+                        height: 1,
+                        // backgroundColor: "#e2e8f0",
+                        marginHorizontal: moderateScale(6),
+                        marginVertical: moderateScale(6),
+                        borderWidth: 0.5,
+                        borderColor: "#202020",
+                      }}
+                    />
+                  )}
+                </>
               );
             }}
           />
@@ -1207,44 +1237,69 @@ const Inventory_store: React.FC<InventoryProps> = ({ storeId }) => {
                 : sortByCategory(itemsToSave).filter(
                     (item) => (item as MergedMonthInventoryItem).창고_입고량 > 0
                   )
-              ).map((item) => {
+              ).map((item, index, array) => {
                 const stockValue =
                   inventoryType === "daily"
                     ? (item as MergedInventoryItem).창고_재고량
                     : (item as MergedMonthInventoryItem).창고_입고량;
 
+                // 현재 아이템이 해당 협력사의 마지막 아이템인지 확인
+                const isLastItemOfSupplier = (() => {
+                  const currentSupplierId = item.협력사_id;
+                  const currentIndex = array.findIndex(
+                    (arrayItem) => arrayItem.품목_id === item.품목_id
+                  );
+
+                  // 다음 아이템이 다른 협력사인 경우에만 구분선 표시
+                  // 마지막 협력사 다음에는 구분선 표시하지 않음
+                  const nextItem = array[currentIndex + 1];
+                  return !nextItem || nextItem.협력사_id !== currentSupplierId;
+                })();
+
                 return (
-                  <View
-                    testID="confirmationItemRow"
-                    key={item.품목_id}
-                    style={[
-                      confirmationStyles.confirmationItemRow,
-                      {
-                        flexDirection: "row",
-                        alignItems: "center",
-                        paddingVertical: moderateScale(5),
-                      },
-                    ]}
-                  >
-                    <Text
-                      testID="confirm_selectItemName"
+                  <React.Fragment key={item.품목_id}>
+                    <View
+                      testID="confirmationItemRow"
                       style={[
-                        confirmationStyles.confirm_selectItemName,
-                        { flex: 2 },
+                        confirmationStyles.confirmationItemRow,
+                        {
+                          flexDirection: "row",
+                          alignItems: "center",
+                          paddingVertical: moderateScale(5),
+                        },
                       ]}
                     >
-                      {item.품목명}
-                    </Text>
-                    <Text
-                      testID="confirm_unitText"
-                      style={[
-                        confirmationStyles.confirm_unitText,
-                        { flex: 1, textAlign: "center" },
-                      ]}
-                    >
-                      {f.formatPrice(stockValue)}개
-                    </Text>
-                  </View>
+                      <Text
+                        testID="confirm_selectItemName"
+                        style={[
+                          confirmationStyles.confirm_selectItemName,
+                          { flex: 2 },
+                        ]}
+                      >
+                        {item.품목명}
+                      </Text>
+                      <Text
+                        testID="confirm_unitText"
+                        style={[
+                          confirmationStyles.confirm_unitText,
+                          { flex: 1, textAlign: "center" },
+                        ]}
+                      >
+                        {f.formatPrice(stockValue)}개
+                      </Text>
+                    </View>
+                    {/* 협력사의 마지막 아이템 다음에 구분선 추가 */}
+                    {isLastItemOfSupplier && (
+                      <View
+                        style={{
+                          height: 1,
+                          backgroundColor: "#e2e8f0",
+                          marginHorizontal: moderateScale(16),
+                          marginVertical: moderateScale(8),
+                        }}
+                      />
+                    )}
+                  </React.Fragment>
                 );
               })
             }

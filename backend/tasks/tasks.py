@@ -5,6 +5,10 @@ from datetime import timedelta, date
 from suppliers.models import Item
 from inventory.models import StoreInventory, WarehouseInventory
 from orders.models import WarehouseOrder
+from orders.models import WarehouseOutgoing
+from suppliers.models import Item
+from accounts.models import Store
+import calendar
 
 
 @shared_task
@@ -101,4 +105,47 @@ def reset_warehouse_inventory_status():
             SET 상태 = 0
             WHERE 테이블 = '창고_재고'
         """
+        )
+
+
+@shared_task
+def create_monthly_warehouse_outgoing_for_store_102():
+    """
+    매월 1일 실행:
+    활성화=True인 품목(Item)마다, 해당 월 1일~말일까지
+    창고_출고(WarehouseOutgoing)에 (매장='ST_102', 기간='YYYY.MM.DD', 창고_출고량=0) 레코드를 자동 생성.
+    이미 존재하는 (매장_id, 품목_id, 기간)은 unique_together로 충돌 → ignore_conflicts로 스킵.
+    """
+    now = timezone.localtime(timezone.now())
+    year, month = now.year, now.month
+
+    store_pk = "ST_102"  # Store의 PK/ID 값이 이 문자열이라고 가정
+    store = Store.objects.get(pk=store_pk)
+
+    last_day = calendar.monthrange(year, month)[1]
+
+    # 네 다른 코드와 통일: "YYYY.MM.DD" (0 padding)
+    period_list = [
+        date(year, month, day).strftime("%Y.%m.%d") for day in range(1, last_day + 1)
+    ]
+
+    active_items = Item.objects.filter(활성화=True).only("pk")
+
+    to_create = []
+    for item in active_items:
+        for period in period_list:
+            to_create.append(
+                WarehouseOutgoing(
+                    매장_id=store,
+                    품목_id=item,
+                    기간=period,
+                    창고_출고량=0,
+                )
+            )
+
+    with transaction.atomic():
+        WarehouseOutgoing.objects.bulk_create(
+            to_create,
+            ignore_conflicts=True,  # (매장_id, 품목_id, 기간) 유니크 충돌 시 스킵
+            batch_size=5000,
         )
